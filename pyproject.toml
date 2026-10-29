@@ -1,0 +1,15 @@
+[project]
+name = "aria-jdr"
+version = "0.1.0"
+description = "Moteur de JDR solo avec un MJ LLM local, sur un socle de règles d100 multi-univers."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=9"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# Seules les fonctions « test_… » sont des tests (pas la fonction `tester` du moteur).
+python_functions = ["test_*"]

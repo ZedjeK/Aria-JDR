@@ -1,0 +1,7 @@
+# Environnement virtuel Python
+.venv/
+
+# Fichiers générés par Python et pytest
+__pycache__/
+*.pyc
+.pytest_cache/
