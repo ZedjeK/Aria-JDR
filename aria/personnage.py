@@ -45,6 +45,19 @@ PLAFOND_COMPETENCE = 95
 MAGIE = "Magie"
 
 
+class Etat(Enum):
+    """L'état physique d'un personnage (REGLES.md 7.6)."""
+
+    ACTIF = "actif"
+    INCONSCIENT = "inconscient"
+    MOURANT = "mourant"  # à 0 PV : test de Constitution à chaque fin de round
+    STABLE = "stable"  # à 0 PV mais stabilisé : ne risque plus de mourir
+    MORT = "mort"
+
+
+MALUS_BLESSURE_GRAVE = -20
+
+
 @dataclass(frozen=True)
 class DefCompetence:
     """La définition d'une compétence : son nom de socle, son domaine et sa base."""
@@ -105,6 +118,9 @@ class Personnage:
     pv: int | None = None
     sm: int | None = None
     pm: int | None = None
+    etat: Etat = Etat.ACTIF
+    blessure_grave: bool = False  # tant qu'elle n'est pas guérie : PV max divisés par deux, −20 partout
+    points_destin: int = 0  # fixés par le curseur de l'univers au début de la campagne
 
     def __post_init__(self):
         if self.pv is None:
@@ -123,9 +139,14 @@ class Personnage:
         return self.competences[nom]
 
     @property
-    def pv_max(self) -> int:
-        """(Force + Constitution) / 10 (REGLES.md 3.2)."""
+    def pv_max_base(self) -> int:
+        """(Force + Constitution) / 10 (REGLES.md 3.2), sans tenir compte des blessures."""
         return (self.carac(Caracteristique.FORCE) + self.carac(Caracteristique.CONSTITUTION)) // 10
+
+    @property
+    def pv_max(self) -> int:
+        """Les PV max actuels : divisés par deux tant qu'une blessure grave n'est pas guérie."""
+        return self.pv_max_base // 2 if self.blessure_grave else self.pv_max_base
 
     @property
     def sm_max(self) -> int:

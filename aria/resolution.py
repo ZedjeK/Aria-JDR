@@ -102,9 +102,14 @@ def tester(
     valeur: int,
     difficulte: Difficulte = Difficulte.NORMALE,
     combat: bool = False,
+    modificateur: int = 0,
 ) -> Resultat:
-    """Lance un d100 contre une compétence ou une caractéristique, avec sa difficulté."""
-    valeur_finale = valeur + difficulte.modificateur
+    """Lance un d100 contre une compétence ou une caractéristique, avec sa difficulté.
+
+    `modificateur` regroupe les autres bonus et malus imposés par les règles
+    (couvert, blessure grave, armure, défenses multiples…), jamais choisis par le MJ.
+    """
+    valeur_finale = valeur + difficulte.modificateur + modificateur
     jet = des.d100()
     return Resultat(jet, valeur_finale, calculer_degre(jet, valeur_finale, combat))
 
@@ -115,13 +120,14 @@ def forcer(
     premier: Resultat,
     difficulte: Difficulte = Difficulte.NORMALE,
     combat: bool = False,
+    modificateur: int = 0,
 ) -> Resultat:
     """Relance un test raté, une seule fois. Si ce nouveau jet échoue, la conséquence est grave."""
     if premier.reussi:
         raise ValueError("On ne peut forcer qu'un jet raté.")
     if premier.force:
         raise ValueError("Un jet ne peut être forcé qu'une seule fois.")
-    resultat = tester(des, valeur, difficulte, combat)
+    resultat = tester(des, valeur, difficulte, combat, modificateur)
     return Resultat(resultat.jet, resultat.valeur, resultat.degre, force=True)
 
 
