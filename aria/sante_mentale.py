@@ -9,6 +9,7 @@ from enum import Enum, IntEnum
 
 from aria.des import Des
 from aria.personnage import Personnage
+from aria.progression import cocher
 from aria.reglages import Curseur, Jalon
 from aria.resolution import Resultat, tester
 from aria.soins import SoinImpossible, gain_selon_degre
@@ -241,6 +242,7 @@ def therapie(des: Des, soignant: Personnage, patient: Personnage, moment: Moment
         raise SoinImpossible(f"{patient.nom} a déjà eu sa thérapie cette nuit.")
     patient.derniere_therapie = moment
     test = tester(des, soignant.competence(competence))
+    cocher(soignant, competence, test)
     return _recuperer(patient, gain_selon_degre(des, test.degre), test)
 
 

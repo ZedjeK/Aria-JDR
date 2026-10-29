@@ -10,6 +10,7 @@ from enum import Enum
 from aria.des import Des
 from aria.equipement import CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Recharge, formule_degats
 from aria.personnage import MALUS_BLESSURE_GRAVE, Caracteristique, Etat, Personnage
+from aria.progression import cocher
 from aria.reglages import Curseur
 from aria.resolution import Degre, Issue, Resultat, opposer, tester
 
@@ -144,6 +145,11 @@ class Combattant:
     def munitions_restantes(self) -> int | None:
         arme = self.arme
         return self.munitions.get(arme) if arme and arme.munitions else None
+
+    def cocher(self, competence: str, resultat: Resultat):
+        """Coche la compétence pour la progression, si c'est un personnage joueur."""
+        if isinstance(self.fiche, Personnage):
+            cocher(self.fiche, competence, resultat)
 
     def valeur(self, competence: str) -> int:
         """La compétence avec les malus subis : blessure grave et armure."""
@@ -281,6 +287,7 @@ class Combat:
                 effets.append(f"{arme.nom} est lancée et n'est plus en main.")
 
         attaque = tester(self.des, attaquant.valeur(arme.competence), combat=True, modificateur=modificateur)
+        attaquant.cocher(arme.competence, attaque)
         if attaque.degre is Degre.MALADRESSE and arme.a(Propriete.FRAGILE):
             attaquant.arme = None
             effets.append(f"{arme.nom} se brise.")
@@ -292,12 +299,15 @@ class Combat:
             malus = MALUS_DEFENSE_SUPPLEMENTAIRE * cible.defenses_ce_round
             cible.defenses_ce_round += 1
             if defense is Defense.ESQUIVE:
+                competence_defense = "Esquive"
                 resultat_defense = tester(self.des, cible.valeur("Esquive"), combat=True, modificateur=malus)
             else:
+                competence_defense = CORPS_A_CORPS
                 arme_riposte = cible.arme_de_melee
                 resultat_defense = tester(
                     self.des, cible.valeur(CORPS_A_CORPS), combat=True, modificateur=malus + arme_riposte.bonus.jet
                 )
+            cible.cocher(competence_defense, resultat_defense)
             issue = opposer(attaque, resultat_defense, esquive=defense is Defense.ESQUIVE)
         else:
             issue = Issue.ATTAQUANT if attaque.reussi else Issue.PERSONNE
@@ -374,6 +384,7 @@ class Combat:
             raise ActionImpossible(f"{mourant.nom} n'est pas mourant.")
         self._agir(soigneur, TypeAction.SIMPLE)
         resultat = tester(self.des, soigneur.valeur("Médecine"))
+        soigneur.cocher("Médecine", resultat)
         if resultat.reussi:
             mourant.fiche.etat = Etat.STABLE
         return resultat

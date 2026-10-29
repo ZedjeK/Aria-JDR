@@ -5,6 +5,7 @@ from enum import Enum
 
 from aria.des import Des
 from aria.personnage import MALUS_BLESSURE_GRAVE, Etat, Personnage
+from aria.progression import cocher
 from aria.reglages import Curseur
 from aria.resolution import Degre, Resultat, tester
 from aria.temps import Moment, Periode
@@ -72,6 +73,7 @@ def soigner(des: Des, soigneur: Personnage, patient: Personnage, moment: Moment)
         raise SoinImpossible(f"{patient.nom} a déjà reçu un jet de Médecine cette demi-journée.")
     valeur = soigneur.competence("Médecine") + (MALUS_BLESSURE_GRAVE if soigneur.blessure_grave else 0)
     test = tester(des, valeur)
+    cocher(soigneur, "Médecine", test)
     patient.dernier_soin_recu = moment
     gain = gain_selon_degre(des, test.degre)
     if test.reussi and patient.blessure_grave:

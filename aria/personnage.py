@@ -141,6 +141,10 @@ class Personnage:
     derniere_therapie: Moment | None = None
     derniere_discussion: int | None = None  # numéro du jour
 
+    # Progression (REGLES.md 6)
+    competences_cochees: set[str] = field(default_factory=set)  # réussies pendant la session
+    xp: int = 0
+
     def __post_init__(self):
         if self.pv is None:
             self.pv = self.pv_max
