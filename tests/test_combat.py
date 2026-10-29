@@ -143,15 +143,34 @@ def test_tir_sans_esquive_avec_couvert_et_munitions():
     assert g.fiche.etat is Etat.INCONSCIENT
 
 
-def test_viser_donne_20_au_tir_suivant():
+def test_viser_puis_tirer_dans_le_meme_round():
+    k, g = kaito(), ganger()
+    c = combat(DesTruques(80, 80), k, g)
+    c.viser(k)  # action mineure
+    assert c.attaquer(k, g).attaque.valeur == 70
+    assert not k.vise  # le bonus ne sert qu'une fois
+    c.fin_de_round()
+    assert c.attaquer(k, g).attaque.valeur == 50
+
+
+def test_viser_interdit_de_se_deplacer_ce_round():
+    k, g = kaito(), ganger()
+    c = combat(DesTruques(), k, g)
+    c.deplacer(k)
+    with pytest.raises(ActionImpossible):
+        c.viser(k)
+    c.fin_de_round()
+    c.viser(k)
+    with pytest.raises(ActionImpossible):
+        c.deplacer(k)
+
+
+def test_la_visee_se_perd_en_fin_de_round():
     k, g = kaito(), ganger()
     c = combat(DesTruques(80), k, g)
     c.viser(k)
-    with pytest.raises(ActionImpossible):
-        c.attaquer(k, g)  # viser a pris l'action simple du round
     c.fin_de_round()
-    assert c.attaquer(k, g).attaque.valeur == 70
-    assert not k.vise
+    assert c.attaquer(k, g).attaque.valeur == 50
 
 
 def test_arme_vide_puis_rechargement():

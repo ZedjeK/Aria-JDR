@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.2 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.3 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -228,7 +228,7 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 ### 7.1 Initiative
 
 - Ordre de **Dextérité** décroissante, sans jet. La **Perception** départage les égalités.
-- **Embuscade** : Perception des victimes contre Discrétion des agresseurs. Le camp surpris perd son premier round.
+- **Embuscade** : Perception des victimes contre Discrétion des agresseurs ; une égalité profite aux victimes. Le camp surpris perd son premier round : il ne peut ni agir ni se défendre.
 
 ### 7.2 Le round
 
@@ -240,9 +240,11 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 | Type d'action | Exemples |
 |---|---|
 | **Simple** | Attaquer, soigner, pirater, lancer un sort, une manœuvre (désarmer, plaquer, pousser) |
-| **Mineure** | Dégainer, recharger, se relever, ouvrir une porte, crier un ordre |
+| **Mineure** | Viser, dégainer, recharger, se relever, ouvrir une porte, crier un ordre |
 
-Viser donne +20 au tir suivant ; se mettre à couvert et fuir s'appuient sur les déplacements.
+- **Viser** donne +20 au tir du même round, à condition de **ne pas se déplacer de tout le round**. La visée se perd en fin de round.
+- **Recharger** coûte une action mineure ou simple, selon l'arme.
+- Se mettre à couvert et fuir s'appuient sur les déplacements.
 
 ### 7.3 L'attaque
 
@@ -289,6 +291,8 @@ Chaque univers a **sa propre armurerie**. Le moteur ne fournit que le format des
 | Rareté | Voir l'échelle ci-dessous |
 | Bonus | Selon la rareté |
 
+Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer. Une arme **fragile** se brise sur une maladresse.
+
 **Fiche d'armure** : même principe (protection, malus, propriétés, rareté, bonus). L'armure réduit les dégâts reçus d'une valeur fixe.
 
 **Échelle de rareté**, identique dans tous les univers et vérifiée par le code :
@@ -298,10 +302,10 @@ Chaque univers a **sa propre armurerie**. Le moteur ne fournit que le format des
 | Commune | Aucun |
 | Peu commune | +5 au jet **ou** +1 aux dégâts |
 | Rare | +10 au jet **ou** +2 aux dégâts **ou** une propriété en plus |
-| Exceptionnelle | Deux bonus de « Rare » |
+| Exceptionnelle | Deux bonus **différents** de « Rare » (par exemple +10 au jet et +2 aux dégâts, jamais +20 au jet) |
 | Légendaire | Unique, écrite à la main pour la campagne, jamais générée au hasard |
 
-Pour une armure, le bonus porte sur la protection ou sur un malus en moins.
+Pour une armure, même échelle : la protection suit la colonne des dégâts (+1, +2), et le malus en moins celle du jet (5 ou 10 points retirés à chaque malus de l'armure, sans jamais en faire un bonus).
 
 **Exemple**
 
@@ -315,6 +319,8 @@ Pour une armure, le bonus porte sur la protection ou sur un malus en moins.
 - **Blessure grave** : un seul coup qui inflige au moins la **moitié des PV max**. Test de Constitution, sinon le perso tombe inconscient. Tant qu'elle n'est pas guérie : **−20 à toutes les actions** et **PV max divisés par deux**.
 - **0 PV** : à terre et mourant. Chaque round, test de Constitution ; un échec, et c'est la mort. Un allié peut stabiliser le mourant avec un jet de Médecine.
 - **Mort instantanée** (mode Réaliste uniquement) : un seul coup qui inflige au moins les **PV max**.
+- Une **seconde blessure grave** ne divise pas les PV max une deuxième fois.
+- Un perso **inconscient** reste hors jeu jusqu'à la fin du combat, ou jusqu'à ce qu'on le soigne.
 
 ### 7.7 Points de destin
 
@@ -328,7 +334,10 @@ Un point de destin permet de **relancer un jet**, ou de transformer une mort (ou
 
 ### 7.8 Les ennemis
 
-Profil simplifié : un pourcentage de combat, des PV, une armure, une arme. Le LLM choisit leurs actions ; le code lance leurs dés.
+Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposter), des PV, une armure, une arme. Le LLM choisit leurs actions ; le code lance leurs dés.
+
+- Pas de bonus de Force : il est déjà compté dans les dégâts de leur arme.
+- Par défaut : Dextérité 50, Constitution 50, Perception 25.
 
 ---
 
@@ -446,6 +455,7 @@ Le LLM choisit le choc dans cette liste ; **le code calcule la gravité finale**
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
+- Les effets chiffrés des propriétés **perforante** et **rafale**.
 - Le coût et le fonctionnement des sorts (points de magie).
 - Les tables de crises passagères et de troubles durables.
 - L'inventaire : encombrement et prix.

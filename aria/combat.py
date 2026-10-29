@@ -223,11 +223,15 @@ class Combat:
         combattant.budget.utiliser(action)
 
     def deplacer(self, combattant: Combattant):
+        if combattant.vise:
+            raise ActionImpossible(f"{combattant.nom} a visé : il ne peut plus se déplacer ce round.")
         self._agir(combattant, TypeAction.DEPLACEMENT)
 
     def viser(self, combattant: Combattant):
-        """+20 au prochain tir (action simple)."""
-        self._agir(combattant, TypeAction.SIMPLE)
+        """+20 au tir de ce round (action mineure), seulement sans se déplacer ce round."""
+        if combattant.budget.utilise[TypeAction.DEPLACEMENT]:
+            raise ActionImpossible(f"{combattant.nom} s'est déplacé : il ne peut plus viser ce round.")
+        self._agir(combattant, TypeAction.MINEURE)
         combattant.vise = True
 
     def degainer(self, combattant: Combattant, arme: Arme | None):
@@ -386,6 +390,7 @@ class Combat:
                     fiche.etat = Etat.MORT
             combattant.budget = BudgetRound()
             combattant.defenses_ce_round = 0
+            combattant.vise = False  # la visée ne vaut que pour le round où elle est prise
             if self.round == 1:
                 combattant.surpris = False
         self.round += 1
