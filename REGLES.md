@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.4 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.5 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -210,6 +210,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Chaque compétence **réussie** pendant une session est cochée par le code.
 - En fin de session, pour chaque compétence cochée, on lance un d100 : si le jet est **supérieur** à la compétence, elle gagne **1d10**.
 - Plafond : **95**.
+- Seules les **compétences** progressent à l'usage. Les caractéristiques ne montent qu'avec l'XP.
 
 ### 6.2 Avec l'XP (en complément)
 
@@ -218,6 +219,11 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 | 1 XP | +5 dans une compétence (entraînement entre deux aventures) |
 | 3 XP | Apprendre une nouvelle compétence thématique ou un nouveau sort |
 | 5 XP | +5 dans une caractéristique (plafond 90) |
+
+- Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
+- Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
+- L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
+- Apprendre un nouveau sort attend les règles de magie (voir 10).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
