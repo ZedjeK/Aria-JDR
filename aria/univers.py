@@ -80,7 +80,7 @@ class Univers:
         return _trouver(self.armures, nom, "armure")
 
     def creer_personnage(self, parcours: str, **fiche) -> Personnage:
-        """Crée un perso dans cet univers : parcours, magie, compétences thématiques et points de destin."""
+        """Crée un perso dans cet univers : parcours, magie, compétences thématiques, PV et points de destin."""
         if parcours not in self.parcours:
             raise UniversInvalide([f"Parcours inconnu dans {self.nom} : « {parcours} »."])
         perso = creer_personnage(
@@ -88,6 +88,7 @@ class Univers:
             competences_parcours=self.parcours[parcours],
             magie_active=self.magie_active,
             competences_thematiques=self.competences_thematiques,
+            bonus_pv=self.curseur.bonus_pv,
             **fiche,
         )
         perso.points_destin = self.curseur.points_destin

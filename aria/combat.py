@@ -137,6 +137,7 @@ class Combattant:
         self.defenses_ce_round = 0
         self.vise = False
         self.surpris = False
+        self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         if arme:
             self._charger(arme)
 
@@ -392,8 +393,9 @@ class Combat:
             fiche.blessure_grave = True
             fiche.pv = min(fiche.pv, fiche.pv_max)
         if fiche.pv == 0:
-            if fiche.etat is not Etat.MORT:
+            if fiche.etat not in (Etat.MORT, Etat.MOURANT):
                 fiche.etat = Etat.MOURANT
+                victime.sursis = True
         elif rapport.blessure_grave and fiche.etat is Etat.ACTIF:
             test = tester(self.des, fiche.carac(Caracteristique.CONSTITUTION))
             rapport.test_constitution = test
@@ -417,11 +419,16 @@ class Combat:
         return resultat
 
     def fin_de_round(self) -> list[tuple[str, Resultat]]:
-        """Les mourants font leur test de Constitution, puis on passe au round suivant."""
+        """Les mourants font leur test de Constitution, puis on passe au round suivant.
+
+        Sursis : celui qui vient de tomber ne fait son premier test qu'à la fin du round suivant.
+        """
         tests = []
         for combattant in self.ordre:
             fiche = combattant.fiche
-            if fiche.etat is Etat.MOURANT:
+            if combattant.sursis:
+                combattant.sursis = False
+            elif fiche.etat is Etat.MOURANT:
                 test = tester(self.des, fiche.carac(Caracteristique.CONSTITUTION))
                 tests.append((combattant.nom, test))
                 if not test.reussi:

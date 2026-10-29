@@ -260,6 +260,17 @@ def test_le_mourant_teste_sa_constitution_en_fin_de_round():
     assert k.fiche.etat is Etat.MORT
 
 
+def test_sursis_du_mourant():
+    k, g = kaito(), ganger()
+    k.fiche.pv = 2
+    c = combat(DesTruques(30, 3, 60), k, g)
+    c.attaquer(g, k)  # couteau : 3 dégâts, Kaito tombe à 0 et devient mourant
+    assert k.fiche.etat is Etat.MOURANT
+    assert c.fin_de_round() == []  # sursis : pas de test à la fin du round où il tombe
+    assert c.fin_de_round()[0][1].jet == 60  # premier test à la fin du round suivant
+    assert k.fiche.etat is Etat.MORT
+
+
 def test_stabiliser_un_mourant():
     k, g = kaito(), ganger()
     g.fiche.pv, g.fiche.etat = 0, Etat.MOURANT

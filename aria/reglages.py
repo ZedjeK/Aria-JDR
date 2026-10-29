@@ -16,6 +16,11 @@ class Curseur(Enum):
         return {Curseur.HEROIQUE: 3, Curseur.STANDARD: 2, Curseur.REALISTE: 1}[self]
 
     @property
+    def bonus_pv(self) -> int:
+        """PV ajoutés à (Force + Constitution) / 10 (REGLES.md 3.2)."""
+        return {Curseur.HEROIQUE: 10, Curseur.STANDARD: 5, Curseur.REALISTE: 0}[self]
+
+    @property
     def mort_instantanee(self) -> bool:
         """Un seul coup qui inflige au moins les PV max tue net (REGLES.md 7.6)."""
         return self is Curseur.REALISTE

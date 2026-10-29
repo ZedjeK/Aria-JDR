@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.5 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.6 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -20,7 +20,7 @@ Chaque univers fixe deux réglages qui modulent les règles :
 
 | Réglage | Valeurs | Effets |
 |---|---|---|
-| **Curseur de létalité** | Héroïque, Standard, Réaliste | Points de destin, mort instantanée, repos, tests de Santé mentale |
+| **Curseur de létalité** | Héroïque, Standard, Réaliste | PV, points de destin, mort instantanée, repos, tests de Santé mentale |
 | **Monde impitoyable** | Oui, Non | Les chocs légers ne déclenchent plus de test de Santé mentale |
 
 ---
@@ -86,7 +86,7 @@ Notées de 15 à 90 (50 = humain moyen). On peut les lancer directement au d100 
 
 | Valeur | Calcul |
 |---|---|
-| **Points de vie (PV)** | (Force + Constitution) / 10 |
+| **Points de vie (PV)** | (Force + Constitution) / 10, **+10 en Héroïque, +5 en Standard**, +0 en Réaliste |
 | **Santé mentale (SM)** | Volonté (maximum 99 − Mythe dans les univers d'Horreur) |
 | **Points de magie (PM)** | Volonté / 5, seulement si l'univers active la magie |
 
@@ -196,7 +196,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 
 ### Exemple : un Netrunner en Cyberpunk
 
-- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 8, SM 50.
+- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 13 en Standard (8 + 5), SM 50.
 - **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Arnaque 30, Sciences 20.
 - **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40.
 - **Roleplay** : veut effacer sa dette envers une corpo ; sa petite sœur est sa seule famille ; fait trop confiance aux machines.
@@ -324,7 +324,7 @@ Pour une armure, même échelle : la protection suit la colonne des dégâts (+1
 ### 7.6 Blessures
 
 - **Blessure grave** : un seul coup qui inflige au moins la **moitié des PV max**. Test de Constitution, sinon le perso tombe inconscient. Tant qu'elle n'est pas guérie : **−20 à toutes les actions** et **PV max divisés par deux**.
-- **0 PV** : à terre et mourant. Chaque round, test de Constitution ; un échec, et c'est la mort. Un allié peut stabiliser le mourant avec un jet de Médecine.
+- **0 PV** : à terre et mourant. Chaque round, test de Constitution ; un échec, et c'est la mort. **Sursis** : le premier test se fait à la fin du round **suivant** celui où il tombe, pas dans la foulée. Un allié peut stabiliser le mourant avec un jet de Médecine.
 - **Mort instantanée** (mode Réaliste uniquement) : un seul coup qui inflige au moins les **PV max**.
 - Une **seconde blessure grave** ne divise pas les PV max une deuxième fois.
 - Un perso **inconscient** reste hors jeu jusqu'à la fin du combat, ou jusqu'à ce qu'on le soigne.

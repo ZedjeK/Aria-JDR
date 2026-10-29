@@ -117,6 +117,7 @@ class Personnage:
     lien: str
     defaut: str
     magie_active: bool = True
+    bonus_pv: int = 0  # donné par le curseur de l'univers (REGLES.md 3.2)
     # Valeurs actuelles ; laissées vides, elles démarrent au maximum.
     pv: int | None = None
     sm: int | None = None
@@ -168,8 +169,8 @@ class Personnage:
 
     @property
     def pv_max_base(self) -> int:
-        """(Force + Constitution) / 10 (REGLES.md 3.2), sans tenir compte des blessures."""
-        return (self.carac(Caracteristique.FORCE) + self.carac(Caracteristique.CONSTITUTION)) // 10
+        """(Force + Constitution) / 10 + le bonus du curseur (REGLES.md 3.2), sans tenir compte des blessures."""
+        return (self.carac(Caracteristique.FORCE) + self.carac(Caracteristique.CONSTITUTION)) // 10 + self.bonus_pv
 
     @property
     def pv_max(self) -> int:
@@ -207,6 +208,7 @@ def creer_personnage(
     defaut: str,
     magie_active: bool = True,
     competences_thematiques: tuple[DefCompetence, ...] = (),
+    bonus_pv: int = 0,
 ) -> Personnage:
     """Crée un personnage en vérifiant toutes les règles de REGLES.md 5.
 
@@ -268,6 +270,7 @@ def creer_personnage(
         lien=lien.strip(),
         defaut=defaut.strip(),
         magie_active=magie_active,
+        bonus_pv=bonus_pv,
     )
 
 

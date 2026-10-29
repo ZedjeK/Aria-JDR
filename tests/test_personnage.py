@@ -9,6 +9,7 @@ from aria.personnage import (
     DefCompetence,
     creer_personnage,
 )
+from aria.reglages import Curseur
 
 C = Caracteristique
 
@@ -84,6 +85,14 @@ def test_points_de_magie_si_l_univers_l_active():
     perso = creer_personnage(**netrunner(magie_active=True))
     assert perso.competence(MAGIE) == 0
     assert perso.pm_max == 10  # Volonté 50 / 5
+
+
+def test_bonus_de_pv_du_curseur():
+    assert [c.bonus_pv for c in Curseur] == [10, 5, 0]
+    perso = creer_personnage(**netrunner(bonus_pv=Curseur.HEROIQUE.bonus_pv))
+    assert (perso.pv_max, perso.pv) == (18, 18)
+    perso.blessure_grave = True
+    assert perso.pv_max == 9
 
 
 def test_pv_arrondis_a_l_inferieur():
