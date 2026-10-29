@@ -19,3 +19,13 @@ class Curseur(Enum):
     def mort_instantanee(self) -> bool:
         """Un seul coup qui inflige au moins les PV max tue net (REGLES.md 7.6)."""
         return self is Curseur.REALISTE
+
+
+class Jalon(Enum):
+    """Les étapes de campagne enregistrées par le code. Elles donnent de la Santé mentale
+    (REGLES.md 9.5) et, plus tard, de l'XP (montants à définir)."""
+
+    SESSION = "session jouée"
+    OBJECTIF = "objectif ou quête réussis"
+    ARC = "arc de campagne terminé"
+    MOTIVATION = "motivation accomplie"

@@ -5,8 +5,10 @@ Les compétences sont désignées par leur nom de socle (« Technologie »), jam
 leur nom d'univers (« Piratage ») : l'habillage ne sert qu'à l'affichage.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
+
+from aria.temps import Moment
 
 
 class Caracteristique(Enum):
@@ -121,6 +123,23 @@ class Personnage:
     etat: Etat = Etat.ACTIF
     blessure_grave: bool = False  # tant qu'elle n'est pas guérie : PV max divisés par deux, −20 partout
     points_destin: int = 0  # fixés par le curseur de l'univers au début de la campagne
+
+    # Suivi des soins (REGLES.md 8)
+    blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit
+    nuits_depuis_soin: int = 0  # en Réaliste, la blessure grave soignée guérit au bout de quelques nuits
+    dernier_repos: Moment | None = None
+    dernier_soin_recu: Moment | None = None
+
+    # Suivi de la Santé mentale (REGLES.md 9)
+    folie: bool = False
+    troubles: list = field(default_factory=list)  # objets Trouble (voir aria.sante_mentale)
+    chocs_vecus: dict[str, int] = field(default_factory=dict)  # nombre de fois où chaque choc a été vécu
+    jour_sm: int | None = None  # le jour en cours pour compter les pertes de SM
+    sm_debut_jour: int = 0
+    perte_sm_jour: int = 0
+    trouble_aujourd_hui: bool = False
+    derniere_therapie: Moment | None = None
+    derniere_discussion: int | None = None  # numéro du jour
 
     def __post_init__(self):
         if self.pv is None:
