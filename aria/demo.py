@@ -64,11 +64,15 @@ class Demo:
         self.dire(question)
         for numero, option in enumerate(options, 1):
             self.dire(f"  {numero}. {option}")
+        return self.lire_choix(len(options))
+
+    def lire_choix(self, nombre: int) -> int:
+        """Lit un numéro entre 1 et `nombre` et renvoie son indice (à partir de 0)."""
         while True:
             reponse = self.entree("> ").strip()
-            if reponse.isdigit() and 1 <= int(reponse) <= len(options):
+            if reponse.isdigit() and 1 <= int(reponse) <= nombre:
                 return int(reponse) - 1
-            self.dire(f"Tape un nombre entre 1 et {len(options)}.")
+            self.dire(f"Tape un nombre entre 1 et {nombre}.")
 
     def nom(self, competence: str) -> str:
         return self.univers.nom_affiche(competence)
@@ -164,29 +168,86 @@ class Demo:
             if k.surpris:
                 self.dire("\nTu es pris par surprise et ne peux rien faire ce round.")
             return
+        self.dire("\nC'est ton tour. Rappel : 1 déplacement + 1 action simple + 1 action mineure, "
+                  "ou 2 déplacements + 1 action mineure.")
         while not self.combat_fini():
-            actions = []
             budget = k.budget
-            if not self.a_couvert and not k.vise and budget.peut(TypeAction.DEPLACEMENT):
-                actions.append(("Plonger à couvert derrière une benne", self.se_couvrir))
-            restantes = k.munitions_restantes() or 0
-            if k.arme and restantes and not k.vise and budget.peut(TypeAction.MINEURE) \
-                    and not budget.utilise[TypeAction.DEPLACEMENT]:
-                actions.append(("Viser (+20 au tir de ce round, sans bouger)", lambda: c.viser(k)))
-            if k.arme and restantes and budget.peut(TypeAction.SIMPLE):
-                for cible in (self.couteau, self.tireur):
-                    if c.peut_agir(cible):
-                        actions.append((f"Tirer sur {cible.nom.lower()}", lambda cible=cible: self.tirer(cible)))
-            if k.arme and restantes < k.arme.munitions.capacite and budget.peut(TypeAction.MINEURE):
-                actions.append(("Recharger", self.recharger))
-            if not k.arme and budget.peut(TypeAction.SIMPLE) and self.au_contact and c.peut_agir(self.couteau):
-                actions.append(("Frapper le ganger au couteau à mains nues", lambda: self.raconter(c.attaquer(k, self.couteau))))
-            actions.append(("Finir ton tour", None))
-            choix = self.choisir("\nÀ toi :", [libelle for libelle, _ in actions])
-            action = actions[choix][1]
+            restants = [(budget.restants(TypeAction.DEPLACEMENT), "déplacement"),
+                        (budget.restants(TypeAction.MINEURE), "action mineure"),
+                        (budget.restants(TypeAction.SIMPLE), "action simple")]
+            self.dire("\nIl te reste : " + ", ".join(f"{n} {nom}{'s' if n > 1 else ''}" for n, nom in restants))
+            options = []
+            for titre, actions, raison in self.actions_possibles():
+                self.dire(f"  [{titre}]")
+                if not actions:
+                    self.dire(f"     ({raison})")
+                for libelle, action in actions:
+                    options.append(action)
+                    self.dire(f"  {len(options)}. {libelle}")
+            if not options:
+                self.dire("  Plus rien à faire : ton tour se termine.")
+                return
+            options.append(None)
+            self.dire(f"  {len(options)}. Finir ton tour")
+            action = options[self.lire_choix(len(options))]
             if action is None:
                 return
             action()
+
+    def actions_possibles(self) -> list[tuple[str, list, str]]:
+        """Les actions du tour, rangées par type : (titre, [(libellé, action)], raison s'il n'y en a aucune)."""
+        c, k = self.combat, self.k
+        budget = k.budget
+        restantes = k.munitions_restantes() or 0
+        recharge_mineure = k.arme is not None and k.arme.munitions.recharge.value == "mineure"
+        peut_recharger = k.arme is not None and restantes < k.arme.munitions.capacite
+
+        deplacements, raison_deplacement = [], ""
+        if k.vise:
+            raison_deplacement = "tu as visé : tu ne peux plus bouger ce round"
+        elif not budget.peut(TypeAction.DEPLACEMENT):
+            raison_deplacement = "plus de déplacement possible ce round"
+        elif self.a_couvert:
+            raison_deplacement = "tu es déjà à couvert derrière la benne"
+        else:
+            deplacements.append(("Plonger à couvert derrière une benne (le tireur aura −20)", self.se_couvrir))
+
+        mineures, raison_mineure = [], "rien d'utile pour l'instant"
+        if not budget.peut(TypeAction.MINEURE):
+            raison_mineure = "action mineure déjà utilisée"
+        else:
+            if k.arme and restantes and not k.vise:
+                if budget.utilise[TypeAction.DEPLACEMENT]:
+                    raison_mineure = "viser est impossible : tu t'es déplacé ce round"
+                else:
+                    mineures.append(("Viser (+20 au tir de ce round, mais tu ne pourras plus bouger)", lambda: c.viser(k)))
+            if peut_recharger and recharge_mineure:
+                mineures.append((f"Recharger ({restantes} balles restantes)", self.recharger))
+
+        simples, raison_simple = [], ""
+        if not budget.peut(TypeAction.SIMPLE):
+            raison_simple = ("tu t'es déplacé deux fois" if budget.utilise[TypeAction.DEPLACEMENT] == 2
+                             else "action simple déjà utilisée")
+        elif k.arme and restantes:
+            bonus = " (+20, tu as visé)" if k.vise else ""
+            for cible in (self.couteau, self.tireur):
+                if c.peut_agir(cible):
+                    couvert = ", il est à couvert : −20" if cible is self.tireur else ""
+                    simples.append((f"Tirer sur {cible.nom.lower()}{bonus}{couvert}",
+                                    lambda cible=cible: self.tirer(cible)))
+        elif k.arme:
+            raison_simple = "chargeur vide : recharge d'abord"
+        elif self.au_contact and c.peut_agir(self.couteau):
+            simples.append(("Frapper le ganger au couteau à mains nues",
+                            lambda: self.raconter(c.attaquer(k, self.couteau))))
+        else:
+            raison_simple = "tu n'as plus d'arme et personne à portée de poing"
+        if budget.peut(TypeAction.SIMPLE) and peut_recharger and not recharge_mineure:
+            simples.append(("Recharger", self.recharger))
+
+        return [("Déplacement", deplacements, raison_deplacement),
+                ("Action mineure", mineures, raison_mineure),
+                ("Action simple", simples, raison_simple)]
 
     def se_couvrir(self):
         self.combat.deplacer(self.k)

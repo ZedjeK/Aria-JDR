@@ -67,6 +67,15 @@ class BudgetRound:
         apres[action] += 1
         return self._valide(apres[TypeAction.DEPLACEMENT], apres[TypeAction.SIMPLE], apres[TypeAction.MINEURE])
 
+    def restants(self, action: TypeAction) -> int:
+        """Combien de fois ce type d'action est encore possible ce round, si on ne fait que lui."""
+        nombre, apres = 0, dict(self.utilise)
+        while True:
+            apres[action] += 1
+            if not self._valide(apres[TypeAction.DEPLACEMENT], apres[TypeAction.SIMPLE], apres[TypeAction.MINEURE]):
+                return nombre
+            nombre += 1
+
     def utiliser(self, action: TypeAction):
         if not self.peut(action):
             raise ActionImpossible(f"Le budget du round ne permet plus : {action.value}.")
