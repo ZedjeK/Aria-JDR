@@ -28,9 +28,10 @@ class ProgressionImpossible(Exception):
 
 # --- À l'usage ----------------------------------------------------------------------------
 
-def cocher(perso: Personnage, competence: str, resultat: Resultat):
-    """Coche une compétence réussie pendant la session. Appelé par le moteur à chaque jet."""
-    if resultat.reussi and competence in perso.competences:
+def cocher(perso, competence: str, resultat: Resultat):
+    """Coche une compétence réussie pendant la session. Appelé par le moteur à chaque jet.
+    Les PNJ ne progressent pas : pour eux, rien n'est coché."""
+    if isinstance(perso, Personnage) and resultat.reussi and competence in perso.competences:
         perso.competences_cochees.add(competence)
 
 

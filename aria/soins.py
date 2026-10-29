@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from aria.des import Des
-from aria.personnage import MALUS_BLESSURE_GRAVE, Etat, Personnage
+from aria.personnage import Etat, Personnage
 from aria.progression import cocher
 from aria.reglages import Curseur
 from aria.resolution import Degre, Resultat, tester
@@ -63,16 +63,18 @@ class RapportSoin:
     blessure_grave_soignee: bool = False
 
 
-def soigner(des: Des, soigneur: Personnage, patient: Personnage, moment: Moment) -> RapportSoin:
-    """Un jet de Médecine sur un patient : un seul par patient et par demi-journée (REGLES.md 8.1)."""
+def soigner(des: Des, soigneur, patient: Personnage, moment: Moment) -> RapportSoin:
+    """Un jet de Médecine sur un patient : un seul par patient et par demi-journée (REGLES.md 8.1).
+
+    Le soigneur peut être un personnage ou un PNJ (`FichePnj` avec une valeur en Médecine).
+    """
     if patient.etat is Etat.MORT:
         raise SoinImpossible(f"{patient.nom} est mort.")
     if not moment.periode.demi_journee:
         raise SoinImpossible("Les soins se font le matin ou l'après-midi, pas pendant la nuit.")
     if patient.dernier_soin_recu == moment:
         raise SoinImpossible(f"{patient.nom} a déjà reçu un jet de Médecine cette demi-journée.")
-    valeur = soigneur.competence("Médecine") + (MALUS_BLESSURE_GRAVE if soigneur.blessure_grave else 0)
-    test = tester(des, valeur)
+    test = tester(des, soigneur.valeur("Médecine"))
     cocher(soigneur, "Médecine", test)
     patient.dernier_soin_recu = moment
     gain = gain_selon_degre(des, test.degre)

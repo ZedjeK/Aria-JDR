@@ -1,5 +1,6 @@
 import pytest
 
+from aria.combat import FichePnj
 from aria.des import DesTruques
 from aria.personnage import Etat, creer_personnage
 from aria.reglages import Curseur
@@ -71,6 +72,21 @@ def test_maladresse_a_1_pv():
     soigner(DesTruques(100), kaito(), patient, MATIN)
     assert patient.pv == 0
     assert patient.etat is Etat.MOURANT
+
+
+def test_un_pnj_peut_soigner():
+    charcudoc = FichePnj("Charcudoc", combat=30, pv_max_base=10, competences={"Médecine": 70})
+    patient = kaito(pv=2)
+    patient.blessure_grave = True
+    rapport = soigner(DesTruques(40, 3), charcudoc, patient, MATIN)  # 40 ≤ 70 : réussite
+    assert rapport.blessure_grave_soignee
+    assert patient.pv == 4  # PV max réduits à 4 par la blessure grave
+
+
+def test_le_soigneur_blesse_subit_le_malus():
+    soigneur = kaito()
+    soigneur.blessure_grave = True
+    assert soigner(DesTruques(80), soigneur, kaito(pv=3), MATIN).test.valeur == 40  # 60 − 20
 
 
 def test_on_ne_soigne_pas_un_mort():

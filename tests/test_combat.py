@@ -26,7 +26,7 @@ from aria.equipement import (
 )
 from aria.personnage import Etat, creer_personnage
 from aria.reglages import Curseur
-from aria.resolution import Degre, Issue
+from aria.resolution import Degre, Difficulte, Issue
 from tests.test_personnage import netrunner
 
 COUTEAU = Arme("Couteau", CORPS_A_CORPS, "1d4", Portee.CONTACT)
@@ -279,6 +279,24 @@ def test_point_de_destin_laisse_pour_mort():
         laisser_pour_mort(k)
 
 
+def test_difficulte_choisie_par_le_mj():
+    k, g = kaito(), ganger()
+    k.fiche.etat = Etat.INCONSCIENT
+    rapport = combat(DesTruques(60, 2), k, g).attaquer(g, k, difficulte=Difficulte.FACILE)
+    assert rapport.attaque.valeur == 65  # 45 + 20 contre une cible sans défense
+    assert rapport.issue is Issue.ATTAQUANT
+
+
+def test_pnj_competences_hors_combat():
+    medecin = FichePnj("Charcudoc", combat=30, pv_max_base=10, competences={"Médecine": 70})
+    assert medecin.competence("Médecine") == 70
+    assert medecin.competence("Esquive") == 30  # compétence de combat
+    assert medecin.competence("Perception") == 25
+    assert medecin.competence("Piratage") == 25  # valeur par défaut
+    medecin.blessure_grave = True
+    assert medecin.valeur("Médecine") == 50
+
+
 def test_on_n_attaque_pas_un_mort():
     k, g = kaito(), ganger()
     g.fiche.etat = Etat.MORT
@@ -301,9 +319,11 @@ def test_malus_de_blessure_grave_et_d_armure():
 
 def test_embuscade():
     # Discrétion 60 : 10 = critique ; Perception 50 : 40 = réussite. Victimes surprises.
-    assert tester_embuscade(DesTruques(10, 40), perception_victimes=50, discretion_agresseurs=60)
+    rapport = tester_embuscade(DesTruques(10, 40), perception_victimes=50, discretion_agresseurs=60)
+    assert rapport.surpris
+    assert (rapport.discretion.degre, rapport.perception.degre) == (Degre.CRITIQUE, Degre.REUSSITE)
     # Majeure contre majeure : l'égalité profite aux victimes.
-    assert not tester_embuscade(DesTruques(20, 20), perception_victimes=50, discretion_agresseurs=60)
+    assert not tester_embuscade(DesTruques(20, 20), perception_victimes=50, discretion_agresseurs=60).surpris
 
 
 def test_le_camp_surpris_perd_son_premier_round():

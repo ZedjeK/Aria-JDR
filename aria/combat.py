@@ -12,7 +12,7 @@ from aria.equipement import CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Rech
 from aria.personnage import MALUS_BLESSURE_GRAVE, Caracteristique, Etat, Personnage
 from aria.progression import cocher
 from aria.reglages import Curseur
-from aria.resolution import Degre, Issue, Resultat, opposer, tester
+from aria.resolution import Degre, Difficulte, Issue, Resultat, opposer, tester
 
 MAINS_NUES = Arme("Mains nues", CORPS_A_CORPS, "1d3", Portee.CONTACT)
 MALUS_DEFENSE_SUPPLEMENTAIRE = -20
@@ -73,9 +73,16 @@ class BudgetRound:
         self.utilise[action] += 1
 
 
+COMPETENCES_DE_COMBAT = (CORPS_A_CORPS, "Armes à distance", "Esquive")
+
+
 @dataclass
 class FichePnj:
-    """Le profil simplifié d'un ennemi (REGLES.md 7.8). Un seul pourcentage sert à tout le combat."""
+    """Le profil simplifié d'un PNJ (REGLES.md 7.8). Un seul pourcentage sert à tout le combat.
+
+    `competences` donne ses autres talents (par exemple {"Médecine": 60} pour un médecin) ;
+    toute autre compétence vaut `competence_defaut`.
+    """
 
     nom: str
     combat: int
@@ -83,6 +90,8 @@ class FichePnj:
     dexterite: int = 50
     constitution: int = 50
     perception: int = 25
+    competences: dict[str, int] = field(default_factory=dict)
+    competence_defaut: int = 25
     pv: int | None = None
     etat: Etat = Etat.ACTIF
     blessure_grave: bool = False
@@ -102,7 +111,17 @@ class FichePnj:
         )
 
     def competence(self, nom: str) -> int:
-        return self.perception if nom == "Perception" else self.combat
+        if nom in self.competences:
+            return self.competences[nom]
+        if nom in COMPETENCES_DE_COMBAT:
+            return self.combat
+        if nom == "Perception":
+            return self.perception
+        return self.competence_defaut
+
+    def valeur(self, nom: str) -> int:
+        """La compétence avec le malus de blessure grave (−20 à toutes les actions)."""
+        return self.competence(nom) + (MALUS_BLESSURE_GRAVE if self.blessure_grave else 0)
 
 
 class Combattant:
@@ -148,14 +167,11 @@ class Combattant:
 
     def cocher(self, competence: str, resultat: Resultat):
         """Coche la compétence pour la progression, si c'est un personnage joueur."""
-        if isinstance(self.fiche, Personnage):
-            cocher(self.fiche, competence, resultat)
+        cocher(self.fiche, competence, resultat)
 
     def valeur(self, competence: str) -> int:
         """La compétence avec les malus subis : blessure grave et armure."""
-        valeur = self.fiche.competence(competence)
-        if self.fiche.blessure_grave:
-            valeur += MALUS_BLESSURE_GRAVE
+        valeur = self.fiche.valeur(competence)
         if self.armure:
             valeur += self.armure.malus_pour(competence)
         return valeur
@@ -191,14 +207,21 @@ class RapportAttaque:
     effets: list[str] = field(default_factory=list)
 
 
-def tester_embuscade(des: Des, perception_victimes: int, discretion_agresseurs: int) -> bool:
-    """Perception des victimes contre Discrétion des agresseurs. Vrai si les victimes sont surprises.
+@dataclass
+class RapportEmbuscade:
+    discretion: Resultat  # le jet des agresseurs
+    perception: Resultat  # le jet des victimes
+    surpris: bool  # vrai si les victimes sont surprises
+
+
+def tester_embuscade(des: Des, perception_victimes: int, discretion_agresseurs: int) -> RapportEmbuscade:
+    """Perception des victimes contre Discrétion des agresseurs (REGLES.md 7.1).
 
     Comme pour une esquive, une égalité profite aux victimes.
     """
     discretion = tester(des, discretion_agresseurs)
     perception = tester(des, perception_victimes)
-    return opposer(discretion, perception, esquive=True) is Issue.ATTAQUANT
+    return RapportEmbuscade(discretion, perception, opposer(discretion, perception, esquive=True) is Issue.ATTAQUANT)
 
 
 class Combat:
@@ -264,8 +287,12 @@ class Combat:
         defense: Defense | None = None,
         couvert: Couvert = Couvert.AUCUN,
         bonus_majeure: BonusMajeure = BonusMajeure.DE_SUPPLEMENTAIRE,
+        difficulte: Difficulte = Difficulte.NORMALE,
     ) -> RapportAttaque:
-        """Une attaque complète : jets, défense, dégâts et blessures (REGLES.md 7.3 à 7.6)."""
+        """Une attaque complète : jets, défense, dégâts et blessures (REGLES.md 7.3 à 7.6).
+
+        `difficulte` : choisie par le MJ dans la liste fermée, par exemple Facile contre une cible sans défense.
+        """
         if cible.fiche.etat is Etat.MORT:
             raise ActionImpossible(f"{cible.nom} est déjà mort.")
         arme = attaquant.arme_en_main
@@ -286,7 +313,7 @@ class Combat:
                 attaquant.arme = None
                 effets.append(f"{arme.nom} est lancée et n'est plus en main.")
 
-        attaque = tester(self.des, attaquant.valeur(arme.competence), combat=True, modificateur=modificateur)
+        attaque = tester(self.des, attaquant.valeur(arme.competence), difficulte, combat=True, modificateur=modificateur)
         attaquant.cocher(arme.competence, attaque)
         if attaque.degre is Degre.MALADRESSE and arme.a(Propriete.FRAGILE):
             attaquant.arme = None

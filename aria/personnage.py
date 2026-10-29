@@ -162,6 +162,10 @@ class Personnage:
             raise KeyError(f"{self.nom} ne connaît pas la compétence « {nom} ».")
         return self.competences[nom]
 
+    def valeur(self, nom: str) -> int:
+        """La compétence avec le malus de blessure grave (−20 à toutes les actions)."""
+        return self.competence(nom) + (MALUS_BLESSURE_GRAVE if self.blessure_grave else 0)
+
     @property
     def pv_max_base(self) -> int:
         """(Force + Constitution) / 10 (REGLES.md 3.2), sans tenir compte des blessures."""

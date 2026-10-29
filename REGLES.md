@@ -258,6 +258,7 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 - **Au corps à corps**, le défenseur choisit d'**esquiver** (Esquive) ou de **riposter** (Corps à corps). C'est le **meilleur degré de réussite** qui l'emporte. En cas d'égalité, l'**esquive gagne**, mais la **riposte perd** face à l'attaquant.
 - **Contre une arme à distance**, on n'esquive pas : le tireur subit −20 contre une cible derrière un couvert partiel, −40 derrière un couvert lourd.
 - **Une seule défense gratuite par round.** Chaque défense supplémentaire dans le même round prend −20, cumulable.
+- Le MJ peut fixer la **difficulté** d'une attaque, dans la liste fermée de 2.3 : par exemple Facile contre une cible sans défense (inconsciente, ligotée…).
 
 ### 7.4 Les degrés en combat
 
@@ -344,6 +345,7 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 
 - Pas de bonus de Force : il est déjà compté dans les dégâts de leur arme.
 - Par défaut : Dextérité 50, Constitution 50, Perception 25.
+- Un PNJ peut avoir d'autres talents chiffrés (Médecine 70 pour un charcudoc, Perspicacité 60 pour un psy…) ; ses autres compétences valent 25. Il peut ainsi soigner un perso ou l'aider en thérapie.
 
 ---
 
@@ -366,6 +368,7 @@ Plus la compétence est haute, plus les critiques et les réussites majeures son
 - Une **réussite avec complication** soigne comme une réussite (1d3), avec un prix raconté par le MJ.
 - **Pas de jet de Médecine la nuit** : la nuit est réservée au repos long et à la thérapie de Santé mentale (voir 9.5).
 - Un soin qui rend des PV **réveille** un perso inconscient, stabilisé ou mourant.
+- Le soigneur peut être un PNJ. Un soigneur qui a lui-même une blessure grave subit son −20, en Médecine comme en thérapie.
 
 ### 8.2 Les repos
 

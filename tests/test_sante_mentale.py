@@ -1,5 +1,6 @@
 import pytest
 
+from aria.combat import FichePnj
 from aria.des import DesTruques
 from aria.personnage import creer_personnage
 from aria.reglages import Curseur, Jalon
@@ -180,6 +181,14 @@ def test_therapie_la_nuit_et_guerison_du_trouble():
     assert patient.sm == 46
     assert [t.type for t in rapport.troubles_gueris] == [TypeTrouble.PHOBIE]
     assert patient.troubles == []
+
+
+def test_therapie_par_un_pnj_et_malus_du_soignant_blesse():
+    psy = FichePnj("Psy", combat=20, pv_max_base=10, competences={"Perspicacité": 60})
+    assert therapie(DesTruques(80), psy, kaito(sm=30), NUIT_1).test.valeur == 60
+    blesse = kaito()
+    blesse.blessure_grave = True
+    assert therapie(DesTruques(80), blesse, kaito(sm=30), NUIT_1).test.valeur == 20  # 40 − 20
 
 
 def test_therapie_une_fois_par_nuit():

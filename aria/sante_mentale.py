@@ -230,9 +230,10 @@ def _verifier_pas_fou(perso: Personnage):
         raise SoinImpossible(f"{perso.nom} a sombré dans la folie.")
 
 
-def therapie(des: Des, soignant: Personnage, patient: Personnage, moment: Moment,
+def therapie(des: Des, soignant, patient: Personnage, moment: Moment,
              competence: str = "Perspicacité") -> RapportRecuperation:
-    """Pendant le repos long, un jet de Perspicacité ou de Médecine, une fois par nuit."""
+    """Pendant le repos long, un jet de Perspicacité ou de Médecine, une fois par nuit.
+    Le soignant peut être un personnage ou un PNJ."""
     _verifier_pas_fou(patient)
     if competence not in ("Perspicacité", "Médecine"):
         raise SoinImpossible("La thérapie se fait en Perspicacité ou en Médecine.")
@@ -241,7 +242,7 @@ def therapie(des: Des, soignant: Personnage, patient: Personnage, moment: Moment
     if patient.derniere_therapie == moment:
         raise SoinImpossible(f"{patient.nom} a déjà eu sa thérapie cette nuit.")
     patient.derniere_therapie = moment
-    test = tester(des, soignant.competence(competence))
+    test = tester(des, soignant.valeur(competence))
     cocher(soignant, competence, test)
     return _recuperer(patient, gain_selon_degre(des, test.degre), test)
 
