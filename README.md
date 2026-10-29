@@ -17,6 +17,16 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install pytest
 ```
 
+## Jouer la démo
+
+Une ruelle de Néo-Tokyo : tu joues Kaito, le Netrunner, contre deux gangers. Les dés sont vraiment aléatoires, chaque partie est différente.
+
+```bash
+.venv\Scripts\python.exe -m aria.demo
+```
+
+La partie est sauvegardée dans `parties/demo_kaito.json`.
+
 ## Lancer les tests
 
 ```bash
