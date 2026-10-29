@@ -55,7 +55,7 @@ def test_creer_kaito_dans_l_univers():
     assert kaito.competence("Technologie") == 75
     assert kaito.competence("Cybernétique") == 5  # compétence thématique à sa base
     assert kaito.points_destin == 2  # curseur standard
-    assert kaito.pv == kaito.pv_max == 13  # (35 + 45) / 10 + 5 en standard
+    assert kaito.pv == kaito.pv_max == 23  # (35 + 45) / 10 + 15 en standard
     assert "Magie" not in kaito.competences
 
 

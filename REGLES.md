@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.6 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.7 — 30 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -86,7 +86,7 @@ Notées de 15 à 90 (50 = humain moyen). On peut les lancer directement au d100 
 
 | Valeur | Calcul |
 |---|---|
-| **Points de vie (PV)** | (Force + Constitution) / 10, **+10 en Héroïque, +5 en Standard**, +0 en Réaliste |
+| **Points de vie (PV)** | (Force + Constitution) / 10, **+25 en Héroïque, +15 en Standard**, +0 en Réaliste |
 | **Santé mentale (SM)** | Volonté (maximum 99 − Mythe dans les univers d'Horreur) |
 | **Points de magie (PM)** | Volonté / 5, seulement si l'univers active la magie |
 
@@ -196,7 +196,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 
 ### Exemple : un Netrunner en Cyberpunk
 
-- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 13 en Standard (8 + 5), SM 50.
+- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50.
 - **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Arnaque 30, Sciences 20.
 - **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40.
 - **Roleplay** : veut effacer sa dette envers une corpo ; sa petite sœur est sa seule famille ; fait trop confiance aux machines.

@@ -88,11 +88,11 @@ def test_points_de_magie_si_l_univers_l_active():
 
 
 def test_bonus_de_pv_du_curseur():
-    assert [c.bonus_pv for c in Curseur] == [10, 5, 0]
+    assert [c.bonus_pv for c in Curseur] == [25, 15, 0]
     perso = creer_personnage(**netrunner(bonus_pv=Curseur.HEROIQUE.bonus_pv))
-    assert (perso.pv_max, perso.pv) == (18, 18)
+    assert (perso.pv_max, perso.pv) == (33, 33)
     perso.blessure_grave = True
-    assert perso.pv_max == 9
+    assert perso.pv_max == 16
 
 
 def test_pv_arrondis_a_l_inferieur():
