@@ -49,6 +49,13 @@ class Rarete(IntEnum):
     def libelle(self) -> str:
         return ("commune", "peu commune", "rare", "exceptionnelle", "légendaire")[self]
 
+    @classmethod
+    def depuis_libelle(cls, libelle: str) -> "Rarete":
+        for rarete in cls:
+            if rarete.libelle == libelle:
+                return rarete
+        raise ValueError(f"Rareté inconnue : « {libelle} ».")
+
 
 @dataclass(frozen=True)
 class Munitions:

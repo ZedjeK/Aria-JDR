@@ -1,0 +1,95 @@
+{
+  "nom": "Néo-Tokyo 2087",
+  "genre": "Cyberpunk",
+  "cadre": "Tokyo, 2087 : mégacorporations, néons sous la pluie et implants au marché noir",
+  "curseur": "standard",
+  "monde_impitoyable": true,
+  "magie": false,
+  "habillage": {
+    "Discrétion": "Infiltration",
+    "Corps à corps": "Combat rapproché",
+    "Perception": "Vigilance",
+    "Perspicacité": "Empathie",
+    "Investigation": "Data-mining",
+    "Persuasion": "Négociation",
+    "Tromperie": "Arnaque",
+    "Escamotage": "Doigts agiles",
+    "Arts": "Performance",
+    "Commandement": "Meneur",
+    "Érudition": "Éducation",
+    "Occultisme": "Légendes urbaines",
+    "Artisanat": "Bricolage tech",
+    "Technologie": "Piratage",
+    "Sécurité": "Contre-mesures",
+    "Pilotage": "Conduite"
+  },
+  "competences_thematiques": [
+    {
+      "nom": "Cybernétique",
+      "base": 5,
+      "description": "Installer, régler et maîtriser ses implants ; repérer ceux des autres."
+    },
+    {
+      "nom": "Réseau",
+      "base": 5,
+      "description": "Fixers, contacts et dettes de faveur : savoir à qui demander quoi."
+    }
+  ],
+  "parcours": {
+    "Netrunner": [
+      "Technologie", "Investigation", "Sécurité", "Perception",
+      "Discrétion", "Artisanat", "Tromperie", "Sciences"
+    ],
+    "Solo": [
+      "Armes à distance", "Corps à corps", "Esquive", "Athlétisme",
+      "Perception", "Intimidation", "Pilotage", "Cybernétique"
+    ]
+  },
+  "armes": [
+    {
+      "nom": "Couteau",
+      "competence": "Corps à corps",
+      "degats": "1d4",
+      "portee": "contact",
+      "proprietes": ["dissimulable"]
+    },
+    {
+      "nom": "Pistolet lourd",
+      "competence": "Armes à distance",
+      "degats": "1d10",
+      "portee": "courte",
+      "munitions": {"capacite": 8, "recharge": "mineure"},
+      "proprietes": ["dissimulable"]
+    },
+    {
+      "nom": "Pistolet lourd Arasaka",
+      "competence": "Armes à distance",
+      "degats": "1d10",
+      "portee": "courte",
+      "munitions": {"capacite": 8, "recharge": "mineure"},
+      "proprietes": ["dissimulable"],
+      "rarete": "peu commune",
+      "bonus": {"degats": 1}
+    },
+    {
+      "nom": "Fusil d'assaut",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "longue",
+      "munitions": {"capacite": 30, "recharge": "mineure"},
+      "proprietes": ["deux mains", "rafale"]
+    }
+  ],
+  "armures": [
+    {
+      "nom": "Veste renforcée",
+      "protection": 1
+    },
+    {
+      "nom": "Gilet balistique",
+      "protection": 3,
+      "malus": {"Discrétion": -10}
+    }
+  ],
+  "chocs_banals": ["VIOLENCE_BRUTALE"]
+}

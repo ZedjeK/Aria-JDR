@@ -67,6 +67,7 @@ class DefCompetence:
     nom: str
     domaine: str
     base: int | None  # None : la base se calcule à partir des caractéristiques (Esquive)
+    description: str = ""
 
     def valeur_de_base(self, caracteristiques: dict[Caracteristique, int]) -> int:
         if self.base is not None:
