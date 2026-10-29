@@ -116,8 +116,26 @@ def test_un_cinquieme_de_la_sm_en_un_jour_donne_un_trouble():
     # Test raté, 1d10 = 10 : crise (1 = panique, 3 rounds), puis trouble n° 3 (paranoïa)
     rapport = subir_choc(DesTruques(70, 10, 1, 3, 3), perso, Choc.MASSACRE, JOUR_1)
     assert rapport.crise is Crise.PANIQUE
-    assert rapport.trouble == Trouble(TypeTrouble.PARANOIA, 40, Choc.MASSACRE.description)
+    # Le seuil de guérison est la SM du début de la journée, avant les pertes
+    assert rapport.trouble == Trouble(TypeTrouble.PARANOIA, 50, Choc.MASSACRE.description)
     assert perso.troubles == [rapport.trouble]
+
+
+def test_le_trouble_guerit_quand_la_sm_retrouve_son_niveau_du_matin():
+    perso = kaito()
+    subir_choc(DesTruques(70, 10, 1, 3, 3), perso, Choc.MASSACRE, JOUR_1)  # 50 → 40, trouble
+    assert jalon_atteint(DesTruques(6), perso, Jalon.OBJECTIF).troubles_gueris == []  # 46 : pas encore
+    assert perso.troubles
+    rapport = jalon_atteint(DesTruques(4), perso, Jalon.OBJECTIF)  # 50 : niveau du matin retrouvé
+    assert [t.type for t in rapport.troubles_gueris] == [TypeTrouble.PARANOIA]
+    assert perso.troubles == []
+
+
+def test_seuil_plafonne_par_la_sm_max():
+    perso = kaito(sm=40)
+    perso.troubles = [Trouble(TypeTrouble.PHOBIE, 50, "test")]
+    perso.competences["Mythe"] = 55  # SM max : min(50, 99 − 55) = 44
+    assert jalon_atteint(DesTruques(4), perso, Jalon.OBJECTIF).troubles_gueris
 
 
 def test_les_pertes_s_additionnent_sur_la_journee():

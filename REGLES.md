@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.3 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.4 — 29 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -357,16 +357,20 @@ Plus la compétence est haute, plus les critiques et les réussites majeures son
 
 **Limite : un jet de Médecine par patient et par demi-journée**, au même rythme que les repos. Après un échec, il faut attendre la demi-journée suivante ou trouver un autre soigneur. Le jet qui soigne une blessure grave avant la nuit (voir 8.2) compte dans cette limite.
 
+- Une **réussite avec complication** soigne comme une réussite (1d3), avec un prix raconté par le MJ.
+- **Pas de jet de Médecine la nuit** : la nuit est réservée au repos long et à la thérapie de Santé mentale (voir 9.5).
+- Un soin qui rend des PV **réveille** un perso inconscient, stabilisé ou mourant.
+
 ### 8.2 Les repos
 
 - **Un repos court ou moyen par demi-journée** (un le matin, un l'après-midi), plus le **repos long** la nuit.
-- Un repos interrompu ne rapporte rien.
+- Un repos interrompu ne rapporte rien, mais il compte quand même comme pris : le temps est passé.
 
 | Repos | Héroïque | Standard | Réaliste |
 |---|---|---|---|
 | Court (30 min) | 1/4 des PV | 1/4 des PV | Rien |
 | Moyen (1 à 2 h) | 1/2 des PV | 1/2 des PV | 1/4 des PV |
-| Long (nuit complète) | Tous les PV, blessures graves comprises, même sans soins | Tous les PV, blessures graves comprises **si elles ont été soignées** avant (jet de Médecine réussi) | 1/2 des PV ; une blessure grave soignée guérit en quelques jours |
+| Long (nuit complète) | Tous les PV, blessures graves comprises, même sans soins | Tous les PV, blessures graves comprises **si elles ont été soignées** avant (jet de Médecine réussi) | 1/2 des PV ; une blessure grave soignée guérit au bout de 3 nuits de repos long |
 
 Une blessure grave qui n'a pas été soignée ne guérit pas avec le repos.
 
@@ -433,9 +437,9 @@ Le LLM choisit le choc dans cette liste ; **le code calcule la gravité finale**
 
 ### 9.4 Les conséquences
 
-- **5 points ou plus perdus d'un coup** : **crise passagère** pendant 1d6 rounds, tirée par le code dans une table (panique, paralysie, fuite, rage, hallucination). Le joueur perd le contrôle de son perso pendant la crise.
-- **Un cinquième de la SM perdu dans la même journée** : **trouble durable** (phobie, cauchemars, paranoïa, tremblements…). −20 dans les situations liées ; le MJ s'en sert dans l'histoire.
-- **0 en SM** : le perso sombre dans la folie et devient un PNJ. Un point de destin peut l'en sauver.
+- **5 points ou plus perdus d'un coup** : **crise passagère** pendant 1d6 rounds. Le code la tire au hasard, à chances égales, parmi : panique, paralysie, fuite, rage, hallucination. Le joueur perd le contrôle de son perso pendant la crise.
+- **Un cinquième de la SM perdu dans la même journée** (par rapport à la SM du début de la journée) : **trouble durable**, tiré au hasard parmi : phobie, cauchemars, paranoïa, tremblements. −20 dans les situations liées ; le MJ s'en sert dans l'histoire. Un seul nouveau trouble par jour.
+- **0 en SM** : le perso sombre dans la folie et devient un PNJ. Un point de destin peut l'en sauver : il remonte alors à 1 en SM.
 
 ### 9.5 La récupération
 
@@ -447,7 +451,8 @@ Le LLM choisit le choc dans cette liste ; **le code calcule la gravité finale**
 | Un arc de campagne terminé ou une motivation accomplie | 1d10 | Jalon enregistré par le code |
 
 - **Plafond** : jamais au-dessus de la SM de départ (la Volonté), ni au-dessus de 99 − Mythe en Horreur.
-- **Un trouble durable disparaît** quand la SM repasse au-dessus du niveau où il est apparu.
+- **Un trouble durable disparaît** quand la SM retrouve son niveau du **début de la journée** où il est apparu, c'est-à-dire quand le perso a récupéré tout ce qu'il a perdu ce jour-là. Exemple : passé de 50 à 40 dans la journée, il guérit en revenant à 50.
+- Un perso qui a sombré dans la folie ne récupère plus de SM.
 
 ---
 

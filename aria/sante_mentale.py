@@ -90,7 +90,8 @@ class TypeTrouble(Enum):
 
 @dataclass
 class Trouble:
-    """Un trouble durable : −20 dans les situations liées, jusqu'à ce que la SM repasse au-dessus de `seuil`."""
+    """Un trouble durable : −20 dans les situations liées, jusqu'à ce que la SM retrouve `seuil`,
+    son niveau du début de la journée où il est apparu."""
 
     type: TypeTrouble
     seuil: int
@@ -176,7 +177,8 @@ def subir_choc(des: Des, perso: Personnage, choc: Choc, moment: Moment,
         rapport.crise = list(Crise)[des.lancer(len(Crise)) - 1]
         rapport.duree_crise = des.lancer(6)
     if not perso.trouble_aujourd_hui and perso.perte_sm_jour * 5 >= perso.sm_debut_jour:
-        trouble = Trouble(list(TypeTrouble)[des.lancer(len(TypeTrouble)) - 1], perso.sm, choc.description)
+        type_trouble = list(TypeTrouble)[des.lancer(len(TypeTrouble)) - 1]
+        trouble = Trouble(type_trouble, perso.sm_debut_jour, choc.description)
         perso.troubles.append(trouble)
         perso.trouble_aujourd_hui = True
         rapport.trouble = trouble
@@ -216,7 +218,8 @@ class RapportRecuperation:
 
 def _recuperer(perso: Personnage, gain: int, test: Resultat | None = None) -> RapportRecuperation:
     perso.sm = max(0, min(perso.sm_max, perso.sm + gain))
-    gueris = [t for t in perso.troubles if perso.sm > t.seuil]
+    # Le seuil ne peut pas dépasser la SM max (si le Mythe l'a fait baisser entre-temps)
+    gueris = [t for t in perso.troubles if perso.sm >= min(t.seuil, perso.sm_max)]
     perso.troubles = [t for t in perso.troubles if t not in gueris]
     return RapportRecuperation(perso.nom, gain, perso.sm, test, gueris)
 
