@@ -1,0 +1,21 @@
+"""Les réglages d'univers qui modulent les règles (REGLES.md 1.2)."""
+
+from enum import Enum
+
+
+class Curseur(Enum):
+    """Le curseur de létalité de l'univers."""
+
+    HEROIQUE = "héroïque"
+    STANDARD = "standard"
+    REALISTE = "réaliste"
+
+    @property
+    def points_destin(self) -> int:
+        """Points de destin par campagne (REGLES.md 7.7)."""
+        return {Curseur.HEROIQUE: 3, Curseur.STANDARD: 2, Curseur.REALISTE: 1}[self]
+
+    @property
+    def mort_instantanee(self) -> bool:
+        """Un seul coup qui inflige au moins les PV max tue net (REGLES.md 7.6)."""
+        return self is Curseur.REALISTE
