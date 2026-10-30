@@ -7,7 +7,8 @@ du banc d'essai : le MJ qui joue est exactement celui qui a été qualifié.
 
 La conversation garde tout l'historique tant qu'elle tient dans le contexte du modèle.
 Quand elle déborde, les plus vieux échanges sont oubliés (une fenêtre glissante) ; le
-prompt système, lui, reste toujours. La vraie mémoire de campagne viendra plus tard.
+prompt système, lui, reste toujours, avec le bloc Mémoire de la campagne (memoire.py),
+remis à jour avant chaque requête.
 """
 
 import json
@@ -20,6 +21,8 @@ from aria.outils import Session
 TOURS_MAX = 8  # allers-retours avec le modèle pour une seule action du joueur
 RESERVE_TOUR = 2500  # jetons laissés libres pour les appels d'outils et les résultats d'un tour
 OUVERTURE = "[Début de la partie] Présente la scène d'ouverture au joueur, puis rends-lui la main."
+REPRISE = ("[Reprise de la partie] Rappelle au joueur en deux phrases où on en était, d'après ta mémoire, "
+           "puis rends-lui la main.")
 
 
 @dataclass
@@ -49,16 +52,15 @@ def _caracteres(messages: list[dict]) -> int:
 class Table:
     def __init__(self, serveur: llm.Serveur, session: Session, budget: int | None, scene: str = "",
                  historique: list[dict] = (), contexte: int = optimiseur.CONTEXTE_CIBLE):
-        self.serveur, self.session, self.budget = serveur, session, budget
-        self.messages = [{"role": "system", "content": mj.prompt_systeme(session.univers, session.personnage, scene)},
-                         *historique]
+        self.serveur, self.session, self.budget, self.scene = serveur, session, budget, scene
+        self.messages = [{"role": "system", "content": self._systeme()}, *historique]
         # La taille du prompt à ne pas dépasser, pour que la réponse tienne encore dans le contexte
         self.limite = contexte - llm.PLAFOND_JETONS - RESERVE_TOUR
         self._mesure = (0, 0)  # (jetons du dernier prompt envoyé, nombre de messages à ce moment-là)
 
-    def ouvrir(self) -> Tour:
-        """Le MJ présente la scène d'ouverture."""
-        return self.tour(OUVERTURE)
+    def ouvrir(self, reprise: bool = False) -> Tour:
+        """Le MJ présente la scène d'ouverture, ou rappelle où on en était quand la campagne reprend."""
+        return self.tour(REPRISE if reprise else OUVERTURE)
 
     def tour(self, joueur: str) -> Tour:
         """Joue une action du joueur. Peut lever llm.ErreurLLM si le serveur ne répond pas."""
@@ -79,7 +81,21 @@ class Table:
         tour.duree = round(time.time() - debut, 1)
         return tour
 
+    def _systeme(self) -> str:
+        s = self.session
+        return mj.prompt_systeme(s.univers, s.personnage, self.scene, s.memoire.bloc())
+
+    def _rafraichir_systeme(self):
+        """Le MJ a pu écrire dans la mémoire pendant le tour : il voit toujours sa dernière version."""
+        ancien, nouveau = self.messages[0]["content"], self._systeme()
+        if nouveau != ancien:
+            self.messages[0]["content"] = nouveau
+            jetons, nombre = self._mesure
+            if nombre:
+                self._mesure = (jetons + (len(nouveau) - len(ancien)) // 3, nombre)
+
     def _demander(self, tour: Tour, avec_outils: bool) -> dict:
+        self._rafraichir_systeme()
         reponse = self.serveur.discuter(self.messages, self.session.schemas() if avec_outils else None, self.budget)
         message = reponse["choices"][0]["message"]
         usage = reponse.get("usage", {})

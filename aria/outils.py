@@ -32,6 +32,7 @@ from aria.combat import (
     tester_embuscade,
 )
 from aria.des import Des
+from aria.memoire import LONGUEURS, MORT, VIVANT, Memoire
 from aria.personnage import Caracteristique, Personnage
 from aria.reglages import Jalon
 from aria.resolution import Difficulte, Resultat, forcer, tester
@@ -136,6 +137,7 @@ class Session:
                                  u.armure(self.armure) if self.armure else None)
         # Le LLM parle avec les noms de l'univers (« Piratage ») ; le moteur, avec ceux du socle.
         self.noms_competences = {u.nom_affiche(nom): nom for nom in self.personnage.competences}
+        self.memoire = Memoire(self.campagne)
 
     # --- Outils : catalogue et appel ---
 
@@ -422,6 +424,9 @@ def point_de_destin(session: Session, usage: str) -> dict:
 def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: int, pv: int,
               arme: str | None = None, armure: str | None = None, dexterite: int = 50,
               competences: dict | None = None) -> dict:
+    if session.memoire.est_mort(identifiant):
+        raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
+                          "la mémoire de la campagne s'en souvient.")
     if identifiant == JOUEUR or identifiant in session.pnj:
         # Le MJ voulait sans doute un nouveau PNJ : on lui dit qui existe déjà et quel identifiant est libre
         libre = next(f"{identifiant}_{n}" for n in range(2, 100) if f"{identifiant}_{n}" not in session.pnj)
@@ -643,24 +648,24 @@ def _bilan(session: Session) -> list[str]:
                         ["moments_forts"]))
 def fin_combat(session: Session, moments_forts: str) -> dict:
     c = session.combat_en_cours()
-    texte = moments_forts.strip()
-    if not texte:
-        raise ErreurOutil("Raconte les moments forts du combat, en trois phrases au plus.")
-    if len(texte) > MOMENTS_FORTS_MAX:
-        raise ErreurOutil(f"Trop long ({len(texte)} caractères) : trois phrases au plus.")
+    texte = _moments_forts(moments_forts, "du combat")
     evenements = session.evenements_du_round()
     if evenements:
         session.rounds.append((c.round, evenements))
+    # Les PNJ connus de la mémoire gardent leur état réel : un mort ne revient pas
+    for x in c.ordre:
+        if x is not session.joueur:
+            session.memoire.marquer_etat(session.identifiant(x), MORT if x.fiche.etat.value == MORT else VIVANT)
     adversaires = ", ".join(x.nom for x in c.ordre if x is not session.joueur)
     souvenir = (f"## {str(session.moment).capitalize()} — Combat contre {adversaires} "
                 f"({c.round} round{'s' if c.round > 1 else ''})\n\n{texte}\n\n"
                 + "\n".join(f"- {ligne}" for ligne in _bilan(session)) + "\n")
+    # D'abord le souvenir ; la fiche n'est effacée que s'il est bien écrit
+    try:
+        session.memoire.ajouter_souvenir(souvenir)
+    except OSError as erreur:
+        raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}) : le combat reste ouvert.") from erreur
     if session.campagne:
-        # D'abord le souvenir ; la fiche n'est effacée que s'il est bien écrit
-        try:
-            session.campagne.ajouter_souvenir(souvenir)
-        except OSError as erreur:
-            raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}) : le combat reste ouvert.") from erreur
         session.campagne.effacer_combat()
     session.combat, session.rounds = None, []
     for combattant in [session.joueur, *session.pnj.values()]:
@@ -668,3 +673,67 @@ def fin_combat(session: Session, moments_forts: str) -> dict:
         combattant.budget = BudgetRound()
         combattant.defenses_ce_round = 0
     return {"etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}, "souvenir": souvenir}
+
+
+# --- Mémoire de la campagne -------------------------------------------------------------------
+
+def _moments_forts(texte: str, quoi: str) -> str:
+    texte = texte.strip()
+    if not texte:
+        raise ErreurOutil(f"Raconte les moments forts {quoi}, en trois phrases au plus.")
+    if len(texte) > MOMENTS_FORTS_MAX:
+        raise ErreurOutil(f"Trop long ({len(texte)} caractères) : trois phrases au plus.")
+    return texte
+
+
+@outil("Terminer une scène qui a compté, quand le personnage quitte un lieu ou que le temps passe. "
+       "Ses moments forts rejoignent les souvenirs de la campagne. Un combat se termine par fin_combat.",
+       lambda s: _objet({
+           "titre": {"type": "string", "description": "Quelques mots, par exemple « Chez Doc Mori »."},
+           "moments_forts": {"type": "string", "description": "Ce qui s'est passé d'important, trois phrases au plus."},
+       }, ["titre", "moments_forts"]))
+def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
+    if session.combat:
+        raise ErreurOutil("Un combat est en cours : termine-le avec fin_combat.")
+    titre = " ".join(titre.split())
+    if not titre or len(titre) > LONGUEURS["titre"]:
+        raise ErreurOutil(f"Le titre de la scène : quelques mots, {LONGUEURS['titre']} caractères au plus.")
+    texte = _moments_forts(moments_forts, "de la scène")
+    souvenir = f"## {str(session.moment).capitalize()} — {titre}\n\n{texte}\n"
+    try:
+        session.memoire.ajouter_souvenir(souvenir)
+    except OSError as erreur:
+        raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}).") from erreur
+    return {"souvenir": souvenir}
+
+
+@outil("Noter un PNJ qui compte (nommé, qui reviendra, qui a un avis sur le personnage), à la rencontre "
+       "puis quand son attitude change. Le moteur le garde dans la mémoire de la campagne.",
+       lambda s: _objet({
+           "identifiant": {"type": "string", "description": "Court et unique, par exemple doc_mori."},
+           "nom": {"type": "string"},
+           "role": {"type": "string", "description": "Qui il est, en quelques mots."},
+           "attitude": {"type": "string", "description": "Ce qu'il pense du personnage, et pourquoi."},
+       }, ["identifiant", "nom", "role", "attitude"]))
+def noter_pnj(session: Session, identifiant: str, nom: str, role: str, attitude: str) -> dict:
+    pnj = session.memoire.noter_pnj(identifiant, nom, role, attitude)
+    return {"pnj": identifiant, "nom": pnj.nom, "role": pnj.role, "attitude": pnj.attitude, "etat": pnj.etat}
+
+
+@outil("Ouvrir un fil de l'histoire : une quête, une promesse, une dette ou une menace à suivre.",
+       lambda s: _objet({
+           "identifiant": {"type": "string", "description": "Court et unique, par exemple dette_mori."},
+           "fil": {"type": "string", "description": "Le fil en une phrase."},
+       }, ["identifiant", "fil"]))
+def ouvrir_fil(session: Session, identifiant: str, fil: str) -> dict:
+    return {"fil": identifiant, "texte": session.memoire.ouvrir_fil(identifiant, fil).texte}
+
+
+@outil("Clore un fil de l'histoire quand il se règle (réussi, raté, abandonné), avec son issue.",
+       lambda s: _objet({
+           "identifiant": _enum(sorted(i for i, f in s.memoire.fils.items() if f.ouvert) or ["aucun"]),
+           "issue": {"type": "string", "description": "Comment il s'est réglé, en une phrase."},
+       }, ["identifiant", "issue"]))
+def clore_fil(session: Session, identifiant: str, issue: str) -> dict:
+    fil = session.memoire.clore_fil(identifiant, issue)
+    return {"fil": identifiant, "texte": fil.texte, "issue": fil.issue}

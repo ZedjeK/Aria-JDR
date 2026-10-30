@@ -47,7 +47,15 @@ La même ruelle, mais en texte libre : tu écris ce que fait Kaito, et le MJ ret
 
 En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'ordre d'initiative, et le MJ te rend la main à chacun de tes tours. À chaque fin de round, le moteur écrit la fiche du combat (`combat.md`) et la donne au MJ, pour qu'il raconte avec les vrais PV. Quand le combat se termine, ses moments forts (racontés par le MJ) et son résultat (écrit par le moteur) rejoignent les souvenirs de la campagne (`souvenirs.md`), puis la fiche est effacée.
 
-`etat` affiche ta fiche, `quitter` termine la session (progression des compétences, puis sauvegarde). Chaque campagne a son dossier, ici `parties/neo-tokyo-kaito/` : sauvegarde, souvenirs et fiche du combat en cours. Quand la conversation devient trop longue pour le modèle, les plus vieux échanges sont oubliés ; les souvenirs, eux, restent sur le disque.
+`etat` affiche ta fiche, `quitter` termine la session : le MJ range la scène en cours dans la mémoire, puis viennent la progression des compétences et la sauvegarde. La partie est aussi sauvegardée après chaque action. Au lancement suivant, la campagne reprend là où tu l'as laissée, et le MJ te rappelle où vous en étiez.
+
+Chaque campagne a son dossier, ici `parties/neo-tokyo-kaito/`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
+
+- `souvenirs.md` : le journal, avec les combats et les scènes terminés ;
+- `pnj.md` : les PNJ rencontrés, leur rôle, leur attitude envers Kaito et leur état (un mort reste mort) ;
+- `fils.md` : les quêtes, promesses, dettes et menaces, ouvertes puis closes.
+
+Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque requête, il en reçoit un résumé de taille bornée : les fils ouverts, les PNJ connus, les derniers souvenirs en entier et les plus vieux par leur titre. Quand la conversation devient trop longue pour le modèle, les plus vieux échanges sont oubliés, mais pas la mémoire.
 
 ## L'exe portable
 

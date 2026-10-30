@@ -66,6 +66,14 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
                 + ([f"⚔️ Round {r['round']}"] if r["nouveau_round"] else []))
     if o == "fin_combat":
         return ["⚔️ Fin du combat"]
+    if o == "fin_scene":
+        return [f"📖 Souvenir : {' '.join(a['titre'].split())}"]
+    if o == "noter_pnj":
+        return [f"📇 {r['nom']} : {r['attitude']}"]
+    if o == "ouvrir_fil":
+        return [f"🧵 Nouveau fil : {r['texte']}"]
+    if o == "clore_fil":
+        return [f"🧵 Fil clos : {r['texte']} → {r['issue']}"]
     if o == "avancer_temps":
         return [f"🕐 {r['moment']}"]
     return []  # etat : le MJ se renseigne, rien ne change

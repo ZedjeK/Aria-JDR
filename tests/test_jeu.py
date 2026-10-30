@@ -46,6 +46,38 @@ def test_une_partie(tmp_path):
     assert "La pluie tombe sur la ruelle." in texte
     assert "🎲 Piratage : 30 / 75 → réussite majeure" in texte and "La porte s'ouvre." in texte
     assert "Kaito — jour 1" in texte  # la commande etat, sans passer par le MJ
-    assert len(serveur.recus) == 3
+    assert len(serveur.recus) == 4
+    assert serveur.recus[-1][0][-1]["content"] == jeu.FIN_DE_SESSION  # le MJ range ses souvenirs avant la sauvegarde
     assert (tmp_path / "sauvegarde.json").is_file()
     assert "Piratage 75 : jet 50" in texte  # la fin de session tente de faire progresser la compétence réussie
+
+
+def test_la_campagne_reprend(tmp_path):
+    from aria.table import REPRISE
+    serveur = ServeurScripte("La ruelle.",
+                             [{"name": "noter_pnj", "arguments": {"identifiant": "doc_mori", "nom": "Doc Mori",
+                                                                  "role": "charcudoc", "attitude": "amical"}}],
+                             "Mori te salue.",
+                             [appel("fin_scene", titre="Chez Mori", moments_forts="Kaito rencontre Mori.")])
+    entrees = iter(["Je vais voir Mori.", "quitter"])
+    sortie = []
+    premiere = jeu.Jeu(serveur, budget=128, des=DesTruques(50), entree=lambda _: next(entrees),
+                       sortie=sortie.append, campagne=Campagne(tmp_path))
+    premiere.session.personnage.pv -= 5
+    premiere.session.moment = premiere.session.moment.suivant()
+    premiere.jouer()
+    assert "📇 Doc Mori : amical" in sortie and "📖 Souvenir : Chez Mori" in sortie
+
+    serveur = ServeurScripte("Tu sors de chez Mori.")
+    entrees = iter(["quitter"])
+    sortie = []
+    seconde = jeu.Jeu(serveur, budget=128, des=DesTruques(50), entree=lambda _: next(entrees),
+                      sortie=sortie.append, campagne=Campagne(tmp_path))
+    seconde.jouer()
+    k = seconde.session.personnage
+    assert k.pv == k.pv_max - 5 and str(seconde.session.moment) == "jour 1, nuit"
+    assert "\nReprise de la campagne : jour 1, nuit." in sortie
+    systeme, ouverture = serveur.recus[0][0][0]["content"], serveur.recus[0][0][1]["content"]
+    assert ouverture == REPRISE
+    assert "Doc Mori (doc_mori)" in systeme and "Chez Mori" in systeme
+    assert "Deux gangers l'attendent" not in systeme  # l'embuscade n'ouvre que la campagne

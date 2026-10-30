@@ -101,3 +101,14 @@ def test_le_dernier_echange_n_est_jamais_oublie():
     for phrase in ("Premier", "Second", "Troisième"):
         t.tour(phrase)
     assert [m["content"] for m in t.messages[1:]] == ["Second", "Deux.", "Troisième", "Trois."]
+
+
+def test_le_mj_voit_sa_memoire_tout_de_suite():
+    serveur = ServeurScripte([appel("ouvrir_fil", identifiant="dette_mori", fil="Mori doit un service à Kaito.")],
+                             "Mori hoche la tête.")
+    t = nouvelle_table(serveur)
+    assert "## Ce dont tu te souviens" not in t.messages[0]["content"]  # rien à retenir pour l'instant
+    t.tour("Je rappelle à Mori qu'il me doit un service.")
+    avant, apres = (recu[0][0]["content"] for recu in serveur.recus)
+    assert "dette_mori" not in avant
+    assert "## Ce dont tu te souviens\n\n### Fils ouverts\n- dette_mori : Mori doit un service à Kaito." in apres

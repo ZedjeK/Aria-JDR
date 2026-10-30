@@ -343,3 +343,46 @@ def test_un_test_reussi_rappelle_qu_il_ne_se_relance_pas():
     s = session(30, 95)
     assert "ne se relance pas" in s.appeler("test_competence", {"competence": "Piratage", "difficulte": "normale"})["consigne"]
     assert "consigne" not in s.appeler("test_caracteristique", {"caracteristique": "Force", "difficulte": "normale"})
+
+
+# --- Mémoire de la campagne -------------------------------------------------------------------
+
+def test_le_mj_note_pnj_et_fils(tmp_path):
+    from aria.campagne import Campagne
+    s = session(campagne=Campagne(tmp_path))
+    r = s.appeler("noter_pnj", {"identifiant": "doc_mori", "nom": "Doc Mori", "role": "charcudoc",
+                                "attitude": "amical"})
+    assert r["etat"] == "vivant" and "Doc Mori (doc_mori)" in (tmp_path / "pnj.md").read_text(encoding="utf-8")
+    assert "Identifiant invalide" in s.appeler("ouvrir_fil", {"identifiant": "Dette Mori", "fil": "…"})["erreur"]
+    assert "erreur" not in s.appeler("ouvrir_fil", {"identifiant": "dette_mori", "fil": "Mori doit un service."})
+    schema = OUTILS["clore_fil"].parametres(s)["properties"]["identifiant"]
+    assert schema["enum"] == ["dette_mori"]  # le MJ ne peut clore qu'un fil ouvert
+    r = s.appeler("clore_fil", {"identifiant": "dette_mori", "issue": "Mori a recousu Kaito."})
+    assert r["issue"] == "Mori a recousu Kaito." and "- Issue : Mori a recousu Kaito." in \
+        (tmp_path / "fils.md").read_text(encoding="utf-8")
+
+
+def test_fin_scene_va_dans_les_souvenirs(tmp_path):
+    from aria.campagne import Campagne
+    s = session(campagne=Campagne(tmp_path))
+    assert "titre" in s.appeler("fin_scene", {"titre": "  ", "moments_forts": "Rien."})["erreur"]
+    r = s.appeler("fin_scene", {"titre": "Chez Doc Mori", "moments_forts": "Mori recoud Kaito et lui doit un service."})
+    assert r["souvenir"].startswith("## Jour 1, matin — Chez Doc Mori")
+    assert "Mori recoud Kaito" in (tmp_path / "souvenirs.md").read_text(encoding="utf-8")
+    assert s.memoire.souvenirs == [r["souvenir"].strip()]
+
+
+def test_pas_de_fin_de_scene_en_plein_combat():
+    s = combat_en_cours(None, 80)
+    assert "fin_combat" in s.appeler("fin_scene", {"titre": "La ruelle", "moments_forts": "Kaito fuit."})["erreur"]
+
+
+def test_un_pnj_mort_reste_mort():
+    s = combat_en_cours(None, 80)
+    s.appeler("noter_pnj", {"identifiant": "ganger", "nom": "Ganger", "role": "voyou", "attitude": "hostile"})
+    s.pnj["ganger"].fiche.etat = Etat.MORT
+    assert "erreur" not in s.appeler("fin_combat", {"moments_forts": "Kaito abat le ganger."})
+    assert s.memoire.est_mort("ganger")
+    s.pnj.clear()
+    assert "est mort" in s.appeler("creer_pnj", {"identifiant": "ganger", "nom": "Ganger", "camp": "ennemis",
+                                                 "combat": 45, "pv": 10})["erreur"]
