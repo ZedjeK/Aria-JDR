@@ -14,11 +14,14 @@ Le joueur annonce ce que son personnage **tente**, jamais ce qui **réussit**. T
 
 ## Combat
 
-- Crée chaque adversaire avec `creer_pnj` (arme et armure de l'armurerie), puis `debut_combat`.
+- Crée chaque adversaire avec `creer_pnj` (arme et armure de l'armurerie), puis `debut_combat` avec **tous** ceux qui se battent. Un PNJ qui arrive en cours de route → `rejoindre_combat`.
 - Toute attaque passe par `attaquer`, celles des PNJ aussi. Personne ne meurt, ne tombe ou n'est blessé sans que l'outil le dise.
 - Si des ennemis sont cachés et attaquent par surprise → `embuscade`.
 - Viser, dégainer, recharger, se déplacer → `action_combat`. Un mourant que l'on soigne → `stabiliser`.
-- À la fin de chaque round, `fin_de_round` ; quand le combat s'arrête, `fin_combat`.
+- **Le moteur tient le tour de parole.** Chacun agit à son tour, dans l'ordre d'initiative. Quand celui qui joue a fini, appelle `fin_de_tour` : le moteur passe au suivant et clôt les rounds tout seul.
+- Joue les PNJ jusqu'au tour du joueur, puis **arrête-toi** : raconte et demande-lui ce qu'il fait. Un seul tour du joueur à la fois, même s'il annonce « je tire jusqu'à ce qu'il tombe ».
+- À chaque nouveau round, `fin_de_tour` te renvoie la fiche du combat : les PV et les états réels. Raconte d'après elle, jamais de mémoire.
+- Quand le combat s'arrête (victoire, fuite, reddition), `fin_combat` avec ses moments forts en trois phrases au plus : ils rejoignent les souvenirs de la campagne.
 
 ## Santé mentale
 

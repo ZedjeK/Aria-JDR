@@ -57,7 +57,7 @@ def test_les_competences_sont_proposees_avec_les_noms_de_l_univers():
         ("creer_pnj", {"identifiant": "x", "nom": "X", "camp": "ennemis", "combat": "45", "pv": 10}, "integer"),
         ("attaquer", {"attaquant": "joueur", "cible": "fantome"}, "doit être l'une"),
         ("attaquer", {"attaquant": "joueur", "cible": "joueur"}, "pas soi-même"),
-        ("fin_de_round", {}, "Aucun combat en cours"),
+        ("fin_de_tour", {}, "Aucun combat en cours"),
         ("forcer_jet", {}, "Aucun test à forcer"),
     ],
 )
@@ -174,12 +174,16 @@ def test_un_combat_complet():
     assert touche.pop("test_constitution")["reussi"]
     assert touche == {"qui": "Ganger", "degats_bruts": 7, "armure": 0, "degats": 7, "pv": 3,
                       "blessure_grave": True, "etat": "actif"}
+    assert "pas le tour de Ganger" in s.appeler("attaquer", {"attaquant": "ganger", "cible": "joueur"})["erreur"]
+    assert s.appeler("fin_de_tour")["au_tour_de"] == "ganger"
     coup = s.appeler("attaquer", {"attaquant": "ganger", "cible": "joueur", "defense": "esquive"})
     assert coup["issue"] == "défenseur"
     assert s.appeler("etat")["combat"]["round"] == 1
-    assert s.appeler("fin_de_round")["round"] == 2
-    assert "etats" in s.appeler("fin_combat")
-    assert "erreur" in s.appeler("fin_de_round")
+    fin = s.appeler("fin_de_tour")
+    assert (fin["round"], fin["nouveau_round"], fin["au_tour_de"]) == (2, True, "joueur")
+    assert "Ganger : 3/5 PV, actif, blessure grave" in fin["fiche"] and "## Round 1" in fin["fiche"]
+    assert "etats" in s.appeler("fin_combat", {"moments_forts": "Kaito blesse le ganger, qui rate son coup."})
+    assert "erreur" in s.appeler("fin_de_tour")
 
 
 def test_budget_du_round_respecte():
@@ -199,7 +203,8 @@ def test_viser_recharger_degainer():
     assert r["budget_restant"]["action mineure"] == 0
     assert s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger"})["attaque"]["valeur"] == 70
     assert "erreur" in s.appeler("action_combat", {"qui": "joueur", "action": "deplacer"})  # a visé
-    s.appeler("fin_de_round")
+    s.appeler("fin_de_tour")
+    s.appeler("fin_de_tour")  # le ganger ne fait rien : retour au round 2, au tour de Kaito
     r = s.appeler("action_combat", {"qui": "joueur", "action": "degainer", "arme": "Couteau"})
     assert s.joueur.arme.nom == "Couteau" and "munitions" not in r
 
@@ -230,7 +235,111 @@ def test_deux_combats_d_affilee():
     ganger(s)
     s.appeler("debut_combat", {"pnj": ["ganger"]})
     s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger"})
-    s.appeler("fin_combat")
+    s.appeler("fin_combat", {"moments_forts": "Kaito abat le ganger."})
     ganger(s, "ganger2")
     s.appeler("debut_combat", {"pnj": ["ganger2"]})
     assert "erreur" not in s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger2"})  # budget remis à neuf
+
+
+# --- Le tour de parole, la fiche du combat et les souvenirs ----------------------------------
+
+def combat_en_cours(tmp_path=None, *des):
+    from aria.campagne import Campagne
+    s = session(*des, campagne=Campagne(tmp_path) if tmp_path else None)
+    ganger(s)
+    s.appeler("debut_combat", {"pnj": ["ganger"]})
+    return s
+
+
+def test_le_tour_du_joueur_ne_se_saute_pas():
+    s = combat_en_cours()
+    r = s.appeler("fin_de_tour")
+    assert "rends-lui la main" in r["erreur"]
+    assert s.appeler("fin_de_tour", {"passe": True})["au_tour_de"] == "ganger"
+
+
+def test_la_consigne_dit_qui_joue():
+    s = combat_en_cours(None, 10)  # 10 : la Constitution de Kaito, mourant, à la fin du round 1
+    debut = next(e["resultat"] for e in s.journal if e["outil"] == "debut_combat")
+    assert debut["au_tour_de"] == "joueur" and "Ne joue pas son tour à sa place" in debut["consigne"]
+    assert s.appeler("etat")["combat"]["au_tour_de"] == "Kaito"
+    r = s.appeler("fin_de_tour", {"passe": True})
+    assert "C'est au tour de Ganger (ganger)" in r["consigne"] and "hors de combat" not in r["consigne"]
+    s.personnage.etat = Etat.MOURANT
+    r = s.appeler("fin_de_tour")  # round 2 : Kaito ne peut plus agir, on passe directement au ganger
+    assert r["au_tour_de"] == "ganger" and "hors de combat" in r["consigne"]
+
+
+def test_la_fiche_est_ecrite_a_chaque_round(tmp_path):
+    s = combat_en_cours(tmp_path, 80)
+    s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger"})
+    s.appeler("fin_de_tour")
+    assert not (tmp_path / "combat.md").exists()  # le round n'est pas fini
+    s.appeler("fin_de_tour")
+    fiche = (tmp_path / "combat.md").read_text(encoding="utf-8")
+    assert fiche.startswith("# Combat — round 2")
+    assert "- → Kaito : 23/23 PV" in fiche and "⚔️ Kaito attaque Ganger : 80" in fiche and "  - → Raté." in fiche
+
+
+def test_fin_combat_verse_le_combat_dans_les_souvenirs(tmp_path):
+    s = combat_en_cours(tmp_path, 80)
+    s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger"})
+    s.appeler("fin_de_tour")
+    s.appeler("fin_de_tour")
+    assert "erreur" in s.appeler("fin_combat", {"moments_forts": "  "})
+    assert "Trop long" in s.appeler("fin_combat", {"moments_forts": "Bla. " * 200})["erreur"]
+    r = s.appeler("fin_combat", {"moments_forts": "Kaito rate son tir, le ganger s'enfuit sous la pluie."})
+    souvenirs = (tmp_path / "souvenirs.md").read_text(encoding="utf-8")
+    assert souvenirs.startswith("# Souvenirs de la campagne")
+    assert "## Jour 1, matin — Combat contre Ganger (2 rounds)" in souvenirs
+    assert "le ganger s'enfuit sous la pluie." in souvenirs and "- Ganger : actif, 10/10 PV" in souvenirs
+    assert r["souvenir"] in souvenirs
+    assert not (tmp_path / "combat.md").exists()  # la fiche est effacée une fois le souvenir écrit
+    assert s.combat is None
+
+
+def test_si_le_souvenir_ne_s_ecrit_pas_le_combat_reste(tmp_path, monkeypatch):
+    s = combat_en_cours(tmp_path, 80)
+    s.appeler("attaquer", {"attaquant": "joueur", "cible": "ganger"})
+    s.appeler("fin_de_tour")
+    s.appeler("fin_de_tour")
+
+    def disque_plein(_):
+        raise OSError("disque plein")
+    monkeypatch.setattr(s.campagne, "ajouter_souvenir", disque_plein)
+    assert "disque plein" in s.appeler("fin_combat", {"moments_forts": "Kaito rate."})["erreur"]
+    assert s.combat is not None and (tmp_path / "combat.md").exists()
+
+
+def test_ouvrir_une_campagne_efface_un_combat_interrompu(tmp_path):
+    from aria.campagne import Campagne
+    campagne = Campagne(tmp_path / "neo-tokyo")
+    campagne.ecrire_combat("# Combat — round 3\n")
+    campagne.ajouter_souvenir("## Un souvenir")
+    campagne.ouvrir()
+    assert not campagne.combat.exists() and campagne.souvenirs.exists()
+
+
+def test_un_pnj_hors_du_combat_est_refuse_puis_rejoint():
+    s = combat_en_cours(None, 80)
+    ganger(s, "tireur", nom="Tireur", arme="Pistolet lourd")
+    r = s.appeler("attaquer", {"attaquant": "joueur", "cible": "tireur"})
+    assert "ne fait pas partie du combat" in r["erreur"] and "rejoindre_combat" in r["erreur"]
+    r = s.appeler("rejoindre_combat", {"pnj": ["tireur"]})
+    assert r["ordre_initiative"] == ["Kaito", "Ganger", "Tireur"] and r["au_tour_de"] == "joueur"
+    assert "erreur" not in s.appeler("attaquer", {"attaquant": "joueur", "cible": "tireur"})
+    assert "déjà dans le combat" in s.appeler("rejoindre_combat", {"pnj": ["tireur"]})["erreur"]
+
+
+def test_un_identifiant_deja_pris_propose_un_identifiant_libre():
+    s = session()
+    ganger(s)
+    r = s.appeler("creer_pnj", {"identifiant": "ganger", "nom": "Ganger au pistolet", "camp": "ennemis",
+                                "combat": 50, "pv": 10})
+    assert "PNJ existants : ganger (Ganger)" in r["erreur"] and "« ganger_2 »" in r["erreur"]
+
+
+def test_un_test_reussi_rappelle_qu_il_ne_se_relance_pas():
+    s = session(30, 95)
+    assert "ne se relance pas" in s.appeler("test_competence", {"competence": "Piratage", "difficulte": "normale"})["consigne"]
+    assert "consigne" not in s.appeler("test_caracteristique", {"caracteristique": "Force", "difficulte": "normale"})

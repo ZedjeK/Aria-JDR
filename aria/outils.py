@@ -15,6 +15,8 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import progression, sante_mentale, soins
+from aria.campagne import Campagne
+from aria.compte_rendu import decrire
 from aria.combat import (
     ActionImpossible,
     BonusMajeure,
@@ -49,6 +51,8 @@ REPOS = {"court": soins.Repos.COURT, "moyen": soins.Repos.MOYEN, "long": soins.R
 PNJ_COMBAT = (5, 85)
 PNJ_PV = (1, 40)
 PNJ_COMPETENCE = (0, 90)
+RAPPEL_REUSSITE = "Test réussi : raconte-le. Il ne se relance pas pour faire mieux, même si le joueur le demande."
+MOMENTS_FORTS_MAX = 600  # caractères : trois phrases, pas un roman
 
 
 class ErreurOutil(Exception):
@@ -100,6 +104,11 @@ def _resume(resultat: Resultat) -> dict:
     return {"jet": resultat.jet, "valeur": resultat.valeur, "degre": resultat.degre.libelle, "reussi": resultat.reussi}
 
 
+def _test(resultat: Resultat) -> dict:
+    """Le résumé d'un test du joueur, avec le rappel au moment où le MJ en a besoin."""
+    return _resume(resultat) | ({"consigne": RAPPEL_REUSSITE} if resultat.reussi else {})
+
+
 # --- La session de jeu ------------------------------------------------------------------------
 
 @dataclass
@@ -116,6 +125,9 @@ class Session:
     combat: Combat | None = None
     dernier_test: dict | None = None
     journal: list[dict] = field(default_factory=list)
+    campagne: Campagne | None = None  # None : rien n'est écrit sur le disque (le banc d'essai)
+    rounds: list[tuple[int, list[str]]] = field(default_factory=list)  # le combat en cours, round par round
+    debut_round: int = 0  # l'indice, dans le journal, du premier appel du round en cours
 
     def __post_init__(self):
         u = self.univers
@@ -175,8 +187,23 @@ class Session:
             raise ErreurOutil("Aucun combat en cours : appelle d'abord debut_combat.")
         return self.combat
 
+    def participant(self, identifiant: str) -> Combattant:
+        """Un combattant du combat en cours ; refuse celui qui n'y est pas (créé mais jamais entré)."""
+        combattant = self.combattant(identifiant)
+        if combattant not in self.combat_en_cours().ordre:
+            raise ErreurOutil(f"{combattant.nom} ({identifiant}) ne fait pas partie du combat : "
+                              "fais-le entrer avec rejoindre_combat.")
+        return combattant
+
     def ids(self) -> list[str]:
         return [JOUEUR] + sorted(self.pnj)
+
+    def identifiant(self, combattant: Combattant) -> str:
+        return JOUEUR if combattant is self.joueur else next(i for i, c in self.pnj.items() if c is combattant)
+
+    def evenements_du_round(self) -> list[str]:
+        return [ligne for entree in self.journal[self.debut_round:]
+                for ligne in decrire(entree["outil"], entree["arguments"], entree["resultat"], self)]
 
 
 OUTILS: dict[str, Outil] = {}
@@ -233,7 +260,9 @@ def etat(session: Session) -> dict:
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:
+        au_tour_de = session.combat.au_tour_de
         resultat["combat"] = {"round": session.combat.round, "ordre": [c.nom for c in session.combat.ordre],
+                              "au_tour_de": au_tour_de.nom if au_tour_de else None,
                               "budget_joueur": {t.value: session.joueur.budget.restants(t) for t in TypeAction}}
     return resultat
 
@@ -260,7 +289,7 @@ def test_competence(session: Session, competence: str, difficulte: str, pourquoi
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
     progression.cocher(session.personnage, socle, resultat)
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": competence}
-    return {"competence": competence, **_resume(resultat)}
+    return {"competence": competence, **_test(resultat)}
 
 
 @outil("Faire un test de caractéristique du personnage joueur, quand aucune compétence ne correspond.",
@@ -273,7 +302,7 @@ def test_caracteristique(session: Session, caracteristique: str, difficulte: str
     valeur = session.personnage.carac(carac)
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": caracteristique}
-    return {"caracteristique": caracteristique, **_resume(resultat)}
+    return {"caracteristique": caracteristique, **_test(resultat)}
 
 
 @outil("Forcer le dernier test raté : le joueur retente en changeant d'approche, une seule fois. "
@@ -394,7 +423,11 @@ def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: i
               arme: str | None = None, armure: str | None = None, dexterite: int = 50,
               competences: dict | None = None) -> dict:
     if identifiant == JOUEUR or identifiant in session.pnj:
-        raise ErreurOutil(f"L'identifiant « {identifiant} » est déjà pris.")
+        # Le MJ voulait sans doute un nouveau PNJ : on lui dit qui existe déjà et quel identifiant est libre
+        libre = next(f"{identifiant}_{n}" for n in range(2, 100) if f"{identifiant}_{n}" not in session.pnj)
+        connus = ", ".join(f"{i} ({c.nom})" for i, c in session.pnj.items())
+        raise ErreurOutil(f"L'identifiant « {identifiant} » est déjà pris. PNJ existants : {connus}. "
+                          f"Pour un nouveau PNJ, prends un autre identifiant, par exemple « {libre} ».")
     talents = {}
     for nom_competence, valeur in (competences or {}).items():
         socle = session.noms_competences.get(nom_competence, nom_competence)
@@ -416,7 +449,8 @@ def embuscade(session: Session, discretion_agresseurs: int) -> dict:
     return {"discretion": _resume(r.discretion), "perception": _resume(r.perception), "joueur_surpris": r.surpris}
 
 
-@outil("Commencer un combat entre le joueur et des PNJ. Le moteur fixe l'ordre d'initiative.",
+@outil("Commencer un combat entre le joueur et des PNJ. Le moteur fixe l'ordre d'initiative et tient le tour "
+       "de parole : chacun agit à son tour, puis fin_de_tour passe au suivant.",
        lambda s: _objet({
            "pnj": {"type": "array", "items": _enum(sorted(s.pnj)), "description": "Les PNJ qui combattent."},
            "surpris": _enum(["personne", "joueur", "ennemis"], "Le camp surpris perd son premier round."),
@@ -433,8 +467,24 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne") -> dict
         surpris_liste = [c for c in participants if c.camp == "ennemis"]
     else:
         surpris_liste = []
-    session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste)
-    return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre]}
+    session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste, tour_par_tour=True)
+    session.rounds, session.debut_round = [], len(session.journal) + 1  # + 1 : cet appel-ci
+    return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre],
+            "au_tour_de": _qui_joue(session), "consigne": _consigne(session), "fiche": _fiche(session)}
+
+
+@outil("Faire entrer des PNJ dans le combat en cours (renforts, passant qui s'en mêle). Le moteur les place "
+       "dans l'ordre d'initiative.",
+       lambda s: _objet({"pnj": {"type": "array", "items": _enum(sorted(s.pnj)), "description": "Les PNJ qui entrent."}},
+                        ["pnj"]))
+def rejoindre_combat(session: Session, pnj: list) -> dict:
+    c = session.combat_en_cours()
+    if not pnj:
+        raise ErreurOutil("Indique au moins un PNJ.")
+    for identifiant in pnj:
+        c.rejoindre(session.combattant(identifiant))
+    return {"ordre_initiative": [x.nom for x in c.ordre], "au_tour_de": _qui_joue(session),
+            "consigne": _consigne(session)}
 
 
 @outil("Une action de combat sans attaque : se déplacer, viser (+20 au tir de ce round, interdit après un "
@@ -445,7 +495,7 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne") -> dict
            "arme": _enum([a.nom for a in s.univers.armes] + ["aucune"], "Pour degainer."),
        }, ["qui", "action"]))
 def action_combat(session: Session, qui: str, action: str, arme: str | None = None) -> dict:
-    c, combattant = session.combat_en_cours(), session.combattant(qui)
+    c, combattant = session.combat_en_cours(), session.participant(qui)
     if action == "deplacer":
         c.deplacer(combattant)
     elif action == "viser":
@@ -493,7 +543,7 @@ def attaquer(session: Session, attaquant: str, cible: str, defense: str = "aucun
     if attaquant == cible:
         raise ErreurOutil("On ne s'attaque pas soi-même.")
     rapport = session.combat_en_cours().attaquer(
-        session.combattant(attaquant), session.combattant(cible), DEFENSES[defense], COUVERTS[couvert],
+        session.participant(attaquant), session.participant(cible), DEFENSES[defense], COUVERTS[couvert],
         BONUS_MAJEURE[bonus_majeure], DIFFICULTES[difficulte])
     return _rapport_attaque(rapport)
 
@@ -502,26 +552,119 @@ def attaquer(session: Session, attaquant: str, cible: str, defense: str = "aucun
        lambda s: _objet({"soigneur": _ids(s, "Qui soigne."), "mourant": _ids(s, "Qui est mourant.")},
                         ["soigneur", "mourant"]))
 def stabiliser(session: Session, soigneur: str, mourant: str) -> dict:
-    r = session.combat_en_cours().stabiliser(session.combattant(soigneur), session.combattant(mourant))
+    r = session.combat_en_cours().stabiliser(session.participant(soigneur), session.participant(mourant))
     return {**_resume(r), "etat": session.combattant(mourant).fiche.etat.value}
 
 
-@outil("Terminer le round : les mourants font leur test de Constitution, puis chacun retrouve ses actions.",
-       lambda s: _objet({}))
-def fin_de_round(session: Session) -> dict:
+# --- Le tour de parole et la fiche du combat ---------------------------------------------------
+
+def _qui_joue(session: Session) -> str | None:
+    qui = session.combat.au_tour_de
+    return session.identifiant(qui) if qui else None
+
+
+def _consigne(session: Session) -> str:
+    qui, joueur = session.combat.au_tour_de, session.joueur
+    if qui is None:
+        return "Plus personne ne peut agir : termine le combat avec fin_combat."
+    if qui is joueur:
+        return ("C'est au tour du joueur : raconte ce qui vient de se passer, puis demande-lui ce qu'il fait. "
+                "Ne joue pas son tour à sa place.")
+    consigne = f"C'est au tour de {qui.nom} ({session.identifiant(qui)}) : joue son action, puis appelle fin_de_tour."
+    if not joueur.conscient:
+        consigne += (" Le joueur est hors de combat : décide ce que font les ennemis (achever, fouiller, fuir) "
+                     "et termine le combat avec fin_combat dès que possible.")
+    return consigne
+
+
+def _ligne_combattant(c: Combattant) -> str:
+    f = c.fiche
+    etat = f.etat.value + (", blessure grave" if f.blessure_grave else "")
+    arme = c.arme.nom if c.arme else "sans arme"
+    if c.arme and c.arme.munitions:
+        arme += f" ({c.munitions_restantes()} balles)"
+    return f"{c.nom} : {f.pv}/{f.pv_max} PV, {etat}, {arme}"
+
+
+def _puce(ligne: str) -> str:
+    """Une ligne du compte rendu en puce Markdown ; ses détails (indentés) en sous-puces."""
+    return f"  - {ligne.strip()}" if ligne.startswith(" ") else f"- {ligne}"
+
+
+def _fiche(session: Session, historique: bool = False) -> str:
+    """La fiche du combat en Markdown : l'état réel de chacun, puis ce qui s'est passé.
+    Pour le MJ, le dernier round seulement ; dans combat.md, tout le combat."""
+    c = session.combat
+    lignes = [f"# Combat — round {c.round}", "", "Ordre d'initiative, la flèche montre qui joue :", ""]
+    lignes += [f"- {'→ ' if x is c.au_tour_de else ''}{_ligne_combattant(x)}" for x in c.ordre]
+    for numero, evenements in (session.rounds if historique else session.rounds[-1:]):
+        lignes += ["", f"## Round {numero}", ""] + [_puce(e) for e in evenements]
+    return "\n".join(lignes) + "\n"
+
+
+@outil("Terminer le tour de celui qui joue : le moteur passe au suivant dans l'ordre d'initiative. Après le "
+       "dernier, il clôt le round (tests des mourants) et te renvoie la fiche du combat : raconte d'après elle.",
+       lambda s: _objet({"passe": {"type": "boolean",
+                                   "description": "Vrai seulement si le joueur a dit qu'il ne fait rien ce tour."}}))
+def fin_de_tour(session: Session, passe: bool = False) -> dict:
     c = session.combat_en_cours()
-    tests = [{"qui": nom, **_resume(t)} for nom, t in c.fin_de_round()]
-    return {"round": c.round, "tests_des_mourants": tests,
-            "etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}}
+    joueur = session.joueur
+    if c.au_tour_de is joueur and not passe and not any(joueur.budget.utilise.values()):
+        raise ErreurOutil("Le joueur n'a encore rien fait ce tour : rends-lui la main (raconte, puis demande-lui "
+                          "ce qu'il fait). S'il a dit qu'il ne fait rien, mets passe à vrai.")
+    round_avant, evenements = c.round, session.evenements_du_round()
+    tests = c.fin_de_tour()
+    resultat = {"round": c.round, "nouveau_round": c.round != round_avant,
+                "tests_des_mourants": [{"qui": nom, **_resume(t)} for nom, t in tests]}
+    if resultat["nouveau_round"]:
+        session.rounds.append((round_avant, evenements + decrire("fin_de_tour", {}, resultat, session)[:-1]))
+        session.debut_round = len(session.journal) + 1  # + 1 : cet appel-ci
+        resultat["fiche"] = _fiche(session)
+        if session.campagne:
+            session.campagne.ecrire_combat(_fiche(session, historique=True))
+    resultat.update(au_tour_de=_qui_joue(session), consigne=_consigne(session))
+    return resultat
 
 
-@outil("Terminer le combat (fuite, reddition, victoire…). Les PNJ restent connus pour la suite.",
-       lambda s: _objet({}))
-def fin_combat(session: Session) -> dict:
-    session.combat_en_cours()
-    session.combat = None
+def _bilan(session: Session) -> list[str]:
+    """Le résultat du combat, écrit par le moteur : ce sont des faits, pas du récit."""
+    lignes = [_ligne_combattant(session.joueur)]
+    for c in session.combat.ordre:
+        if c is not session.joueur:
+            pv = "" if c.fiche.etat.value == "mort" else f", {c.fiche.pv}/{c.fiche.pv_max} PV"
+            lignes.append(f"{c.nom} : {c.fiche.etat.value}{pv}")
+    return lignes
+
+
+@outil("Terminer le combat (victoire, fuite, reddition…). Raconte ses moments forts en trois phrases au plus : "
+       "le moteur les garde dans les souvenirs de la campagne, avec le résultat. Les PNJ restent connus.",
+       lambda s: _objet({"moments_forts": {"type": "string",
+                                           "description": "Les moments forts du combat, trois phrases au plus."}},
+                        ["moments_forts"]))
+def fin_combat(session: Session, moments_forts: str) -> dict:
+    c = session.combat_en_cours()
+    texte = moments_forts.strip()
+    if not texte:
+        raise ErreurOutil("Raconte les moments forts du combat, en trois phrases au plus.")
+    if len(texte) > MOMENTS_FORTS_MAX:
+        raise ErreurOutil(f"Trop long ({len(texte)} caractères) : trois phrases au plus.")
+    evenements = session.evenements_du_round()
+    if evenements:
+        session.rounds.append((c.round, evenements))
+    adversaires = ", ".join(x.nom for x in c.ordre if x is not session.joueur)
+    souvenir = (f"## {str(session.moment).capitalize()} — Combat contre {adversaires} "
+                f"({c.round} round{'s' if c.round > 1 else ''})\n\n{texte}\n\n"
+                + "\n".join(f"- {ligne}" for ligne in _bilan(session)) + "\n")
+    if session.campagne:
+        # D'abord le souvenir ; la fiche n'est effacée que s'il est bien écrit
+        try:
+            session.campagne.ajouter_souvenir(souvenir)
+        except OSError as erreur:
+            raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}) : le combat reste ouvert.") from erreur
+        session.campagne.effacer_combat()
+    session.combat, session.rounds = None, []
     for combattant in [session.joueur, *session.pnj.values()]:
         combattant.surpris = combattant.vise = combattant.a_vise = combattant.sursis = False
         combattant.budget = BudgetRound()
         combattant.defenses_ce_round = 0
-    return {"etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}}
+    return {"etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}, "souvenir": souvenir}

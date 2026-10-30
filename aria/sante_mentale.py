@@ -134,7 +134,7 @@ def gravite_finale(perso: Personnage, choc: Choc, reglages: ReglagesMentaux,
         return None
 
     niveau = choc.gravite.value
-    if concerne_lien:
+    if concerne_lien and choc is not Choc.PERTE_DU_LIEN:  # perdre son lien le concerne déjà : pas deux fois
         niveau += 1
     if perso.chocs_vecus.get(choc.name, 0) >= ACCOUTUMANCE:
         niveau -= 1

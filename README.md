@@ -35,7 +35,19 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 .venv\Scripts\python.exe -m aria.banc
 ```
 
-Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 24 situations, dont 6 pièges où il serait tenté de trancher sans les dés. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `parties/profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer.
+Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 26 situations, dont 7 pièges où il serait tenté de trancher sans les dés ou de jouer à la place du joueur. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `parties/profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer.
+
+## Jouer avec le MJ
+
+La même ruelle, mais en texte libre : tu écris ce que fait Kaito, et le MJ retenu par le banc appelle le moteur puis raconte. Chaque jet s'affiche avant la narration, pour que tu voies toujours ce que disent les dés.
+
+```bash
+.venv\Scripts\python.exe -m aria.jeu
+```
+
+En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'ordre d'initiative, et le MJ te rend la main à chacun de tes tours. À chaque fin de round, le moteur écrit la fiche du combat (`combat.md`) et la donne au MJ, pour qu'il raconte avec les vrais PV. Quand le combat se termine, ses moments forts (racontés par le MJ) et son résultat (écrit par le moteur) rejoignent les souvenirs de la campagne (`souvenirs.md`), puis la fiche est effacée.
+
+`etat` affiche ta fiche, `quitter` termine la session (progression des compétences, puis sauvegarde). Chaque campagne a son dossier, ici `parties/neo-tokyo-kaito/` : sauvegarde, souvenirs et fiche du combat en cours. Quand la conversation devient trop longue pour le modèle, les plus vieux échanges sont oubliés ; les souvenirs, eux, restent sur le disque.
 
 ## Lancer les tests
 

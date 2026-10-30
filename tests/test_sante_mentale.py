@@ -43,6 +43,8 @@ def test_gravite_de_base():
 
 def test_le_lien_amplifie():
     assert gravite_finale(kaito(), Choc.MORT_D_UN_ALLIE, ReglagesMentaux(), concerne_lien=True) is Gravite.GRAVE
+    # Perdre son lien concerne déjà le lien : il n'est pas compté deux fois
+    assert gravite_finale(kaito(), Choc.PERTE_DU_LIEN, ReglagesMentaux(), concerne_lien=True) is Gravite.GRAVE
     assert gravite_finale(kaito(), Choc.DOUBLE, ReglagesMentaux(), concerne_lien=True) is Gravite.ABSOLUE
 
 

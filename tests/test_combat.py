@@ -59,6 +59,47 @@ def test_initiative_par_dexterite_puis_perception():
     assert [c.nom for c in combat(DesTruques(), lent, g, k, vigilant).ordre] == ["Kaito", "Vigilant", "Ganger", "Lent"]
 
 
+def test_tour_par_tour():
+    k, g = kaito(), ganger()
+    lent = ganger(nom="Lent", dexterite=30)
+    c = combat(DesTruques(), lent, g, k, surpris=[g], tour_par_tour=True)
+    assert c.au_tour_de is k  # le ganger, surpris, est sauté au round 1
+    with pytest.raises(ActionImpossible, match="c'est au tour de Kaito"):
+        c.deplacer(lent)
+    c.deplacer(k)
+    assert c.fin_de_tour() == [] and c.au_tour_de is lent
+    c.fin_de_tour()  # fin du round 1 : retour au premier, le ganger n'est plus surpris
+    assert (c.round, c.au_tour_de) == (2, k)
+    c.fin_de_tour()
+    assert c.au_tour_de is g
+
+
+def test_un_renfort_rejoint_le_combat():
+    k, g = kaito(), ganger()
+    c = combat(DesTruques(), k, g, tour_par_tour=True)
+    c.fin_de_tour()
+    assert c.au_tour_de is g
+    rapide, lent = ganger(nom="Rapide", dexterite=70), ganger(nom="Lent", dexterite=30)
+    c.rejoindre(rapide)
+    c.rejoindre(lent)
+    assert [x.nom for x in c.ordre] == ["Rapide", "Kaito", "Ganger", "Lent"]
+    assert c.au_tour_de is g  # le tour en cours ne change pas
+    c.fin_de_tour()
+    assert c.au_tour_de is lent  # placé après celui qui jouait : il agit dès ce round
+    c.fin_de_tour()
+    assert (c.round, c.au_tour_de) == (2, rapide)  # placé avant : il agit au round suivant
+    with pytest.raises(ActionImpossible, match="déjà dans le combat"):
+        c.rejoindre(lent)
+
+
+def test_sans_personne_pour_agir():
+    k, g = kaito(), ganger()
+    c = combat(DesTruques(), k, g, tour_par_tour=True)
+    k.fiche.etat = g.fiche.etat = Etat.INCONSCIENT
+    c.fin_de_tour()
+    assert c.au_tour_de is None
+
+
 def test_budget_option_a_un_deplacement_une_simple_une_mineure():
     budget = BudgetRound()
     for action in (TypeAction.DEPLACEMENT, TypeAction.SIMPLE, TypeAction.MINEURE):

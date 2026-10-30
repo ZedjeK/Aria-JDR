@@ -235,22 +235,54 @@ def tester_embuscade(des: Des, perception_victimes: int, discretion_agresseurs: 
     return RapportEmbuscade(discretion, perception, opposer(discretion, perception, esquive=True) is Issue.ATTAQUANT)
 
 
+def _initiative(combattant: Combattant) -> tuple[int, int]:
+    """Initiative : Dextérité décroissante, Perception pour départager (REGLES.md 7.1)."""
+    return combattant.fiche.carac(Caracteristique.DEXTERITE), combattant.fiche.competence("Perception")
+
+
 class Combat:
     """Un combat en cours. Les méthodes renvoient des rapports que le MJ raconte."""
 
     def __init__(self, des: Des, combattants: list[Combattant], curseur: Curseur = Curseur.STANDARD,
-                 surpris: list[Combattant] = ()):
+                 surpris: list[Combattant] = (), tour_par_tour: bool = False):
+        """`tour_par_tour` : le moteur fait respecter l'ordre d'initiative (seul celui dont c'est le tour
+        agit, puis fin_de_tour passe au suivant). La démo v1 et les tests de mécanique s'en passent."""
         self.des = des
         self.curseur = curseur
         self.round = 1
-        # Initiative : Dextérité décroissante, Perception pour départager (REGLES.md 7.1)
-        self.ordre = sorted(
-            combattants,
-            key=lambda c: (c.fiche.carac(Caracteristique.DEXTERITE), c.fiche.competence("Perception")),
-            reverse=True,
-        )
+        self.tour_par_tour = tour_par_tour
+        self.ordre = sorted(combattants, key=_initiative, reverse=True)
         for combattant in surpris:
             combattant.surpris = True
+        self.actif = self._prochain(0)  # l'indice, dans l'ordre, de celui dont c'est le tour
+
+    # --- Le tour de parole ---------------------------------------------------------
+
+    @property
+    def au_tour_de(self) -> Combattant | None:
+        """Celui qui joue ; None si plus personne ne peut agir."""
+        return None if self.actif is None else self.ordre[self.actif]
+
+    def rejoindre(self, combattant: Combattant):
+        """Un nouveau venu entre dans le combat, à sa place dans l'ordre d'initiative. Placé après
+        celui qui joue, il agit dès ce round ; placé avant, au round suivant."""
+        if combattant in self.ordre:
+            raise ActionImpossible(f"{combattant.nom} est déjà dans le combat.")
+        joue = self.au_tour_de
+        self.ordre = sorted(self.ordre + [combattant], key=_initiative, reverse=True)
+        self.actif = self.ordre.index(joue) if joue else self._prochain(0)
+
+    def _prochain(self, debut: int) -> int | None:
+        return next((i for i in range(debut, len(self.ordre)) if self.peut_agir(self.ordre[i])), None)
+
+    def fin_de_tour(self) -> list[tuple[str, Resultat]]:
+        """Passe au suivant dans l'ordre d'initiative, en sautant ceux qui ne peuvent pas agir.
+        Après le dernier, le round se clôt tout seul : renvoie alors les tests des mourants."""
+        suivant = None if self.actif is None else self._prochain(self.actif + 1)
+        if suivant is not None:
+            self.actif = suivant
+            return []
+        return self.fin_de_round()
 
     # --- Ce que chacun peut faire --------------------------------------------------
 
@@ -260,6 +292,9 @@ class Combat:
     def _agir(self, combattant: Combattant, action: TypeAction):
         if not self.peut_agir(combattant):
             raise ActionImpossible(f"{combattant.nom} ne peut pas agir.")
+        if self.tour_par_tour and combattant is not self.au_tour_de:
+            qui = self.au_tour_de.nom if self.au_tour_de else "personne"
+            raise ActionImpossible(f"Ce n'est pas le tour de {combattant.nom} : c'est au tour de {qui}.")
         combattant.budget.utiliser(action)
 
     def deplacer(self, combattant: Combattant):
@@ -449,6 +484,7 @@ class Combat:
             if self.round == 1:
                 combattant.surpris = False
         self.round += 1
+        self.actif = self._prochain(0)
         return tests
 
     def actifs(self, camp: str) -> list[Combattant]:

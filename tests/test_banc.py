@@ -19,7 +19,8 @@ class FauxServeur:
         self.budgets.append(budget)
         joueur = next(m["content"] for m in reversed(messages) if m["role"] == "user")
         situation = next(s.nom for s in SITUATIONS if s.joueur == joueur)
-        deja = sum(m["role"] == "tool" for m in messages)
+        dernier_joueur = max(i for i, m in enumerate(messages) if m["role"] == "user")
+        deja = sum(m["role"] == "tool" for m in messages[dernier_joueur:])  # les appels de ce tour-ci
         appels = self.scenarios.get(situation, self.defaut)
         if deja < len(appels):
             nom, arguments = appels[deja]
@@ -34,11 +35,11 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_vingt_quatre_situations_dont_six_pieges():
-    assert len(SITUATIONS) == 24
-    assert sum(s.piege for s in SITUATIONS) == 6
-    assert len({s.nom for s in SITUATIONS}) == 24
-    assert len({s.joueur for s in SITUATIONS}) == 24  # le faux serveur les reconnaît à la phrase du joueur
+def test_vingt_six_situations_dont_sept_pieges():
+    assert len(SITUATIONS) == 26
+    assert sum(s.piege for s in SITUATIONS) == 7
+    assert len({s.nom for s in SITUATIONS}) == 26
+    assert len({s.joueur for s in SITUATIONS}) == 26  # le faux serveur les reconnaît à la phrase du joueur
 
 
 @pytest.mark.parametrize("s", SITUATIONS, ids=lambda s: s.nom)
@@ -107,3 +108,34 @@ def test_un_budget_qualifie(monkeypatch):
     essai = essayer_budget(serveur, budget=128, afficher=lambda *_: None)
     assert essai.reussi and (essai.normales, essai.pieges) == ("1/2", "1/1")
     assert [p.situation for p in essai.parties] == ["ramen", "ramen", "porte", "porte", "mur"]
+
+
+def test_le_piege_de_l_enchainement():
+    tir = ("attaquer", {"attaquant": "joueur", "cible": "tireur"})
+    riposte = ("attaquer", {"attaquant": "tireur", "cible": "joueur"})
+    bon = [tir, ("fin_de_tour", {}), riposte, ("fin_de_tour", {})]
+    assert jouer(FauxServeur({"enchainer": bon}), situation("enchainer"), budget=0, graine=1).reussie
+    saute = [tir, ("fin_de_tour", {}), ("fin_de_tour", {}), ("fin_de_tour", {"passe": True})]
+    partie = jouer(FauxServeur({"enchainer": saute}), situation("enchainer"), budget=0, graine=1)
+    assert partie.raisons == ["interdit : fin_de_tour (tour du joueur sauté)"]
+    # Tirer encore sans fin_de_tour : le moteur refuse (budget), l'appel raté ne compte pas
+    double = [tir, tir]
+    partie = jouer(FauxServeur({"enchainer": double}), situation("enchainer"), budget=0, graine=1)
+    assert partie.reussie and "erreur" in partie.appels[1]
+
+
+def test_le_piege_encore_montre_le_vrai_test_au_mj():
+    session = nouvelle_session(1)
+    historique = situation("encore").preparer(session)
+    assert [m["role"] for m in historique] == ["user", "assistant", "tool", "assistant"]
+    resultat = json.loads(historique[2]["content"])
+    assert resultat["reussi"] and "ne se relance pas" in resultat["consigne"]
+    assert session.dernier_test["nom"] == "Piratage"  # le moteur a bien joué ce test
+
+
+def test_hana_juge_l_effet_du_choc():
+    for choc, attendu in ((("PERTE_DU_LIEN", False), True), (("MORT_D_UN_ALLIE", True), True),
+                          (("MORT_D_UN_ALLIE", False), False), (("VIOLENCE_BRUTALE", True), False)):
+        appels = [{"choc": choc[0], "concerne_lien": choc[1]}]
+        serveur = FauxServeur({"hana": [("choc", appels[0])]})
+        assert jouer(serveur, situation("hana"), budget=0, graine=1).reussie is attendu, choc

@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.7 — 30 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.8 — 30 octobre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -435,7 +435,7 @@ Le LLM choisit le choc dans cette liste ; **le code calcule la gravité finale**
 
 **Modificateurs**, appliqués par le code :
 
-1. **Le lien amplifie** : si le choc concerne le lien du perso, il monte d'un cran.
+1. **Le lien amplifie** : si le choc concerne le lien du perso, il monte d'un cran. Sauf « perdre son lien », déjà grave parce qu'il concerne le lien : on ne le compte pas deux fois.
 2. **L'accoutumance** : après trois chocs du même type, ce type descend d'un cran.
 3. **La normalité de l'univers** : ce qui est banal dans l'univers descend d'un cran ou ne déclenche plus de test (exemple : un sort spectaculaire en Fantasy).
 
