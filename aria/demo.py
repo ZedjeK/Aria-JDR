@@ -7,7 +7,7 @@ Tu joues Kaito, le Netrunner ; un MJ scripté joue les deux gangers. Lancer avec
 import sys
 from pathlib import Path
 
-from aria import progression, sante_mentale, soins
+from aria import chemins, progression, sante_mentale, soins
 from aria.combat import (
     BudgetRound,
     Combat,
@@ -27,9 +27,8 @@ from aria.sauvegarde import Partie, sauvegarder
 from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
-RACINE = Path(__file__).resolve().parent.parent
-UNIVERS = RACINE / "univers" / "cyberpunk.json"
-SAUVEGARDE = RACINE / "parties" / "demo_kaito.json"
+UNIVERS = chemins.UNIVERS / "cyberpunk.json"
+SAUVEGARDE = chemins.PARTIES / "demo_kaito.json"
 ROUNDS_MAX = 30
 KAITO = dict(
     nom="Kaito",

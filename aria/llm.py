@@ -17,10 +17,10 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from aria import materiel
+from aria import chemins, materiel
 from aria.optimiseur import MARGE, Modele, Reglages
 
-DOSSIER_LLM = Path.home() / "Aria-LLM"
+DOSSIER_LLM = chemins.dossier_llm()
 MOTEUR = DOSSIER_LLM / "llama-prism" / "llama-server.exe"
 DOSSIER_MODELES = DOSSIER_LLM / "modeles"
 PORT = 8080

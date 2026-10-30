@@ -49,6 +49,33 @@ En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'o
 
 `etat` affiche ta fiche, `quitter` termine la session (progression des compétences, puis sauvegarde). Chaque campagne a son dossier, ici `parties/neo-tokyo-kaito/` : sauvegarde, souvenirs et fiche du combat en cours. Quand la conversation devient trop longue pour le modèle, les plus vieux échanges sont oubliés ; les souvenirs, eux, restent sur le disque.
 
+## L'exe portable
+
+`Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu : jouer avec le MJ, la démo sans MJ, ou qualifier le MJ. Pas besoin d'installer Python sur le PC qui le lance. Si aucun MJ n'est qualifié sur ce PC, l'exe propose de lancer le banc d'abord.
+
+Le serveur llama et les modèles ne sont pas dans l'exe, car ils pèsent plusieurs Go. L'exe cherche le dossier `Aria-LLM` à côté de lui, puis dans le dossier de l'utilisateur. Les parties s'enregistrent dans `parties/`, à côté de l'exe :
+
+```
+Aria-JDR\
+  Aria-JDR.exe
+  Aria-LLM\      (facultatif : llama-prism\ et modeles\)
+  parties\       (créé au premier lancement)
+```
+
+Pour le construire (`dist\Aria-JDR.exe`), installe PyInstaller une fois, puis lance le script :
+
+```bash
+.venv\Scripts\python.exe -m pip install pyinstaller==6.22.3
+```
+
+```bash
+powershell -ExecutionPolicy Bypass -File construire.ps1
+```
+
+Certains antivirus signalent à tort les exe PyInstaller : c'est un faux positif connu.
+
+`python -m aria` ouvre le même menu depuis les sources.
+
 ## Lancer les tests
 
 ```bash

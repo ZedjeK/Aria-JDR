@@ -22,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from aria import llm, materiel, optimiseur
+from aria import chemins, llm, materiel, optimiseur
 from aria.des import Des, DesTruques
 from aria.outils import Session
 from aria.personnage import Caracteristique, Etat
@@ -30,9 +30,8 @@ from aria.table import TOURS_MAX, Table
 from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
-RACINE = Path(__file__).parent.parent
-UNIVERS = RACINE / "univers" / "cyberpunk.json"
-PROFIL = RACINE / "parties" / "profil_mj.json"
+UNIVERS = chemins.UNIVERS / "cyberpunk.json"
+PROFIL = chemins.PARTIES / "profil_mj.json"
 BUDGETS = (0, 128, 256, 512, 1024)
 REPETITIONS = 2
 SEUIL_NORMALES = 0.9
@@ -386,7 +385,7 @@ def qualifier(dossier: Path = llm.DOSSIER_MODELES, seulement: str | None = None,
     afficher(f"Matériel : {pc.empreinte}, {(pc.vram_libre or 0) / optimiseur.GIO:.1f} Gio de VRAM libre")
     modeles = [m for m in optimiseur.modeles_presents(dossier) if seulement in (None, m.nom)]
     if not modeles:
-        afficher("Aucun modèle du catalogue n'est présent.")
+        afficher(f"Aucun modèle du catalogue n'est présent dans {dossier}.")
         return None
     PROFIL.parent.mkdir(exist_ok=True)
     horodatage = datetime.now().strftime("%Y%m%d-%H%M%S")

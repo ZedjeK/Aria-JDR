@@ -12,9 +12,8 @@ Lancement (après le banc, qui choisit le modèle) :
 """
 
 import sys
-from pathlib import Path
 
-from aria import banc, llm, optimiseur, outils, progression
+from aria import banc, chemins, llm, optimiseur, outils, progression
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -25,9 +24,8 @@ from aria.table import Table
 from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
-RACINE = Path(__file__).resolve().parent.parent
 CAMPAGNE = "neo-tokyo-kaito"
-JOURNAL_SERVEUR = RACINE / "parties" / "serveur_jeu.log"
+JOURNAL_SERVEUR = chemins.PARTIES / "serveur_jeu.log"
 QUITTER = ("quitter", "/quitter")
 ETAT = ("etat", "état", "/etat")
 # Ce que le MJ sait de la scène : la ruelle de la démo v1. Le joueur, lui, ne voit que la narration.

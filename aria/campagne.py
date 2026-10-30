@@ -12,7 +12,9 @@ leurs souvenirs. Le moteur écrit tout ; le MJ lit.
 from dataclasses import dataclass
 from pathlib import Path
 
-RACINE = Path(__file__).resolve().parent.parent / "parties"
+from aria import chemins
+
+RACINE = chemins.PARTIES
 
 
 @dataclass

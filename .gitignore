@@ -8,3 +8,7 @@ parties/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Construction de l'exe portable (construire.ps1)
+build/
+dist/

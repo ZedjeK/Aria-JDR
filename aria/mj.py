@@ -1,11 +1,10 @@
 """Le MJ : son prompt système, rempli avec l'univers, le personnage et la scène."""
 
-from pathlib import Path
-
+from aria import chemins
 from aria.personnage import Personnage
 from aria.univers import Univers
 
-PROMPT = Path(__file__).parent / "prompts" / "mj.md"
+PROMPT = chemins.PROMPTS / "mj.md"
 
 
 def presenter(personnage: Personnage) -> str:
