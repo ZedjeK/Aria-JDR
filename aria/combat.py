@@ -144,7 +144,8 @@ class Combattant:
         self.munitions: dict[Arme, int] = {}
         self.budget = BudgetRound()
         self.defenses_ce_round = 0
-        self.vise = False
+        self.vise = False  # bonus de visée en attente du prochain tir
+        self.a_vise = False  # a visé ce round : ne peut plus se déplacer, même après avoir tiré
         self.surpris = False
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         if arme:
@@ -262,7 +263,7 @@ class Combat:
         combattant.budget.utiliser(action)
 
     def deplacer(self, combattant: Combattant):
-        if combattant.vise:
+        if combattant.a_vise:
             raise ActionImpossible(f"{combattant.nom} a visé : il ne peut plus se déplacer ce round.")
         self._agir(combattant, TypeAction.DEPLACEMENT)
 
@@ -271,7 +272,7 @@ class Combat:
         if combattant.budget.utilise[TypeAction.DEPLACEMENT]:
             raise ActionImpossible(f"{combattant.nom} s'est déplacé : il ne peut plus viser ce round.")
         self._agir(combattant, TypeAction.MINEURE)
-        combattant.vise = True
+        combattant.vise = combattant.a_vise = True
 
     def degainer(self, combattant: Combattant, arme: Arme | None):
         """Prendre une autre arme en main, ou la ranger avec None (action mineure)."""
@@ -444,7 +445,7 @@ class Combat:
                     fiche.etat = Etat.MORT
             combattant.budget = BudgetRound()
             combattant.defenses_ce_round = 0
-            combattant.vise = False  # la visée ne vaut que pour le round où elle est prise
+            combattant.vise = combattant.a_vise = False  # la visée ne vaut que pour le round où elle est prise
             if self.round == 1:
                 combattant.surpris = False
         self.round += 1

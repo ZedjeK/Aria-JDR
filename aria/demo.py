@@ -203,7 +203,7 @@ class Demo:
         peut_recharger = k.arme is not None and restantes < k.arme.munitions.capacite
 
         deplacements, raison_deplacement = [], ""
-        if k.vise:
+        if k.a_vise:
             raison_deplacement = "tu as visé : tu ne peux plus bouger ce round"
         elif not budget.peut(TypeAction.DEPLACEMENT):
             raison_deplacement = "plus de déplacement possible ce round"
@@ -216,7 +216,7 @@ class Demo:
         if not budget.peut(TypeAction.MINEURE):
             raison_mineure = "action mineure déjà utilisée"
         else:
-            if k.arme and restantes and not k.vise:
+            if k.arme and restantes and not k.a_vise:
                 if budget.utilise[TypeAction.DEPLACEMENT]:
                     raison_mineure = "viser est impossible : tu t'es déplacé ce round"
                 else:

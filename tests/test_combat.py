@@ -165,6 +165,15 @@ def test_viser_interdit_de_se_deplacer_ce_round():
         c.deplacer(k)
 
 
+def test_pas_de_deplacement_apres_un_tir_vise():
+    k, g = kaito(), ganger()
+    c = combat(DesTruques(80), k, g)
+    c.viser(k)
+    c.attaquer(k, g)  # le bonus est consommé…
+    with pytest.raises(ActionImpossible):
+        c.deplacer(k)  # … mais il a quand même visé ce round
+
+
 def test_la_visee_se_perd_en_fin_de_round():
     k, g = kaito(), ganger()
     c = combat(DesTruques(80), k, g)
