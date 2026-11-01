@@ -146,6 +146,12 @@ def formule_degats(arme: Arme, force: int | None = None) -> Formule:
 _PLAFONDS = {Rarete.PEU_COMMUNE: (5, 1), Rarete.RARE: (10, 2), Rarete.EXCEPTIONNELLE: (10, 2)}
 _EMPLACEMENTS = {Rarete.COMMUNE: 0, Rarete.PEU_COMMUNE: 1, Rarete.RARE: 1, Rarete.EXCEPTIONNELLE: 2}
 
+# Bornes de l'armurerie (REGLES.md 7.5), avant les bonus de rareté ; un objet légendaire y échappe
+MOYENNE_MIN, MOYENNE_MAX, MAXIMUM_DEGATS = 2.5, 9, 14  # de 1d4 à 2d6+2
+MOYENNE_UNE_MAIN = 5.5  # au-delà de 1d10, il faut deux mains
+PROTECTION_MAX = 4
+PROTECTION_LOURDE, MALUS_LOURD = 3, -10  # dès 3 de protection, au moins un malus de −10
+
 
 def _verifier_rarete(
     rarete: Rarete, jet: int, degats: int, nb_proprietes: int, generee: bool, nom_jet: str, nom_degats: str
@@ -170,6 +176,17 @@ def _verifier_rarete(
     return erreurs
 
 
+def _verifier_degats(arme: Arme, degats: Formule) -> list[str]:
+    moyenne = (degats.minimum + degats.maximum) / 2
+    erreurs = []
+    if not MOYENNE_MIN <= moyenne <= MOYENNE_MAX or degats.maximum > MAXIMUM_DEGATS:
+        erreurs.append(f"Les dégâts vont de 1d4 à 2d6+2 (moyenne de {MOYENNE_MIN} à {MOYENNE_MAX}, "
+                       f"{MAXIMUM_DEGATS} au plus), pas {degats}.")
+    if moyenne > MOYENNE_UNE_MAIN and not arme.a(Propriete.DEUX_MAINS):
+        erreurs.append(f"Au-delà de 1d10, une arme se tient à deux mains : {degats} sans « deux mains ».")
+    return erreurs
+
+
 def verifier_arme(arme: Arme, generee: bool = False) -> list[str]:
     """Liste les problèmes d'une fiche d'arme (vide si elle est valide).
 
@@ -181,9 +198,12 @@ def verifier_arme(arme: Arme, generee: bool = False) -> list[str]:
     if arme.competence not in (CORPS_A_CORPS, ARMES_A_DISTANCE):
         erreurs.append(f"Compétence d'arme inconnue : « {arme.competence} ».")
     try:
-        Formule.lire(arme.degats)
+        degats = Formule.lire(arme.degats)
     except ValueError as erreur:
         erreurs.append(str(erreur))
+    else:
+        if arme.rarete is not Rarete.LEGENDAIRE:
+            erreurs += _verifier_degats(arme, degats)
     if arme.corps_a_corps:
         if arme.portee is not Portee.CONTACT:
             erreurs.append("Une arme de corps à corps a une portée « contact ».")
@@ -209,6 +229,11 @@ def verifier_armure(armure: Armure, generee: bool = False) -> list[str]:
         erreurs.append("La protection ne peut pas être négative.")
     if any(valeur > 0 for valeur in armure.malus.values()):
         erreurs.append("Un malus d'armure est négatif (par exemple −20).")
+    if armure.rarete is not Rarete.LEGENDAIRE:
+        if armure.protection == 0 or armure.protection > PROTECTION_MAX:
+            erreurs.append(f"La protection va de 1 à {PROTECTION_MAX}, pas {armure.protection}.")
+        if armure.protection >= PROTECTION_LOURDE and min(armure.malus.values(), default=0) > MALUS_LOURD:
+            erreurs.append(f"Dès {PROTECTION_LOURDE} de protection, l'armure a au moins un malus de {MALUS_LOURD}.")
     erreurs += _verifier_rarete(
         armure.rarete,
         armure.bonus.malus_en_moins,

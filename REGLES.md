@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.8 — 30 octobre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 0.9 — 1er novembre 2026. Règles de l'étape 1, validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -180,7 +180,7 @@ Le code refuse toute compétence thématique qui ne respecte pas ces règles.
 
 ### 4.5 La magie selon l'univers
 
-Si l'univers l'active, la Magie peut se découper en **écoles** (Pyromancie, Nécromancie…), devenir de la **Psionique** en science-fiction, ou rester rare et dangereuse en Horreur (chaque sort coûte aussi de la Santé mentale). Le coût des sorts reste à définir (voir 10).
+Si l'univers l'active, la Magie peut se découper en **écoles** (Pyromancie, Nécromancie…), devenir de la **Psionique** en science-fiction, ou rester rare et dangereuse en Horreur (chaque sort coûte aussi de la Santé mentale). Les règles des sorts sont en 10.
 
 ---
 
@@ -223,7 +223,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort attend les règles de magie (voir 10).
+- Apprendre un nouveau sort reste à définir (voir 11) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -302,6 +302,12 @@ Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer
 
 **Fiche d'armure** : même principe (protection, malus, propriétés, rareté, bonus). L'armure réduit les dégâts reçus d'une valeur fixe.
 
+**Bornes de l'armurerie**, vérifiées par le code avant les bonus de rareté :
+
+- **Armes** : dégâts de **1d4 à 2d6+2**, soit une moyenne de 2,5 à 9 et 14 au plus. Au-delà de 1d10 (plus de 5,5 en moyenne), l'arme a la propriété **deux mains**.
+- **Armures** : protection de **1 à 4**. À partir de 3, l'armure a **au moins un malus de −10**.
+- Un objet **légendaire**, écrit à la main pour la campagne, échappe à ces bornes.
+
 **Échelle de rareté**, identique dans tous les univers et vérifiée par le code :
 
 | Rareté | Bonus maximum |
@@ -363,11 +369,12 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 
 Plus la compétence est haute, plus les critiques et les réussites majeures sont fréquents : un bon médecin soigne mieux sans règle supplémentaire.
 
-**Limite : un jet de Médecine par patient et par demi-journée**, au même rythme que les repos. Après un échec, il faut attendre la demi-journée suivante ou trouver un autre soigneur. Le jet qui soigne une blessure grave avant la nuit (voir 8.2) compte dans cette limite.
+**Limite : un soin réussi par patient et par demi-journée**, au même rythme que les repos. Après un échec, il faut attendre la demi-journée suivante ou trouver un **autre** soigneur : le même ne retente pas. Dès qu'un jet réussit, le patient a eu son soin de la demi-journée. Le jet qui soigne une blessure grave avant la nuit (voir 8.2) compte dans cette limite.
 
 - Une **réussite avec complication** soigne comme une réussite (1d3), avec un prix raconté par le MJ.
 - **Pas de jet de Médecine la nuit** : la nuit est réservée au repos long et à la thérapie de Santé mentale (voir 9.5).
 - Un soin qui rend des PV **réveille** un perso inconscient, stabilisé ou mourant.
+- Le soin magique a sa propre limite, qui se cumule avec celle-ci (voir 10.7).
 - Le soigneur peut être un PNJ. Un soigneur qui a lui-même une blessure grave subit son −20, en Médecine comme en thérapie.
 
 ### 8.2 Les repos
@@ -465,12 +472,127 @@ Le LLM choisit le choc dans cette liste ; **le code calcule la gravité finale**
 
 ---
 
-## 10. À définir
+## 10. Magie
+
+Ces règles valent pour toute forme de magie : Arcanes en Fantasy, Psionique en science-fiction, Rituels en Horreur, mutants psi en Post-apo… Seul le nom change selon l'univers.
+
+### 10.1 Les points de magie
+
+- **PM = Volonté / 5** (voir 3.2), seulement si l'univers active la magie.
+- Lancer un sort est une **action simple** (voir 7.2) : un jet de Magie, avec la difficulté que fixe sa puissance.
+
+### 10.2 La puissance
+
+Le MJ choisit la puissance dans cette liste ; elle fixe le coût et la difficulté.
+
+| Puissance | Coût | Difficulté |
+|---|---|---|
+| Mineur | 1 PM | Facile (+20) |
+| Modéré | 3 PM | Normale |
+| Majeur | 6 PM | Difficile (−20) |
+
+### 10.3 Les effets
+
+Un sort a **un seul effet**, choisi dans cette liste : il imite une mécanique que le moteur connaît déjà.
+
+| Effet | Mineur | Modéré | Majeur |
+|---|---|---|---|
+| **Attaque** | 1d6 | 2d6 | 3d6 |
+| **Soin** | 1d3 PV | 1d6 PV | 2d6 PV |
+| **Protection** (armure, jusqu'à la fin du combat) | +1 | +2 | +3 |
+| **Renfort ou entrave** (bonus ou malus à une cible) | ±10 pendant 1 round | ±20 pendant 1 round | ±20 pendant tout le combat |
+| **Utilitaire** (lumière, illusion, détection, ouvrir…) | Un petit effet | Un effet notable | Un effet spectaculaire |
+
+- Une **attaque** se résout comme un tir : pas d'esquive, et le couvert compte (voir 7.3).
+- Hors combat, « 1 round » vaut pour le **prochain jet** de la cible.
+- L'**utilitaire** est raconté par le MJ : il ne blesse pas, ne soigne pas et ne donne aucun bonus chiffré. Sa puissance borne seulement ce que le MJ peut raconter.
+
+### 10.4 Les degrés
+
+| Degré | Effet |
+|---|---|
+| **Critique** | Effet maximum ; pour une attaque, l'armure ne compte qu'à moitié |
+| **Réussite majeure** | Pour une attaque ou un soin, un dé de plus |
+| **Réussite** | L'effet normal |
+| **Réussite avec complication** (hors combat) | Le sort marche, avec un prix raconté par le MJ |
+| **Échec** | Rien ne se passe, et la **moitié des PM** est perdue (arrondie au-dessus) |
+| **Maladresse** | **Tous les PM** du sort sont perdus, et le sort se retourne contre son lanceur : il en subit l'effet en mineur s'il était nocif, 1d6 dégâts sinon |
+
+### 10.5 Domaines, sorts appris et improvisations
+
+Chaque univers a **de 3 à 6 domaines** de magie (Pyromancie, Guérison, Illusion…). Chaque domaine autorise certains effets seulement : la Guérison n'attaque pas.
+
+| | Sorts appris | Improvisations |
+|---|---|---|
+| **Ce que c'est** | Les sorts maîtrisés, avec un nom | Les usages libres du domaine |
+| **Par domaine** | 4 à 6 | 3 à 5 |
+| **Puissance** | Mineur à Majeur | Modéré au plus |
+| **Difficulté** | Celle de la puissance | **Un cran de plus** (Normale en Mineur, Difficile en Modéré) |
+| **Propriété** | Une au plus (voir 10.6) | Jamais |
+
+- À la création, le perso choisit **2 domaines** et connaît tous leurs sorts appris et leurs improvisations.
+- **Hors de ses domaines, il ne peut rien lancer.**
+- Le MJ ne lance que des sorts de ces listes : il ne peut ni en inventer un, ni en gonfler un.
+
+Les domaines et les sorts de l'annexe C sont des exemples, pas une liste figée. Le générateur d'univers s'en sert comme modèles et les adapte à chaque univers. Plus tard, les sorts que le MJ accepte en cours de campagne pourront rejoindre la mémoire, dans un fichier `sorts.md`, comme les PNJ et les fils.
+
+### 10.6 Les propriétés de sort
+
+Un sort appris peut avoir **une propriété au plus**, pour **+1 PM**.
+
+| Propriété | Effet |
+|---|---|
+| **Zone** | Le sort touche 2 cibles proches, avec un seul jet de Magie |
+| **Persistant** | L'effet continue après le round où il est lancé (voir ci-dessous) |
+| **Silencieux** | Le sort se lance sans un bruit ni un geste visible |
+
+**Persistant** :
+
+- Contre une **attaque** ou une **entrave**, la victime fait un jet de sauvegarde **au début de son tour** : **Constitution** contre une attaque (brûlure, nécrose…), **Volonté** contre une entrave (terreur, illusion…). Réussi, l'effet s'arrête. Raté, elle subit **1d3 dégâts** (attaque) ou **le malus encore un round** (entrave).
+- L'effet dure **au plus 3 rounds**.
+- Une **protection** ou un **renfort** persistant dure simplement un round de plus, sans jet.
+- Un PNJ fait sa sauvegarde à **50**.
+
+### 10.7 Le soin magique
+
+- Le soin magique a les **mêmes limites que la Médecine** (voir 8.1) : **un soin magique réussi par patient et par demi-journée** (après un échec, un autre lanceur peut tenter), et pas de soin magique la nuit.
+- Les deux limites sont **séparées et se cumulent** : dans la même demi-journée, un patient peut recevoir un jet de Médecine **et** un soin magique. Un mage guérisseur qui a aussi appris la Médecine est un vrai soigneur.
+
+### 10.8 Récupérer ses PM, et à court de PM
+
+- Les PM se récupèrent **comme les PV**, avec la même table des repos (voir 8.2).
+- À court de PM, on peut **puiser dans sa vie** : **1 PV par PM manquant**.
+- En **Horreur**, chaque sort coûte aussi **son coût en Santé mentale**.
+
+### 10.9 Ce que la magie ne fait pas
+
+Aucun sort, appris ou improvisé, ne peut :
+
+- invoquer ou animer un allié (mort-vivant, élémentaire, familier qui se bat) ;
+- téléporter ou faire voyager instantanément ;
+- transformer ou métamorphoser quelqu'un ;
+- contrôler un esprit, forcer quelqu'un à agir ou le charmer contre sa volonté ;
+- ressusciter un mort ;
+- tuer d'un coup ou désintégrer, sans passer par les dégâts ;
+- lire les pensées ou prédire l'avenir ;
+- créer de l'or, des objets ou des armes qui durent ;
+- arrêter le temps ou revenir en arrière.
+
+Le MJ refuse toute demande de ce genre, et le générateur n'en crée jamais (liste reprise dans `aria/prompts/magie_interdite.md`).
+
+### 10.10 Les PNJ
+
+Un PNJ lanceur de sorts a un **% de Magie** et des **PM** fixés à sa création, comme son % de combat (voir 7.8), et une liste de sorts tirée des domaines de l'univers.
+
+---
+
+## 11. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
 - Les effets chiffrés des propriétés **perforante** et **rafale**.
-- Le coût et le fonctionnement des sorts (points de magie).
+- L'apprentissage de nouveaux sorts avec l'XP, et le fichier `sorts.md`.
+- Les effets de magie hors V1 : invocation, transformation, téléportation… (voir 10.9).
 - Les tables de crises passagères et de troubles durables.
 - L'inventaire : encombrement et prix.
 - Les règles de pouvoirs pour le genre Super-héros (hors V1).
@@ -520,3 +642,79 @@ Genres de la V1 : Fantasy, Dark fantasy, Horreur, Contemporain, Militaire, Scien
 | Science-fiction | Astrogation (sauts hyperspatiaux), Artillerie embarquée |
 | Cyberpunk | Cybernétique (implants), Réseau (fixers, contacts) |
 | Post-apo | Récupération (fouiller les ruines), Purification (eau, nourriture, décontamination) |
+
+## Annexe C — Exemples de domaines de magie (Fantasy)
+
+Des exemples, pas une liste figée (voir 10.5). Coût : Mineur 1 PM, Modéré 3 PM, Majeur 6 PM, +1 PM pour une propriété. Improvisations : Normale en Mineur, Difficile en Modéré.
+
+### Pyromancie
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Étincelle | Attaque | Mineur | | 1 | 1d6 |
+| Trait de feu | Attaque | Modéré | | 3 | 2d6 |
+| Gerbe de flammes | Attaque | Modéré | Zone | 4 | 2d6 sur 2 cibles proches |
+| Peau de braise | Protection | Modéré | | 3 | Armure +2 jusqu'à la fin du combat |
+| Brasier | Attaque | Majeur | Persistant | 7 | 3d6, puis 1d3 par sauvegarde ratée |
+
+Improvisations : allumer ou souffler une flamme (utilitaire, mineur) · réchauffer un allié transi (renfort +10, mineur) · chauffer ou faire fondre (utilitaire, modéré) · écran de fumée (entrave −20, modéré).
+
+### Givre
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Morsure du froid | Entrave | Mineur | | 1 | −10 à la cible pendant 1 round |
+| Armure de givre | Protection | Mineur | | 1 | Armure +1 |
+| Lance de glace | Attaque | Modéré | | 3 | 2d6 |
+| Sol verglacé | Entrave | Modéré | Zone | 4 | −20 à 2 cibles pendant 1 round |
+| Tempête de grêle | Attaque | Majeur | Zone | 7 | 3d6 sur 2 cibles proches |
+
+Improvisations : conserver des vivres (utilitaire, mineur) · givrer une lame (renfort +10, mineur) · geler l'eau, pour un pont de glace ou une serrure bloquée (utilitaire, modéré) · brume givrante (entrave −20, modéré).
+
+### Guérison (aucune attaque)
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Apaiser | Soin | Mineur | | 1 | 1d3 PV |
+| Refermer les plaies | Soin | Modéré | | 3 | 1d6 PV |
+| Bénédiction | Renfort | Modéré | | 3 | +20 à un allié pendant 1 round |
+| Égide | Protection | Modéré | Zone | 4 | Armure +2 à 2 alliés |
+| Grâce de vie | Soin | Majeur | | 6 | 2d6 PV |
+
+Improvisations : purifier l'eau ou la nourriture (utilitaire, mineur) · diagnostiquer un mal (utilitaire, mineur) · calmer la douleur (renfort +10, mineur) · ranimer un mourant (soin 1d3, mineur).
+
+### Illusion
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Leurre | Utilitaire | Mineur | Silencieux | 2 | Un son ou une image fugace |
+| Image miroir | Protection | Modéré | | 3 | Armure +2 : les coups frappent des reflets |
+| Terreur fantasmatique | Entrave | Modéré | | 3 | −20 à la cible pendant 1 round |
+| Voile d'ombre | Renfort | Modéré | Silencieux | 4 | +20 au prochain jet de Discrétion |
+| Mirage | Utilitaire | Majeur | | 6 | Une illusion spectaculaire : un mur, une armée… |
+
+Improvisations : ventriloquie (utilitaire, mineur) · effacer ses traces (utilitaire, mineur) · éblouir (entrave −10, mineur) · changer d'apparence (utilitaire, modéré).
+
+### Nécromancie
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Toucher glacial | Attaque | Mineur | | 1 | 1d6 |
+| Carapace d'os | Protection | Mineur | | 1 | Armure +1 |
+| Parler aux morts | Utilitaire | Modéré | | 3 | Trois questions à un cadavre |
+| Malédiction lente | Attaque | Modéré | Persistant | 4 | 2d6, puis 1d3 par sauvegarde ratée |
+| Effroi sépulcral | Entrave | Majeur | | 6 | −20 à la cible pendant tout le combat |
+
+Improvisations : sentir la mort proche (utilitaire, mineur) · conserver un corps (utilitaire, mineur) · murmures d'outre-tombe (entrave −10, mineur) · faire bouger un cadavre un instant (utilitaire, modéré).
+
+### Nature
+
+| Sort | Effet | Puissance | Propriété | Coût | Ce qu'il fait |
+|---|---|---|---|---|---|
+| Baies de vie | Soin | Mineur | | 1 | 1d3 PV |
+| Parler aux bêtes | Utilitaire | Mineur | | 1 | Comprendre un animal et lui parler |
+| Ronces | Entrave | Modéré | | 3 | −20 à la cible pendant 1 round |
+| Peau d'écorce | Protection | Modéré | | 3 | Armure +2 |
+| Colère de la forêt | Attaque | Majeur | Zone | 7 | 3d6 sur 2 cibles proches |
+
+Improvisations : trouver de l'eau ou de la nourriture (utilitaire, mineur) · calmer un animal (utilitaire, mineur) · se fondre dans les bois (renfort +10 en Discrétion, mineur) · faire pousser ou écarter la végétation (utilitaire, modéré).

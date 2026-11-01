@@ -64,7 +64,8 @@ class RapportSoin:
 
 
 def soigner(des: Des, soigneur, patient: Personnage, moment: Moment) -> RapportSoin:
-    """Un jet de Médecine sur un patient : un seul par patient et par demi-journée (REGLES.md 8.1).
+    """Un jet de Médecine sur un patient : un soin réussi par patient et par demi-journée (REGLES.md 8.1).
+    Après un échec, un autre soigneur peut tenter ; celui qui a échoué ne retente pas.
 
     Le soigneur peut être un personnage ou un PNJ (`FichePnj` avec une valeur en Médecine).
     """
@@ -73,10 +74,18 @@ def soigner(des: Des, soigneur, patient: Personnage, moment: Moment) -> RapportS
     if not moment.periode.demi_journee:
         raise SoinImpossible("Les soins se font le matin ou l'après-midi, pas pendant la nuit.")
     if patient.dernier_soin_recu == moment:
-        raise SoinImpossible(f"{patient.nom} a déjà reçu un jet de Médecine cette demi-journée.")
+        raise SoinImpossible(f"{patient.nom} a déjà été soigné cette demi-journée.")
+    if patient.moment_echecs_soin != moment:
+        patient.soigneurs_en_echec, patient.moment_echecs_soin = [], moment
+    if soigneur.nom in patient.soigneurs_en_echec:
+        raise SoinImpossible(f"{soigneur.nom} a déjà échoué sur {patient.nom} cette demi-journée : "
+                             f"un autre soigneur peut tenter.")
     test = tester(des, soigneur.valeur("Médecine"))
     cocher(soigneur, "Médecine", test)
-    patient.dernier_soin_recu = moment
+    if test.reussi:
+        patient.dernier_soin_recu = moment
+    else:
+        patient.soigneurs_en_echec.append(soigneur.nom)
     gain = gain_selon_degre(des, test.degre)
     if test.reussi and patient.blessure_grave:
         patient.blessure_grave_soignee = True

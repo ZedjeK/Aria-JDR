@@ -39,7 +39,7 @@ def mj_disponible(entree=input, sortie=print) -> bool:
 
 
 def menu(entree=input, sortie=print):
-    chemins.PARTIES.mkdir(exist_ok=True)
+    chemins.DONNEES.mkdir(exist_ok=True)
     while True:
         sortie(MENU)
         try:

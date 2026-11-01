@@ -130,7 +130,9 @@ class Personnage:
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit
     nuits_depuis_soin: int = 0  # en Réaliste, la blessure grave soignée guérit au bout de quelques nuits
     dernier_repos: Moment | None = None
-    dernier_soin_recu: Moment | None = None
+    dernier_soin_recu: Moment | None = None  # la demi-journée de son dernier soin réussi
+    soigneurs_en_echec: list[str] = field(default_factory=list)  # qui a raté son jet sur lui…
+    moment_echecs_soin: Moment | None = None  # …pendant cette demi-journée
 
     # Suivi de la Santé mentale (REGLES.md 9)
     folie: bool = False

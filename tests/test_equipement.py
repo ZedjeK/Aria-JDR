@@ -31,7 +31,7 @@ PISTOLET_ARASAKA = Arme(
     proprietes=frozenset({Propriete.DISSIMULABLE}),
     rarete=Rarete.PEU_COMMUNE, bonus=BonusArme(degats=1),
 )
-HARNOIS = Armure("Harnois de plates", 5, {"Discrétion": -20, "Athlétisme": -20, "Esquive": -20})
+HARNOIS = Armure("Harnois de plates", 4, {"Discrétion": -20, "Athlétisme": -20, "Esquive": -20})
 
 
 def test_exemples_de_regles_valides():
@@ -121,7 +121,7 @@ def test_legendaire_jamais_generee():
 
 
 def test_armure_et_ses_malus():
-    assert HARNOIS.protection_totale == 5
+    assert HARNOIS.protection_totale == 4
     assert HARNOIS.malus_pour("Discrétion") == -20
     assert HARNOIS.malus_pour("Perception") == 0
 
@@ -133,7 +133,7 @@ def test_bonus_d_armure():
     )
     assert verifier_armure(maille_naine) == []
     assert maille_naine.malus_pour("Discrétion") == 0  # le malus ne devient jamais un bonus
-    renforcee = Armure("Gilet renforcé", 3, rarete=Rarete.PEU_COMMUNE, bonus=BonusArmure(protection=1))
+    renforcee = Armure("Gilet renforcé", 3, {"Discrétion": -10}, rarete=Rarete.PEU_COMMUNE, bonus=BonusArmure(protection=1))
     assert verifier_armure(renforcee) == []
     assert renforcee.protection_totale == 4
 
@@ -144,3 +144,31 @@ def test_armure_invalide():
     assert any("protection ne peut pas être négative" in e for e in erreurs)
     assert any("malus d'armure est négatif" in e for e in erreurs)
     assert any("+1 de protection" in e for e in erreurs)
+
+
+@pytest.mark.parametrize(
+    "degats, proprietes, erreur",
+    [
+        ("1d4", (), None),
+        ("1d10", (), None),
+        ("1d12", (Propriete.DEUX_MAINS,), None),
+        ("2d6+2", (Propriete.DEUX_MAINS,), None),
+        ("1d12", (), "deux mains"),
+        ("1d3", (), "de 1d4 à 2d6+2"),
+        ("3d6", (Propriete.DEUX_MAINS,), "de 1d4 à 2d6+2"),  # moyenne 10,5
+        ("2d8", (Propriete.DEUX_MAINS,), "de 1d4 à 2d6+2"),  # moyenne 9, mais 16 au plus
+    ],
+)
+def test_bornes_des_degats(degats, proprietes, erreur):
+    arme = Arme("Arme test", CORPS_A_CORPS, degats, Portee.CONTACT, proprietes=frozenset(proprietes))
+    erreurs = verifier_arme(arme)
+    assert (erreurs == []) if erreur is None else any(erreur in e for e in erreurs)
+
+
+def test_bornes_de_la_protection():
+    assert verifier_armure(Armure("Veste", 1)) == []
+    assert any("au moins un malus" in e for e in verifier_armure(Armure("Gilet sans gêne", 3)))
+    assert any("de 1 à 4" in e for e in verifier_armure(Armure("Exosquelette", 5, {"Esquive": -20})))
+    assert any("de 1 à 4" in e for e in verifier_armure(Armure("Rien du tout", 0)))
+    # Le légendaire s'écrit à la main : il échappe aux bornes
+    assert verifier_armure(Armure("Égide divine", 8, rarete=Rarete.LEGENDAIRE)) == []

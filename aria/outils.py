@@ -345,7 +345,8 @@ def choc(session: Session, choc: str, concerne_lien: bool = False, en_combat: bo
     return resultat
 
 
-@outil("Soigner le personnage joueur avec un jet de Médecine (un seul par demi-journée). "
+@outil("Soigner le personnage joueur avec un jet de Médecine (un soin réussi par demi-journée ; après un échec, "
+       "seul un autre soigneur peut retenter). "
        "Le soigneur peut être le joueur lui-même ou un PNJ créé avec creer_pnj.",
        lambda s: _objet({"soigneur": _ids(s, "Qui soigne.")}, ["soigneur"]))
 def soigner(session: Session, soigneur: str) -> dict:

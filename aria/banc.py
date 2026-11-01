@@ -32,7 +32,7 @@ from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
 UNIVERS = chemins.UNIVERS / "cyberpunk.json"
-PROFIL = chemins.PARTIES / "profil_mj.json"
+PROFIL = chemins.DONNEES / "profil_mj.json"
 BUDGETS = (0, 128, 256, 512, 1024)
 REPETITIONS = 2
 SEUIL_NORMALES = 0.9

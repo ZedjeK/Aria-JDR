@@ -28,7 +28,7 @@ from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
 UNIVERS = chemins.UNIVERS / "cyberpunk.json"
-SAUVEGARDE = chemins.PARTIES / "demo_kaito.json"
+SAUVEGARDE = chemins.DONNEES / "demo_kaito.json"
 ROUNDS_MAX = 30
 KAITO = dict(
     nom="Kaito",

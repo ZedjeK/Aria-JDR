@@ -4,6 +4,8 @@ Application de jeu de rôle solo : on choisit son univers (fantasy, cyberpunk, p
 
 Les règles du jeu sont dans [REGLES.md](REGLES.md).
 
+Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier `%USERPROFILE%\.Aria-JDR\`, que tu lances l'exe ou les sources.
+
 ## Principe
 
 - **Le code arbitre** : jets de dés, points de vie, Santé mentale, progression. C'est le moteur, dans le dossier `aria/`.
@@ -25,7 +27,7 @@ Une ruelle de Néo-Tokyo : tu joues Kaito, le Netrunner, contre deux gangers. Le
 .venv\Scripts\python.exe -m aria.demo
 ```
 
-La partie est sauvegardée dans `parties/demo_kaito.json`.
+La partie est sauvegardée dans `.Aria-JDR\demo_kaito.json`.
 
 ## Le MJ : qualifier un modèle sur son PC
 
@@ -35,7 +37,7 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 .venv\Scripts\python.exe -m aria.banc
 ```
 
-Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 32 situations, dont 8 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur ou de croire un faux souvenir. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `parties/profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
+Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 32 situations, dont 8 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur ou de croire un faux souvenir. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
 
 ## Jouer avec le MJ
 
@@ -49,7 +51,7 @@ En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'o
 
 `etat` affiche ta fiche, `quitter` termine la session : le MJ range la scène en cours dans la mémoire, puis viennent la progression des compétences et la sauvegarde. La partie est aussi sauvegardée après chaque action. Au lancement suivant, la campagne reprend là où tu l'as laissée, et le MJ te rappelle où vous en étiez.
 
-Chaque campagne a son dossier, ici `parties/neo-tokyo-kaito/`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
+Chaque campagne a son dossier, ici `.Aria-JDR\neo-tokyo-kaito\`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
 
 - `souvenirs.md` : le journal, avec les combats et les scènes terminés ;
 - `pnj.md` : les PNJ rencontrés, leur rôle, leur attitude envers Kaito et leur état (un mort reste mort) ;
@@ -61,13 +63,12 @@ Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque re
 
 `Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu : jouer avec le MJ, la démo sans MJ, ou qualifier le MJ. Pas besoin d'installer Python sur le PC qui le lance. Si aucun MJ n'est qualifié sur ce PC, l'exe propose de lancer le banc d'abord.
 
-Le serveur llama et les modèles ne sont pas dans l'exe, car ils pèsent plusieurs Go. L'exe cherche le dossier `Aria-LLM` à côté de lui, puis dans le dossier de l'utilisateur. Les parties s'enregistrent dans `parties/`, à côté de l'exe :
+Le serveur llama et les modèles ne sont pas dans l'exe, car ils pèsent plusieurs Go. L'exe cherche le dossier `Aria-LLM` à côté de lui, puis dans le dossier de l'utilisateur. Les parties, elles, restent dans `.Aria-JDR` : tu peux remplacer l'exe par une nouvelle version sans y toucher.
 
 ```
 Aria-JDR\
   Aria-JDR.exe
   Aria-LLM\      (facultatif : llama-prism\ et modeles\)
-  parties\       (créé au premier lancement)
 ```
 
 Pour le construire (`dist\Aria-JDR.exe`), installe PyInstaller une fois, puis lance le script :

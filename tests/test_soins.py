@@ -22,6 +22,11 @@ def kaito(pv=None):
     return perso
 
 
+
+def autre_soigneur():
+    return FichePnj("Doc Mori", combat=30, pv_max_base=10, competences={"Médecine": 70})
+
+
 # --- Médecine -------------------------------------------------------------------------------
 
 @pytest.mark.parametrize(
@@ -42,14 +47,24 @@ def test_table_de_medecine(des, gain):
     assert patient.pv == min(8, 3 + gain)
 
 
-def test_un_jet_par_patient_et_par_demi_journee():
+def test_un_soin_reussi_par_patient_et_par_demi_journee():
     patient = kaito(pv=3)
-    soigner(DesTruques(80), kaito(), patient, MATIN)
-    with pytest.raises(SoinImpossible):
-        soigner(DesTruques(10), kaito(), patient, MATIN)  # même un autre soigneur
+    soigner(DesTruques(45, 1), kaito(), patient, MATIN)  # réussi
+    with pytest.raises(SoinImpossible, match="déjà été soigné"):
+        soigner(DesTruques(10), autre_soigneur(), patient, MATIN)  # même un autre soigneur
     soigner(DesTruques(80), kaito(), patient, APRES_MIDI)
     with pytest.raises(SoinImpossible):
         soigner(DesTruques(80), kaito(), patient, NUIT)
+
+
+def test_apres_un_echec_un_autre_soigneur_peut_tenter():
+    patient = kaito(pv=3)
+    soigner(DesTruques(80), kaito(), patient, MATIN)  # raté
+    with pytest.raises(SoinImpossible, match="un autre soigneur"):
+        soigner(DesTruques(10), kaito(), patient, MATIN)  # le même ne retente pas
+    rapport = soigner(DesTruques(45, 1), autre_soigneur(), patient, MATIN)
+    assert rapport.test.reussi and rapport.gain == 1
+    soigner(DesTruques(80), kaito(), patient, APRES_MIDI)  # nouvelle demi-journée : il retente
 
 
 def test_soigner_une_blessure_grave():

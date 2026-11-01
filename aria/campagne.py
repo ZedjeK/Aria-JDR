@@ -1,6 +1,6 @@
 """Le dossier d'une campagne : sa sauvegarde, ses souvenirs et la fiche du combat en cours.
 
-Chaque campagne a son propre dossier dans parties/ : deux campagnes ne partagent jamais
+Chaque campagne a son propre dossier dans .Aria-JDR : deux campagnes ne partagent jamais
 leurs souvenirs. Le moteur écrit tout ; le MJ lit.
 
 - souvenirs.md : le journal de la campagne. Chaque combat terminé y ajoute ses moments forts
@@ -15,7 +15,7 @@ from pathlib import Path
 
 from aria import chemins
 
-RACINE = chemins.PARTIES
+RACINE = chemins.DONNEES
 
 
 @dataclass

@@ -1,9 +1,6 @@
 # Environnement virtuel Python
 .venv/
 
-# Parties sauvegardées (propres à chaque joueur)
-parties/
-
 # Fichiers générés par Python et pytest
 __pycache__/
 *.pyc

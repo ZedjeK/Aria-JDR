@@ -5,7 +5,7 @@ raconte. Chaque jet s'affiche avant la narration : tu vois toujours ce que disen
 Commandes : « etat » pour ta fiche, « quitter » pour finir la session.
 
 Tout ce qui concerne la campagne (sauvegarde, mémoire, fiche du combat en cours) est
-rangé dans son dossier : parties/neo-tokyo-kaito/. Au lancement suivant, la campagne reprend
+rangé dans son dossier : ~/.Aria-JDR/neo-tokyo-kaito/. Au lancement suivant, la campagne reprend
 là où on l'a laissée.
 
 Lancement (après le banc, qui choisit le modèle) :
@@ -26,7 +26,7 @@ from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
 CAMPAGNE = "neo-tokyo-kaito"
-JOURNAL_SERVEUR = chemins.PARTIES / "serveur_jeu.log"
+JOURNAL_SERVEUR = chemins.DONNEES / "serveur_jeu.log"
 QUITTER = ("quitter", "/quitter")
 ETAT = ("etat", "état", "/etat")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.

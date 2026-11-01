@@ -15,11 +15,11 @@ def test_le_llm_a_cote_du_jeu_passe_en_premier(tmp_path, monkeypatch):
 
 
 def test_le_menu_se_quitte(tmp_path, monkeypatch):
-    monkeypatch.setattr(chemins, "PARTIES", tmp_path / "parties")
+    monkeypatch.setattr(chemins, "DONNEES", tmp_path / ".Aria-JDR")
     lignes = []
     lanceur.menu(entrees("7", "4"), lignes.append)
     assert "Choisis 1, 2, 3 ou 4." in lignes
-    assert (tmp_path / "parties").is_dir()
+    assert (tmp_path / ".Aria-JDR").is_dir()
 
 
 def test_sans_serveur_pas_de_mj(tmp_path, monkeypatch):
