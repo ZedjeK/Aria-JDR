@@ -112,3 +112,27 @@ def test_le_mj_voit_sa_memoire_tout_de_suite():
     avant, apres = (recu[0][0]["content"] for recu in serveur.recus)
     assert "dette_mori" not in avant
     assert "## Ce dont tu te souviens\n\n### Fils ouverts\n- dette_mori : Mori doit un service à Kaito." in apres
+
+
+def test_le_fil_des_echanges_oublies_reste():
+    serveur = ServeurScripte([appel("test_competence", competence="Piratage", difficulte="normale")],
+                             "La porte s'ouvre.", "Tu entres.")
+    t = nouvelle_table(serveur)
+    t.tour("Je pirate la porte.")
+    t.tour("J'entre.")
+    serveur.prompt_tokens = t.limite + 500
+    t.tour("Je regarde autour de moi.")  # le serveur annonce un prompt trop gros…
+    t.tour("Je fouille le bureau.")  # … donc le tour suivant oublie les plus vieux échanges
+    systeme = t.messages[0]["content"]
+    assert "## Plus tôt dans cette session" in systeme
+    assert "- Le joueur : « Je pirate la porte. »" in systeme
+    assert "  - 🎲 Piratage : " in systeme  # le jet, tel que le joueur l'a vu
+    assert "La porte s'ouvre." not in systeme  # la narration, elle, est oubliée
+
+
+def test_le_fil_est_borne():
+    t = nouvelle_table(ServeurScripte())
+    t._garder_le_fil([{"role": "user", "content": f"Action {i} " + "x" * 200} for i in range(30)])
+    assert sum(len(ligne) + 1 for ligne in t.fil) <= table.FIL_MAX
+    assert t.fil[-1].startswith("- Le joueur : « Action 29") and t.fil[-1].endswith("… »")
+    assert t._systeme().count("- (…)") == 1

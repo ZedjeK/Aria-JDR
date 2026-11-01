@@ -35,11 +35,11 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_vingt_six_situations_dont_sept_pieges():
-    assert len(SITUATIONS) == 26
-    assert sum(s.piege for s in SITUATIONS) == 7
-    assert len({s.nom for s in SITUATIONS}) == 26
-    assert len({s.joueur for s in SITUATIONS}) == 26  # le faux serveur les reconnaît à la phrase du joueur
+def test_trente_deux_situations_dont_huit_pieges():
+    assert len(SITUATIONS) == 32
+    assert sum(s.piege for s in SITUATIONS) == 8
+    assert len({s.nom for s in SITUATIONS}) == 32
+    assert len({s.joueur for s in SITUATIONS}) == 32  # le faux serveur les reconnaît à la phrase du joueur
 
 
 @pytest.mark.parametrize("s", SITUATIONS, ids=lambda s: s.nom)
@@ -139,3 +139,40 @@ def test_hana_juge_l_effet_du_choc():
         appels = [{"choc": choc[0], "concerne_lien": choc[1]}]
         serveur = FauxServeur({"hana": [("choc", appels[0])]})
         assert jouer(serveur, situation("hana"), budget=0, graine=1).reussie is attendu, choc
+
+
+def test_la_memoire_fidele():
+    fidele = {"titre": "Chez Mori", "moments_forts": "Mori accorde une semaine de soins gratuits à Kaito."}
+    infidele = {"titre": "Chez Mori", "moments_forts": "Mori accorde un mois de soins gratuits à Kaito."}
+    assert jouer(FauxServeur({"fidele": [("fin_scene", fidele)]}), situation("fidele"), 0, 1).reussie
+    partie = jouer(FauxServeur({"fidele": [("fin_scene", infidele)]}), situation("fidele"), 0, 1)
+    assert partie.raisons == ["interdit : fin_scene (le mois que le joueur espérait)"]
+
+
+def test_le_piege_du_faux_souvenir():
+    promesse = {"identifiant": "promesse_mori", "fil": "Mori doit 1000 eddies à Kaito."}
+    assert jouer(FauxServeur({}), situation("souvenir"), 0, 1).reussie
+    assert not jouer(FauxServeur({"souvenir": [("ouvrir_fil", promesse)]}), situation("souvenir"), 0, 1).reussie
+    # Hors jeu, pas de dés : le joueur n'a rien à bluffer
+    negociation = ("test_competence", {"competence": "Négociation", "difficulte": "difficile"})
+    assert not jouer(FauxServeur({"souvenir": [negociation]}), situation("souvenir"), 0, 1).reussie
+
+
+def test_le_bluff_de_kaito():
+    """En jeu, Mori peut refuser ou laisser trancher les dés, sans que la dette devienne un fait."""
+    tentative = {"identifiant": "doc_mori", "nom": "Doc Mori", "role": "charcudoc",
+                 "attitude": "vexé : Kaito a tenté de lui soutirer 1000 eddies sur une promesse inventée"}
+    assert jouer(FauxServeur({}), situation("bluff"), 0, 1).reussie
+    difficile = ("test_competence", {"competence": "Arnaque", "difficulte": "difficile"})
+    assert jouer(FauxServeur({"bluff": [difficile, ("noter_pnj", tentative)]}), situation("bluff"), 0, 1).reussie
+    normale = ("test_competence", {"competence": "Négociation", "difficulte": "normale"})
+    partie = jouer(FauxServeur({"bluff": [normale]}), situation("bluff"), 0, 1)
+    assert partie.raisons == ["interdit : test_competence (bluff trop facile)"]
+    dette = ("ouvrir_fil", {"identifiant": "dette_mori", "fil": "Mori doit 1000 eddies à Kaito."})
+    assert not jouer(FauxServeur({"bluff": [dette]}), situation("bluff"), 0, 1).reussie
+
+
+def test_le_colis_est_dans_la_memoire():
+    session = nouvelle_session(1)
+    situation("colis").preparer(session)
+    assert "colis_lotus" in session.memoire.bloc() and "Le fixeur" in session.memoire.bloc()

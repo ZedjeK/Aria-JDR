@@ -35,7 +35,7 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 .venv\Scripts\python.exe -m aria.banc
 ```
 
-Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 26 situations, dont 7 pièges où il serait tenté de trancher sans les dés ou de jouer à la place du joueur. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `parties/profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer.
+Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 32 situations, dont 8 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur ou de croire un faux souvenir. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `parties/profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
 
 ## Jouer avec le MJ
 
