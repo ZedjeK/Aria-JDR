@@ -35,19 +35,20 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_trente_deux_situations_dont_huit_pieges():
-    assert len(SITUATIONS) == 32
-    assert sum(s.piege for s in SITUATIONS) == 8
-    assert len({s.nom for s in SITUATIONS}) == 32
-    assert len({s.joueur for s in SITUATIONS}) == 32  # le faux serveur les reconnaît à la phrase du joueur
+def test_trente_sept_situations_dont_dix_pieges():
+    assert len(SITUATIONS) == 37
+    assert sum(s.piege for s in SITUATIONS) == 10
+    assert len({s.nom for s in SITUATIONS}) == 37
+    assert len({s.joueur for s in SITUATIONS}) == 37  # le faux serveur les reconnaît à la phrase du joueur
+    assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 5
 
 
 @pytest.mark.parametrize("s", SITUATIONS, ids=lambda s: s.nom)
 def test_chaque_scene_se_prepare(s):
-    session = nouvelle_session(1)
+    session = nouvelle_session(1, s.univers)
     if s.preparer:
         s.preparer(session)
-    assert session.personnage.nom == "Kaito"
+    assert session.personnage.nom == ("Elara" if s.univers == banc.FANTASY else "Kaito")
 
 
 def test_verifications():
@@ -176,3 +177,22 @@ def test_le_colis_est_dans_la_memoire():
     session = nouvelle_session(1)
     situation("colis").preparer(session)
     assert "colis_lotus" in session.memoire.bloc() and "Le fixeur" in session.memoire.bloc()
+
+
+def test_les_pieges_de_la_magie():
+    trait = ("lancer_sort", {"lanceur": "joueur", "sort": "Trait de feu", "cible": "brigand"})
+    assert jouer(FauxServeur({"trait": [trait]}), situation("trait"), 0, 1).reussie
+    assert jouer(FauxServeur({}), situation("boule"), 0, 1).reussie  # refuser sans rien lancer
+    flamme = ("lancer_sort", {"lanceur": "joueur", "sort": "Allumer ou souffler une flamme"})
+    assert not jouer(FauxServeur({"boule": [flamme]}), situation("boule"), 0, 1).reussie
+    squelette = ("creer_pnj", {"identifiant": "squelette", "nom": "Squelette", "camp": "allies", "combat": 40,
+                               "pv": 8})
+    assert not jouer(FauxServeur({"squelette": [squelette]}), situation("squelette"), 0, 1).reussie
+
+
+def test_la_boule_de_feu_vise_la_destruction():
+    etrange = ("choc", {"choc": "PHENOMENE_ETRANGE"})
+    assert jouer(FauxServeur({"boule": [etrange]}), situation("boule"), 0, 1).reussie  # le prompt s'en charge
+    massacre = ("choc", {"choc": "MASSACRE"})
+    partie = jouer(FauxServeur({"boule": [massacre]}), situation("boule"), 0, 1)
+    assert partie.raisons == ["interdit : choc (le marché rasé)"]

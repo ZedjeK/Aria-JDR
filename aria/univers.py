@@ -1,6 +1,7 @@
-"""Les univers : réglages, habillage des compétences, compétences thématiques, parcours et armurerie.
+"""Les univers : réglages, habillage des compétences, compétences thématiques, parcours, armurerie
+et domaines de magie.
 
-Référence : REGLES.md 1.2 et 4. Un univers se décrit dans un fichier JSON (voir le dossier
+Référence : REGLES.md 1.2, 4 et 10. Un univers se décrit dans un fichier JSON (voir le dossier
 `univers/`), qu'il soit écrit à la main ou généré par le LLM ; le code le vérifie toujours.
 """
 
@@ -20,6 +21,15 @@ from aria.equipement import (
     Recharge,
     verifier_arme,
     verifier_armure,
+)
+from aria.magie import (
+    DOMAINES_PAR_PERSO,
+    Domaine,
+    Effet,
+    ProprieteSort,
+    Puissance,
+    Sort,
+    verifier_domaines,
 )
 from aria.personnage import (
     COMPETENCES_SOCLE,
@@ -60,6 +70,7 @@ class Univers:
     armures: tuple[Armure, ...] = ()
     chocs_banals: frozenset[Choc] = frozenset()
     chocs_normaux: frozenset[Choc] = frozenset()
+    domaines: tuple[Domaine, ...] = ()  # les domaines de magie, si l'univers en a
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -79,10 +90,29 @@ class Univers:
     def armure(self, nom: str) -> Armure:
         return _trouver(self.armures, nom, "armure")
 
-    def creer_personnage(self, parcours: str, **fiche) -> Personnage:
-        """Crée un perso dans cet univers : parcours, magie, compétences thématiques, PV et points de destin."""
+    def domaine(self, nom: str) -> Domaine:
+        return _trouver(self.domaines, nom, "domaine de magie")
+
+    def sort(self, nom: str) -> Sort:
+        return _trouver([s for d in self.domaines for s in d.tous], nom, "sort")
+
+    def sorts_connus(self, domaines: list[str]) -> list[Sort]:
+        """Tous les sorts appris et toutes les improvisations de ces domaines (REGLES.md 10.5)."""
+        return [s for nom in domaines for s in self.domaine(nom).tous]
+
+    def creer_personnage(self, parcours: str, domaines: list[str] = (), **fiche) -> Personnage:
+        """Crée un perso dans cet univers : parcours, magie, compétences thématiques, PV et points de destin.
+        `domaines` : ses deux domaines de magie, si l'univers en a."""
         if parcours not in self.parcours:
             raise UniversInvalide([f"Parcours inconnu dans {self.nom} : « {parcours} »."])
+        domaines = list(domaines)
+        if domaines:
+            erreurs = [f"Domaine de magie inconnu dans {self.nom} : « {d} »."
+                       for d in domaines if d not in {x.nom for x in self.domaines}]
+            if len(set(domaines)) != DOMAINES_PAR_PERSO:
+                erreurs.append(f"Un personnage choisit {DOMAINES_PAR_PERSO} domaines de magie différents.")
+            if erreurs:
+                raise UniversInvalide(erreurs)
         perso = creer_personnage(
             parcours=parcours,
             competences_parcours=self.parcours[parcours],
@@ -92,6 +122,7 @@ class Univers:
             **fiche,
         )
         perso.points_destin = self.curseur.points_destin
+        perso.domaines = domaines
         return perso
 
     def verifier(self, genere: bool = False) -> list[str]:
@@ -131,6 +162,11 @@ class Univers:
             for competence in armure.malus:
                 if competence not in disponibles:
                     erreurs.append(f"{armure.nom} : malus sur une compétence absente « {competence} ».")
+
+        if self.domaines:
+            if not self.magie_active:
+                erreurs.append("L'univers a des domaines de magie, mais la magie y est désactivée.")
+            erreurs += verifier_domaines(self.domaines)
         return erreurs
 
 
@@ -138,7 +174,7 @@ def _trouver(objets, nom: str, genre: str):
     for objet in objets:
         if objet.nom == nom:
             return objet
-    raise KeyError(f"Pas d'{genre} nommée « {nom} » dans cet univers.")
+    raise KeyError(f"Introuvable dans cet univers : {genre} « {nom} ».")
 
 
 # --- Lecture et écriture en JSON ------------------------------------------------------------
@@ -163,6 +199,7 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             armures=tuple(_armure_depuis_dict(a) for a in donnees.get("armures", [])),
             chocs_banals=frozenset(Choc[c] for c in donnees.get("chocs_banals", [])),
             chocs_normaux=frozenset(Choc[c] for c in donnees.get("chocs_normaux", [])),
+            domaines=tuple(_domaine_depuis_dict(d) for d in donnees.get("domaines", [])),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -201,6 +238,31 @@ def _armure_depuis_dict(d: dict) -> Armure:
     )
 
 
+def _sort_depuis_dict(d: dict, domaine: str, improvisation: bool) -> Sort:
+    propriete = d.get("propriete")
+    return Sort(d["nom"], Effet(d["effet"]), Puissance(d["puissance"]),
+                ProprieteSort(propriete) if propriete else None, d.get("description", ""), improvisation, domaine)
+
+
+def _domaine_depuis_dict(d: dict) -> Domaine:
+    return Domaine(
+        nom=d["nom"],
+        effets=frozenset(Effet(e) for e in d["effets"]),
+        sorts=tuple(_sort_depuis_dict(s, d["nom"], False) for s in d.get("sorts", [])),
+        improvisations=tuple(_sort_depuis_dict(s, d["nom"], True) for s in d.get("improvisations", [])),
+        description=d.get("description", ""),
+    )
+
+
+def _sort_vers_dict(sort: Sort) -> dict:
+    d = {"nom": sort.nom, "effet": sort.effet.value, "puissance": sort.puissance.value}
+    if sort.propriete:
+        d["propriete"] = sort.propriete.value
+    if sort.description:
+        d["description"] = sort.description
+    return d
+
+
 def univers_vers_dict(univers: Univers) -> dict:
     """L'inverse de `univers_depuis_dict` : le JSON d'un univers."""
     return {
@@ -219,6 +281,12 @@ def univers_vers_dict(univers: Univers) -> dict:
         "armures": [_armure_vers_dict(a) for a in univers.armures],
         "chocs_banals": sorted(c.name for c in univers.chocs_banals),
         "chocs_normaux": sorted(c.name for c in univers.chocs_normaux),
+        "domaines": [
+            {"nom": d.nom, "description": d.description, "effets": sorted(e.value for e in d.effets),
+             "sorts": [_sort_vers_dict(s) for s in d.sorts],
+             "improvisations": [_sort_vers_dict(s) for s in d.improvisations]}
+            for d in univers.domaines
+        ],
     }
 
 

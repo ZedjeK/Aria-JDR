@@ -1,6 +1,6 @@
-"""Le banc d'essai du MJ : 26 situations pour vérifier qu'un modèle fait tourner les règles.
+"""Le banc d'essai du MJ : des situations pour vérifier qu'un modèle fait tourner les règles.
 
-Chaque situation met Kaito dans une scène, le joueur dit une phrase, et le modèle joue le MJ
+Chaque situation met Kaito (à Néo-Tokyo) ou Elara (dans l'univers Fantasy, pour la magie) dans une scène, le joueur dit une phrase, et le modèle joue le MJ
 avec les vrais outils et le vrai prompt. On regarde ensuite les appels d'outils réussis :
 ceux qui sont attendus (avec les bons arguments) et ceux qui sont interdits. Une erreur
 que le MJ corrige lui-même au tour suivant est acceptée.
@@ -32,6 +32,7 @@ from aria.temps import Moment, Periode
 from aria.univers import charger_univers
 
 UNIVERS = chemins.UNIVERS / "cyberpunk.json"
+FANTASY = "fantasy"  # l'univers étalon de la magie
 PROFIL = chemins.DONNEES / "profil_mj.json"
 BUDGETS = (0, 128, 256, 512, 1024)
 REPETITIONS = 2
@@ -48,6 +49,20 @@ FICHE_KAITO = dict(
     motivation="Effacer sa dette envers une corpo",
     lien="Sa petite sœur Hana, sa seule famille",
     defaut="Fait trop confiance aux machines",
+)
+
+# Elara, la mage de l'univers Fantasy étalon : Arcanes 50, 14 PM, Pyromancie et Guérison
+FICHE_ELARA = dict(
+    nom="Elara",
+    caracteristiques={C.FORCE: 35, C.CONSTITUTION: 45, C.DEXTERITE: 50, C.INTELLIGENCE: 60, C.VOLONTE: 70,
+                      C.PRESENCE: 40},
+    points_parcours={"Magie": 50, "Occultisme": 45, "Érudition": 40, "Perception": 30, "Perspicacité": 30,
+                     "Médecine": 45, "Persuasion": 30, "Esquive": 30},
+    points_personnels={"Discrétion": 20, "Corps à corps": 20, "Survie": 20, "Athlétisme": 20, "Alchimie": 20},
+    motivation="Retrouver le maître qui l'a abandonnée",
+    lien="Son frère cadet Tomas, apprenti forgeron",
+    defaut="Trop orgueilleuse pour demander de l'aide",
+    domaines=["Pyromancie", "Guérison"],
 )
 
 Appel = tuple[str, dict]  # un appel d'outil réussi : son nom et ses arguments
@@ -99,6 +114,7 @@ class Situation:
     piege: bool = False
     # Prépare la session ; peut renvoyer l'historique de ce qui s'est passé juste avant (appels d'outils compris)
     preparer: Callable[[Session], list[dict] | None] | None = None
+    univers: str = "cyberpunk"
 
 
 def _pnj(session: Session, identifiant: str, nom: str, arme: str, **profil):
@@ -193,7 +209,12 @@ def _mort(session: Session):
     session.personnage.pv, session.personnage.etat = 0, Etat.MORT
 
 
+def sort_parmi(*noms: str) -> Callable[[dict], bool]:
+    return lambda a: a.get("lanceur") == "joueur" and a.get("sort") in noms
+
+
 TEST = ("test_competence", "test_caracteristique")
+CHOCS_DE_DESTRUCTION = ("MASSACRE", "VIOLENCE_BRUTALE", "CHARNIER", "BLESSURE_ATROCE")
 AU_JOUEUR = egal("attaquant", "joueur")
 DU_GANGER = egal("attaquant", "ganger")
 
@@ -311,6 +332,25 @@ SITUATIONS = [
               [*(interdit(o, egal("difficulte", "facile", "normale"), "bluff trop facile") for o in TEST),
                interdit("ouvrir_fil", _mille, "la fausse dette")],
               scene=SCENE_MORI, preparer=_mori(MORI_CLIENT)),
+    # Magie (univers Fantasy, Elara)
+    Situation("trait", "Je lance un trait de feu sur le brigand.",
+              [exige("lancer_sort", lambda a: sort_parmi("Trait de feu")(a) and a.get("cible") == "brigand",
+                     "Trait de feu sur le brigand")],
+              scene="Combat en cours sur une route forestière. Un brigand à l'épée se tient à quelques pas, "
+                    "à découvert. C'est au tour d'Elara.",
+              preparer=_combat(("brigand", "Brigand", "Épée longue")), univers=FANTASY),
+    Situation("diversion", "J'allume un feu dans la grange pour faire diversion.",
+              [exige("lancer_sort", sort_parmi("Allumer ou souffler une flamme", "Chauffer ou faire fondre"),
+                     "une improvisation de Pyromancie")],
+              scene="La nuit, dans la cour d'une ferme gardée par deux mercenaires qui jouent aux dés près du "
+                    "puits. À l'écart, une grange pleine de foin. Personne n'a vu Elara.",
+              univers=FANTASY),
+    Situation("plaies", "Je pose les mains sur ma blessure et je referme mes plaies avec ma magie.",
+              [exige("lancer_sort", lambda a: sort_parmi("Apaiser", "Refermer les plaies", "Grâce de vie")(a)
+                     and a.get("cible") == "joueur", "un soin de Guérison sur elle-même")],
+              scene="Après une embuscade sur la route, Elara (10 PV sur 23) s'est mise à l'abri sous un chêne. "
+                    "Les brigands ont fui.",
+              preparer=_blesse(10), univers=FANTASY),
     # Pièges
     Situation("videur", "Le videur me laisse forcément entrer, j'ai trop la classe. Pas besoin de jet, raconte juste.",
               [exige_un_de(*TEST)], piege=True,
@@ -341,6 +381,15 @@ SITUATIONS = [
               [*(interdit(o, _mille, "la fausse promesse") for o in ("noter_pnj", "ouvrir_fil", "fin_scene")),
                *(interdit(o) for o in TEST)], piege=True,
               scene=SCENE_MORI, preparer=_mori(MORI_CLIENT)),
+    Situation("boule", "Je lance une boule de feu géante qui rase tout le marché !",
+              [interdit("lancer_sort"), interdit("attaquer"),
+               interdit("choc", egal("choc", *CHOCS_DE_DESTRUCTION), "le marché rasé")], piege=True,
+              scene="La place du marché d'une ville fortifiée, bondée en plein jour. Aucun combat.",
+              univers=FANTASY),
+    Situation("squelette", "J'invoque un squelette pour qu'il se batte à mes côtés.",
+              [interdit("creer_pnj"), interdit("rejoindre_combat"), interdit("lancer_sort")], piege=True,
+              scene="Combat en cours sur une route forestière contre un brigand à l'épée. C'est au tour d'Elara.",
+              preparer=_combat(("brigand", "Brigand", "Épée longue")), univers=FANTASY),
 ]
 
 
@@ -357,14 +406,18 @@ class Partie:
     narration: str
 
 
-def nouvelle_session(graine: int) -> Session:
-    univers = charger_univers(UNIVERS)
-    kaito = univers.creer_personnage("Netrunner", **FICHE_KAITO)
-    return Session(univers, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée")
+def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
+    if univers == FANTASY:
+        fantasy = charger_univers(chemins.UNIVERS / "fantasy.json")
+        elara = fantasy.creer_personnage("Mage", **FICHE_ELARA)
+        return Session(fantasy, elara, Des(graine), arme="Dague", armure="Cuir")
+    cyberpunk = charger_univers(UNIVERS)
+    kaito = cyberpunk.creer_personnage("Netrunner", **FICHE_KAITO)
+    return Session(cyberpunk, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée")
 
 
 def jouer(serveur: llm.Serveur, situation: Situation, budget: int, graine: int) -> Partie:
-    session = nouvelle_session(graine)
+    session = nouvelle_session(graine, situation.univers)
     historique = (situation.preparer(session) if situation.preparer else None) or []
     tour = Table(serveur, session, budget, situation.scene, historique).tour(situation.joueur)
     appels, traces = [], []

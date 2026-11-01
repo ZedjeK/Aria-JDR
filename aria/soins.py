@@ -100,6 +100,8 @@ class RapportRepos:
     gain: int
     pv_apres: int
     blessure_grave_guerie: bool = False
+    pm_gagnes: int = 0
+    pm_apres: int = 0
 
 
 def reposer(perso: Personnage, repos: Repos, moment: Moment, curseur: Curseur = Curseur.STANDARD,
@@ -118,7 +120,7 @@ def reposer(perso: Personnage, repos: Repos, moment: Moment, curseur: Curseur = 
         raise SoinImpossible(f"{perso.nom} s'est déjà reposé ({moment}).")
     perso.dernier_repos = moment
     if interrompu:
-        return RapportRepos(perso.nom, repos, 0, perso.pv)
+        return RapportRepos(perso.nom, repos, 0, perso.pv, pm_apres=perso.pm)
 
     guerie = False
     if repos is Repos.LONG and perso.blessure_grave:
@@ -128,7 +130,11 @@ def reposer(perso: Personnage, repos: Repos, moment: Moment, curseur: Curseur = 
     gain = max(1, int(perso.pv_max * fraction)) if fraction else 0
     avant = perso.pv
     _modifier_pv(perso, gain)
-    return RapportRepos(perso.nom, repos, perso.pv - avant, perso.pv, guerie)
+    # Les PM se récupèrent comme les PV (REGLES.md 10.8)
+    pm_avant = perso.pm
+    if fraction and perso.pm_max:
+        perso.pm = min(perso.pm_max, perso.pm + max(1, int(perso.pm_max * fraction)))
+    return RapportRepos(perso.nom, repos, perso.pv - avant, perso.pv, guerie, perso.pm - pm_avant, perso.pm)
 
 
 def _guerir_pendant_la_nuit(perso: Personnage, curseur: Curseur) -> bool:

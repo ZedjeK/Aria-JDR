@@ -186,6 +186,19 @@ def subir_choc(des: Des, perso: Personnage, choc: Choc, moment: Moment,
     return rapport
 
 
+def payer_sante_mentale(perso: Personnage, perte: int, moment: Moment | None) -> int:
+    """Le prix d'un sort en Horreur (REGLES.md 10.8) : la SM baisse, et la folie guette à 0.
+    Ce n'est pas un choc : ni test, ni crise ; la perte compte quand même dans celles du jour."""
+    if moment:
+        _nouveau_jour(perso, moment)
+    perte = min(perte, perso.sm)
+    perso.sm -= perte
+    perso.perte_sm_jour += perte
+    if perso.sm == 0:
+        perso.folie = True
+    return perte
+
+
 def _nouveau_jour(perso: Personnage, moment: Moment):
     """Remet à zéro le compte des pertes du jour quand la journée change."""
     if perso.jour_sm != moment.jour:

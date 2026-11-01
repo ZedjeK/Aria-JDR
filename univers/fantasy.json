@@ -1,0 +1,188 @@
+{
+  "nom": "Les Marches d'Aldaran",
+  "genre": "Fantasy",
+  "cadre": "Un royaume aux frontières mal tenues : forêts profondes, villes fortifiées, guildes de mages et routes peu sûres",
+  "curseur": "standard",
+  "monde_impitoyable": false,
+  "magie": true,
+  "habillage": {
+    "Corps à corps": "Armes de mêlée",
+    "Investigation": "Enquête",
+    "Persuasion": "Éloquence",
+    "Tromperie": "Duperie",
+    "Escamotage": "Larcin",
+    "Arts": "Musique & contes",
+    "Érudition": "Lettres & légendes",
+    "Sciences": "Philosophie naturelle",
+    "Occultisme": "Savoir occulte",
+    "Artisanat": "Forge & artisanat",
+    "Technologie": "Mécanismes",
+    "Sécurité": "Crochetage & pièges",
+    "Pilotage": "Équitation & navigation",
+    "Magie": "Arcanes"
+  },
+  "competences_thematiques": [
+    {
+      "nom": "Alchimie",
+      "base": 5,
+      "description": "Préparer potions, poisons et élixirs ; reconnaître une substance."
+    },
+    {
+      "nom": "Foi",
+      "base": 5,
+      "description": "Prières, rites et miracles ; connaître les dieux et leurs clergés."
+    }
+  ],
+  "parcours": {
+    "Mage": [
+      "Magie", "Occultisme", "Érudition", "Perception",
+      "Perspicacité", "Médecine", "Persuasion", "Esquive"
+    ],
+    "Guerrier": [
+      "Corps à corps", "Esquive", "Athlétisme", "Intimidation",
+      "Perception", "Commandement", "Pilotage", "Survie"
+    ],
+    "Rôdeur": [
+      "Armes à distance", "Survie", "Discrétion", "Perception",
+      "Athlétisme", "Corps à corps", "Médecine", "Esquive"
+    ]
+  },
+  "armes": [
+    {"nom": "Dague", "competence": "Corps à corps", "degats": "1d4", "portee": "contact", "proprietes": ["dissimulable"]},
+    {"nom": "Bâton", "competence": "Corps à corps", "degats": "1d6", "portee": "contact", "proprietes": ["deux mains"]},
+    {"nom": "Épée longue", "competence": "Corps à corps", "degats": "1d8", "portee": "contact"},
+    {"nom": "Hache d'armes", "competence": "Corps à corps", "degats": "1d12", "portee": "contact", "proprietes": ["deux mains"]},
+    {
+      "nom": "Arc long",
+      "competence": "Armes à distance",
+      "degats": "1d8",
+      "portee": "longue",
+      "munitions": {"capacite": 20, "recharge": "mineure"},
+      "proprietes": ["deux mains", "silencieuse"]
+    },
+    {
+      "nom": "Arbalète",
+      "competence": "Armes à distance",
+      "degats": "1d10",
+      "portee": "moyenne",
+      "munitions": {"capacite": 1, "recharge": "simple"},
+      "proprietes": ["deux mains"]
+    }
+  ],
+  "armures": [
+    {"nom": "Cuir", "protection": 1},
+    {"nom": "Cotte de mailles", "protection": 3, "malus": {"Discrétion": -10}},
+    {"nom": "Plates", "protection": 4, "malus": {"Discrétion": -20, "Athlétisme": -10}}
+  ],
+  "chocs_banals": ["PHENOMENE_ETRANGE", "SURNATUREL_INDENIABLE"],
+  "domaines": [
+    {
+      "nom": "Pyromancie",
+      "description": "Le feu, de l'étincelle au brasier.",
+      "effets": ["attaque", "protection", "renfort", "entrave", "utilitaire"],
+      "sorts": [
+        {"nom": "Étincelle", "effet": "attaque", "puissance": "mineur"},
+        {"nom": "Trait de feu", "effet": "attaque", "puissance": "modéré"},
+        {"nom": "Gerbe de flammes", "effet": "attaque", "puissance": "modéré", "propriete": "zone"},
+        {"nom": "Peau de braise", "effet": "protection", "puissance": "modéré"},
+        {"nom": "Brasier", "effet": "attaque", "puissance": "majeur", "propriete": "persistant"}
+      ],
+      "improvisations": [
+        {"nom": "Allumer ou souffler une flamme", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Réchauffer un allié transi", "effet": "renfort", "puissance": "mineur"},
+        {"nom": "Chauffer ou faire fondre", "effet": "utilitaire", "puissance": "modéré"},
+        {"nom": "Écran de fumée", "effet": "entrave", "puissance": "modéré"}
+      ]
+    },
+    {
+      "nom": "Givre",
+      "description": "Le froid qui engourdit, protège et brise.",
+      "effets": ["attaque", "protection", "renfort", "entrave", "utilitaire"],
+      "sorts": [
+        {"nom": "Morsure du froid", "effet": "entrave", "puissance": "mineur"},
+        {"nom": "Armure de givre", "effet": "protection", "puissance": "mineur"},
+        {"nom": "Lance de glace", "effet": "attaque", "puissance": "modéré"},
+        {"nom": "Sol verglacé", "effet": "entrave", "puissance": "modéré", "propriete": "zone"},
+        {"nom": "Tempête de grêle", "effet": "attaque", "puissance": "majeur", "propriete": "zone"}
+      ],
+      "improvisations": [
+        {"nom": "Conserver des vivres", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Givrer une lame", "effet": "renfort", "puissance": "mineur"},
+        {"nom": "Geler l'eau", "effet": "utilitaire", "puissance": "modéré"},
+        {"nom": "Brume givrante", "effet": "entrave", "puissance": "modéré"}
+      ]
+    },
+    {
+      "nom": "Guérison",
+      "description": "Refermer les plaies et protéger les siens. La Guérison n'attaque pas.",
+      "effets": ["soin", "protection", "renfort", "utilitaire"],
+      "sorts": [
+        {"nom": "Apaiser", "effet": "soin", "puissance": "mineur"},
+        {"nom": "Refermer les plaies", "effet": "soin", "puissance": "modéré"},
+        {"nom": "Bénédiction", "effet": "renfort", "puissance": "modéré"},
+        {"nom": "Égide", "effet": "protection", "puissance": "modéré", "propriete": "zone"},
+        {"nom": "Grâce de vie", "effet": "soin", "puissance": "majeur"}
+      ],
+      "improvisations": [
+        {"nom": "Purifier l'eau ou la nourriture", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Diagnostiquer un mal", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Calmer la douleur", "effet": "renfort", "puissance": "mineur"},
+        {"nom": "Ranimer un mourant", "effet": "soin", "puissance": "mineur"}
+      ]
+    },
+    {
+      "nom": "Illusion",
+      "description": "Tromper les sens : sons, images, reflets et terreurs.",
+      "effets": ["protection", "renfort", "entrave", "utilitaire"],
+      "sorts": [
+        {"nom": "Leurre", "effet": "utilitaire", "puissance": "mineur", "propriete": "silencieux"},
+        {"nom": "Image miroir", "effet": "protection", "puissance": "modéré"},
+        {"nom": "Terreur fantasmatique", "effet": "entrave", "puissance": "modéré"},
+        {"nom": "Voile d'ombre", "effet": "renfort", "puissance": "modéré", "propriete": "silencieux"},
+        {"nom": "Mirage", "effet": "utilitaire", "puissance": "majeur"}
+      ],
+      "improvisations": [
+        {"nom": "Ventriloquie", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Effacer ses traces", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Éblouir", "effet": "entrave", "puissance": "mineur"},
+        {"nom": "Changer d'apparence", "effet": "utilitaire", "puissance": "modéré"}
+      ]
+    },
+    {
+      "nom": "Nécromancie",
+      "description": "La mort, ses secrets et son froid.",
+      "effets": ["attaque", "protection", "entrave", "utilitaire"],
+      "sorts": [
+        {"nom": "Toucher glacial", "effet": "attaque", "puissance": "mineur"},
+        {"nom": "Carapace d'os", "effet": "protection", "puissance": "mineur"},
+        {"nom": "Parler aux morts", "effet": "utilitaire", "puissance": "modéré"},
+        {"nom": "Malédiction lente", "effet": "attaque", "puissance": "modéré", "propriete": "persistant"},
+        {"nom": "Effroi sépulcral", "effet": "entrave", "puissance": "majeur"}
+      ],
+      "improvisations": [
+        {"nom": "Sentir la mort proche", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Conserver un corps", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Murmures d'outre-tombe", "effet": "entrave", "puissance": "mineur"},
+        {"nom": "Faire bouger un cadavre un instant", "effet": "utilitaire", "puissance": "modéré"}
+      ]
+    },
+    {
+      "nom": "Nature",
+      "description": "Les plantes, les bêtes et la colère des bois.",
+      "effets": ["attaque", "soin", "protection", "renfort", "entrave", "utilitaire"],
+      "sorts": [
+        {"nom": "Baies de vie", "effet": "soin", "puissance": "mineur"},
+        {"nom": "Parler aux bêtes", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Ronces", "effet": "entrave", "puissance": "modéré"},
+        {"nom": "Peau d'écorce", "effet": "protection", "puissance": "modéré"},
+        {"nom": "Colère de la forêt", "effet": "attaque", "puissance": "majeur", "propriete": "zone"}
+      ],
+      "improvisations": [
+        {"nom": "Trouver de l'eau ou de la nourriture", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Calmer un animal", "effet": "utilitaire", "puissance": "mineur"},
+        {"nom": "Se fondre dans les bois", "effet": "renfort", "puissance": "mineur"},
+        {"nom": "Faire pousser ou écarter la végétation", "effet": "utilitaire", "puissance": "modéré"}
+      ]
+    }
+  ]
+}

@@ -38,7 +38,8 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
     if o == "soigner":
         return [f"🩹 Médecine : {jet(r)}, +{r['pv_gagnes']} PV ({r['pv']})"]
     if o == "repos":
-        return [f"💤 Repos {r['repos']} : +{r['pv_gagnes']} PV ({r['pv']})"]
+        return [f"💤 Repos {r['repos']} : +{r['pv_gagnes']} PV ({r['pv']})"
+                + (f", +{r['pm_gagnes']} PM ({r['pm']})" if "pm" in r else "")]
     if o == "recuperer_sante_mentale":
         return [("🧠 Santé mentale : " + jet(r) + ", " if "jet" in r else "🧠 ")
                 + f"+{r['sm_gagnee']} SM ({r['sante_mentale']})"]
@@ -59,10 +60,13 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return [f"⚔️ {session.combattant(r['qui']).nom} {VERBES[r['action']]}{arme}"]
     if o == "attaquer":
         return _decrire_attaque(r)
+    if o == "lancer_sort":
+        return _decrire_sort(r)
     if o == "stabiliser":
         return [f"🩹 Stabiliser : {jet(r)} → {r['etat']}"]
     if o == "fin_de_tour":
-        return ([f"💀 {t['qui']} agonise : Constitution {jet(t)}" for t in r["tests_des_mourants"]]
+        return ([_decrire_sauvegarde(s) for s in r.get("sauvegardes", [])]
+                + [f"💀 {t['qui']} agonise : Constitution {jet(t)}" for t in r["tests_des_mourants"]]
                 + ([f"⚔️ Round {r['round']}"] if r["nouveau_round"] else []))
     if o == "fin_combat":
         return ["⚔️ Fin du combat"]
@@ -97,3 +101,33 @@ def _decrire_attaque(r: dict) -> list[str]:
         lignes.append("   → Le coup est évité." if r["issue"] == "défenseur" else "   → Raté.")
     lignes += [f"   → {effet}" for effet in r.get("effets", [])]
     return lignes
+
+
+def _decrire_sort(r: dict) -> list[str]:
+    lignes = [f"✨ {r['lanceur']} lance {r['sort']} ({r['puissance']}) : {jet(r['test'])}, −{r['pm_depenses']} PM "
+              f"({r['pm_restants']})"]
+    if r.get("pv_puises"):
+        lignes.append(f"   → À court de PM : −{r['pv_puises']} PV")
+    if r.get("sm_perdue"):
+        lignes.append(f"   → −{r['sm_perdue']} SM")
+    for c in r.get("cibles", []):
+        if "degats" in c:
+            armure = f" (l'armure en arrête {c['armure']})" if c.get("armure") else ""
+            lignes.append(f"   → {c['qui']} est touché : {c['degats']} dégâts{armure}, il reste {c['pv']} PV")
+            if c.get("blessure_grave"):
+                lignes.append("   → BLESSURE GRAVE !")
+            if c.get("etat", Etat.ACTIF.value) != Etat.ACTIF.value:
+                lignes.append(f"   → {c['qui']} est {c['etat']}")
+        elif "pv_gagnes" in c:
+            lignes.append(f"   → {c['qui']} : +{c['pv_gagnes']} PV")
+        if c.get("effet"):
+            lignes.append(f"   → {c['qui']} : {c['effet']}")
+    if "retour" in r:
+        lignes.append(f"   → {r['retour']}")
+    return lignes
+
+
+def _decrire_sauvegarde(s: dict) -> str:
+    issue = "l'effet s'arrête" if s["fini"] else "l'effet continue"
+    degats = f", {s['degats']} dégâts" if s["degats"] else ""
+    return f"🔥 {s['qui']}, {s['sort']} : sauvegarde {jet(s)}{degats} → {issue}"

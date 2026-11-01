@@ -37,7 +37,7 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 .venv\Scripts\python.exe -m aria.banc
 ```
 
-Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 32 situations, dont 8 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur ou de croire un faux souvenir. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
+Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 37 situations, dont 10 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur, de croire un faux souvenir ou de lancer un sort que le personnage ne connaît pas. Les situations de magie se jouent avec Elara, une mage, dans un univers de Fantasy étalon (`univers/fantasy.json`), avec les domaines de l'annexe C des règles. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
 
 ## Jouer avec le MJ
 

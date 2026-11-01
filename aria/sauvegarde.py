@@ -41,7 +41,8 @@ def _moment_depuis_dict(d: dict | None) -> Moment | None:
     return Moment(d["jour"], Periode(d["periode"])) if d else None
 
 
-_CHAMPS_MOMENT = ("dernier_repos", "dernier_soin_recu", "moment_echecs_soin", "derniere_therapie")
+_CHAMPS_MOMENT = ("dernier_repos", "dernier_soin_recu", "moment_echecs_soin", "dernier_soin_magique",
+                  "moment_echecs_magie", "derniere_therapie")
 
 
 def personnage_vers_dict(perso: Personnage) -> dict:

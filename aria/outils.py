@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import progression, sante_mentale, soins
+from aria import magie, progression, sante_mentale, soins
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -52,6 +52,7 @@ REPOS = {"court": soins.Repos.COURT, "moyen": soins.Repos.MOYEN, "long": soins.R
 PNJ_COMBAT = (5, 85)
 PNJ_PV = (1, 40)
 PNJ_COMPETENCE = (0, 90)
+PNJ_PM = (0, 30)
 RAPPEL_REUSSITE = "Test réussi : raconte-le. Il ne se relance pas pour faire mieux, même si le joueur le demande."
 MOMENTS_FORTS_MAX = 600  # caractères : trois phrases, pas un roman
 
@@ -99,6 +100,7 @@ class Outil:
     description: str
     parametres: Callable[["Session"], dict]  # le schéma dépend de la session (PNJ présents, univers…)
     fonction: Callable[..., dict]
+    disponible: Callable[["Session"], bool] = lambda s: True  # sans magie dans l'univers, pas de lancer_sort
 
 
 def _resume(resultat: Resultat) -> dict:
@@ -145,13 +147,14 @@ class Session:
         """La liste des outils au format OpenAI, à envoyer au LLM à chaque tour."""
         return [{"type": "function",
                  "function": {"name": o.nom, "description": o.description, "parameters": o.parametres(self)}}
-                for o in OUTILS.values()]
+                for o in OUTILS.values() if o.disponible(self)]
 
     def appeler(self, nom: str, arguments: "dict | str | None" = None) -> dict:
         """Appelle un outil par son nom. Ne lève jamais d'exception : les erreurs sont renvoyées en clair."""
         try:
-            if nom not in OUTILS:
-                raise ErreurOutil(f"Outil inconnu : « {nom} ». Outils disponibles : {sorted(OUTILS)}.")
+            if nom not in OUTILS or not OUTILS[nom].disponible(self):
+                disponibles = sorted(n for n, o in OUTILS.items() if o.disponible(self))
+                raise ErreurOutil(f"Outil inconnu : « {nom} ». Outils disponibles : {disponibles}.")
             if isinstance(arguments, str):
                 try:
                     arguments = json.loads(arguments) if arguments.strip() else {}
@@ -203,6 +206,25 @@ class Session:
     def identifiant(self, combattant: Combattant) -> str:
         return JOUEUR if combattant is self.joueur else next(i for i, c in self.pnj.items() if c is combattant)
 
+    @property
+    def a_la_magie(self) -> bool:
+        return self.univers.magie_active and bool(self.univers.domaines)
+
+    def sorts_connus(self, combattant: Combattant) -> dict[str, magie.Sort]:
+        """Le joueur connaît tous les sorts de ses deux domaines ; un PNJ, ceux qu'on lui a donnés."""
+        if not self.a_la_magie:
+            return {}
+        if combattant is self.joueur:
+            sorts = self.univers.sorts_connus(self.personnage.domaines)
+        else:
+            sorts = [self.univers.sort(nom) for nom in getattr(combattant.fiche, "sorts", ())]
+        return {s.nom: s for s in sorts}
+
+    def oublier_les_effets(self):
+        """Les effets des sorts ne survivent ni à la fin d'un combat, ni à la fin de la demi-journée."""
+        for combattant in [self.joueur, *self.pnj.values()]:
+            combattant.effets = []
+
     def evenements_du_round(self) -> list[str]:
         return [ligne for entree in self.journal[self.debut_round:]
                 for ligne in decrire(entree["outil"], entree["arguments"], entree["resultat"], self)]
@@ -211,10 +233,11 @@ class Session:
 OUTILS: dict[str, Outil] = {}
 
 
-def outil(description: str, parametres: Callable[[Session], dict]):
+def outil(description: str, parametres: Callable[[Session], dict],
+          disponible: Callable[[Session], bool] = lambda s: True):
     """Déclare une fonction comme outil du MJ. Son nom d'outil est son nom de fonction."""
     def enregistrer(fonction):
-        OUTILS[fonction.__name__] = Outil(fonction.__name__, description, parametres, fonction)
+        OUTILS[fonction.__name__] = Outil(fonction.__name__, description, parametres, fonction, disponible)
         return fonction
     return enregistrer
 
@@ -240,12 +263,29 @@ def _difficulte() -> dict:
 
 # --- État -------------------------------------------------------------------------------------
 
+def _effets(c: Combattant) -> list[str]:
+    """Les effets des sorts sur un combattant, en clair."""
+    textes = []
+    for e in c.effets:
+        if e.nature == "protection":
+            textes.append(f"{e.sort} (armure +{e.valeur})")
+        elif e.nature == "attaque":
+            textes.append(f"{e.sort} (persistant)")
+        else:
+            textes.append(f"{e.sort} ({e.valeur:+d} à ses jets)")
+    return textes
+
+
 def _etat_combattant(c: Combattant) -> dict:
     f = c.fiche
     etat = {"nom": c.nom, "pv": f.pv, "pv_max": f.pv_max, "etat": f.etat.value, "blessure_grave": f.blessure_grave,
             "arme": c.arme.nom if c.arme else None, "armure": c.armure.nom if c.armure else None}
     if c.arme and c.arme.munitions:
         etat["munitions"] = c.munitions_restantes()
+    if getattr(f, "sorts", None):
+        etat["pm"] = f.pm
+    if c.effets:
+        etat["effets_magiques"] = _effets(c)
     return etat
 
 
@@ -258,7 +298,7 @@ def etat(session: Session) -> dict:
         "joueur": _etat_combattant(session.joueur) | {
             "sante_mentale": p.sm, "sm_max": p.sm_max, "points_destin": p.points_destin, "xp": p.xp,
             "troubles": [t.type.value for t in p.troubles], "folie": p.folie,
-        },
+        } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {}),
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:
@@ -273,6 +313,7 @@ def etat(session: Session) -> dict:
        lambda s: _objet({}))
 def avancer_temps(session: Session) -> dict:
     session.moment = session.moment.suivant()
+    session.oublier_les_effets()
     return {"moment": str(session.moment)}
 
 
@@ -290,6 +331,8 @@ def test_competence(session: Session, competence: str, difficulte: str, pourquoi
     valeur = session.joueur.valeur(socle)
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
     progression.cocher(session.personnage, socle, resultat)
+    if not session.combat:
+        session.joueur.consommer_effets_du_jet()
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": competence}
     return {"competence": competence, **_test(resultat)}
 
@@ -301,8 +344,10 @@ def test_competence(session: Session, competence: str, difficulte: str, pourquoi
        }, ["caracteristique", "difficulte"]))
 def test_caracteristique(session: Session, caracteristique: str, difficulte: str) -> dict:
     carac = next(c for c in Caracteristique if c.libelle == caracteristique)
-    valeur = session.personnage.carac(carac)
+    valeur = session.personnage.carac(carac) + session.joueur.modificateur_magique
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
+    if not session.combat:
+        session.joueur.consommer_effets_du_jet()
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": caracteristique}
     return {"caracteristique": caracteristique, **_test(resultat)}
 
@@ -359,7 +404,10 @@ def soigner(session: Session, soigneur: str) -> dict:
        lambda s: _objet({"type": _enum(REPOS), "interrompu": {"type": "boolean"}}, ["type"]))
 def repos(session: Session, type: str, interrompu: bool = False) -> dict:
     r = soins.reposer(session.personnage, REPOS[type], session.moment, session.univers.curseur, interrompu)
-    return {"repos": type, "pv_gagnes": r.gain, "pv": r.pv_apres, "blessure_grave_guerie": r.blessure_grave_guerie}
+    resultat = {"repos": type, "pv_gagnes": r.gain, "pv": r.pv_apres, "blessure_grave_guerie": r.blessure_grave_guerie}
+    if session.a_la_magie:
+        resultat.update(pm_gagnes=r.pm_gagnes, pm=r.pm_apres)
+    return resultat
 
 
 @outil("Faire récupérer de la Santé mentale au joueur : une discussion (avec son lien ou longuement avec "
@@ -421,10 +469,17 @@ def point_de_destin(session: Session, usage: str) -> dict:
            "dexterite": {"type": "integer", "minimum": 15, "maximum": 90},
            "competences": {"type": "object", "additionalProperties": True,
                            "description": "Autres talents, par exemple {\"Médecine\": 70}."},
-       }, ["identifiant", "nom", "camp", "combat", "pv"]))
+       } | ({
+           "magie": {"type": "integer", "minimum": PNJ_COMPETENCE[0], "maximum": PNJ_COMPETENCE[1],
+                     "description": "Pour un lanceur de sorts : son pourcentage de Magie."},
+           "pm": {"type": "integer", "minimum": PNJ_PM[0], "maximum": PNJ_PM[1], "description": "Ses points de magie."},
+           "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
+                     "description": "Les sorts qu'il connaît, pris dans les domaines de l'univers."},
+       } if s.a_la_magie else {}), ["identifiant", "nom", "camp", "combat", "pv"]))
 def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: int, pv: int,
               arme: str | None = None, armure: str | None = None, dexterite: int = 50,
-              competences: dict | None = None) -> dict:
+              competences: dict | None = None, magie: int | None = None, pm: int = 0,
+              sorts: list | None = None) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -440,7 +495,12 @@ def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: i
         if not isinstance(valeur, int) or not PNJ_COMPETENCE[0] <= valeur <= PNJ_COMPETENCE[1]:
             raise ErreurOutil(f"La compétence « {nom_competence} » d'un PNJ va de 0 à {PNJ_COMPETENCE[1]}.")
         talents[socle] = valeur
-    fiche = FichePnj(nom, combat=combat, pv_max_base=pv, dexterite=dexterite, competences=talents)
+    if sorts and magie is None:
+        raise ErreurOutil("Un PNJ qui connaît des sorts a un pourcentage de Magie : précise « magie ».")
+    if magie is not None:
+        talents["Magie"] = magie
+    fiche = FichePnj(nom, combat=combat, pv_max_base=pv, dexterite=dexterite, competences=talents, pm=pm,
+                     sorts=tuple(sorts or ()))
     u = session.univers
     session.pnj[identifiant] = Combattant(fiche, camp, u.arme(arme) if arme else None,
                                           u.armure(armure) if armure else None)
@@ -554,6 +614,62 @@ def attaquer(session: Session, attaquant: str, cible: str, defense: str = "aucun
     return _rapport_attaque(rapport)
 
 
+def _rapport_sort(r: magie.RapportSort) -> dict:
+    s = r.sort
+    resultat = {"lanceur": r.lanceur, "sort": s.nom, "effet": s.effet.value, "puissance": s.puissance.value,
+                "test": _resume(r.test), "pm_depenses": r.pm_depenses, "pm_restants": r.pm_restants}
+    if r.pv_puises:
+        resultat["pv_puises"] = r.pv_puises
+    if r.sm_perdue:
+        resultat["sm_perdue"] = r.sm_perdue
+    cibles = []
+    for c in r.cibles:
+        if c.attaque:
+            cible = _rapport_attaque(c.attaque).get("touche", {"qui": c.qui, "degats": 0})
+            if c.effet:
+                cible["effet"] = c.effet
+        elif s.effet is magie.Effet.SOIN:
+            cible = {"qui": c.qui, "pv_gagnes": c.gain}
+        elif c.effet:
+            cible = {"qui": c.qui, "effet": c.effet}
+        else:
+            continue
+        cibles.append(cible)
+    if cibles:
+        resultat["cibles"] = cibles
+    if r.retour:
+        resultat["retour"] = r.retour
+    if s.effet is magie.Effet.UTILITAIRE and r.test.reussi:
+        resultat["consigne"] = (f"Raconte {magie.AMPLEUR[s.puissance]}, et seulement ce que permet « {s.nom} » : "
+                                "aucun bonus chiffré.")
+    return resultat
+
+
+@outil("Lancer un sort (en combat : une action simple). Seulement un sort que le lanceur connaît, sorts appris ou "
+       "improvisations : le moteur lance le jet de Magie, fait payer les PM (ou des PV s'il en manque) et applique "
+       "l'effet. Une attaque se lance en combat ; un sort de zone peut viser une deuxième cible.",
+       lambda s: _objet({
+           "lanceur": _ids(s, "Qui lance le sort."),
+           "sort": _enum(sorted({n for c in [s.joueur, *s.pnj.values()] for n in s.sorts_connus(c)}) or ["aucun"]),
+           "cible": _ids(s, "Qui le sort vise (le lanceur lui-même pour se soigner ou se protéger)."),
+           "cible2": _ids(s, "Seulement pour un sort de zone : la deuxième cible."),
+           "couvert": _enum(COUVERTS, "Pour une attaque : le couvert de la cible (partiel −20, lourd −40)."),
+       }, ["lanceur", "sort"]),
+       disponible=lambda s: s.a_la_magie)
+def lancer_sort(session: Session, lanceur: str, sort: str, cible: str | None = None, cible2: str | None = None,
+                couvert: str = "aucun") -> dict:
+    trouver = session.participant if session.combat else session.combattant
+    qui = trouver(lanceur)
+    connus = session.sorts_connus(qui)
+    if sort not in connus:
+        raise ErreurOutil(f"{qui.nom} ne connaît pas le sort « {sort} ». Ses sorts : {', '.join(sorted(connus))}."
+                          if connus else f"{qui.nom} ne connaît aucun sort.")
+    cibles = [trouver(i) for i in (cible, cible2) if i]
+    r = magie.lancer(session.des, qui, connus[sort], cibles, session.combat, COUVERTS[couvert], session.moment,
+                     coute_sm=session.univers.genre == "Horreur")
+    return _rapport_sort(r)
+
+
 @outil("Stabiliser un combattant mourant avec un jet de Médecine (action simple).",
        lambda s: _objet({"soigneur": _ids(s, "Qui soigne."), "mourant": _ids(s, "Qui est mourant.")},
                         ["soigneur", "mourant"]))
@@ -589,7 +705,12 @@ def _ligne_combattant(c: Combattant) -> str:
     arme = c.arme.nom if c.arme else "sans arme"
     if c.arme and c.arme.munitions:
         arme += f" ({c.munitions_restantes()} balles)"
-    return f"{c.nom} : {f.pv}/{f.pv_max} PV, {etat}, {arme}"
+    ligne = f"{c.nom} : {f.pv}/{f.pv_max} PV, {etat}, {arme}"
+    if (isinstance(f, Personnage) and f.pm_max) or getattr(f, "sorts", None):
+        ligne += f", {f.pm} PM"
+    if c.effets:
+        ligne += f" ; sorts : {', '.join(_effets(c))}"
+    return ligne
 
 
 def _puce(ligne: str) -> str:
@@ -622,6 +743,10 @@ def fin_de_tour(session: Session, passe: bool = False) -> dict:
     tests = c.fin_de_tour()
     resultat = {"round": c.round, "nouveau_round": c.round != round_avant,
                 "tests_des_mourants": [{"qui": nom, **_resume(t)} for nom, t in tests]}
+    if c.sauvegardes:
+        resultat["sauvegardes"] = [{"qui": s.qui, "sort": s.sort, **_resume(s.test), "degats": s.degats,
+                                    "fini": s.fini} for s in c.sauvegardes]
+        c.sauvegardes = []
     if resultat["nouveau_round"]:
         session.rounds.append((round_avant, evenements + decrire("fin_de_tour", {}, resultat, session)[:-1]))
         session.debut_round = len(session.journal) + 1  # + 1 : cet appel-ci
@@ -669,6 +794,7 @@ def fin_combat(session: Session, moments_forts: str) -> dict:
     if session.campagne:
         session.campagne.effacer_combat()
     session.combat, session.rounds = None, []
+    session.oublier_les_effets()
     for combattant in [session.joueur, *session.pnj.values()]:
         combattant.surpris = combattant.vise = combattant.a_vise = combattant.sursis = False
         combattant.budget = BudgetRound()

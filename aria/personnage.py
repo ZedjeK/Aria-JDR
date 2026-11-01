@@ -125,6 +125,7 @@ class Personnage:
     etat: Etat = Etat.ACTIF
     blessure_grave: bool = False  # tant qu'elle n'est pas guérie : PV max divisés par deux, −20 partout
     points_destin: int = 0  # fixés par le curseur de l'univers au début de la campagne
+    domaines: list[str] = field(default_factory=list)  # ses deux domaines de magie (REGLES.md 10.5)
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit
@@ -133,6 +134,10 @@ class Personnage:
     dernier_soin_recu: Moment | None = None  # la demi-journée de son dernier soin réussi
     soigneurs_en_echec: list[str] = field(default_factory=list)  # qui a raté son jet sur lui…
     moment_echecs_soin: Moment | None = None  # …pendant cette demi-journée
+    # Les soins magiques ont la même limite, à part (REGLES.md 10.7)
+    dernier_soin_magique: Moment | None = None
+    lanceurs_en_echec: list[str] = field(default_factory=list)
+    moment_echecs_magie: Moment | None = None
 
     # Suivi de la Santé mentale (REGLES.md 9)
     folie: bool = False

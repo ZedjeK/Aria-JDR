@@ -8,12 +8,15 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from aria.des import Des
-from aria.equipement import CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Recharge, formule_degats
+from aria.equipement import ARMES_A_DISTANCE, CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Recharge, formule_degats
 from aria.personnage import MALUS_BLESSURE_GRAVE, Caracteristique, Etat, Personnage
 from aria.progression import cocher
 from aria.reglages import Curseur
 from aria.resolution import Degre, Difficulte, Issue, Resultat, opposer, tester
+from aria.temps import Moment
 
+SAUVEGARDES_MAX = 3  # un effet persistant mord au plus 3 fois (REGLES.md 10.6)
+DEGATS_PERSISTANTS = "1d3"
 MAINS_NUES = Arme("Mains nues", CORPS_A_CORPS, "1d3", Portee.CONTACT)
 MALUS_DEFENSE_SUPPLEMENTAIRE = -20
 BONUS_VISER = 20
@@ -105,6 +108,13 @@ class FichePnj:
     etat: Etat = Etat.ACTIF
     blessure_grave: bool = False
     points_destin: int = 0
+    # Lanceur de sorts (REGLES.md 10.10) : sa Magie est dans `competences`
+    pm: int = 0
+    sorts: tuple[str, ...] = ()
+    # Limite des soins magiques reçus (REGLES.md 10.7)
+    dernier_soin_magique: Moment | None = None
+    lanceurs_en_echec: list[str] = field(default_factory=list)
+    moment_echecs_magie: Moment | None = None
 
     def __post_init__(self):
         if self.pv is None:
@@ -133,6 +143,32 @@ class FichePnj:
         return self.competence(nom) + (MALUS_BLESSURE_GRAVE if self.blessure_grave else 0)
 
 
+@dataclass
+class EffetEnCours:
+    """Ce qu'un sort laisse sur un combattant (REGLES.md 10.3 et 10.6).
+
+    `nature` : « protection » (armure en plus), « renfort » ou « entrave » (bonus ou malus à
+    tous ses jets), ou « attaque » pour une brûlure persistante. `rounds` : None jusqu'à la fin
+    du combat ; hors combat, un effet d'un round vaut pour le prochain jet.
+    """
+
+    sort: str
+    nature: str
+    valeur: int
+    rounds: int | None = 1
+    persistant: bool = False  # s'arrête sur un jet de sauvegarde réussi, au début du tour de sa victime
+    sauvegardes: int = 0
+
+
+@dataclass
+class RapportSauvegarde:
+    qui: str
+    sort: str
+    test: Resultat
+    degats: int = 0
+    fini: bool = False  # l'effet s'arrête
+
+
 class Combattant:
     """Un participant au combat : un personnage ou un ennemi, avec son équipement en main."""
 
@@ -148,6 +184,7 @@ class Combattant:
         self.a_vise = False  # a visé ce round : ne peut plus se déplacer, même après avoir tiré
         self.surpris = False
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
+        self.effets: list[EffetEnCours] = []  # ce que les sorts lui ont laissé
         if arme:
             self._charger(arme)
 
@@ -181,11 +218,25 @@ class Combattant:
         cocher(self.fiche, competence, resultat)
 
     def valeur(self, competence: str) -> int:
-        """La compétence avec les malus subis : blessure grave et armure."""
-        valeur = self.fiche.valeur(competence)
+        """La compétence avec les malus subis (blessure grave, armure) et les renforts ou entraves des sorts."""
+        valeur = self.fiche.valeur(competence) + self.modificateur_magique
         if self.armure:
             valeur += self.armure.malus_pour(competence)
         return valeur
+
+    @property
+    def modificateur_magique(self) -> int:
+        return sum(e.valeur for e in self.effets if e.nature in ("renfort", "entrave"))
+
+    @property
+    def protection(self) -> int:
+        """L'armure portée, plus celle des sorts de protection."""
+        magique = sum(e.valeur for e in self.effets if e.nature == "protection")
+        return (self.armure.protection_totale if self.armure else 0) + magique
+
+    def consommer_effets_du_jet(self):
+        """Hors combat, un renfort ou une entrave d'un round vaut pour le prochain jet seulement."""
+        self.effets = [e for e in self.effets if e.persistant or e.rounds is None or e.nature == "protection"]
 
     @property
     def conscient(self) -> bool:
@@ -255,6 +306,7 @@ class Combat:
         for combattant in surpris:
             combattant.surpris = True
         self.actif = self._prochain(0)  # l'indice, dans l'ordre, de celui dont c'est le tour
+        self.sauvegardes: list[RapportSauvegarde] = []  # les effets persistants, en attente d'être racontés
 
     # --- Le tour de parole ---------------------------------------------------------
 
@@ -277,17 +329,43 @@ class Combat:
 
     def fin_de_tour(self) -> list[tuple[str, Resultat]]:
         """Passe au suivant dans l'ordre d'initiative, en sautant ceux qui ne peuvent pas agir.
-        Après le dernier, le round se clôt tout seul : renvoie alors les tests des mourants."""
-        suivant = None if self.actif is None else self._prochain(self.actif + 1)
-        if suivant is not None:
-            self.actif = suivant
-            return []
-        return self.fin_de_round()
+        Après le dernier, le round se clôt tout seul : renvoie alors les tests des mourants.
+        Au début de chaque tour, les effets persistants mordent leur victime (voir `sauvegardes`)."""
+        tests = []
+        while True:
+            suivant = None if self.actif is None else self._prochain(self.actif + 1)
+            if suivant is None:
+                tests += self.fin_de_round()
+            else:
+                self.actif = suivant
+            if self.actif is None or self._debut_de_tour(self.ordre[self.actif]):
+                return tests
+
+    def _debut_de_tour(self, combattant: Combattant) -> bool:
+        """Un jet de sauvegarde par effet persistant : Constitution contre une brûlure, Volonté contre
+        une entrave (REGLES.md 10.6). Renvoie False si le combattant ne peut plus agir."""
+        for effet in [e for e in combattant.effets if e.persistant]:
+            carac = Caracteristique.CONSTITUTION if effet.nature == "attaque" else Caracteristique.VOLONTE
+            test = tester(self.des, combattant.fiche.carac(carac))
+            effet.sauvegardes += 1
+            rapport = RapportSauvegarde(combattant.nom, effet.sort, test)
+            if not test.reussi and effet.nature == "attaque":
+                rapport.degats = self.des.jet(DEGATS_PERSISTANTS)
+                self.appliquer_degats(combattant, rapport.degats)
+            rapport.fini = test.reussi or effet.sauvegardes >= SAUVEGARDES_MAX
+            if rapport.fini:
+                combattant.effets.remove(effet)
+            self.sauvegardes.append(rapport)
+        return self.peut_agir(combattant)
 
     # --- Ce que chacun peut faire --------------------------------------------------
 
     def peut_agir(self, combattant: Combattant) -> bool:
         return combattant.conscient and not (combattant.surpris and self.round == 1)
+
+    def action_simple(self, combattant: Combattant):
+        """Une action simple sans autre effet sur le combat, par exemple lancer un sort."""
+        self._agir(combattant, TypeAction.SIMPLE)
 
     def _agir(self, combattant: Combattant, action: TypeAction):
         if not self.peut_agir(combattant):
@@ -395,7 +473,7 @@ class Combat:
     def _infliger(self, source: Combattant, arme: Arme, degre: Degre, victime: Combattant,
                   bonus_majeure: BonusMajeure, rapport: RapportAttaque):
         formule = formule_degats(arme, source.force)
-        protection = victime.armure.protection_totale if victime.armure else 0
+        protection = victime.protection
         if degre is Degre.CRITIQUE:
             # Dégâts maximum, et l'armure ne compte qu'à moitié
             brut = formule.maximum
@@ -416,6 +494,17 @@ class Combat:
         rapport.degats_bruts = brut
         rapport.protection = protection
         rapport.blessure = self.appliquer_degats(victime, max(0, brut - protection))
+
+    def toucher_par_sort(self, lanceur: Combattant, cible: Combattant, sort: str, formule: str,
+                         test: Resultat) -> RapportAttaque:
+        """Un sort d'attaque se joue comme un tir : pas de défense, les degrés du combat (REGLES.md 10.3).
+        Le jet de Magie est déjà fait ; ici, seulement les dégâts."""
+        rapport = RapportAttaque(lanceur.nom, cible.nom, test, None,
+                                 Issue.ATTAQUANT if test.reussi else Issue.PERSONNE)
+        if test.reussi:
+            arme = Arme(sort, ARMES_A_DISTANCE, formule, Portee.MOYENNE)
+            self._infliger(lanceur, arme, test.degre, cible, BonusMajeure.DE_SUPPLEMENTAIRE, rapport)
+        return rapport
 
     def appliquer_degats(self, victime: Combattant, degats: int) -> RapportBlessure:
         """Retire des PV et applique blessure grave, mort instantanée et agonie (REGLES.md 7.6)."""
@@ -481,6 +570,10 @@ class Combat:
             combattant.budget = BudgetRound()
             combattant.defenses_ce_round = 0
             combattant.vise = combattant.a_vise = False  # la visée ne vaut que pour le round où elle est prise
+            for effet in combattant.effets:
+                if not effet.persistant and effet.rounds is not None:
+                    effet.rounds -= 1
+            combattant.effets = [e for e in combattant.effets if e.persistant or e.rounds is None or e.rounds > 0]
             if self.round == 1:
                 combattant.surpris = False
         self.round += 1
