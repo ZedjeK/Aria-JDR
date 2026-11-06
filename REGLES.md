@@ -621,14 +621,14 @@ Genres de la V1 : Fantasy, Dark fantasy, Horreur, Contemporain, Militaire, Scien
 | **Steampunk** | Corps à corps → Escrime & boxe · Investigation → Enquête · Persuasion → Éloquence · Escamotage → Pickpocket · Sciences → Sciences naturelles · Occultisme → Spiritisme · Artisanat → Ingénierie · Technologie → Automates & machines · Sécurité → Serrures & coffres · Pilotage → Conduite & pilotage | Éther (optionnelle) |
 | **Science-fiction** | Athlétisme → Athlétisme (zéro G) · Corps à corps → Combat rapproché · Persuasion → Diplomatie · Érudition → Xénoculture · Occultisme → Anomalies · Artisanat → Ingénierie · Technologie → Systèmes & IA · Sécurité → Contre-mesures · Pilotage → Conduite & pilotage | Psionique |
 | **Cyberpunk** | Discrétion → Infiltration · Corps à corps → Combat rapproché · Perception → Vigilance · Perspicacité → Empathie · Investigation → Data-mining · Persuasion → Négociation · Tromperie → Arnaque · Escamotage → Doigts agiles · Arts → Performance · Commandement → Meneur · Érudition → Éducation · Occultisme → Légendes urbaines · Artisanat → Bricolage tech · Technologie → Piratage · Sécurité → Contre-mesures · Pilotage → Conduite | Désactivée |
-| **Post-apo** | Corps à corps → Bagarre · Perception → Vigilance · Perspicacité → Flair · Investigation → Enquête · Persuasion → Marchandage · Tromperie → Embrouille · Escamotage → Chapardage · Arts → Conteur · Commandement → Meneur · Érudition → Savoir d'avant · Occultisme → Superstitions · Artisanat → Bricolage · Technologie → Tech d'avant · Sécurité → Pièges · Pilotage → Conduite | Désactivée (activable : mutants psi) |
+| **Post-apo** | Corps à corps → Bagarre · Perception → Vigilance · Perspicacité → Flair · Investigation → Enquête · Persuasion → Marchandage · Tromperie → Embrouille · Escamotage → Chapardage · Arts → Conteur · Commandement → Meneur · Érudition → Savoir d'avant · Occultisme → Superstitions · Artisanat → Bricolage · Technologie → Tech d'avant · Sécurité → Pièges · Pilotage → Conduite | Désactivée (activable : Psi, le don des mutants) |
 
 ## Annexe B — Compétences thématiques par genre
 
 | Genre | Compétences thématiques |
 |---|---|
 | Fantasy | Alchimie (potions, poisons, élixirs), Foi (prières et miracles) |
-| Dark fantasy | Démonologie (invoquer, lier, bannir), Foi (prières, exorcismes, inquisition) |
+| Dark fantasy | Démonologie (nommer, reconnaître, repousser par les rites ; jamais invoquer d'allié), Foi (prières, exorcismes, inquisition) |
 | Urban fantasy | Le Voile (factions, lois et lieux du monde caché), Réseau (contacts, indics) |
 | Horreur | Mythe (savoir interdit ; réduit la SM maximum) |
 | Super-héros | Contrôle des pouvoirs, Identité secrète |
@@ -718,3 +718,321 @@ Improvisations : sentir la mort proche (utilitaire, mineur) · conserver un corp
 | Colère de la forêt | Attaque | Majeur | Zone | 7 | 3d6 sur 2 cibles proches |
 
 Improvisations : trouver de l'eau ou de la nourriture (utilitaire, mineur) · calmer un animal (utilitaire, mineur) · se fondre dans les bois (renfort +10 en Discrétion, mineur) · faire pousser ou écarter la végétation (utilitaire, modéré).
+
+## Annexe D — Parcours par genre
+
+Des modèles, pas une liste figée : le générateur d'univers les adapte au cadre de chaque campagne. Un parcours est le métier de quelqu'un dans le monde : il sert au personnage du joueur, et plus tard aux compagnons et aux PNJ. Les compétences portent ici leur nom d'univers (voir l'annexe A).
+
+### Cyberpunk
+
+**La rue armée**
+
+1. **Solo** — Mercenaire augmenté, payé pour protéger, escorter ou tuer. C'est le premier qu'on appelle quand ça tire, le dernier qu'on invite à une négociation. Il a vendu un peu de son humanité à chaque implant. *Armes à distance, Combat rapproché, Esquive, Athlétisme, Vigilance, Intimidation, Conduite, Cybernétique.*
+2. **Ganger** — Membre d'un gang de quartier, qui vit de racket, de deal et de guerres de territoire. Pour lui, la loyauté envers la bande passe avant tout. Il est dangereux en meute et beaucoup moins quand il est seul. *Combat rapproché, Armes à distance, Intimidation, Athlétisme, Vigilance, Doigts agiles, Conduite, Esquive.*
+3. **Kobun yakuza** — Soldat d'un clan, lié par le giri et tatoué jusqu'aux os. Il gère les tripots et les dettes de son oyabun. Respecté et craint dans le quartier, il ne peut jamais tourner le dos à son clan. *Intimidation, Négociation, Combat rapproché, Armes à distance, Réseau, Empathie, Arnaque, Vigilance.*
+4. **Agent d'infiltration** — Le shinobi des corporations : vol de prototypes, sabotage, extraction de cadres. Il entre là où personne n'entre et repart sans laisser de trace. Il est redoutable seul, et on le sacrifie sans hésiter s'il est pris. *Infiltration, Combat rapproché, Esquive, Athlétisme, Arnaque, Contre-mesures, Vigilance, Doigts agiles.*
+
+**L'ordre et les corpos**
+
+5. **Flic de la NeoPol** — Inspecteur dans une police sous-payée et à moitié rachetée par les corpos. Il a un badge, une arme et des enquêtes qu'on lui demande d'enterrer. Il est utile, mais toujours tiraillé entre la loi, l'argent et sa conscience. *Armes à distance, Data-mining, Intimidation, Vigilance, Conduite, Empathie, Combat rapproché, Réseau.*
+6. **Agent de sécurité corpo** — Garde d'élite d'une tour Arasaka ou d'un labo privé, équipé du meilleur matériel. Il obéit aux protocoles. Il est discipliné et bien armé, et il ne voit pas plus loin que son badge d'accès. *Armes à distance, Esquive, Vigilance, Contre-mesures, Intimidation, Athlétisme, Meneur, Cybernétique.*
+7. **Cadre corpo** — Requin en costume, qui grimpe les étages de la tour à coups de trahisons feutrées. Il manie les budgets, les contrats et les gens. Il est puissant dans les salles de réunion et perdu dans une ruelle. *Négociation, Meneur, Éducation, Arnaque, Empathie, Data-mining, Réseau, Armes à distance.*
+8. **Salaryman** — Employé de bureau broyé par les heures sup', les dettes et les promesses de promotion. C'est l'homme ordinaire de Néo-Tokyo. Il est invisible, donc il a accès à beaucoup de choses sans que personne ne s'en méfie. *Éducation, Négociation, Data-mining, Empathie, Piratage, Meneur, Conduite, Esquive.*
+
+**La tech**
+
+9. **Netrunner** — Pirate de génie qui plonge dans les réseaux des corpos pour voler, saboter ou effacer. Dans la rue, il passe pour un gamin fragile ; dans le Net, il est un dieu. Il est indispensable pour un job et vulnérable dès que ça tire. *Piratage, Data-mining, Contre-mesures, Vigilance, Infiltration, Bricolage tech, Arnaque, Esquive.*
+10. **Techie** — Bricoleur de génie qui répare, trafique et invente avec ce qu'il trouve. Son atelier est une caverne d'Ali Baba de pièces détachées. Tout le monde a besoin de lui, et personne ne le paie à l'heure. *Bricolage tech, Piratage, Sciences, Contre-mesures, Conduite, Vigilance, Doigts agiles, Armes à distance.*
+11. **Charcudoc** — Chirurgien des bas-fonds, il pose des implants et recoud des blessures par balle sans poser de questions. Toute la rue lui doit la vie, ou un bras. C'est un médecin génial, souvent mêlé à des affaires louches. *Médecine, Cybernétique, Sciences, Piratage, Empathie, Vigilance, Négociation, Esquive.*
+12. **Ferrailleur** — Il fouille les décharges et les carcasses de drones pour revendre ce qui marche encore. Il sait ce que vaut chaque pièce et où la trouver. Débrouillard, il vit en marge, et ses trouvailles attirent parfois de mauvaises attentions. *Bricolage tech, Survie, Vigilance, Doigts agiles, Athlétisme, Négociation, Contre-mesures, Combat rapproché.*
+
+**Les gens de parole**
+
+13. **Fixer** — Intermédiaire de l'ombre, il connaît tout le monde et doit quelque chose à chacun. Il trouve les jobs, les armes et les portes de sortie. Il est redoutable avec les mots, et son réseau est une toile qui peut l'étrangler. *Réseau, Négociation, Empathie, Arnaque, Intimidation, Vigilance, Armes à distance, Data-mining.*
+14. **Informateur** — Barman, sans-abri ou concierge, il voit tout et il vend ce qu'il voit. C'est l'oreille du quartier. Il est précieux, il ne paie pas de mine et il n'est jamais loin d'une balle perdue. *Réseau, Vigilance, Infiltration, Empathie, Arnaque, Doigts agiles, Data-mining, Esquive.*
+15. **Journaliste** — Reporter indépendant qui traque les scandales que les médias corpos étouffent. Une vidéo de lui peut faire tomber un cadre. Il délie les langues comme personne, et il a une cible dans le dos. *Data-mining, Négociation, Empathie, Arnaque, Infiltration, Réseau, Vigilance, Esquive.*
+16. **Rockerboy** — Musicien rebelle dont les chansons appellent à brûler les tours. La rue l'adore, les corpos le surveillent. C'est un leader né, et sa célébrité le rend facile à trouver. *Performance, Négociation, Meneur, Empathie, Intimidation, Réseau, Combat rapproché, Conduite.*
+17. **Idol** — Star de la pop, fabriquée et vendue par une corpo du divertissement. Des millions de fans, un contrat qui l'étrangle. Elle a un accès partout, et aucune liberté nulle part. *Performance, Négociation, Empathie, Arnaque, Athlétisme, Réseau, Éducation, Esquive.*
+
+**La route**
+
+18. **Nomade** — Membre d'un clan qui vit sur les routes, hors des mégapoles et de leurs lois. Il transporte, il trafique et il protège les siens. Pilote hors pair et solide survivant, il reste un étranger en ville. *Conduite, Survie, Armes à distance, Bricolage tech, Vigilance, Athlétisme, Négociation, Combat rapproché.*
+19. **Coursier** — Livreur à moto qui traverse Néo-Tokyo plus vite que n'importe qui, colis légaux ou non. Il connaît chaque raccourci et chaque contrôle. Rapide et insaisissable, il en sait toujours trop sur ce qu'il transporte. *Conduite, Athlétisme, Vigilance, Esquive, Infiltration, Réseau, Bricolage tech, Armes à distance.*
+
+### Fantasy
+
+Un parcours marqué **(magie)** n'existe que si l'univers active la magie ; il conseille des domaines, et dit ce qui le remplace sans magie. Les autres valent dans les deux cas.
+
+**Le fer**
+
+1. **Homme d'armes** — Soldat de métier, ancien garde ou vétéran d'une guerre oubliée, il vit de son épée et de sa réputation. Dans une taverne, on lui cède la place ; sur un champ de bataille, on se range derrière lui. Il est solide et rassurant, et démuni face aux énigmes et aux intrigues de cour. *Armes de mêlée, Esquive, Athlétisme, Intimidation, Perception, Commandement, Équitation & navigation, Survie.*
+2. **Chevalier** — Fils de noblesse lié par un serment, à un seigneur, à un dieu ou à une cause perdue. Sa lance et son nom ouvrent les portes des châteaux. Il est redoutable à cheval et respecté partout, et il est prisonnier de son honneur quand le monde, lui, n'en a pas. *Armes de mêlée, Équitation & navigation, Commandement, Éloquence, Athlétisme, Intimidation, Lettres & légendes, Foi.*
+3. **Garde de la cité** — Il veille sur les remparts et les ruelles, entre ivrognes, voleurs et nobles capricieux. Il connaît sa ville par cœur et tout le monde le connaît. Il est utile dans une enquête, mais lié par ses ordres et son capitaine. *Armes de mêlée, Armes à distance, Perception, Intimidation, Enquête, Perspicacité, Athlétisme, Commandement.*
+4. **Barbare** — Né dans les steppes ou les montagnes, loin des lois des royaumes. Il se bat avec une fureur que les chevaliers ne comprennent pas. Il est endurant et terrifiant, et la civilisation le regarde comme une bête. *Armes de mêlée, Athlétisme, Survie, Intimidation, Esquive, Perception, Équitation & navigation, Médecine.*
+5. **Rôdeur** — Chasseur et éclaireur des marches sauvages, il connaît chaque sentier et chaque piste. Les villageois l'appellent quand une bête rôde, les seigneurs quand une armée doit passer. Il est imbattable en forêt et à l'étroit entre les murs d'une ville. *Armes à distance, Survie, Discrétion, Perception, Athlétisme, Armes de mêlée, Médecine, Esquive.*
+
+**L'ombre**
+
+6. **Voleur** — Monte-en-l'air, coupe-bourse ou cambrioleur de guilde, il ouvre ce qui est fermé et prend ce qui brille. On le méprise en public et on l'engage en secret. Agile et rusé, il évite le combat loyal, qu'il a toutes les chances de perdre. *Larcin, Crochetage & pièges, Discrétion, Duperie, Perception, Armes de mêlée, Athlétisme, Esquive.*
+7. **Assassin** — Lame d'une confrérie ou tueur solitaire, il règle les héritages trop lents et les rivalités trop longues. Il frappe une fois, dans l'ombre, avec du poison s'il le faut. Il est mortel par surprise et fragile dès qu'on le voit venir. *Discrétion, Armes de mêlée, Esquive, Alchimie, Duperie, Perception, Athlétisme, Crochetage & pièges.*
+8. **Contrebandier** — Il fait passer les épices, les reliques et les fugitifs entre les ports et les frontières. Il connaît les criques, les douaniers corrompus et les routes oubliées. Il est débrouillard et beau parleur, et il est toujours à une trahison de la potence. *Équitation & navigation, Duperie, Éloquence, Perception, Armes à distance, Discrétion, Larcin, Survie.*
+
+**Le savoir et la foi**
+
+9. **Mage (magie)** — Érudit des Arcanes, formé dans une tour ou auprès d'un maître exigeant. On le craint autant qu'on le recherche, car un sort bien placé change le cours d'une bataille. Il est redoutable à distance et se brise vite au corps à corps, et chaque sort lui coûte. *Arcanes, Savoir occulte, Lettres & légendes, Perception, Perspicacité, Médecine, Éloquence, Esquive.* Domaines conseillés : au choix, selon son école. Sans magie : remplacé par l'Érudit.
+10. **Prêtre (magie)** — Serviteur d'un dieu, il bénit, il soigne et il guide les fidèles, parfois l'épée à la main. Son temple lui donne une autorité que les seigneurs respectent. Il est un pilier pour les siens, et un ennemi juré pour les autres cultes. *Foi, Médecine, Éloquence, Perspicacité, Lettres & légendes, Arcanes, Armes de mêlée, Commandement.* Domaines conseillés : Guérison, plus un domaine propre à son dieu. Sans magie : Savoir occulte remplace Arcanes, et sa Foi devient rites, sermons et réconfort, sans miracles.
+11. **Érudit** — Archiviste, précepteur ou chercheur, il lit les langues mortes et se souvient de ce que le monde a oublié. Les rois le consultent, les bibliothèques lui ouvrent leurs portes. Il est précieux pour comprendre, et inutile pour se défendre. *Lettres & légendes, Philosophie naturelle, Savoir occulte, Enquête, Perspicacité, Éloquence, Médecine, Esquive.*
+12. **Alchimiste** — Il distille les potions, les poisons et les poudres qui explosent. Moitié savant, moitié charlatan aux yeux du peuple. Il est inventif et redouté, et chacune de ses fioles peut lui sauter au visage. *Alchimie, Philosophie naturelle, Médecine, Perception, Forge & artisanat, Duperie, Armes à distance, Lettres & légendes.*
+13. **Guérisseur** — Herboriste de village ou rebouteux des routes, il soigne avec les plantes, les mains et les prières. On le paie en pain et en reconnaissance. Il est indispensable et aimé, et il est sans défense quand la violence arrive. *Médecine, Survie, Alchimie, Perspicacité, Perception, Éloquence, Foi, Esquive.*
+14. **Druide (magie)** — Gardien des forêts anciennes, il parle aux bêtes et fait plier les ronces. Les villages le craignent et le consultent à la fois. Il est puissant dans les bois, sans pouvoir dans les cités de pierre. *Arcanes, Survie, Médecine, Perception, Discrétion, Perspicacité, Savoir occulte, Armes de mêlée.* Domaines conseillés : Nature, plus Guérison ou Givre. Sans magie : remplacé par le Guérisseur ou le Rôdeur.
+15. **Lame-mage (magie)** — Guerrier qui mêle l'acier et les sorts, formé dans un ordre martial ou une académie de guerre. Il charge là où les mages restent en retrait. Il est polyvalent, mais il n'égale ni le vrai guerrier ni le vrai mage. *Arcanes, Armes de mêlée, Esquive, Athlétisme, Savoir occulte, Perception, Intimidation, Équitation & navigation.* Domaines conseillés : Pyromancie ou Givre. Sans magie : remplacé par le Chevalier ou l'Homme d'armes.
+
+**La parole et la route**
+
+16. **Barde** — Conteur, musicien et colporteur de nouvelles, il est bienvenu dans chaque château et chaque taverne. Ses chansons font et défont les réputations. Il est charmeur et curieux, et sa langue lui attire autant d'ennuis qu'elle l'en sort. *Musique & contes, Éloquence, Duperie, Perspicacité, Lettres & légendes, Larcin, Armes de mêlée, Esquive.*
+17. **Marchand** — Il fait voyager le sel, la soie et l'argent d'un royaume à l'autre. Il négocie comme d'autres se battent. Il est riche en contacts et en opportunités, et sa caravane est une cible ambulante. *Éloquence, Perspicacité, Équitation & navigation, Lettres & légendes, Duperie, Perception, Intimidation, Armes à distance.*
+18. **Noble** — Héritier d'une maison, il manie les alliances, les mariages et les poisons de cour. Son nom ouvre toutes les portes, et ses ennemis aussi. Il est puissant dans les salons et vulnérable dès qu'il perd ses gardes. *Éloquence, Commandement, Lettres & légendes, Duperie, Perspicacité, Musique & contes, Équitation & navigation, Armes de mêlée.*
+19. **Forgeron** — Artisan respecté, il fabrique les armes des chevaliers et les outils des paysans. Sa forge est le cœur du village. Il est fort et habile de ses mains, et il connaît l'acier mieux que quiconque, mais il est attaché à son atelier. *Forge & artisanat, Mécanismes, Athlétisme, Armes de mêlée, Perception, Éloquence, Philosophie naturelle, Intimidation.*
+20. **Marin** — Matelot, pêcheur ou corsaire, il a vu des ports que les cartes ignorent. Il est à l'aise sur un pont qui tangue et au milieu d'une rixe de port. Il est endurant et bagarreur, mais perdu dès qu'il s'éloigne de la mer. *Équitation & navigation, Athlétisme, Armes de mêlée, Survie, Perception, Mécanismes, Intimidation, Musique & contes.*
+
+Dans un univers sans magie, la Foi se limite aux rites, au savoir religieux et au réconfort : pas de miracles. Le générateur adapte sa description.
+
+### Dark fantasy
+
+La magie y est rare et corruptrice. Un parcours marqué **(magie)** n'existe que si l'univers l'active.
+
+**Le fer**
+
+1. **Mercenaire** — Une lame à louer dans un monde qui brûle. Sans foi ni bannière, il ne connaît que la parole du contrat et le poids de l'or. Il est endurant et pragmatique, ne fait confiance à personne, et personne ne lui fait confiance. *Armes de mêlée, Esquive, Athlétisme, Intimidation, Survie, Vigilance, Commandement, Forge & artisanat.*
+2. **Chevalier déchu** — Il a perdu ses terres, son seigneur ou son honneur, parfois les trois. Il garde son armure cabossée et une colère froide. Il est redoutable et fier, et hanté par ce qu'il a fait ou laissé faire. *Armes de mêlée, Équitation, Intimidation, Commandement, Foi, Lettres anciennes, Athlétisme, Méfiance.*
+3. **Chasseur de sorcières** — Traqueur au service d'un ordre implacable, il brûle ce que d'autres n'osent même pas nommer. Les villages le redoutent autant que les créatures qu'il pourchasse. Il est armé, savant et inflexible, et il voit des hérétiques partout, parfois à tort. *Armes de mêlée, Armes à distance, Savoir impie, Enquête, Intimidation, Vigilance, Foi, Esquive.*
+4. **Tueur de monstres** — Il vit de primes sur les goules, les loups-garous et les choses des marais. On le paie, puis on le chasse du village. Il connaît chaque bête et son point faible, et il est seul, toujours. *Armes de mêlée, Esquive, Savoir impie, Survie, Vigilance, Athlétisme, Médecine, Philosophie naturelle.*
+5. **Flagellant** — Fanatique qui expie les péchés du monde dans la douleur, et qui fait expier ceux des autres. Les foules le suivent, les prêtres s'en méfient. Il ne connaît ni la peur ni la mesure, ce qui fait de lui un allié aussi dangereux qu'un ennemi. *Armes de mêlée, Foi, Intimidation, Éloquence, Athlétisme, Méfiance, Chants & récits, Savoir impie.*
+6. **Déserteur** — Il a fui une guerre qu'il ne comprenait plus, et on le pend s'il est repris. Il sait se cacher, voler et survivre. Il est rusé et endurant, et il est toujours sur le qui-vive. *Discrétion, Survie, Armes à distance, Vigilance, Duperie, Athlétisme, Larcin, Esquive.*
+
+**L'ombre et la survie**
+
+7. **Pilleur de tombes** — Il descend dans les cryptes et les tertres pour en remonter l'or des morts. Il connaît les pièges, les malédictions et les gardiens qui ne dorment jamais. Il est hardi et cupide, et parfois il réveille ce qu'il fallait laisser dormir. *Crochetage & pièges, Savoir impie, Discrétion, Vigilance, Lettres anciennes, Larcin, Athlétisme, Armes de mêlée.*
+8. **Bandit de grand chemin** — Il détrousse les voyageurs sur les routes que plus aucun seigneur ne protège. Pour les uns c'est un hors-la-loi, pour les autres un héros du peuple. Il est rapide et sans scrupules, et la corde l'attend au prochain bourg. *Armes à distance, Armes de mêlée, Intimidation, Équitation, Discrétion, Survie, Duperie, Vigilance.*
+9. **Rat des bas-fonds** — Il est né dans la boue des cités, entre les égouts, les tripots et la peste. Il survit à tout parce qu'il ne croit à rien. Il est malin et insaisissable, et il trahit avant d'être trahi. *Larcin, Discrétion, Duperie, Méfiance, Armes de mêlée, Vigilance, Crochetage & pièges, Esquive.*
+10. **Fossoyeur** — Il enterre les morts de la peste et des guerres, et il sait ce qui remue parfois sous la terre. On l'évite dans la rue et on l'appelle la nuit. Il est solide et sans illusions, et il en sait trop sur ce qui suit la mort. *Savoir impie, Médecine, Athlétisme, Vigilance, Méfiance, Forge & artisanat, Armes de mêlée, Lettres anciennes.*
+
+**Le savoir, la foi et les ténèbres**
+
+11. **Sorcier renégat (magie)** — Il a lu ce qu'il ne fallait pas lire, et il a survécu. Pourchassé par l'Église, il marchande avec des puissances qui finissent toujours par réclamer leur dû. Son pouvoir est immense, et chaque pacte le rapproche du bûcher, ou de pire. *Sorcellerie, Démonologie, Savoir impie, Duperie, Méfiance, Discrétion, Médecine, Esquive.* Domaines conseillés : Nécromancie, Illusion. Sans magie : remplacé par l'Occultiste.
+12. **Occultiste** — Collectionneur de grimoires interdits, il connaît les rituels sans toujours oser les accomplir. Il sait nommer les démons et les éloigner. Il est savant et précieux, et son savoir lui ronge l'âme. *Savoir impie, Démonologie, Lettres anciennes, Enquête, Méfiance, Éloquence, Philosophie naturelle, Esquive.*
+13. **Exorciste (magie)** — Prêtre-guerrier qui chasse les démons des corps et des lieux, par la prière et par le feu. L'Église l'envoie là où les autres ont échoué. Il est implacable face aux ténèbres, et chaque possession lui laisse une cicatrice. *Foi, Sorcellerie, Démonologie, Éloquence, Méfiance, Savoir impie, Médecine, Armes de mêlée.* Domaines conseillés : Guérison, Pyromancie (le feu qui purifie). Sans magie : Savoir impie remplace Sorcellerie, et ses exorcismes deviennent des rites, sans effet chiffré.
+14. **Moine** — Copiste, infirmier ou ermite, il garde la foi et le savoir dans un monde qui sombre. Son monastère est un dernier refuge. Il est sage et charitable, et il n'est pas fait pour la violence du dehors. *Foi, Médecine, Éloquence, Méfiance, Lettres anciennes, Chants & récits, Vigilance, Esquive.*
+15. **Inquisiteur** — Juge de l'Église, il traque l'hérésie avec des questions, des aveux et des bûchers. Sa simple arrivée vide les rues. Il est redoutable d'intelligence et de pouvoir, et il est sûr d'avoir raison. *Enquête, Intimidation, Foi, Méfiance, Lettres anciennes, Éloquence, Armes de mêlée, Commandement.*
+16. **Médecin de peste** — Sous son masque à bec, il soigne les mourants que tous les autres fuient. Il a vu la maladie de trop près pour croire encore aux remèdes miracles. Il est précieux et respecté, et la contagion le guette à chaque visite. *Médecine, Philosophie naturelle, Savoir impie, Méfiance, Vigilance, Éloquence, Lettres anciennes, Esquive.*
+17. **Sorcière des marais (magie)** — Elle vit seule au bord des tourbières, entre les herbes, les os et les esprits. Les villageois viennent la voir en cachette, puis la dénoncent. Elle connaît les remèdes et les malédictions, et le bûcher n'est jamais loin. *Sorcellerie, Survie, Médecine, Savoir impie, Méfiance, Duperie, Discrétion, Armes de mêlée.* Domaines conseillés : Nature, Nécromancie. Sans magie : une rebouteuse, avec Savoir impie à la place de Sorcellerie, ou remplacée par le Médecin de peste.
+
+**La parole et les gens**
+
+18. **Colporteur** — Chanteur des ruines et marchand de nouvelles, il traverse les terres dévastées avec sa charrette. Il sait ce qui se passe partout, et il le vend. Il est charmeur et méfiant, et toujours sur une route peu sûre. *Chants & récits, Éloquence, Duperie, Méfiance, Larcin, Équitation, Vigilance, Esquive.*
+19. **Noble décadent** — Héritier d'une maison qui pourrit de l'intérieur, entre fêtes, complots et poisons. Il a de l'or, des gardes et des secrets inavouables. Il est puissant mais corrompu, et entouré de gens qui attendent sa chute. *Éloquence, Commandement, Duperie, Méfiance, Lettres anciennes, Chants & récits, Équitation, Armes de mêlée.*
+20. **Serf** — Paysan attaché à une terre qui ne lui appartient pas, il a survécu aux famines, aux guerres et aux seigneurs. Il est le peuple qu'on oublie. Il est endurant et débrouillard, et il a une colère qui couve. *Survie, Athlétisme, Forge & artisanat, Vigilance, Armes de mêlée, Méfiance, Équitation, Médecine.*
+
+La Démonologie est un savoir : nommer, reconnaître et repousser par les rites. Elle n'invoque jamais d'allié, même quand la magie est active (voir 10.9).
+
+### Horreur
+
+Cadre par défaut contemporain ; le générateur adapte les parcours à l'époque choisie. La magie, ce sont des Rituels, qui coûtent aussi de la Santé mentale. Un parcours marqué **(magie)** n'existe que si l'univers l'active.
+
+**Ceux qui cherchent**
+
+1. **Détective privé** — Il vit de filatures, d'adultères et de disparitions que la police a classées trop vite. Il a appris à se méfier de tout le monde. Il est méthodique et discret, et une affaire de trop va le mener là où il ne fallait pas aller. *Investigation, Perception, Psychologie, Mensonge, Discrétion, Armes à distance, Conduite, Serrures & alarmes.*
+2. **Policier** — Inspecteur de la criminelle, il a vu des scènes que ses collègues refusent de décrire. Il a un badge, une arme et des rapports qu'il n'ose pas finir. Il est efficace et protégé par l'institution, et l'institution n'a pas de case pour ce qu'il découvre. *Armes à distance, Investigation, Intimidation, Perception, Conduite, Psychologie, Combat rapproché, Persuasion.*
+3. **Journaliste** — Reporter d'investigation, il tire sur un fil qui mène toujours plus loin. Ses sources disparaissent les unes après les autres. Il délie les langues comme personne, et il ne sait pas s'arrêter. *Investigation, Persuasion, Psychologie, Mensonge, Culture générale, Discrétion, Informatique, Esquive.*
+4. **Enquêteur du paranormal** — Avec caméras, détecteurs et une chaîne qui compte trois mille abonnés, il traque les fantômes. Tout le monde se moque de lui, jusqu'au jour où le détecteur s'affole vraiment. Il est équipé et passionné, et il est totalement imprudent. *Informatique, Occultisme, Investigation, Perception, Mécanique, Arts, Persuasion, Esquive.*
+
+**Ceux qui savent**
+
+5. **Universitaire** — Professeur d'histoire, de linguistique ou d'anthropologie, il lit ce que personne ne sait plus lire. Un manuscrit légué à sa faculté va changer sa vie. Il est savant et méthodique, et il n'est pas fait pour courir. *Culture générale, Sciences, Occultisme, Investigation, Persuasion, Psychologie, Informatique, Esquive.*
+6. **Archéologue** — Il fouille les sites oubliés, des déserts aux cavernes sous les montagnes. Il sait dater une pierre et lire une inscription morte. Il est endurant et curieux, et certaines tombes ont été scellées pour une bonne raison. *Culture générale, Occultisme, Investigation, Athlétisme, Survie, Perception, Sciences, Armes à distance.*
+7. **Antiquaire** — Marchand de livres rares et d'objets anciens, il sait d'où vient chaque pièce, et à qui elle a coûté la raison. Les collectionneurs étranges le connaissent bien. Il est érudit et bien renseigné, et sa boutique attire les mauvaises personnes. *Culture générale, Occultisme, Persuasion, Perception, Investigation, Mensonge, Arts, Esquive.*
+8. **Occultiste (magie)** — Collectionneur de grimoires, universitaire déchu ou héritier d'une lignée maudite. Il connaît les rituels, et il sait ce qu'ils coûtent. C'est la seule arme contre l'indicible, et chaque savoir interdit lui ronge un peu plus l'esprit. *Rituels, Occultisme, Mythe, Culture générale, Investigation, Psychologie, Arts, Esquive.* Domaines conseillés : Nécromancie, Illusion, adaptés à l'Horreur. Sans magie : Persuasion remplace Rituels ; il connaît les rites sans pouvoir les accomplir.
+9. **Médium (magie)** — Voyante de quartier ou spirite renommée, elle entend ce que les autres n'entendent pas. La moitié de ses clients sont des escrocs, et elle aussi, parfois. Elle est un pont avec l'au-delà, et l'au-delà sait qu'elle écoute. *Rituels, Psychologie, Occultisme, Persuasion, Mensonge, Perception, Arts, Esquive.* Domaines conseillés : Nécromancie (parler aux morts), Illusion. Sans magie : une voyante charlatan, avec Discrétion à la place de Rituels.
+10. **Prêtre** — Curé de campagne ou aumônier d'hôpital, il réconforte les vivants et enterre les morts. Il a la foi, mais pas toutes les réponses. Il est écouté et respecté, et il découvre que le Mal existe vraiment. *Occultisme, Psychologie, Persuasion, Culture générale, Médecine, Arts, Perception, Esquive.*
+
+**Ceux qui soignent**
+
+11. **Médecin** — Urgentiste, légiste ou généraliste, il a vu la mort de près, mais jamais comme ça. Il soigne les corps quand tout s'effondre. Il est indispensable à un groupe et démuni dès qu'il faut fuir ou se battre. *Médecine, Sciences, Psychologie, Perception, Persuasion, Investigation, Esquive, Conduite.*
+12. **Psychiatre** — Il écoute les délires de ses patients depuis des années, et certains commencent à se ressembler un peu trop. Il comprend les esprits brisés. Il est précieux pour garder le groupe debout, et il est le prochain sur la liste. *Psychologie, Médecine, Persuasion, Sciences, Investigation, Culture générale, Perception, Esquive.*
+13. **Infirmière** — De garde la nuit, elle a vu des patients guérir trop vite, ou mourir pour rien. Elle tient le coup quand les médecins craquent. Elle est solide, efficace et attentive, et elle est souvent la seule à remarquer ce qui cloche. *Médecine, Psychologie, Perception, Athlétisme, Persuasion, Conduite, Sciences, Esquive.*
+
+**Ceux qui se battent**
+
+14. **Vétéran** — Ancien soldat revenu d'une guerre qu'il ne raconte pas. Il dort mal et il garde une arme sous l'oreiller. Il est le meilleur quand ça dégénère, et ses propres démons l'attendent déjà. *Armes à distance, Combat rapproché, Esquive, Athlétisme, Survie, Perception, Intimidation, Médecine.*
+15. **Chasseur** — Homme des bois et des campagnes isolées, il connaît chaque piste et chaque bête. Ces derniers temps, il trouve des traces qu'il ne sait pas nommer. Il est autonome et bon tireur, et méfiant envers les gens de la ville. *Armes à distance, Survie, Discrétion, Perception, Athlétisme, Conduite, Médecine, Mécanique.*
+16. **Voyou** — Petit truand des quartiers, il vit de cambriolages, de deals et de services rendus. Il connaît les gens que la police ne connaît pas. Il est débrouillard et pas regardant, et il a des dettes envers des gens dangereux. *Combat rapproché, Pickpocket, Serrures & alarmes, Intimidation, Mensonge, Discrétion, Perception, Armes à distance.*
+
+**Les gens ordinaires… ou presque**
+
+17. **Artiste** — Peintre, écrivain ou musicien, il cherche l'inspiration dans les rêves, et les rêves lui répondent. Ses œuvres troublent ceux qui les regardent. Il est sensible et visionnaire, et fragile face à ce qu'il pressent. *Arts, Psychologie, Culture générale, Occultisme, Perception, Persuasion, Mensonge, Esquive.*
+18. **Héritier fortuné** — Il a hérité d'une fortune, d'un manoir et des secrets de famille qui vont avec. L'argent ouvre toutes les portes, même celles qu'il faudrait laisser closes. Il a des moyens et des relations, et un passé familial qui le rattrape. *Persuasion, Culture générale, Conduite, Arts, Psychologie, Meneur, Armes à distance, Occultisme.*
+19. **Ouvrier** — Mécano, électricien ou homme à tout faire, il répare ce qui casse et descend là où les autres ne vont pas. Il croit ce qu'il touche. Il est solide et pratique, et il ne croit pas aux fantômes, jusqu'à la cave de trop. *Mécanique, Athlétisme, Conduite, Perception, Serrures & alarmes, Combat rapproché, Survie, Intimidation.*
+20. **Sectateur** — Membre d'un culte qui promet la vérité, la puissance ou l'éternité. Il connaît des secrets qu'il n'aurait jamais dû apprendre. Il est surtout fait pour les PNJ, mais c'est un perso fascinant pour qui veut jouer la rédemption, ou la chute. *Occultisme, Mythe, Mensonge, Persuasion, Discrétion, Combat rapproché, Psychologie, Arts.*
+
+Le Mythe a un prix dès la création : chaque point baisse la Santé mentale maximum (99 − Mythe). Les parcours qui le contiennent commencent plus fragiles.
+
+### Contemporain
+
+Le monde d'aujourd'hui, sans magie : polar, thriller, action.
+
+**L'ordre**
+
+1. **Flic** — Inspecteur de terrain, entre procédure et coups de pression. Il a un badge, une arme et un supérieur sur le dos. Efficace dans la rue comme dans un bureau, il est tenu par la loi… quand il la respecte. *Armes à distance, Investigation, Intimidation, Perception, Conduite, Psychologie, Combat rapproché, Bureaucratie.*
+2. **Agent d'intervention** — Membre d'une unité d'élite, il enfonce les portes quand les négociations échouent. Il est entraîné, équipé et soudé avec son équipe. C'est le meilleur dans l'assaut, mais il est bridé par la hiérarchie et les règles d'engagement. *Armes à distance, Combat rapproché, Esquive, Athlétisme, Perception, Discrétion, Meneur, Médecine.*
+3. **Garde du corps** — Il protège les riches, les célèbres et les menacés, et il prend la balle s'il le faut. Il voit le danger avant tout le monde. Il est vigilant et loyal, et il ne vit pas sa propre vie. *Combat rapproché, Armes à distance, Perception, Psychologie, Conduite, Athlétisme, Intimidation, Esquive.*
+4. **Avocat** — Pénaliste ou conseiller d'affaires, il connaît la loi assez bien pour la contourner. Il sait faire sortir un client et couler un adversaire. Il est redoutable dans un tribunal, et désarmé dans une ruelle. *Persuasion, Bureaucratie, Psychologie, Mensonge, Culture générale, Investigation, Réseau, Esquive.*
+
+**La rue**
+
+5. **Voyou** — Petit truand des quartiers, il vit de deals, de rackets et de services rendus. Il connaît les gens que la police ne connaît pas. Il est débrouillard et pas regardant, et il a des dettes envers des gens dangereux. *Combat rapproché, Pickpocket, Serrures & alarmes, Intimidation, Mensonge, Discrétion, Perception, Armes à distance.*
+6. **Cambrioleur** — Spécialiste des coffres, des alarmes et des fenêtres du troisième étage. Il prépare chaque coup pendant des semaines. Il est précis et silencieux, et il suffit d'un imprévu pour que tout parte en vrille. *Serrures & alarmes, Discrétion, Athlétisme, Perception, Pickpocket, Informatique, Mensonge, Esquive.*
+7. **Escroc** — Faux héritier, faux expert, vraie arnaque. Il change de nom comme de chemise. Il est charmeur et insaisissable, et toujours poursuivi par quelqu'un qu'il a plumé. *Mensonge, Persuasion, Psychologie, Pickpocket, Réseau, Arts, Culture générale, Esquive.*
+8. **Chauffeur** — Taxi de nuit, livreur ou pilote pour les braquages, il connaît chaque rue et chaque raccourci. On l'engage pour arriver vite, ou pour repartir encore plus vite. Il est imbattable au volant, et il en sait toujours trop sur ses passagers. *Conduite, Mécanique, Perception, Réseau, Esquive, Athlétisme, Mensonge, Armes à distance.*
+
+**Le savoir et la tech**
+
+9. **Hacker** — Il entre dans les systèmes comme d'autres entrent chez eux. Il travaille pour lui, pour un client ou pour une cause. Il est indispensable pour un coup moderne, et vulnérable dès qu'il quitte son écran. *Informatique, Investigation, Serrures & alarmes, Mensonge, Perception, Sciences, Réseau, Esquive.*
+10. **Journaliste** — Reporter d'investigation, pigiste fauché ou star sur le déclin, il flaire le scandale. Son carnet d'adresses vaut de l'or, et ses ennemis aussi. Il délie les langues comme personne, et il est seul quand les menaces deviennent réelles. *Investigation, Persuasion, Psychologie, Mensonge, Culture générale, Réseau, Discrétion, Esquive.*
+11. **Médecin** — Urgentiste ou chirurgien, il prend des décisions de vie ou de mort à trois heures du matin. Il garde son sang-froid quand tout le monde panique. Il est précieux partout, et il ne sait pas dire non à un blessé, même du mauvais côté. *Médecine, Sciences, Psychologie, Perception, Conduite, Persuasion, Athlétisme, Esquive.*
+12. **Technicien** — Ingénieur, électricien ou mécanicien, il comprend comment les choses marchent, et comment les faire tomber en panne. Il entre partout avec une caisse à outils et un gilet orange. Il est pratique et ingénieux, et peu à l'aise avec les gens. *Mécanique, Informatique, Sciences, Perception, Serrures & alarmes, Conduite, Investigation, Combat rapproché.*
+
+**Le pouvoir et la parole**
+
+13. **Politicien** — Élu local ou conseiller ministériel, il manie les promesses, les dossiers et les alliances de couloir. Il connaît les gens qui décident. Il est influent et habile, et il a des casseroles plein les placards. *Persuasion, Bureaucratie, Réseau, Mensonge, Meneur, Psychologie, Culture générale, Esquive.*
+14. **Chef d'entreprise** — Patron d'une start-up ou d'un groupe familial, il pense en contrats, en parts de marché et en rapports de force. L'argent lui ouvre les portes. Il est puissant dans son monde et fragile dès qu'on menace son empire. *Persuasion, Meneur, Bureaucratie, Réseau, Psychologie, Mensonge, Culture générale, Esquive.*
+15. **Influenceur** — Des millions d'abonnés, une image à entretenir et des sponsors à satisfaire. Il peut mobiliser une foule avec une vidéo. Il est célèbre et persuasif, et il est surveillé en permanence. *Arts, Persuasion, Réseau, Psychologie, Mensonge, Informatique, Athlétisme, Esquive.*
+16. **Étudiant** — Fac, colocation et petits boulots, il a la vie devant lui et pas un sou en poche. Il apprend vite et il connaît tout le monde. Il est curieux et adaptable, et totalement inexpérimenté quand les choses tournent mal. *Culture générale, Informatique, Sciences, Persuasion, Athlétisme, Arts, Réseau, Esquive.*
+
+**Le terrain**
+
+17. **Secouriste** — Pompier, ambulancier ou membre d'une équipe de montagne, il court vers le danger quand tout le monde le fuit. Il est calme dans le chaos et précieux dans une crise. Il est aussi trop humain pour laisser quelqu'un derrière, même quand il le faudrait. *Médecine, Athlétisme, Conduite, Perception, Survie, Esquive, Psychologie, Meneur.*
+18. **Ancien militaire** — Revenu à la vie civile après des années d'opérations, il garde les réflexes et les cauchemars. Il fait de la sécurité privée ou des petits boulots. Il est redoutable quand ça dégénère, et il a du mal à trouver sa place ailleurs. *Armes à distance, Combat rapproché, Esquive, Athlétisme, Survie, Perception, Discrétion, Médecine.*
+19. **Guide d'aventure** — Guide de haute montagne, de jungle ou de désert, il emmène les touristes là où les cartes s'arrêtent. Il sait survivre partout. Il est autonome et endurant, et il est responsable des vies des autres. *Survie, Athlétisme, Perception, Médecine, Conduite, Mécanique, Armes à distance, Meneur.*
+20. **Combattant** — Boxeur, pratiquant de MMA ou ancien champion, il vit de ses poings et de sa réputation dans les salles. Il sait encaisser comme personne. Il est redoutable au contact, mais un pistolet reste plus rapide qu'un crochet. *Combat rapproché, Esquive, Athlétisme, Intimidation, Perception, Psychologie, Réseau, Médecine.*
+
+Le Contemporain et l'Horreur se recoupent : pour une Horreur moderne, le générateur peut puiser dans les deux listes.
+
+### Militaire
+
+Sans magie. Le générateur adapte les parcours à l'époque : en 1944, l'opérateur de drones devient observateur d'artillerie ; dans le futur, les fantassins portent des exosquelettes.
+
+**Au front**
+
+1. **Fantassin** — L'épine dorsale de toute armée : il marche, il tient la position, il tire. Il sait vivre avec peu et se battre avec moins encore. C'est un combattant complet, qui a besoin d'ordres et de camarades pour donner son meilleur. *Armes à distance, Combat rapproché, Esquive, Athlétisme, Camouflage, Observation, Survie, Explosifs.*
+2. **Tireur d'élite** — Il attend des heures, immobile, pour un seul tir. Une silhouette à huit cents mètres, une respiration retenue. Il est patient et mortel, et il est seul et exposé si on le repère. *Armes à distance, Camouflage, Observation, Survie, Athlétisme, Renseignement, Esquive, Transmissions.*
+3. **Mitrailleur** — Il porte l'arme lourde et la caisse de munitions qui va avec. Quand il ouvre le feu, l'ennemi baisse la tête. C'est le pilier de la section en défense, et l'ennemi en fait sa première cible. *Armes à distance, Athlétisme, Esquive, Observation, Mécanique, Intimidation, Explosifs, Survie.*
+4. **Commando** — Membre des forces spéciales, il frappe la nuit, loin derrière les lignes. Sabotage, raid, extraction : il fait ce que l'armée ne reconnaît pas officiellement. Il est polyvalent et redoutable, et souvent seul sans renforts. *Armes à distance, Combat rapproché, Camouflage, Athlétisme, Explosifs, Survie, Observation, Pièges & déminage.*
+5. **Éclaireur** — Il part devant, voit l'ennemi en premier et revient le dire. Il connaît le terrain mieux que les cartes. Il est discret et rapide, et il est le premier à tomber dans une embuscade. *Camouflage, Observation, Survie, Athlétisme, Armes à distance, Renseignement, Conduite & pilotage, Esquive.*
+
+**Le soutien**
+
+6. **Transmetteur** — Les yeux et la voix de l'unité : radios, chiffrement, brouillage, écoute ennemie. Sans lui, la section est sourde et aveugle. Il est précieux et donc ciblé en priorité, et il est moins à l'aise au contact. *Transmissions, Électronique, Armes à distance, Observation, Renseignement, Camouflage, Pièges & déminage, Conduite & pilotage.*
+7. **Infirmier de combat** — Il porte une trousse et un fusil, et il sait se servir des deux. Il soigne sous le feu et ramène les blessés coûte que coûte. Tout le monde l'aime, et tout le monde a besoin de lui… au même moment. *Médecine, Armes à distance, Esquive, Athlétisme, Perspicacité, Survie, Observation, Conduite & pilotage.*
+8. **Sapeur** — Démineur, poseur de charges et bâtisseur de ponts sous le feu. Il ouvre la route et la referme derrière lui. Il est indispensable et méthodique, et il n'a droit qu'à une erreur. *Pièges & déminage, Explosifs, Mécanique, Observation, Athlétisme, Électronique, Armes à distance, Sciences.*
+9. **Mécanicien** — Il garde les blindés, les camions et les groupes électrogènes en état de marche, avec trois clés et beaucoup de jurons. Sans lui, l'armée s'arrête. Il est ingénieux et respecté, et il est rarement entraîné au combat d'infanterie. *Mécanique, Électronique, Conduite & pilotage, Observation, Athlétisme, Armes à distance, Sciences, Survie.*
+10. **Pilote** — Aux commandes d'un hélicoptère, d'un char ou d'un avion d'appui, il change le cours d'un combat en un passage. Son engin est sa force et sa prison. Il est puissant aux commandes et vulnérable une fois abattu. *Conduite & pilotage, Mécanique, Transmissions, Observation, Armes à distance, Électronique, Survie, Esquive.*
+11. **Opérateur de drones** — Depuis un écran, à des kilomètres, il voit tout et frappe sans être vu. C'est la guerre moderne. Il est redoutable pour repérer et guider, et il ne sert presque à rien quand l'ennemi arrive dans la tranchée. *Électronique, Conduite & pilotage, Observation, Transmissions, Renseignement, Mécanique, Camouflage, Armes à distance.*
+
+**Le commandement et le renseignement**
+
+12. **Officier** — Lieutenant ou capitaine, il décide et il porte le poids de chaque décision. Il connaît la stratégie et l'histoire des batailles. Il est respecté par ses hommes, s'il les mérite, et coincé entre eux et l'état-major. *Commandement, Histoire militaire, Armes à distance, Persuasion, Perspicacité, Observation, Transmissions, Intimidation.*
+13. **Sous-officier** — Le sergent qui transforme les ordres en actions et les bleus en soldats. Il gueule, il protège, il ramène ses hommes. C'est l'âme de la section, et il est usé par trop de campagnes. *Commandement, Armes à distance, Combat rapproché, Intimidation, Athlétisme, Observation, Médecine, Survie.*
+14. **Officier de renseignement** — Il lit les cartes, les interceptions et les visages des prisonniers. Il sait ce que l'ennemi va faire avant lui. Il est précieux et cérébral, et il est souvent loin du terrain qu'il analyse. *Renseignement, Perspicacité, Tromperie, Persuasion, Histoire militaire, Électronique, Observation, Armes à distance.*
+15. **Agent infiltré** — Il vit dans le camp ennemi sous une fausse identité, et un mot de travers le condamne. Il transmet, il sabote, il ment. C'est l'arme la plus discrète de la guerre, et la plus seule. *Tromperie, Camouflage, Renseignement, Perspicacité, Escamotage, Combat rapproché, Persuasion, Observation.*
+16. **Interprète** — Recruté sur place ou formé aux langues, il fait le pont entre l'armée et les civils. Il comprend ce que disent vraiment les gens. Il est indispensable, et les deux camps le soupçonnent. *Persuasion, Perspicacité, Histoire militaire, Renseignement, Tromperie, Observation, Esquive, Médecine.*
+
+**Autour de la guerre**
+
+17. **Correspondant de guerre** — Appareil photo et carnet en main, il suit les troupes là où l'histoire s'écrit. Il raconte ce que les communiqués taisent. Il est courageux et témoin de tout, et il n'est pas armé. *Renseignement, Persuasion, Perspicacité, Arts, Observation, Camouflage, Esquive, Survie.*
+18. **Aumônier** — Il bénit les vivants, enterre les morts et écoute ceux qui ne dorment plus. Il ne porte pas d'arme, mais il porte le moral. Il est le soutien de toute l'unité, et il porte seul le poids de ce qu'il entend. *Perspicacité, Persuasion, Médecine, Histoire militaire, Arts, Observation, Esquive, Commandement.*
+19. **Contractor** — Mercenaire d'une société militaire privée, il est mieux payé et moins encadré que les soldats. Il travaille pour le contrat, pas pour le drapeau. Il est bien équipé et efficace, et personne ne pleure un contractor. *Armes à distance, Combat rapproché, Esquive, Intimidation, Observation, Conduite & pilotage, Tromperie, Survie.*
+20. **Partisan** — Civil qui a pris les armes contre l'occupant, il connaît chaque ferme et chaque chemin creux. Il frappe et disparaît dans la population. Il est insaisissable et motivé, et ses proches paient ses actes. *Camouflage, Armes à distance, Explosifs, Survie, Tromperie, Observation, Escamotage, Athlétisme.*
+
+### Science-fiction
+
+La magie, c'est la Psionique. Un parcours marqué **(magie)** n'existe que si l'univers l'active. La Psionique respecte les interdits de 10.9 : ni lire les pensées, ni prédire l'avenir, ni contrôler un esprit. Ses domaines conseillés sont la Télékinésie (attaque, protection, utilitaire), l'Empathie (sentir et influencer les émotions, en renfort ou en entrave, sans jamais contrôler) et la Biokinésie (soin, renfort).
+
+**L'équipage**
+
+1. **Pilote** — As du manche, contrebandier ou ancien de la flotte, il fait voler ce qui ne devrait pas voler. Son vaisseau est sa maison et son arme. Il est génial aux commandes et se sent nu dès qu'il pose le pied au sol. *Conduite & pilotage, Astrogation, Systèmes & IA, Perception, Armes à distance, Artillerie embarquée, Esquive, Athlétisme (zéro G).*
+2. **Navigateur** — Il calcule les sauts, lit les cartes stellaires et sent les anomalies avant les capteurs. Une erreur de sa part, et le vaisseau sort au cœur d'une étoile. Il est précieux et méticuleux, et il passe sa vie penché sur des équations. *Astrogation, Sciences, Systèmes & IA, Conduite & pilotage, Perception, Xénoculture, Investigation, Esquive.*
+3. **Ingénieur** — Mécanicien de bord ou technicien de station, il garde le vaisseau en vie avec du ruban adhésif et du génie. Il comprend les machines mieux que les gens. Il est irremplaçable à bord, et vulnérable dès qu'il faut tirer. *Ingénierie, Systèmes & IA, Sciences, Contre-mesures, Conduite & pilotage, Investigation, Perception, Armes à distance.*
+4. **Canonnier** — Aux tourelles quand le vaisseau combat, il transforme les données de visée en coups au but. Il parle aux canons comme à des animaux familiers. Il est décisif en combat spatial, et beaucoup moins dans une coursive. *Artillerie embarquée, Armes à distance, Systèmes & IA, Perception, Ingénierie, Astrogation, Athlétisme (zéro G), Esquive.*
+5. **Capitaine** — Commandant d'un cargo, d'un corsaire ou d'une frégate, il répond de chaque vie à bord. Il négocie les contrats, il décide quand fuir et quand se battre. Il est respecté de son équipage, et seul avec ses choix. *Commandement, Diplomatie, Conduite & pilotage, Astrogation, Perspicacité, Armes à distance, Tromperie, Xénoculture.*
+6. **Médecin de bord** — Il soigne les humains, les hybrides et parfois ce qu'il ne sait pas nommer. Son infirmerie est le cœur discret du vaisseau. Il est indispensable, et il découvre des pathologies qu'aucun manuel ne décrit. *Médecine, Sciences, Perspicacité, Xénoculture, Systèmes & IA, Diplomatie, Perception, Esquive.*
+
+**Les armes**
+
+7. **Marine** — Soldat d'élite des abordages et des débarquements, entraîné à se battre en apesanteur. Quand ça tourne mal sur une station, c'est lui qu'on envoie. C'est une force de frappe redoutable, disciplinée jusqu'à la rigidité. *Armes à distance, Combat rapproché, Esquive, Athlétisme (zéro G), Intimidation, Perception, Commandement, Survie.*
+8. **Chasseur de primes** — Il traque les fugitifs d'un système à l'autre, pour une prime et sans poser de questions. Sa réputation le précède dans chaque spatioport. Il est tenace et efficace, et toujours une cible pour ceux qu'il a déjà livrés. *Armes à distance, Investigation, Perception, Intimidation, Conduite & pilotage, Combat rapproché, Tromperie, Survie.*
+9. **Agent de sécurité** — Il garde une station, un convoi ou un cadre important, dans des coursives où un tir perdu peut percer la coque. Il connaît chaque sas et chaque protocole. Il est fiable et bien équipé, et il obéit à ceux qui le paient. *Armes à distance, Contre-mesures, Perception, Intimidation, Combat rapproché, Perspicacité, Systèmes & IA, Athlétisme (zéro G).*
+
+**Les découvreurs**
+
+10. **Explorateur** — Il pose le pied le premier sur les mondes que personne n'a cartographiés. Il sait survivre dans des atmosphères hostiles et parmi des faunes inconnues. Il est autonome et curieux, et toujours le premier exposé à l'inconnu. *Survie, Perception, Xénoculture, Armes à distance, Athlétisme (zéro G), Conduite & pilotage, Médecine, Sciences.*
+11. **Xénobiologiste** — Scientifique des formes de vie extraterrestres, il étudie, classe et comprend. Pour lui, chaque créature est une merveille, même celle qui veut le dévorer. Il est brillant et passionné, et dangereusement curieux. *Sciences, Xénoculture, Anomalies, Investigation, Médecine, Systèmes & IA, Perception, Esquive.*
+12. **Diplomate** — Ambassadeur, médiateur ou négociateur de premiers contacts, il évite les guerres avec des mots. Il connaît les coutumes de dix espèces. Il est indispensable pour la paix, et démuni quand elle échoue. *Diplomatie, Xénoculture, Perspicacité, Tromperie, Commandement, Arts, Perception, Esquive.*
+13. **Chercheur d'anomalies** — Il traque les ruines d'espèces disparues et les phénomènes que la physique n'explique pas. Les universités le financent, les corpos le surveillent. Il est savant et intrépide, et certains artefacts n'auraient jamais dû être réveillés. *Anomalies, Xénoculture, Investigation, Survie, Sciences, Athlétisme (zéro G), Perception, Armes à distance.*
+
+**L'ombre**
+
+14. **Contrebandier** — Il fait passer ce que les douanes interdisent, d'un bout de la galaxie à l'autre. Il connaît chaque route discrète et chaque fonctionnaire corruptible. Il est débrouillard et beau parleur, et il a toujours une dette envers quelqu'un. *Conduite & pilotage, Tromperie, Diplomatie, Astrogation, Contre-mesures, Armes à distance, Escamotage, Perception.*
+15. **Pirate informatique** — Il parle aux IA, trompe les systèmes de bord et vide les comptes des corpos. Dans ce monde, une IA mal protégée vaut une flotte. Il est indispensable et insaisissable, et dangereux pour tous ceux qui l'emploient. *Systèmes & IA, Contre-mesures, Investigation, Tromperie, Sciences, Perception, Discrétion, Esquive.*
+16. **Espion** — Agent d'une corporation ou d'une puissance stellaire, il change d'identité comme de station. Il vole des secrets et retourne des alliés. Il est subtil et mortel, et il ne sait plus très bien pour qui il travaille. *Tromperie, Discrétion, Contre-mesures, Perspicacité, Diplomatie, Escamotage, Combat rapproché, Systèmes & IA.*
+
+**Les gens ordinaires**
+
+17. **Mineur d'astéroïdes** — Il fore la roche dans le vide pour un salaire de misère et une ration d'oxygène. Les « Ceinturiens » sont durs comme leur métier. Il est endurant et solidaire des siens, et en colère contre ceux qui l'exploitent. *Ingénierie, Athlétisme (zéro G), Conduite & pilotage, Survie, Perception, Sciences, Combat rapproché, Médecine.*
+18. **Colon** — Pionnier d'un monde lointain, il défriche, il construit et il défend ce qu'il a bâti. Il est loin de tout et autonome par force. Il est polyvalent et courageux, et sa colonie est toujours à une catastrophe près. *Survie, Ingénierie, Médecine, Conduite & pilotage, Perception, Armes à distance, Diplomatie, Athlétisme (zéro G).*
+
+**La Psionique**
+
+19. **Psion (magie)** — Né avec un don que la science explique mal, il ressent les émotions et plie la matière. On le surveille, on l'exploite ou on le craint. Il est unique et puissant, et son esprit est aussi sa plus grande faiblesse. *Psionique, Perspicacité, Diplomatie, Xénoculture, Anomalies, Perception, Esquive, Médecine.* Domaines conseillés : Télékinésie, Empathie. Sans magie : remplacé par le Diplomate ou le Chercheur d'anomalies.
+20. **Chevalier psi (magie)** — Membre d'un ordre ancien qui mêle le combat et la discipline de l'esprit. Il protège, il juge et il garde la paix entre les étoiles. Il est redoutable et respecté, et son ordre exige une obéissance totale. *Psionique, Combat rapproché, Esquive, Athlétisme (zéro G), Perspicacité, Perception, Diplomatie, Xénoculture.* Domaines conseillés : Télékinésie, Biokinésie. Sans magie : remplacé par le Marine.
+
+### Post-apo
+
+La magie y est désactivée par défaut ; activée, elle prend la forme du Psi des mutants. Un parcours marqué **(magie)** n'existe que dans ce cas. Une mutation est racontée : elle donne l'apparence, jamais de bonus chiffré.
+
+**Survivre**
+
+1. **Fouineur** — Pilleur de ruines, il descend là où personne ne va pour remonter ce qui fait vivre la communauté. Il connaît les pièges du monde d'avant. Débrouillard et discret, il préfère éviter les ennuis plutôt que les affronter. *Récupération, Vigilance, Discrétion, Pièges, Tech d'avant, Athlétisme, Survie, Esquive.*
+2. **Pisteur** — Chasseur des terres désolées, il trouve l'eau, le gibier et les pistes des pillards. Il sait survivre seul là où d'autres meurent. Il est autonome et précis, et il a du mal avec les gens. *Survie, Armes à distance, Vigilance, Discrétion, Purification, Athlétisme, Bagarre, Médecine.*
+3. **Vagabond** — Il marche depuis si longtemps qu'il a oublié d'où il vient. Il ne possède que ce qu'il porte, et il ne fait confiance qu'à son instinct. Il est increvable et imprévisible, et il est toujours de passage, nulle part chez lui. *Survie, Discrétion, Bagarre, Esquive, Flair, Chapardage, Purification, Athlétisme.*
+
+**La violence**
+
+4. **Pillard** — Membre d'une bande qui vit de raids sur les convois et les fermes. Il prend ce qu'il veut, parce qu'il le peut. Il est brutal et redouté, et sa bande peut se retourner contre lui au premier signe de faiblesse. *Bagarre, Armes à distance, Intimidation, Conduite, Athlétisme, Vigilance, Chapardage, Esquive.*
+5. **Milicien** — Il défend les murs de sa communauté contre les pillards, les mutants et les affamés. Il connaît chaque visage du village. Il est fiable et protecteur, et prêt à tout pour les siens, même au pire. *Armes à distance, Bagarre, Vigilance, Meneur, Intimidation, Pièges, Athlétisme, Flair.*
+6. **Gladiateur** — Il se bat dans les arènes des seigneurs de guerre pour de l'eau, de la gloire ou sa liberté. La foule scande son nom. Il est spectaculaire et endurci, et il est la propriété de quelqu'un. *Bagarre, Esquive, Athlétisme, Intimidation, Conteur, Vigilance, Médecine, Flair.*
+7. **Chasseur de mutants** — Il traque les bêtes et les monstres nés des radiations, pour une prime ou par vengeance. Il connaît leurs habitudes et leurs faiblesses. Il est redoutable et expérimenté, et il ne fait pas toujours la différence entre un monstre et un mutant pacifique. *Armes à distance, Bagarre, Survie, Vigilance, Superstitions, Pièges, Médecine, Esquive.*
+
+**La route**
+
+8. **Marchand de caravane** — Il fait circuler l'eau, les munitions et les nouvelles entre des communautés qui se méfient de tout. Il est respecté parce qu'il est utile. Excellent négociateur, il est toujours sur la route, donc toujours exposé. *Marchandage, Flair, Conduite, Intimidation, Vigilance, Armes à distance, Survie, Purification.*
+9. **Routier** — Pilote d'un engin bricolé, blindé et hérissé de pointes, il dévore les autoroutes mortes. Son véhicule est sa vie et son arme. Il est imbattable sur la route, et à pied, il n'est plus grand-chose. *Conduite, Bricolage, Armes à distance, Vigilance, Athlétisme, Intimidation, Survie, Esquive.*
+10. **Messager** — Il porte les lettres, les traités et les colis entre des communautés que tout sépare. Il connaît les raccourcis et les zones à éviter. Il est rapide et endurant, et on le tue souvent pour ce qu'il transporte. *Athlétisme, Survie, Discrétion, Vigilance, Conduite, Marchandage, Esquive, Purification.*
+
+**Le savoir et la tech**
+
+11. **Bricoleur** — Il fait marcher un générateur avec des pièces de grille-pain et redonne vie aux machines d'avant. Son atelier est un trésor. Il est indispensable à toute communauté, et convoité par toutes les bandes. *Bricolage, Tech d'avant, Récupération, Conduite, Vigilance, Sciences, Bagarre, Marchandage.*
+12. **Toubib** — Médecin formé sur le tas, il recoud, il ampute et il soigne avec ce qu'il trouve. On lui pardonne tout parce qu'on aura besoin de lui. Il est précieux et respecté, et il a toujours plus de patients que de médicaments. *Médecine, Purification, Sciences, Flair, Vigilance, Marchandage, Récupération, Esquive.*
+13. **Archiviste** — Gardien des livres et des savoirs d'avant, il essaie de comprendre ce qu'était le monde. Il sait lire les plans, les cartes et les manuels. Il est savant et précieux, et il est souvent pris pour un sorcier. *Savoir d'avant, Tech d'avant, Sciences, Enquête, Conteur, Marchandage, Vigilance, Esquive.*
+14. **Purificateur** — Il sait rendre l'eau buvable, la nourriture saine et l'air respirable. Dans ce monde, c'est plus précieux que l'or. Il est vital pour une communauté, et les seigneurs de guerre se le disputent. *Purification, Sciences, Médecine, Bricolage, Marchandage, Vigilance, Survie, Armes à distance.*
+
+**Le pouvoir et la parole**
+
+15. **Chef de clan** — Il dirige une communauté, une bande ou une tribu, et il porte la survie de tous. Il décide qui mange, qui se bat et qui part. Il est respecté et craint, et entouré de rivaux qui attendent son erreur. *Meneur, Intimidation, Marchandage, Flair, Armes à distance, Vigilance, Conteur, Survie.*
+16. **Prêcheur** — Il annonce la fin des temps, ou un nouveau commencement, à des survivants qui ont besoin d'y croire. Ses sermons rassemblent les foules. Il est charismatique et influent, et il est dangereux quand il croit à ce qu'il prêche. *Conteur, Superstitions, Marchandage, Flair, Embrouille, Meneur, Médecine, Esquive.*
+17. **Bonimenteur** — Il vend de l'eau « bénite », des remèdes miracles et des cartes vers des paradis qui n'existent pas. Il a toujours un tour d'avance. Il est charmeur et insaisissable, et il ne repasse jamais deux fois par le même village. *Embrouille, Marchandage, Chapardage, Flair, Conteur, Discrétion, Superstitions, Esquive.*
+18. **Fermier** — Il cultive une terre empoisonnée et la défend contre tout ce qui a faim. Il nourrit les autres. Il est tenace et pragmatique, et ses récoltes attirent tous les prédateurs. *Survie, Purification, Bricolage, Vigilance, Armes à distance, Médecine, Marchandage, Athlétisme.*
+
+**Les mutants**
+
+19. **Mutant** — Né avec un corps marqué par les radiations : peau écailleuse, yeux sans pupilles, carrure démesurée. Rejeté par les communautés, il vit en marge. Il est endurant et résistant, et il est la cible de tous les préjugés. *Athlétisme, Survie, Bagarre, Intimidation, Discrétion, Vigilance, Superstitions, Purification.*
+20. **Mutant psi (magie)** — Les radiations lui ont donné un don : déplacer les objets, ressentir les émotions, soigner par la pensée. Les uns le vénèrent, les autres veulent le brûler. Il est puissant et unique, et son don le consume. *Psi, Flair, Superstitions, Survie, Discrétion, Vigilance, Esquive, Intimidation.* Domaines conseillés : Télékinésie, Empathie, comme la Psionique de la science-fiction. Sans magie : remplacé par le Mutant.
