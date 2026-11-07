@@ -904,6 +904,8 @@ Les événements et les zones gardent leurs effets ; leur décor suit le genre. 
 | Un occupant | Couvert partiel (−20), lourd (−40) si le véhicule est blindé | Les dégâts touchent l'occupant, comme un tir normal |
 | Les pneus, le moteur | Difficile | Pas de dégâts, mais −1 cran de vitesse (pas sur un véhicule blindé) |
 
+Un véhicule est **blindé** à partir d'un blindage de 4, modifications comprises. Une réparation réussie rend aussi la vitesse perdue.
+
 **Éperonner**, au contact seulement : un jet opposé, le Pilotage de l'attaquant contre le Pilotage de la cible, ou son Esquive si c'est un piéton.
 
 | Gabarit de l'attaquant | Dégâts infligés |
@@ -1028,6 +1030,7 @@ Une **tourelle légère** porte une arme à distance ordinaire ; une **tourelle 
 
 - **Télépiloté** : l'opérateur dépense une action simple par round pour le faire agir, avec son Pilotage (ou son Piratage par un neuroport). Un opérateur pilote un seul drone à la fois.
 - **Autonome** : le drone agit seul à son tour, avec un score fixe de 40.
+- Sa structure fait ses PV, son blindage son armure ; à 0, c'est une épave, sans agonie.
 - Un drone est électronique : une IEM le grille, sauf blindage IEM (7.10).
 
 ---

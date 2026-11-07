@@ -16,7 +16,7 @@ from aria import chemins
 from aria.equipement import verifier_arme, verifier_armure
 from aria.magie import verifier_domaines
 from aria.personnage import COMPETENCES_SOCLE, MAGIE, NB_COMPETENCES_PARCOURS
-from aria.vehicules import GABARITS, vehicule_depuis_dict, verifier_vehicule
+from aria.vehicules import vehicule_depuis_dict, verifier_armement, verifier_vehicule
 
 DOSSIER = chemins.RESSOURCES / "bibliotheque"
 GENRES = ("Fantasy", "Dark fantasy", "Horreur", "Contemporain", "Militaire", "Science-fiction", "Cyberpunk", "Post-apo")
@@ -257,32 +257,25 @@ class Bibliotheque:
 
     def _verifier_vehicules(self) -> list[str]:
         erreurs = []
-        armes = {a["nom"]: a for a in self.armes}
+        armes = {}
+        for a in self.armes:
+            try:
+                armes[a["nom"]] = _arme_moteur(a)
+            except (KeyError, ValueError, TypeError):
+                pass  # _verifier_armes la signale déjà
         mods = {m["nom"]: m for m in self.modifications}
         noms = {v["nom"] for v in self.vehicules}
         for v in self.vehicules:
             nom = v["nom"]
             try:
-                erreurs += [f"{nom} : {e}" for e in verifier_vehicule(vehicule_depuis_dict(v), generee=True)]
+                vehicule = vehicule_depuis_dict(v)
             except (KeyError, ValueError, TypeError) as erreur:
                 erreurs.append(f"{nom} : fiche mal formée ({erreur}).")
                 continue
-            if v["gabarit"] not in GABARITS:
-                continue
-            emports = GABARITS[v["gabarit"]][2]
-            if len(v["armes_montees"]) > emports:
-                erreurs.append(f"{nom} : {len(v['armes_montees'])} armes montées pour {emports} points d'emport.")
-            for monte in v["armes_montees"]:
-                arme = armes.get(monte["arme"])
-                if arme is None:
-                    erreurs.append(f"{nom} : arme montée inconnue « {monte['arme']} ».")
-                elif (arme.get("zone") or arme.get("montee")) and monte["tourelle"] != "lourde":
-                    erreurs.append(f"{nom} : « {monte['arme']} » demande une tourelle lourde.")
-                elif monte["tourelle"] == "lourde" and v["gabarit"] in ("léger", "moyen", "drone"):
-                    erreurs.append(f"{nom} : pas de tourelle lourde en gabarit {v['gabarit']}.")
+            erreurs += [f"{nom} : {e}" for e in verifier_vehicule(vehicule, generee=True) + verifier_armement(vehicule, armes)]
             for systeme in v["systemes"]:
                 if mods.get(systeme, {}).get("effet") != "défensif":
-                    erreurs.append(f"{nom} : système défensif inconnu « {systeme} ».")
+                    erreurs.append(f"{nom} : le système « {systeme} » n'est pas dans les modifications.")
             if "drones" in v and v["drones"]["modele"] not in noms:
                 erreurs.append(f"{nom} : drone inconnu « {v['drones']['modele']} ».")
         return erreurs

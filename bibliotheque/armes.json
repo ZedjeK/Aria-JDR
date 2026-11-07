@@ -927,5 +927,40 @@
       "médiéval"
     ],
     "electronique": false
+  },
+  {
+    "nom": "Charge de drone kamikaze",
+    "competence": "Armes à distance",
+    "degats": "3d6",
+    "zone": "petite",
+    "effets": [],
+    "proprietes": [],
+    "portee": "courte",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "drones"
+  },
+  {
+    "nom": "Impulsion IEM de drone",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "petite",
+    "effets": [
+      "IEM"
+    ],
+    "proprietes": [],
+    "portee": "courte",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "drones"
   }
 ]

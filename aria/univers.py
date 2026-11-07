@@ -42,7 +42,7 @@ from aria.personnage import (
 )
 from aria.reglages import Curseur
 from aria.sante_mentale import Choc, ReglagesMentaux
-from aria.vehicules import Vehicule, vehicule_depuis_dict, vehicule_vers_dict, verifier_vehicule
+from aria.vehicules import Vehicule, vehicule_depuis_dict, vehicule_vers_dict, verifier_armement, verifier_vehicule
 
 MAX_COMPETENCES_THEMATIQUES = 3
 BASE_MAX_THEMATIQUE = 10
@@ -180,8 +180,10 @@ class Univers:
             erreurs += verifier_domaines(self.domaines)
         if self.implants:
             erreurs += verifier_catalogue(self.systemes, self.implants, set(disponibles))
+        armes = {a.nom: a for a in self.armes}
         for vehicule in self.vehicules:
-            erreurs += [f"{vehicule.nom} : {e}" for e in verifier_vehicule(vehicule, generee=genere)]
+            erreurs += [f"{vehicule.nom} : {e}" for e in verifier_vehicule(vehicule, generee=genere)
+                        + verifier_armement(vehicule, armes)]
         return erreurs
 
 

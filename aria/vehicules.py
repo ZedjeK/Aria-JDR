@@ -8,7 +8,7 @@ montées et les drones dans 12.7.
 from dataclasses import dataclass, field
 
 from aria.des import Des
-from aria.equipement import Qualite
+from aria.equipement import Arme, Qualite
 from aria.progression import cocher
 from aria.resolution import Degre, Difficulte, Resultat, tester
 from aria.temps import Moment, Periode
@@ -42,6 +42,16 @@ REPARATION = {Degre.CRITIQUE: "4d6", Degre.MAJEURE: "2d6", Degre.REUSSITE: "1d6"
 REPARER, SOIGNER_MONTURE, PILOTAGE = "Artisanat", "Survie", "Pilotage"
 DRESSAGE = "dressage de guerre"
 TOUT_TERRAIN = "tout-terrain"
+# L'armement (12.7)
+LEGERE, LOURDE = "légère", "lourde"
+SANS_TOURELLE_LOURDE = ("léger", "moyen", "drone")
+LANCE_FUMIGENES, LEURRES, BLINDAGE_IEM, BAIE_A_DRONES = (
+    "Lance-fumigènes", "Leurres", "Blindage IEM de véhicule", "Baie à drones")
+SYSTEMES = (LANCE_FUMIGENES, LEURRES, BLINDAGE_IEM, BAIE_A_DRONES)
+SCORE_DRONE_AUTONOME = 40
+BLINDE = 4  # à partir de ce blindage, le véhicule est blindé : couvert lourd, pneus intouchables (12.4)
+# L'éperonnage (12.4), selon le gabarit de l'attaquant
+EPERONNAGE = {"léger": "1d6", "moyen": "2d6", "lourd": "3d6", "militaire": "4d6", "drone": "1d6"}
 
 
 class VehiculeImpossible(ValueError):
@@ -82,6 +92,9 @@ class Vehicule:
     categorie: str = ""
     effet: str = ""  # un drone : ce qu'il fait
     drones: dict | None = None
+    utilitaires: tuple[str, ...] = ()
+    arme_integree: str | None = None  # un drone : ce qu'il porte en lui (charge, impulsion IEM)
+    kamikaze: bool = False  # un drone qui se détruit en frappant
 
     def _somme(self, effet: str) -> int:
         return min(PLAFONDS.get(effet, 99), sum(m.valeur for m in self.modifications if m.effet == effet))
@@ -111,6 +124,52 @@ class Vehicule:
     @property
     def nitro(self) -> bool:
         return any(m.effet == NITRO for m in self.modifications)
+
+    @property
+    def emports(self) -> int:
+        """Les points d'emport du gabarit, plus un support d'arme (12.6)."""
+        return GABARITS[self.gabarit][2] + self._somme(SUPPORT)
+
+    @property
+    def drone(self) -> bool:
+        return self.gabarit == "drone"
+
+    @property
+    def blinde(self) -> bool:
+        return self.blindage_total >= BLINDE
+
+    def a(self, systeme: str) -> bool:
+        return systeme in self.systemes
+
+
+def verifier_armement(v: Vehicule, armes: dict[str, Arme]) -> list[str]:
+    """Les points d'emport, les tourelles et les systèmes défensifs (12.7)."""
+    erreurs = []
+    if v.gabarit in GABARITS and len(v.armes_montees) > v.emports:
+        erreurs.append(f"{len(v.armes_montees)} armes montées, pour {v.emports} points d'emport au plus.")
+    for monte in v.armes_montees:
+        arme = armes.get(monte.get("arme"))
+        tourelle = monte.get("tourelle")
+        if arme is None:
+            erreurs.append(f"Arme montée inconnue « {monte.get('arme')} ».")
+        elif tourelle not in (LEGERE, LOURDE):
+            erreurs.append(f"Tourelle inconnue « {tourelle} » : légère ou lourde.")
+        elif arme.corps_a_corps:
+            erreurs.append(f"« {arme.nom} » : une tourelle porte une arme à distance.")
+        elif (arme.zone or arme.montee) and tourelle != LOURDE:
+            erreurs.append(f"« {arme.nom} » demande une tourelle lourde.")
+        elif tourelle == LOURDE and v.gabarit in SANS_TOURELLE_LOURDE:
+            erreurs.append(f"Pas de tourelle lourde en gabarit {v.gabarit}.")
+    for systeme in v.systemes:
+        if systeme not in SYSTEMES:
+            erreurs.append(f"Système défensif inconnu « {systeme} ».")
+    if v.drones and not v.a(BAIE_A_DRONES):
+        erreurs.append("Des drones à bord demandent une baie à drones.")
+    if v.arme_integree and armes.get(v.arme_integree) is None:
+        erreurs.append(f"Arme intégrée inconnue « {v.arme_integree} ».")
+    if (v.arme_integree or v.kamikaze) and not v.drone:
+        erreurs.append("Seul un drone a une arme intégrée.")
+    return erreurs
 
 
 def verifier_vehicule(v: Vehicule, generee: bool = False) -> list[str]:
@@ -168,6 +227,9 @@ class Engin:
     structure: int | None = None
     nitro_utilisee: bool = False
     derniere_reparation: Moment | None = None
+    vitesse_perdue: int = 0  # des pneus crevés, un moteur touché (12.4)
+    systemes_utilises: set[str] = field(default_factory=set)  # fumigènes et leurres : une fois par scène
+    coupe: int = 0  # les rounds où une IEM lui coupe l'électronique (7.10)
 
     def __post_init__(self):
         if self.structure is None:
@@ -186,7 +248,8 @@ class Engin:
     @property
     def cran(self) -> int:
         """La vitesse du moment : endommagé, un cran de moins (12.5)."""
-        return max(0, self.modele.cran - (1 if self.etat == ENDOMMAGE else 0))
+        malus = (1 if self.etat == ENDOMMAGE else 0) + self.vitesse_perdue + (1 if self.coupe else 0)
+        return max(0, self.modele.cran - malus)
 
     @property
     def vitesse(self) -> str:
@@ -202,8 +265,23 @@ class Engin:
         self.structure = max(0, self.structure - perte)
         return perte
 
+    def nouvelle_scene(self):
+        """La nitro, les fumigènes et les leurres reviennent à chaque scène."""
+        self.nitro_utilisee = False
+        self.systemes_utilises.clear()
+        self.coupe = 0
+
+    def utiliser(self, systeme: str):
+        if not self.modele.a(systeme):
+            raise VehiculeImpossible(f"{self.nom} n'a pas de {systeme.lower()}.")
+        if systeme in self.systemes_utilises:
+            raise VehiculeImpossible(f"{systeme} : déjà utilisé dans cette scène.")
+        self.systemes_utilises.add(systeme)
+
     def vers_dict(self) -> dict:
         d = {"nom": self.nom, "structure": self.structure}
+        if self.vitesse_perdue:
+            d["vitesse_perdue"] = self.vitesse_perdue
         if self.nitro_utilisee:
             d["nitro_utilisee"] = True
         if self.derniere_reparation:
@@ -302,7 +380,7 @@ def reparer(des: Des, reparateur, engin: Engin, moment: Moment, atelier: bool = 
     monture = engin.modele.monture
     if engin.derniere_reparation == moment:
         raise VehiculeImpossible(f"{engin.nom} a déjà été {'soigné' if monture else 'réparé'} cette demi-journée.")
-    if engin.structure >= engin.modele.structure_max:
+    if engin.structure >= engin.modele.structure_max and not engin.vitesse_perdue:
         raise VehiculeImpossible(f"{engin.nom} n'a rien à {'soigner' if monture else 'réparer'}.")
     if engin.etat == EPAVE and not atelier:
         raise VehiculeImpossible(f"{engin.nom} est une épave : seul un atelier peut la réparer.")
@@ -323,6 +401,8 @@ def reparer(des: Des, reparateur, engin: Engin, moment: Moment, atelier: bool = 
         gain = 0
     avant = engin.structure
     engin.structure = max(0, min(engin.modele.structure_max, engin.structure + gain))
+    if test.reussi:
+        engin.vitesse_perdue = 0  # les pneus changés, le moteur remis en état
     return RapportReparation(reparateur.nom, engin.nom, test, engin.structure - avant, engin.structure)
 
 
@@ -342,7 +422,8 @@ def vehicule_depuis_dict(d: dict, modifications: dict[str, dict] | None = None) 
         d.get("places", 1), frozenset(d.get("proprietes", [])), tuple(d.get("armes_montees", [])),
         tuple(d.get("systemes", [])), Qualite(d.get("qualite", Qualite.ORIGINE.value)), mods, d.get("defaut"),
         d.get("fabricant"), d.get("electronique", False), d.get("monture", False), d.get("categorie", ""),
-        d.get("effet", ""), d.get("drones"),
+        d.get("effet", ""), d.get("drones"), tuple(d.get("utilitaires", [])), d.get("arme_integree"),
+        d.get("kamikaze", False),
     )
 
 
@@ -355,7 +436,9 @@ def vehicule_vers_dict(v: Vehicule) -> dict:
     if v.modifications:
         d["modifications"] = [{k: val for k, val in vars(m).items() if val not in (None, "", False, 0) or k == "nom"}
                               for m in v.modifications]
-    for cle in ("defaut", "fabricant", "electronique", "monture", "effet", "drones"):
+    if v.utilitaires:
+        d["utilitaires"] = list(v.utilitaires)
+    for cle in ("defaut", "fabricant", "electronique", "monture", "effet", "drones", "arme_integree", "kamikaze"):
         if getattr(v, cle):
             d[cle] = getattr(v, cle)
     return d
@@ -364,4 +447,4 @@ def vehicule_vers_dict(v: Vehicule) -> dict:
 def engin_depuis_dict(d: dict, catalogue: dict[str, Vehicule]) -> Engin:
     moment = d.get("derniere_reparation")
     return Engin(catalogue[d["nom"]], d.get("structure"), d.get("nitro_utilisee", False),
-                 Moment(moment["jour"], Periode(moment["periode"])) if moment else None)
+                 Moment(moment["jour"], Periode(moment["periode"])) if moment else None, d.get("vitesse_perdue", 0))

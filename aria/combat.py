@@ -14,6 +14,14 @@ from aria.progression import cocher
 from aria.reglages import Curseur
 from aria.resolution import Degre, Difficulte, Issue, Resultat, opposer, tester
 from aria.temps import Moment
+from aria.vehicules import (
+    EPERONNAGE,
+    LEURRES,
+    SCORE_DRONE_AUTONOME,
+    Engin,
+    cocher_pour,
+    valeur_pilotage,
+)
 
 SAUVEGARDES_MAX = 3  # un effet persistant mord au plus 3 fois (REGLES.md 10.6)
 DEGATS_PERSISTANTS = "1d3"
@@ -28,6 +36,10 @@ MALUS_AVEUGLE = -20
 BRULURE, FUMEE, AVEUGLANT, IEM = "brûlure", "fumée", "aveuglant", "IEM"
 NATURE_IEM = "iem"  # l'électronique d'un combattant est coupée
 YEUX_CYBERNETIQUES = "Yeux cybernétiques"
+NEUROPORT = "Neuroport"
+# Tirer depuis un véhicule en mouvement (REGLES.md 12.4)
+TIREURS = {"à pied": 0, "conducteur": -20, "passager": -10, "tourelle": 0}
+PARTIES_VEHICULE = ("carrosserie", "pneus")
 
 
 class ActionImpossible(Exception):
@@ -204,6 +216,8 @@ class Combattant:
         self.armure_implantee: Armure | None = None  # posée par la session, d'après les implants du personnage
         self.armes_implantees: frozenset[str] = frozenset()  # leurs noms : une IEM les rend inutilisables
         self.blindage_iem = False  # tout son équipement électronique est blindé
+        self.drone: Engin | None = None  # ce combattant est un drone (REGLES.md 12.7)
+        self.operateur: Combattant | None = None  # un drone télépiloté : il agit avec l'action de son opérateur
         if arme:
             self._charger(arme)
 
@@ -237,7 +251,14 @@ class Combattant:
         cocher(self.fiche, competence, resultat)
 
     def valeur(self, competence: str) -> int:
-        """La compétence avec les malus subis (blessure grave, armure) et les renforts ou entraves des sorts."""
+        """La compétence avec les malus subis (blessure grave, armure) et les renforts ou entraves des sorts.
+        Un drone télépiloté agit avec le Pilotage de son opérateur, ou son Piratage par un neuroport."""
+        if self.operateur:
+            op = self.operateur
+            pilotage = _valeur_ou_zero(op, "Pilotage")
+            if isinstance(op.fiche, Personnage) and any(p["nom"] == NEUROPORT for p in op.fiche.implants):
+                pilotage = max(pilotage, _valeur_ou_zero(op, "Technologie"))
+            return pilotage + self.modificateur_magique
         valeur = self.fiche.valeur(competence) + self.modificateur_magique
         if self.iem and isinstance(self.fiche, Personnage):
             valeur -= self.fiche.bonus_implants(competence)  # les implants sont coupés
@@ -299,6 +320,53 @@ class RapportAttaque:
     effets: list[str] = field(default_factory=list)
 
 
+def _valeur_ou_zero(combattant: Combattant, competence: str) -> int:
+    try:
+        return combattant.valeur(competence)
+    except KeyError:
+        return 0
+
+
+def combattant_drone(engin: Engin, camp: str, arme: Arme | None = None, operateur: Combattant | None = None,
+                     blindage_iem: bool = False) -> Combattant:
+    """Un drone devient un combattant : sa structure fait ses PV, son blindage son armure.
+    Autonome, il agit à son tour avec un score de 40 ; télépiloté, avec l'action de son opérateur."""
+    fiche = FichePnj(engin.nom, combat=SCORE_DRONE_AUTONOME, pv_max_base=engin.modele.structure_max,
+                     dexterite=50, perception=SCORE_DRONE_AUTONOME, pv=engin.structure)
+    armure = Armure("Blindage", engin.modele.blindage_total) if engin.modele.blindage_total else None
+    drone = Combattant(fiche, camp, arme, armure)
+    drone.drone, drone.operateur, drone.blindage_iem = engin, operateur, blindage_iem
+    return drone
+
+
+@dataclass
+class RapportTirVehicule:
+    attaquant: str
+    vehicule: str
+    partie: str
+    attaque: Resultat | None
+    touche: bool = False
+    degats_bruts: int = 0
+    blindage: int = 0
+    structure_perdue: int = 0
+    etat: str = ""
+    effets: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RapportEperonnage:
+    attaquant: str
+    cible: str
+    attaque: Resultat
+    defense: Resultat
+    touche: bool = False
+    degats: int = 0
+    structure_cible: int | None = None  # contre un véhicule
+    blessure: RapportBlessure | None = None  # contre un piéton
+    recul: int = 0  # ce que l'attaquant prend sur sa propre structure
+    effets: list[str] = field(default_factory=list)
+
+
 @dataclass
 class RapportCibleZone:
     """Ce qu'une cible prend dans la zone : son esquive, ses dégâts, ses effets."""
@@ -322,6 +390,7 @@ class RapportZone:
     issue: IssueZone
     jet_degats: int = 0  # le jet de dégâts, le même pour toute la zone
     cibles: list[RapportCibleZone] = field(default_factory=list)
+    vehicules: list[tuple[str, int, str, list[str]]] = field(default_factory=list)  # (nom, structure perdue, état, effets)
     effets: list[str] = field(default_factory=list)
 
 
@@ -418,6 +487,9 @@ class Combat:
     # --- Ce que chacun peut faire --------------------------------------------------
 
     def peut_agir(self, combattant: Combattant) -> bool:
+        """Un drone télépiloté n'a pas de tour à lui ; un drone coupé par une IEM ne fait rien."""
+        if combattant.operateur or (combattant.drone and combattant.iem):
+            return False
         return combattant.conscient and not (combattant.surpris and self.round == 1)
 
     def action_simple(self, combattant: Combattant):
@@ -425,6 +497,11 @@ class Combat:
         self._agir(combattant, TypeAction.SIMPLE)
 
     def _agir(self, combattant: Combattant, action: TypeAction):
+        if combattant.operateur:
+            if combattant.iem or not combattant.conscient:
+                raise ActionImpossible(f"{combattant.nom} ne répond plus.")
+            self._agir(combattant.operateur, TypeAction.SIMPLE)  # piloter le drone coûte une action simple
+            return
         if not self.peut_agir(combattant):
             raise ActionImpossible(f"{combattant.nom} ne peut pas agir.")
         if self.tour_par_tour and combattant is not self.au_tour_de:
@@ -469,10 +546,12 @@ class Combat:
         couvert: Couvert = Couvert.AUCUN,
         bonus_majeure: BonusMajeure = BonusMajeure.DE_SUPPLEMENTAIRE,
         difficulte: Difficulte = Difficulte.NORMALE,
+        tireur: str = "à pied",
     ) -> RapportAttaque:
         """Une attaque complète : jets, défense, dégâts et blessures (REGLES.md 7.3 à 7.6).
 
         `difficulte` : choisie par le MJ dans la liste fermée, par exemple Facile contre une cible sans défense.
+        `tireur` : d'où il attaque, si c'est d'un véhicule en mouvement (12.4).
         """
         if cible.fiche.etat is Etat.MORT:
             raise ActionImpossible(f"{cible.nom} est déjà mort.")
@@ -480,9 +559,10 @@ class Combat:
         if arme.zone:
             raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone.")
         self._verifier_arme_utilisable(attaquant, arme)
+        self._verifier_tireur(arme, tireur)
         self._agir(attaquant, TypeAction.SIMPLE)
 
-        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
         effets = []
         if not arme.corps_a_corps:
             modificateur += couvert.value
@@ -528,11 +608,109 @@ class Combat:
             self._infliger(cible, cible.arme_de_melee, resultat_defense.degre, attaquant, bonus_majeure, rapport)
         return rapport
 
+    @staticmethod
+    def _verifier_tireur(arme: Arme, tireur: str):
+        if tireur not in TIREURS:
+            raise ActionImpossible(f"Tireur inconnu « {tireur} » : {', '.join(TIREURS)}.")
+        if tireur == "conducteur" and arme.a(Propriete.DEUX_MAINS):
+            raise ActionImpossible(f"Au volant, on ne tire qu'à une main : pas avec {arme.nom}.")
+        if arme.montee and tireur != "tourelle":
+            raise ActionImpossible(f"{arme.nom} se tire seulement d'une tourelle (ou d'un trépied).")
+
     def _verifier_arme_utilisable(self, attaquant: Combattant, arme: Arme):
         if not arme.corps_a_corps and arme.munitions and attaquant.munitions[arme] == 0:
             raise ActionImpossible(f"L'arme de {attaquant.nom} est vide : il faut recharger.")
         if attaquant.iem and arme.nom in attaquant.armes_implantees:
             raise ActionImpossible(f"{arme.nom} est coupée par l'IEM jusqu'à la fin du round.")
+
+    # --- Les véhicules en combat (REGLES.md 12.4) -----------------------------------------
+
+    def tirer_sur_vehicule(self, attaquant: Combattant, engin: Engin, partie: str = "carrosserie",
+                           tireur: str = "à pied", difficulte: Difficulte = Difficulte.NORMALE) -> RapportTirVehicule:
+        """Viser la carrosserie (les dégâts moins le blindage vont à la structure) ou les pneus et le moteur
+        (difficile, sans dégâts, mais un cran de vitesse en moins, pas sur un véhicule blindé).
+        Les leurres font rater d'office la première roquette de la scène."""
+        if partie not in PARTIES_VEHICULE:
+            raise ActionImpossible(f"Partie inconnue « {partie} » : {', '.join(PARTIES_VEHICULE)}.")
+        arme = attaquant.arme_en_main
+        if partie == "pneus" and engin.modele.blinde:
+            raise ActionImpossible(f"{engin.nom} est blindé : ses pneus et son moteur ne craignent rien.")
+        if engin.etat == "épave":
+            raise ActionImpossible(f"{engin.nom} est déjà une épave.")
+        self._verifier_arme_utilisable(attaquant, arme)
+        self._verifier_tireur(arme, tireur)
+        self._agir(attaquant, TypeAction.SIMPLE)
+        rapport = RapportTirVehicule(attaquant.nom, engin.nom, partie, None)
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
+        if attaquant.vise and not arme.corps_a_corps:
+            modificateur += BONUS_VISER
+        attaquant.vise = False
+        if not arme.corps_a_corps and arme.munitions:
+            attaquant.munitions[arme] -= 1
+        elif arme.usage_unique or arme.a(Propriete.LANCER):
+            attaquant.arme = None
+            rapport.effets.append(f"{arme.nom} est partie : plus en main.")
+        if arme.zone and arme.munitions and engin.modele.a(LEURRES) and LEURRES not in engin.systemes_utilises:
+            engin.systemes_utilises.add(LEURRES)
+            rapport.effets.append("Les leurres détournent le projectile : il rate d'office.")
+            rapport.etat = engin.etat
+            return rapport
+        if partie == "pneus":
+            difficulte = Difficulte(min(difficulte.value, Difficulte.DIFFICILE.value))  # au moins difficile
+        rapport.attaque = tester(self.des, attaquant.valeur(arme.competence), difficulte, combat=True,
+                                 modificateur=modificateur)
+        attaquant.cocher(arme.competence, rapport.attaque)
+        rapport.touche = rapport.attaque.reussi
+        if rapport.touche and partie == "pneus":
+            engin.vitesse_perdue += 1
+            rapport.effets.append(f"{engin.nom} perd un cran de vitesse ({engin.vitesse}).")
+        elif rapport.touche and arme.degats:
+            formule = formule_degats(arme, attaquant.force)
+            critique = rapport.attaque.degre is Degre.CRITIQUE
+            rapport.degats_bruts = formule.maximum if critique else self.des.jet(formule)
+            blindage = engin.modele.blindage_total
+            rapport.blindage = blindage // 2 if arme.a(Propriete.PERFORANTE) or critique else blindage
+            rapport.structure_perdue = engin.encaisser(rapport.degats_bruts - rapport.blindage, blindage=False)
+            for effet in arme.effets:
+                if effet == IEM:
+                    rapport.effets += iem_sur_engin(engin)
+        rapport.etat = engin.etat
+        if engin.etat == "épave":
+            rapport.effets.append(f"{engin.nom} est une épave : les occupants doivent sortir.")
+        return rapport
+
+    def eperonner(self, attaquant: Combattant, engin: Engin, cible: Combattant,
+                  engin_cible: Engin | None = None) -> RapportEperonnage:
+        """Au contact : Pilotage contre Pilotage (ou contre l'Esquive d'un piéton). Les dégâts suivent le
+        gabarit de l'attaquant, +1d6 s'il est rapide ; il en prend la moitié sur sa propre structure."""
+        if engin.etat in ("épave", "mourante"):
+            raise ActionImpossible(f"{engin.nom} ne peut plus avancer.")
+        self._agir(attaquant, TypeAction.SIMPLE)
+        attaque = tester(self.des, valeur_pilotage(attaquant, engin), combat=True)
+        cocher_pour(attaquant, "Pilotage", attaque)
+        if engin_cible:
+            defense = tester(self.des, valeur_pilotage(cible, engin_cible), combat=True)
+            cocher_pour(cible, "Pilotage", defense)
+        else:
+            defense = tester(self.des, _valeur_ou_zero(cible, "Esquive"), combat=True)
+            cible.cocher("Esquive", defense)
+        rapport = RapportEperonnage(attaquant.nom, engin_cible.nom if engin_cible else cible.nom, attaque, defense)
+        degre_a = attaque.degre if attaque.reussi else Degre.ECHEC
+        degre_d = defense.degre if defense.reussi else Degre.ECHEC
+        if not attaque.reussi or degre_a <= degre_d:
+            rapport.effets.append("La cible esquive le choc.")
+            return rapport
+        rapport.touche = True
+        rapport.degats = self.des.jet(EPERONNAGE[engin.modele.gabarit]) + (self.des.lancer(6) if engin.cran >= 2 else 0)
+        if engin_cible:
+            engin_cible.encaisser(rapport.degats)
+            rapport.structure_cible = engin_cible.structure
+            if engin_cible.etat == "épave":
+                rapport.effets.append(f"{engin_cible.nom} est une épave.")
+        else:
+            rapport.blessure = self.appliquer_degats(cible, max(0, rapport.degats - cible.protection))
+        rapport.recul = engin.encaisser(rapport.degats // 2)
+        return rapport
 
     # --- Les armes de zone (REGLES.md 7.9) ------------------------------------------------
 
@@ -556,6 +734,8 @@ class Combat:
         sans_esquive: list[Combattant] = (),
         voisins: list[Combattant] = (),
         difficulte: Difficulte = Difficulte.NORMALE,
+        vehicules: list[Engin] = (),
+        tireur: str = "à pied",
     ) -> RapportZone:
         """Une grenade, une roquette, une charge : toute la zone est touchée, alliés compris.
 
@@ -571,10 +751,11 @@ class Combat:
         if len({id(c) for c in cibles}) != len(cibles):
             raise ActionImpossible("Une même cible apparaît deux fois.")
         self._verifier_arme_utilisable(attaquant, arme)
+        self._verifier_tireur(arme, tireur)
         self._agir(attaquant, TypeAction.SIMPLE)
 
         effets = []
-        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
         if attaquant.vise and not arme.posee:
             modificateur += BONUS_VISER
         attaquant.vise = False
@@ -605,6 +786,16 @@ class Combat:
             rapport.cibles.append(self._subir_zone(arme, rapport.jet_degats, issue, cible,
                                                    any(c is cible for c in couverts_lourds),
                                                    not any(c is cible for c in sans_esquive)))
+        if issue is not IssueZone.MALADRESSE:
+            for engin in vehicules:
+                perdue = 0
+                if arme.degats:
+                    degats = rapport.jet_degats // 2 if issue is IssueZone.DEVIATION else rapport.jet_degats
+                    blindage = engin.modele.blindage_total
+                    perdue = engin.encaisser(degats - (blindage // 2 if arme.a(Propriete.PERFORANTE) else blindage),
+                                             blindage=False)
+                textes = iem_sur_engin(engin) if IEM in arme.effets else []
+                rapport.vehicules.append((engin.nom, perdue, engin.etat, textes))
         if FUMEE in arme.effets:
             self.fumee = ROUNDS_FUMEE
             effets.append(f"Fumée pendant {ROUNDS_FUMEE} rounds : tirer à travers, c'est un couvert lourd (−40).")
@@ -742,6 +933,13 @@ def blesser(des: Des, curseur: Curseur, victime: Combattant, degats: int) -> Rap
     if degats <= 0:
         rapport.etat = fiche.etat
         return rapport
+    if victime.drone:  # un drone n'a ni blessure grave ni agonie : à 0, c'est une épave
+        fiche.pv = max(0, fiche.pv - degats)
+        victime.drone.structure = fiche.pv
+        if fiche.pv == 0:
+            fiche.etat = Etat.MORT
+        rapport.pv_apres, rapport.etat = fiche.pv, fiche.etat
+        return rapport
 
     base = fiche.pv_max_base
     if curseur.mort_instantanee and degats >= base:
@@ -773,6 +971,13 @@ def subir_iem(combattant: Combattant, source: str) -> list[str]:
     """Une IEM coupe l'électronique d'un combattant pendant 1 round (REGLES.md 7.10) : ses implants
     (bonus, armure, armes implantées) et les bonus électroniques de ses armes. Un implant ne grille
     jamais ; des yeux cybernétiques coupés l'aveuglent. Le blindage IEM le protège de tout."""
+    if combattant.drone:
+        if combattant.blindage_iem:
+            combattant.effets.append(EffetEnCours(source, NATURE_IEM, 0, 1))
+            return ["drone blindé : coupé 1 round"]
+        combattant.fiche.pv = combattant.drone.structure = 0
+        combattant.fiche.etat = Etat.MORT
+        return ["drone grillé : une épave, à réparer en atelier"]
     if combattant.blindage_iem:
         return ["blindage IEM : aucun effet"]
     combattant.effets.append(EffetEnCours(source, NATURE_IEM, 0, 1))
@@ -781,6 +986,22 @@ def subir_iem(combattant: Combattant, source: str) -> list[str]:
                                                        for p in combattant.fiche.implants):
         combattant.effets.append(EffetEnCours(source, "entrave", MALUS_AVEUGLE, 1))
         textes.append(f"yeux cybernétiques coupés : aveuglé, {MALUS_AVEUGLE} à tout pendant 1 round")
+    return textes
+
+
+def iem_sur_engin(engin: Engin) -> list[str]:
+    """Une IEM sur un véhicule (REGLES.md 7.10) : un cran de vitesse et le pilote automatique coupés
+    1 round. Un véhicule aérien demande en plus un test de Pilotage difficile à son pilote (le MJ
+    le fait passer avec piloter). Le blindage IEM le protège ; un véhicule mécanique ne craint rien."""
+    from aria.vehicules import BLINDAGE_IEM
+    if not engin.modele.electronique:
+        return [f"{engin.nom} : mécanique, rien ne se passe"]
+    if engin.modele.a(BLINDAGE_IEM):
+        return [f"{engin.nom} : blindage IEM, aucun effet"]
+    engin.coupe = 1
+    textes = [f"{engin.nom} : électronique coupée 1 round, un cran de vitesse en moins, pilote automatique coupé"]
+    if engin.modele.type == "aérien":
+        textes.append(f"{engin.nom} : véhicule aérien, test de Pilotage difficile pour le pilote, sinon l'accident")
     return textes
 
 

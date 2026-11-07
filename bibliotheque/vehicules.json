@@ -572,7 +572,9 @@
       "Militaire"
     ],
     "electronique": true,
-    "effet": "il explose : 3d6 sur une petite zone, usage unique"
+    "effet": "il explose : 3d6 sur une petite zone, usage unique",
+    "arme_integree": "Charge de drone kamikaze",
+    "kamikaze": true
   },
   {
     "nom": "Drone brouilleur",
@@ -591,7 +593,8 @@
       "futuriste"
     ],
     "electronique": true,
-    "effet": "une IEM sur une petite zone, une fois par scène"
+    "effet": "une IEM sur une petite zone, une fois par scène",
+    "arme_integree": "Impulsion IEM de drone"
   },
   {
     "nom": "Drone de livraison",

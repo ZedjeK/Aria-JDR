@@ -64,6 +64,27 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return _decrire_sort(r)
     if o == "attaquer_zone":
         return _decrire_zone(r)
+    if o == "tirer_arme_montee":
+        return _decrire_zone(r) if "cibles" in r else _decrire_attaque(r)
+    if o == "tirer_sur_vehicule":
+        jet_ = f" : {jet(r['attaque'])}" if "attaque" in r else ""
+        lignes = [f"🎯 {r['attaquant']} tire sur {r['vehicule']} ({r['partie']}){jet_}"]
+        if "structure_perdue" in r:
+            lignes.append(f"   → −{r['structure_perdue']} structure (le blindage en arrête {r['blindage']}) → {r['etat']}")
+        elif "attaque" in r and not r["touche"]:
+            lignes.append("   → Raté.")
+        return lignes + [f"   → {e}" for e in r.get("effets", [])]
+    if o == "eperonner":
+        lignes = [f"🚗 {r['attaquant']} éperonne {r['cible']} : {jet(r['attaque'])} contre {jet(r['defense'])}"]
+        if r["touche"]:
+            reste = (f", il reste {r['pv']} PV" if "pv" in r
+                     else f", structure {r['structure_cible']}" if "structure_cible" in r else "")
+            lignes.append(f"   → {r['degats']} dégâts{reste} ; −{r['recul']} structure pour l'attaquant")
+        return lignes + [f"   → {e}" for e in r.get("effets", [])]
+    if o == "lance_fumigenes":
+        return [f"💨 {r['vehicule']} : écran de fumée, {r['fumee_rounds']} rounds"]
+    if o == "lancer_drone":
+        return [f"🛸 {r['drone']} lancé ({r['mode']})"]
     if o == "piloter":
         return ([f"🚗 {r['vehicule']} : Pilotage {jet(r)}"] + ([f"   → {r['cale']}"] if "cale" in r else [])
                 + (_decrire_accident(r["accident"]) if "accident" in r else []))
