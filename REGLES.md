@@ -194,6 +194,20 @@ Si l'univers l'active, la Magie peut se découper en **écoles** (Pyromancie, N�
 
 Comme les compétences thématiques, les parcours peuvent être générés par le LLM et sont validés par le code.
 
+**Les parcours** sont les métiers du monde : ils servent au personnage du joueur, et aussi aux compagnons et aux PNJ (exemples par genre en annexe D).
+
+- Un parcours a un nom, une description de 3 phrases (ce qu'il fait, comment le monde le voit, ses forces et sa faiblesse) et 8 compétences distinctes.
+- Un parcours de lanceur de sorts contient la Magie, seulement dans un univers qui l'active ; il conseille des domaines, sans les imposer.
+- Un parcours n'est pas obligé de savoir se défendre : un salaryman ou un fermier n'a ni arme ni Esquive. Mais si le personnage du joueur n'a aucune compétence parmi Corps à corps, Armes à distance, Esquive ou Magie, la création le prévient : sans compagnon pour le protéger, le premier combat peut lui être fatal. Le joueur choisit en connaissance de cause.
+- À la création, tout l'équipement du personnage est de qualité **commune** (voir 7.5) : rien d'usé, rien de personnalisé, qui se gagne en jouant.
+- Le parcours donne **une armure au plus**, et beaucoup n'en donnent pas : c'est le métier qui décide. À la création, sa protection est de **3 au plus** ; les armures de protection 4 se gagnent en jouant (les PNJ peuvent en porter d'emblée). Une armure implantée et une armure portée ne se cumulent pas (voir 11.3), dès la création.
+- Le parcours donne aussi **de 2 à 3 objets racontés** (un deck, une trousse de soins, un badge…). Ils n'ont jamais de bonus chiffré, mais ils peuvent ouvrir ou fermer une action : sans deck, pas de piratage à distance. C'est le MJ qui en juge. On peut les perdre, se les faire voler ou les casser.
+- Dans un univers qui a des implants, le parcours peut donner **un implant de gamme standard** (un neuroport, des lames-mantis…), qui coûte ses 2 points de Santé mentale maximum dès la création (voir 11.4). Les implants avancés et militaires se gagnent en jouant.
+- Un parcours peut ne donner **aucune arme** (une idol, un salaryman…). Comme pour la défense, la création prévient sans interdire : le personnage devra en trouver une, ou compter sur ses compagnons.
+- L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur le choisit dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est commun, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
+- L'argent, les prix et l'encombrement restent à définir (voir 12) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
+- Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
+
 ### Exemple : un Netrunner en Cyberpunk
 
 - **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50.
@@ -223,7 +237,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort reste à définir (voir 11) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
+- Apprendre un nouveau sort reste à définir (voir 12) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -295,37 +309,67 @@ Chaque univers a **sa propre armurerie**. Le moteur ne fournit que le format des
 | Portée | Contact, courte, moyenne ou longue |
 | Munitions | Capacité et coût du rechargement (action mineure ou simple) ; vide pour une arme de mêlée |
 | Propriétés | Deux mains, rafale, perforante, dissimulable, lancer, silencieuse, encombrante, fragile… |
-| Rareté | Voir l'échelle ci-dessous |
-| Bonus | Selon la rareté |
+| Qualité | Voir l'échelle ci-dessous |
+| Modifications | Selon la qualité |
 
 Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer. Une arme **fragile** se brise sur une maladresse.
 
-**Fiche d'armure** : même principe (protection, malus, propriétés, rareté, bonus). L'armure réduit les dégâts reçus d'une valeur fixe.
+**Fiche d'armure** : même principe (protection, malus, propriétés, qualité, modifications). L'armure réduit les dégâts reçus d'une valeur fixe.
 
-**Bornes de l'armurerie**, vérifiées par le code avant les bonus de rareté :
+**Bornes de l'armurerie**, vérifiées par le code avant les modifications :
 
 - **Armes** : dégâts de **1d4 à 2d6+2**, soit une moyenne de 2,5 à 9 et 14 au plus. Au-delà de 1d10 (plus de 5,5 en moyenne), l'arme a la propriété **deux mains**.
 - **Armures** : protection de **1 à 4**. À partir de 3, l'armure a **au moins un malus de −10**.
 - Un objet **légendaire**, écrit à la main pour la campagne, échappe à ces bornes.
 
-**Échelle de rareté**, identique dans tous les univers et vérifiée par le code :
+**Échelle de qualité**, la même pour les armes, les armures et les implants (voir 11), dans tous les univers, vérifiée par le code :
 
-| Rareté | Bonus maximum |
-|---|---|
-| Commune | Aucun |
-| Peu commune | +5 au jet **ou** +1 aux dégâts |
-| Rare | +10 au jet **ou** +2 aux dégâts **ou** une propriété en plus |
-| Exceptionnelle | Deux bonus **différents** de « Rare » (par exemple +10 au jet et +2 aux dégâts, jamais +20 au jet) |
-| Légendaire | Unique, écrite à la main pour la campagne, jamais générée au hasard |
+| Qualité | Emplacements de modification | Ce que c'est |
+|---|---|---|
+| **Usé** | 0 | Un objet abîmé, d'occasion ou bricolé, avec un défaut |
+| **Commun** | 1 | L'objet de base, celui de l'armurerie |
+| **Personnalisé** | 2 | Un objet retouché par quelqu'un qui s'y connaît |
+| **Unique** | 3 | Un objet d'exception, avec un nom et une histoire ; il peut être généré, mais rarement |
 
-Pour une armure, même échelle : la protection suit la colonne des dégâts (+1, +2), et le malus en moins celle du jet (5 ou 10 points retirés à chaque malus de l'armure, sans jamais en faire un bonus).
+Les modifications (un viseur, un nouveau calibre, des plaques de renfort…) donnent les bonus de l'objet. Les noms des qualités suivent le genre : en Fantasy, un objet personnalisé est « de maître ».
+
+**Le défaut d'un objet usé**, au choix dans cette liste :
+
+- une arme : −5 au jet, ou elle devient fragile ;
+- une armure : −1 de protection (jamais en dessous de 1), ou un malus de −10 en plus ;
+- un implant d'occasion ou du marché noir, mal calibré : 2 points de Santé mentale maximum perdus en plus (voir 11.4).
+
+Un jet réussi de la compétence de l'objet (Artisanat pour une arme ou une armure, Cybernétique pour un implant, selon l'univers) **répare** un objet usé : il devient commun.
+
+Au-dessus de l'échelle, un objet **légendaire** est écrit à la main pour la campagne, et jamais généré.
+
+**Les modifications**
+
+1. Une modification occupe un emplacement (voir l'échelle de qualité ci-dessus).
+2. Elle donne un seul petit effet, pris dans cette liste :
+
+| Effet | Armes | Armures | Implants |
+|---|---|---|---|
+| Précision | +5 au jet | — | — |
+| Puissance | +1 aux dégâts | +1 de protection | +5 au bonus de l'implant |
+| Confort | — | 5 points de malus en moins | — |
+| Propriété | une propriété en plus (silencieuse, perforante, dissimulable…) | — | — |
+| Munitions | chargeur doublé, ou une recharge simple qui devient mineure | — | — |
+| Utilitaire | un effet raconté, sans bonus chiffré | idem | idem |
+
+3. Chaque modification ne se pose qu'une fois par objet : pour +10 au jet, il faut deux modifications différentes.
+4. **Plafond**, quelle que soit la qualité : +10 au jet, +2 aux dégâts, +2 de protection, une seule propriété ajoutée ; un implant ne dépasse jamais +10. Le confort retire du malus sans jamais en faire un bonus.
+5. **La pose** se fait hors combat, par un jet de la compétence de l'objet (Artisanat pour une arme ou une armure, Cybernétique pour un implant, selon l'univers) : réussi, la modification est posée ; raté, elle ne l'est pas, mais la pièce est récupérable ; maladresse, la pièce est cassée. Retirer ou échanger une modification demande le même jet.
+6. Les modifications sont des objets : on les trouve, on les achète, on les récupère sur une arme usée. Chaque modification d'un implant coûte en plus 1 point de Santé mentale maximum (voir 11.4).
+
+Les noms suivent le genre, pas les effets : en Fantasy, un « affûtage de maître » plutôt qu'un fil monomoléculaire. Des runes ne sont possibles que dans un univers avec magie, avec exactement les mêmes effets. Exemples en annexe F.
 
 **Exemple**
 
-| Arme | Compétence | Dégâts | Portée | Munitions | Propriétés | Rareté | Bonus |
+| Arme | Compétence | Dégâts | Portée | Munitions | Propriétés | Qualité | Bonus de ses modifications |
 |---|---|---|---|---|---|---|---|
-| Arc long elfique | Armes à distance | 1d8 | Longue | Carquois de 20, recharge mineure | Deux mains, silencieuse | Rare | +10 au jet |
-| Pistolet lourd Arasaka | Armes à distance | 1d10 | Courte | Chargeur de 8, recharge mineure | Dissimulable | Peu commune | +1 aux dégâts |
+| Arc long elfique | Armes à distance | 1d8 | Longue | Carquois de 20, recharge mineure | Deux mains, silencieuse | Personnalisé | +10 au jet |
+| Pistolet lourd Arasaka | Armes à distance | 1d10 | Courte | Chargeur de 8, recharge mineure | Dissimulable | Personnalisé | +1 aux dégâts |
 
 ### 7.6 Blessures
 
@@ -352,6 +396,7 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 - Pas de bonus de Force : il est déjà compté dans les dégâts de leur arme.
 - Par défaut : Dextérité 50, Constitution 50, Perception 25.
 - Un PNJ peut avoir d'autres talents chiffrés (Médecine 70 pour un charcudoc, Perspicacité 60 pour un psy…) ; ses autres compétences valent 25. Il peut ainsi soigner un perso ou l'aider en thérapie.
+- Son équipement est commun par défaut, usé pour un PNJ démuni (un ganger fauché), et jusqu'à personnalisé pour un PNJ puissant ou important (voir 7.5). Un objet unique reste rare, réservé par le MJ à des PNJ marquants ; un objet légendaire est toujours écrit à la main.
 
 ---
 
@@ -586,7 +631,54 @@ Un PNJ lanceur de sorts a un **% de Magie** et des **PM** fixés à sa création
 
 ---
 
-## 11. À définir
+## 11. Implants
+
+Dans les univers qui en ont (le Cyberpunk d'abord ; la science-fiction ou le post-apo peuvent en avoir), un implant améliore le corps, et coûte un peu d'humanité. Inspiré de Cyberpunk RED et de Cyberpunk 2077 ; exemples en annexe E.
+
+### 11.1 L'effet, une liste fermée
+
+Comme un sort, un implant imite une mécanique que le moteur connaît déjà :
+
+| Effet | Ce qu'il fait |
+|---|---|
+| **Arme** | Se joue comme une arme de l'armurerie, dans les bornes de 7.5 |
+| **Armure** | Se joue comme une armure, dans les bornes de 7.5 |
+| **Bonus de compétence** | +5 (gamme avancée) ou +10 (gamme militaire) à une compétence |
+| **Utilitaire** | Un effet raconté (vision nocturne, radio interne…), sans bonus chiffré |
+| **Esthétique** | Tatouages lumineux, cheveux de fibre optique… : rien d'autre que l'apparence |
+
+Un implant **médical** remplace un membre perdu sans l'améliorer : ni option, ni bonus.
+
+### 11.2 Les systèmes, les fondations et les options
+
+- Le corps est découpé en **systèmes** (cortex frontal, système d'exploitation, système nerveux, visage et yeux, oreilles et gorge, peau, squelette, organes internes, bras, mains, jambes). Chacun a un nombre d'emplacements.
+- Certains implants sont des **fondations** (bras cybernétique, yeux cybernétiques, suite cyberaudio, jambes cybernétiques, neuroport) : ils ouvrent des emplacements d'**options**. Pas de lames-mantis sans bras cybernétique, pas de viseur sans yeux cybernétiques.
+- **Le système d'exploitation est unique** : un seul implant parmi le deck neural, le deck militaire, le Sandevistan et le Berserk.
+- L'esthétique n'occupe pas d'emplacement.
+
+### 11.3 Ce qui ne se cumule pas
+
+- **Un seul bonus par compétence** : seul le meilleur compte (un viseur à +5 et des optiques à +10 donnent +10).
+- **Une armure implantée et une armure portée ne se cumulent pas** : seule la meilleure protection compte.
+
+### 11.4 Le prix : l'humanité
+
+Un implant a une **gamme**, qui fixe sa puissance et son prix, et une **qualité** (usé, commun, personnalisé, unique, voir 7.5), qui dit son état et ses emplacements de modification. Chaque implant baisse la **Santé mentale maximum**, comme le Mythe en Horreur ; les armes et les armures ne coûtent jamais de Santé mentale.
+
+| Implant | SM maximum perdue |
+|---|---|
+| Esthétique ou médical | 0 |
+| Gamme standard (arme, armure ou utilitaire) | 2 |
+| Gamme avancée (+5 à une compétence) | 4 |
+| Gamme militaire (+10 à une compétence) | 6 |
+| Implant usé (d'occasion, mal calibré) | 2 de plus |
+| Chaque modification d'un implant | 1 de plus |
+
+La perte est la même à la création et pour un implant posé en cours de jeu : elle est fixe, sans jet. À 0 de SM, c'est la folie (voir 9.4), qu'on appelle la **cyberpsychose** en Cyberpunk : le personnage devient un PNJ, sauf point de destin.
+
+---
+
+## 12. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
@@ -596,6 +688,8 @@ Un PNJ lanceur de sorts a un **% de Magie** et des **PM** fixés à sa création
 - Les tables de crises passagères et de troubles durables.
 - L'inventaire : encombrement et prix.
 - Les règles de pouvoirs pour le genre Super-héros (hors V1).
+- Les implants : la pose (jet du charcudoc et conséquences d'un échec).
+- Les armes de zone (grenades, lance-flammes, lance-roquettes) et les véhicules.
 
 ---
 
@@ -1036,3 +1130,256 @@ La magie y est désactivée par défaut ; activée, elle prend la forme du Psi d
 
 19. **Mutant** — Né avec un corps marqué par les radiations : peau écailleuse, yeux sans pupilles, carrure démesurée. Rejeté par les communautés, il vit en marge. Il est endurant et résistant, et il est la cible de tous les préjugés. *Athlétisme, Survie, Bagarre, Intimidation, Discrétion, Vigilance, Superstitions, Purification.*
 20. **Mutant psi (magie)** — Les radiations lui ont donné un don : déplacer les objets, ressentir les émotions, soigner par la pensée. Les uns le vénèrent, les autres veulent le brûler. Il est puissant et unique, et son don le consume. *Psi, Flair, Superstitions, Survie, Discrétion, Vigilance, Esquive, Intimidation.* Domaines conseillés : Télékinésie, Empathie, comme la Psionique de la science-fiction. Sans magie : remplacé par le Mutant.
+
+## Annexe E — Implants du Cyberpunk
+
+Des modèles, pas une liste figée (voir 11). **F** : une fondation, qui ouvre des options. Prix en SM maximum selon la gamme (voir 11.4) : 0 pour l'esthétique et le médical, 2 en standard, 4 en avancée, 6 en militaire.
+
+### Cortex frontal — 3 emplacements, il faut un neuroport
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Puce de langue | utilitaire : une langue de plus | standard |
+| Mémoire eidétique | +5 Éducation | avancée |
+| Puce de compétence | +5 à une compétence de savoir, choisie à l'installation | avancée |
+| Coprocesseur tactique | +5 Vigilance | avancée |
+| Extension de mémoire vive | +5 Piratage | avancée |
+
+### Système d'exploitation — un seul implant
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Deck neural | utilitaire : pirater sans deck externe | standard |
+| Deck militaire | +10 Piratage | militaire |
+| Sandevistan | +10 Esquive | militaire |
+| Berserk | +10 Combat rapproché | militaire |
+
+### Système nerveux — 2 emplacements
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| **F** Neuroport | utilitaire : se brancher à une machine ; ouvre le cortex frontal | standard |
+| Inhibiteur de douleur | utilitaire : rester lucide sous la torture | standard |
+| Réflexes câblés Kerenzikov | +5 Esquive | avancée |
+| Synapses accélérées | +5 Vigilance | avancée |
+
+### Visage et yeux — fondation : les yeux cybernétiques, 3 options
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| **F** Yeux cybernétiques | utilitaire : zoom, mise au point instantanée | standard |
+| Vision nocturne | utilitaire : voir dans le noir | standard |
+| Vision thermique | utilitaire : voir les sources de chaleur, même derrière la fumée | standard |
+| Caméra oculaire | utilitaire : enregistrer ce que l'on voit | standard |
+| Scanner d'implants | +5 Cybernétique | avancée |
+| Viseur balistique | +5 Armes à distance | avancée |
+| Optiques Kiroshi | +10 Armes à distance | militaire |
+| Visage malléable | +10 Arnaque (changer de traits) | militaire |
+
+### Oreilles et gorge — fondation : la suite cyberaudio, 3 options
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| **F** Suite cyberaudio | utilitaire : radio et téléphone internes | standard |
+| Filtre respiratoire | utilitaire : respirer la fumée, les gaz, l'air pollué | standard |
+| Audio amplifié | +5 Vigilance | avancée |
+| Analyseur de stress vocal | +5 Empathie | avancée |
+| Détecteur de micros | +5 Contre-mesures | avancée |
+| Modulateur vocal | +5 Arnaque | avancée |
+
+### Peau — 2 emplacements, plus l'esthétique à volonté
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Tatouages lumineux, cheveux de fibre optique, peau chromée | esthétique | standard |
+| Peau dermique | armure, protection 2 | standard |
+| Glandes à phéromones | +5 Négociation | avancée |
+| Peau caméléon | +10 Infiltration | militaire |
+
+### Squelette — 2 emplacements
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Ossature blindée | armure, protection 3, Infiltration −10 | standard |
+| Os en titane | +5 Athlétisme | avancée |
+
+### Organes internes — 3 emplacements
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Biomoniteur | utilitaire : alerte sur son état de santé | standard |
+| Poumons renforcés | utilitaire : apnée prolongée | standard |
+| Filtre toxique | utilitaire : résister aux poisons et aux drogues | standard |
+| Compartiment caché | utilitaire : cacher un petit objet | standard |
+
+### Bras — fondation : le bras cybernétique (par bras), 3 options
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| **F** Bras cybernétique | utilitaire : un bras qui ne fatigue pas | standard |
+| Pistolet intégré | arme : 1d6, portée courte, 4 coups, recharge simple, dissimulable | standard |
+| Lames-mantis | arme : 1d8, dissimulable | standard |
+| Fouet monofilament | arme : 1d8, perforante | standard |
+| Bras-marteau | arme : 1d10, encombrante | standard |
+| Lance-grappin | utilitaire : grimper, se hisser, saisir à distance | standard |
+| Servomoteurs | +5 Athlétisme | avancée |
+
+### Mains — 1 emplacement par main
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Griffes-rasoirs | arme : 1d4, dissimulable | standard |
+| Paume d'interface | utilitaire : se brancher sans câble | standard |
+| Poigne magnétique | utilitaire : s'accrocher au métal | standard |
+| Doigts-outils | +5 Bricolage tech | avancée |
+| Doigts de crochetage | +5 Contre-mesures | avancée |
+| Doigts de pickpocket | +5 Doigts agiles | avancée |
+
+### Jambes — fondation : les jambes cybernétiques (la paire), 2 options
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| **F** Jambes cybernétiques | utilitaire : marcher des jours sans fatigue | standard |
+| Compartiment de jambe | utilitaire : cacher une arme ou un objet | standard |
+| Amortisseurs silencieux | +5 Infiltration | avancée |
+| Chevilles à ressorts | +10 Athlétisme | militaire |
+
+### Médical — n'importe quel membre
+
+| Implant | Effet | Gamme |
+|---|---|---|
+| Prothèse médicale | remplace un membre perdu, sans option ni bonus | standard |
+
+## Annexe F — Armureries par genre
+
+Des modèles, pas une liste figée : le générateur les adapte au cadre. Toutes respectent les bornes de 7.5. Les objets marqués « (implant) » existent aussi comme implants (annexe E).
+
+### Cyberpunk
+
+**Mêlée — Combat rapproché, portée contact**
+
+| Arme | Dégâts | Propriétés |
+|---|---|---|
+| Poing américain | 1d4 | dissimulable |
+| Couteau | 1d4 | dissimulable |
+| Griffes-rasoirs (implant) | 1d4 | dissimulable |
+| Tantō | 1d6 | dissimulable |
+| Matraque télescopique | 1d6 | dissimulable |
+| Tonfa | 1d6 | |
+| Batte de baseball | 1d6 | fragile |
+| Matraque électrique | 1d6 | |
+| Hachette | 1d6 | lancer |
+| Machette | 1d8 | |
+| Wakizashi | 1d8 | |
+| Lames-mantis (implant) | 1d8 | dissimulable |
+| Katana | 1d10 | |
+| Bras-marteau (implant) | 1d10 | encombrante |
+| Nodachi | 1d12 | deux mains |
+| Marteau lourd | 1d12 | deux mains, encombrante |
+| Naginata électrique | 1d12 | deux mains |
+| Tronçonneuse | 2d6 | deux mains, encombrante, fragile |
+
+**Lancer**
+
+| Arme | Dégâts | Portée | Propriétés |
+|---|---|---|---|
+| Shuriken | 1d4 | courte | lancer, dissimulable |
+| Couteaux de lancer | 1d4 | courte | lancer, dissimulable |
+| Kunai | 1d4 | courte | lancer, dissimulable, silencieuse |
+
+**Armes à distance**
+
+| Arme | Dégâts | Portée | Munitions | Propriétés |
+|---|---|---|---|---|
+| Pistolet compact | 1d4 | courte | 6, mineure | dissimulable |
+| Pistolet léger | 1d6 | courte | 12, mineure | dissimulable |
+| Pistolet silencieux | 1d6 | courte | 10, mineure | dissimulable, silencieuse |
+| Mitraillette compacte | 1d6 | courte | 20, mineure | rafale, dissimulable |
+| Pistolet intelligent | 1d8 | courte | 10, mineure | dissimulable |
+| Pistolet-mitrailleur | 1d8 | courte | 30, mineure | rafale |
+| Arbalète à poulies | 1d8 | moyenne | 1, simple | deux mains, silencieuse |
+| Pistolet lourd | 1d10 | courte | 8, mineure | dissimulable |
+| Revolver lourd | 1d10 | courte | 6, simple | |
+| Carabine | 2d6 | moyenne | 20, mineure | deux mains |
+| Fusil à pompe | 2d6 | courte | 6, simple | deux mains |
+| Fusil à pompe automatique | 2d6 | courte | 10, mineure | deux mains, rafale, encombrante |
+| Mitrailleuse légère | 2d6+1 | longue | 100, simple | deux mains, rafale, encombrante |
+| Fusil d'assaut | 2d6+2 | longue | 30, mineure | deux mains, rafale |
+| Fusil de précision | 2d6+2 | longue | 5, simple | deux mains, perforante, encombrante |
+| Fusil à rail | 2d6+2 | moyenne | 4, simple | deux mains, perforante, encombrante |
+
+**Armures**
+
+| Armure | Protection | Malus |
+|---|---|---|
+| Veste renforcée | 1 | — |
+| Combinaison de motard | 1 | — |
+| Gilet pare-balles léger | 2 | — |
+| Manteau blindé | 2 | — |
+| Peau dermique (implant) | 2 | — |
+| Gilet balistique | 3 | Infiltration −10 |
+| Armure de garde corpo | 3 | Infiltration −10, Esquive −10 |
+| Ossature blindée (implant) | 3 | Infiltration −10 |
+| Armure tactique | 4 | Infiltration −20, Athlétisme −10 |
+| Exosquelette léger | 4 | Infiltration −10, Esquive −10 |
+
+**Les marques : exemples de qualité**
+
+| Objet | Qualité | Bonus de ses modifications |
+|---|---|---|
+| Pistolet lourd Arasaka | personnalisé | +1 aux dégâts |
+| Fusil d'assaut Militech « Ronin » | personnalisé | +5 au jet |
+| Couteau Kang Tao en céramique | personnalisé | +5 au jet |
+| Pistolet intelligent Tsunami « Kenshin » | personnalisé | +10 au jet |
+| Katana monomoléculaire | personnalisé | +2 aux dégâts |
+| Gilet balistique Kang Tao | personnalisé | 10 points de malus en moins |
+| Armure tactique Arasaka | personnalisé | +1 de protection |
+| Fusil à rail Militech « Breakthrough » | unique | +10 au jet et +2 aux dégâts |
+| Fusil de précision Tsunami « Nekomata » | unique | +10 au jet et une propriété en plus (silencieuse) |
+
+**Les modifications**
+
+Armes à distance :
+
+| Modification | Effet |
+|---|---|
+| Viseur holographique | +5 au jet |
+| Pointeur laser | +5 au jet |
+| Nouveau calibre | +1 aux dégâts |
+| Munitions perforantes | la propriété perforante |
+| Silencieux | la propriété silencieuse |
+| Canon raccourci | la propriété dissimulable (pas sur une arme à deux mains) |
+| Chargeur grande capacité | munitions doublées |
+| Rechargeur rapide | une recharge simple devient mineure |
+| Lampe tactique | utilitaire : éclairer sans lâcher son arme |
+
+Armes de mêlée :
+
+| Modification | Effet |
+|---|---|
+| Équilibrage | +5 au jet |
+| Poignée ergonomique | +5 au jet |
+| Fil monomoléculaire | +1 aux dégâts |
+| Gaine thermique | +1 aux dégâts |
+| Lame rétractable | la propriété dissimulable |
+
+Armures :
+
+| Modification | Effet |
+|---|---|
+| Plaques de renfort | +1 de protection |
+| Doublure souple | 5 points de malus en moins |
+| Revêtement furtif | 5 points de malus en moins, seulement en Infiltration |
+| Poches tactiques | utilitaire : tout à portée de main |
+| Isolation thermique | utilitaire : supporter le froid et le feu ambiant |
+
+Implants (1 point de Santé mentale maximum chacune) :
+
+| Modification | Effet |
+|---|---|
+| Calibrage fin | +5 au bonus de l'implant (plafond +10) |
+| Pare-feu | utilitaire : l'implant résiste au piratage |
+| Blindage IEM | utilitaire : l'implant résiste aux impulsions électromagnétiques |
+| Gaine discrète | utilitaire : l'implant échappe aux scanners |
+
+Les implants-armes (lames-mantis, griffes-rasoirs…) prennent aussi les modifications de mêlée ou de tir.
