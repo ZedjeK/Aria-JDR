@@ -66,6 +66,7 @@ class Jeu:
         else:
             univers = charger_univers(banc.UNIVERS)
             kaito = univers.creer_personnage("Netrunner", **banc.FICHE_KAITO)
+            univers.equiper(kaito, **banc.EQUIPEMENT_KAITO)
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
                                    arme="Pistolet lourd Arasaka", armure="Veste renforcée", campagne=self.campagne)
         self.table = Table(serveur, self.session, budget, QUARTIER if self.reprise else SCENE, contexte=contexte)

@@ -375,7 +375,8 @@ def etat(session: Session) -> dict:
         } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {})
           | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
              if p.implants else {})
-          | ({"vehicule": _etat_engin(session.vehicule)} if session.vehicule else {}),
+          | ({"vehicule": _etat_engin(session.vehicule)} if session.vehicule else {})
+          | ({"objets": list(p.objets)} if p.objets else {}),
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:

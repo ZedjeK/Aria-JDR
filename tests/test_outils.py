@@ -32,9 +32,9 @@ def ganger(s: Session, identifiant="ganger", **profil):
 def test_schemas_au_format_openai():
     schemas = session().schemas()
     assert {s["function"]["name"] for s in schemas} == set(OUTILS) - {
-        "lancer_sort", "poser_implant", "attaquer_zone", "piloter", "reparer", "round_poursuite", "fin_poursuite",
-        "tirer_sur_vehicule", "eperonner", "tirer_arme_montee", "lance_fumigenes", "lancer_drone",
-    }  # ni magie, ni implants, ni arme de zone, ni véhicule, ni poursuite en cours ici
+        "lancer_sort", "attaquer_zone", "piloter", "reparer", "round_poursuite", "fin_poursuite",
+        "tirer_sur_vehicule", "eperonner", "tirer_arme_montee", "lance_fumigenes",
+    }  # ni magie, ni grenade en main, ni véhicule à Kaito, ni combat, ni poursuite en cours ici
     for schema in schemas:
         assert schema["type"] == "function"
         assert schema["function"]["parameters"]["type"] == "object"

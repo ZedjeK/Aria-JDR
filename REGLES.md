@@ -236,9 +236,10 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 
 ### Exemple : un Netrunner en Cyberpunk
 
-- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50.
-- **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Arnaque 30, Sciences 20.
-- **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40.
+- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50 avant les implants.
+- **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Esquive 45, Arnaque 30.
+- **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40, Athlétisme 35.
+- **Équipement**, choisi dans les listes du Netrunner : un pistolet silencieux, une veste renforcée, un neuroport (2 points de Santé mentale maximum : SM 48), un deck et une fausse identité numérique.
 - **Roleplay** : veut effacer sa dette envers une corpo ; sa petite sœur est sa seule famille ; fait trop confiance aux machines.
 
 ---

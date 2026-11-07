@@ -22,7 +22,7 @@ from aria.equipement import (
     verifier_arme,
     verifier_armure,
 )
-from aria.implants import Implant, Systeme, implant_depuis_dict, systeme_depuis_dict, verifier_catalogue
+from aria.implants import Implant, Systeme, implant_depuis_dict, pose, systeme_depuis_dict, verifier_catalogue
 from aria.magie import (
     DOMAINES_PAR_PERSO,
     Domaine,
@@ -47,6 +47,13 @@ from aria.vehicules import Vehicule, vehicule_depuis_dict, vehicule_vers_dict, v
 MAX_COMPETENCES_THEMATIQUES = 3
 BASE_MAX_THEMATIQUE = 10
 DOMAINE_THEMATIQUE = "Thématique"
+
+
+# L'équipement de départ (REGLES.md 5)
+OPTIONS_MAX = 3
+OBJETS_PROPOSES = (3, 4)
+OBJETS_GARDES = 2
+PROTECTION_DEPART = 3
 
 
 class UniversInvalide(ValueError):
@@ -76,6 +83,8 @@ class Univers:
     systemes: tuple[Systeme, ...] = ()  # les systèmes du corps, si l'univers a des implants
     implants: tuple[Implant, ...] = ()  # le catalogue des implants (REGLES.md 11)
     vehicules: tuple[Vehicule, ...] = ()  # les véhicules et les montures (REGLES.md 12)
+    descriptions: dict[str, str] = field(default_factory=dict)  # nom du parcours → ses 3 phrases
+    equipements: dict[str, dict] = field(default_factory=dict)  # nom du parcours → ses listes de départ (REGLES.md 5)
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -136,6 +145,70 @@ class Univers:
         perso.domaines = domaines
         return perso
 
+    def equiper(self, perso: Personnage, arme: str | None = None, armure: str | None = None,
+                implant: str | None = None, vehicule: str | None = None, objets: list[str] = (),
+                cote: str = "droit") -> "Depart":
+        """L'équipement de départ, choisi dans les listes du parcours (REGLES.md 5) : une option par case,
+        et 2 objets racontés. L'implant est posé tout de suite, et coûte sa Santé mentale maximum."""
+        listes = self.equipements.get(perso.parcours)
+        if listes is None:
+            raise UniversInvalide([f"Le parcours « {perso.parcours} » n'a pas de listes d'équipement."])
+        erreurs = []
+        choix = {"armes": arme, "armures": armure, "implants": implant, "vehicules": vehicule}
+        for case, valeur in choix.items():
+            options = listes.get(case, [])
+            if not options:
+                if valeur is not None:
+                    erreurs.append(f"Le parcours ne propose rien pour « {case} ».")
+            elif valeur not in options:
+                lisibles = ", ".join(o or "rien" for o in options)
+                erreurs.append(f"« {valeur or 'rien'} » n'est pas dans la liste « {case} » : {lisibles}.")
+        objets = list(objets)
+        if len(objets) != OBJETS_GARDES or len(set(objets)) != len(objets) \
+                or any(o not in listes.get("objets", []) for o in objets):
+            erreurs.append(f"{OBJETS_GARDES} objets différents, parmi : {', '.join(listes.get('objets', []))}.")
+        if erreurs:
+            raise UniversInvalide(erreurs)
+        if implant:
+            fiche = self.implant(implant)
+            systeme = next((s for s in self.systemes if s.nom == fiche.systeme), None)
+            perso.implants.append(pose(fiche, cote=cote if systeme and systeme.par else None))
+            perso.sm = min(perso.sm, perso.sm_max)
+        perso.objets = objets
+        return Depart(arme, armure, vehicule)
+
+    def _verifier_equipements(self) -> list[str]:
+        """Les listes de départ (REGLES.md 5) : tout existe dans l'univers, tout est d'origine et générique,
+        une protection de 3 au plus, un implant de gamme standard, un véhicule léger ou moyen."""
+        erreurs = []
+        cases = {"armes": self.arme, "armures": self.armure, "implants": self.implant, "vehicules": self.vehicule}
+        for parcours, listes in self.equipements.items():
+            if parcours not in self.parcours:
+                erreurs.append(f"Équipement d'un parcours inconnu : « {parcours} ».")
+            for case, chercher in cases.items():
+                options = listes.get(case, [])
+                if len(options) > OPTIONS_MAX:
+                    erreurs.append(f"{parcours} : {OPTIONS_MAX} options au plus pour « {case} ».")
+                for option in options:
+                    if option is None:
+                        continue
+                    try:
+                        objet = chercher(option)
+                    except KeyError as erreur:
+                        erreurs.append(f"{parcours} : {erreur.args[0]}")
+                        continue
+                    if case != "implants" and (objet.qualite is not Qualite.ORIGINE or objet.fabricant):
+                        erreurs.append(f"{parcours} : « {option} » doit être d'origine et sans fabricant.")
+                    if case == "armures" and objet.protection_totale > PROTECTION_DEPART:
+                        erreurs.append(f"{parcours} : « {option} » protège plus de {PROTECTION_DEPART}.")
+                    if case == "implants" and objet.gamme not in (None, "standard"):
+                        erreurs.append(f"{parcours} : « {option} » n'est pas de gamme standard.")
+                    if case == "vehicules" and objet.gabarit not in ("léger", "moyen"):
+                        erreurs.append(f"{parcours} : « {option} » est trop lourd pour un départ.")
+            if not OBJETS_PROPOSES[0] <= len(listes.get("objets", [])) <= OBJETS_PROPOSES[1]:
+                erreurs.append(f"{parcours} : de {OBJETS_PROPOSES[0]} à {OBJETS_PROPOSES[1]} objets racontés.")
+        return erreurs
+
     def verifier(self, genere: bool = False) -> list[str]:
         """Liste tous les problèmes de l'univers (vide s'il est valide).
 
@@ -180,11 +253,21 @@ class Univers:
             erreurs += verifier_domaines(self.domaines)
         if self.implants:
             erreurs += verifier_catalogue(self.systemes, self.implants, set(disponibles))
+        erreurs += self._verifier_equipements()
         armes = {a.nom: a for a in self.armes}
         for vehicule in self.vehicules:
             erreurs += [f"{vehicule.nom} : {e}" for e in verifier_vehicule(vehicule, generee=genere)
                         + verifier_armement(vehicule, armes)]
         return erreurs
+
+
+@dataclass(frozen=True)
+class Depart:
+    """Ce que le personnage emporte en main au départ : les noms, dans le catalogue de l'univers."""
+
+    arme: str | None
+    armure: str | None
+    vehicule: str | None
 
 
 def _trouver(objets, nom: str, genre: str):
@@ -221,6 +304,8 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             implants=tuple(implant_depuis_dict(i, _arme_depuis_dict, _armure_depuis_dict)
                            for i in donnees.get("implants", {}).get("implants", [])),
             vehicules=tuple(vehicule_depuis_dict(v) for v in donnees.get("vehicules", [])),
+            descriptions=dict(donnees.get("descriptions", {})),
+            equipements={nom: dict(listes) for nom, listes in donnees.get("equipements", {}).items()},
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -315,7 +400,9 @@ def univers_vers_dict(univers: Univers) -> dict:
         ],
     } | ({"implants": {"systemes": [_systeme_vers_dict(s) for s in univers.systemes],
                        "implants": [_implant_vers_dict(i) for i in univers.implants]}} if univers.implants else {}) \
-      | ({"vehicules": [vehicule_vers_dict(v) for v in univers.vehicules]} if univers.vehicules else {})
+      | ({"vehicules": [vehicule_vers_dict(v) for v in univers.vehicules]} if univers.vehicules else {}) \
+      | ({"descriptions": dict(univers.descriptions)} if univers.descriptions else {}) \
+      | ({"equipements": dict(univers.equipements)} if univers.equipements else {})
 
 
 def _systeme_vers_dict(s: Systeme) -> dict:

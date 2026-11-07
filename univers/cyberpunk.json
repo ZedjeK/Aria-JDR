@@ -36,64 +36,2971 @@
     }
   ],
   "parcours": {
-    "Netrunner": [
-      "Technologie", "Investigation", "Sécurité", "Perception",
-      "Discrétion", "Artisanat", "Tromperie", "Sciences"
-    ],
     "Solo": [
-      "Armes à distance", "Corps à corps", "Esquive", "Athlétisme",
-      "Perception", "Intimidation", "Pilotage", "Cybernétique"
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Perception",
+      "Intimidation",
+      "Pilotage",
+      "Cybernétique"
+    ],
+    "Ganger": [
+      "Corps à corps",
+      "Armes à distance",
+      "Intimidation",
+      "Athlétisme",
+      "Perception",
+      "Escamotage",
+      "Pilotage",
+      "Esquive"
+    ],
+    "Kobun yakuza": [
+      "Intimidation",
+      "Persuasion",
+      "Corps à corps",
+      "Armes à distance",
+      "Réseau",
+      "Perspicacité",
+      "Tromperie",
+      "Perception"
+    ],
+    "Agent d'infiltration": [
+      "Discrétion",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Tromperie",
+      "Sécurité",
+      "Perception",
+      "Escamotage"
+    ],
+    "Flic de la NeoPol": [
+      "Armes à distance",
+      "Investigation",
+      "Intimidation",
+      "Perception",
+      "Pilotage",
+      "Perspicacité",
+      "Corps à corps",
+      "Réseau"
+    ],
+    "Agent de sécurité corpo": [
+      "Armes à distance",
+      "Esquive",
+      "Perception",
+      "Sécurité",
+      "Intimidation",
+      "Athlétisme",
+      "Commandement",
+      "Cybernétique"
+    ],
+    "Cadre corpo": [
+      "Persuasion",
+      "Commandement",
+      "Érudition",
+      "Tromperie",
+      "Perspicacité",
+      "Investigation",
+      "Réseau",
+      "Armes à distance"
+    ],
+    "Salaryman": [
+      "Érudition",
+      "Persuasion",
+      "Investigation",
+      "Perspicacité",
+      "Technologie",
+      "Commandement",
+      "Pilotage",
+      "Esquive"
+    ],
+    "Netrunner": [
+      "Technologie",
+      "Investigation",
+      "Sécurité",
+      "Perception",
+      "Discrétion",
+      "Artisanat",
+      "Tromperie",
+      "Esquive"
+    ],
+    "Techie": [
+      "Artisanat",
+      "Technologie",
+      "Sciences",
+      "Sécurité",
+      "Pilotage",
+      "Perception",
+      "Escamotage",
+      "Armes à distance"
+    ],
+    "Charcudoc": [
+      "Médecine",
+      "Cybernétique",
+      "Sciences",
+      "Technologie",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Esquive"
+    ],
+    "Ferrailleur": [
+      "Artisanat",
+      "Survie",
+      "Perception",
+      "Escamotage",
+      "Athlétisme",
+      "Persuasion",
+      "Sécurité",
+      "Corps à corps"
+    ],
+    "Fixer": [
+      "Réseau",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Intimidation",
+      "Perception",
+      "Armes à distance",
+      "Investigation"
+    ],
+    "Informateur": [
+      "Réseau",
+      "Perception",
+      "Discrétion",
+      "Perspicacité",
+      "Tromperie",
+      "Escamotage",
+      "Investigation",
+      "Esquive"
+    ],
+    "Journaliste": [
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Discrétion",
+      "Réseau",
+      "Perception",
+      "Esquive"
+    ],
+    "Rockerboy": [
+      "Arts",
+      "Persuasion",
+      "Commandement",
+      "Perspicacité",
+      "Intimidation",
+      "Réseau",
+      "Corps à corps",
+      "Pilotage"
+    ],
+    "Idol": [
+      "Arts",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Athlétisme",
+      "Réseau",
+      "Érudition",
+      "Esquive"
+    ],
+    "Nomade": [
+      "Pilotage",
+      "Survie",
+      "Armes à distance",
+      "Artisanat",
+      "Perception",
+      "Athlétisme",
+      "Persuasion",
+      "Corps à corps"
+    ],
+    "Coursier": [
+      "Pilotage",
+      "Athlétisme",
+      "Perception",
+      "Esquive",
+      "Discrétion",
+      "Réseau",
+      "Artisanat",
+      "Armes à distance"
     ]
   },
+  "descriptions": {
+    "Solo": "Mercenaire augmenté, payé pour protéger, escorter ou tuer. C'est le premier qu'on appelle quand ça tire, le dernier qu'on invite à une négociation. Il a vendu un peu de son humanité à chaque implant.",
+    "Ganger": "Membre d'un gang de quartier, qui vit de racket, de deal et de guerres de territoire. Pour lui, la loyauté envers la bande passe avant tout. Il est dangereux en meute et beaucoup moins quand il est seul.",
+    "Kobun yakuza": "Soldat d'un clan, lié par le giri et tatoué jusqu'aux os. Il gère les tripots et les dettes de son oyabun. Respecté et craint dans le quartier, il ne peut jamais tourner le dos à son clan.",
+    "Agent d'infiltration": "Le shinobi des corporations : vol de prototypes, sabotage, extraction de cadres. Il entre là où personne n'entre et repart sans laisser de trace. Il est redoutable seul, et on le sacrifie sans hésiter s'il est pris.",
+    "Flic de la NeoPol": "Inspecteur dans une police sous-payée et à moitié rachetée par les corpos. Il a un badge, une arme et des enquêtes qu'on lui demande d'enterrer. Il est utile, mais toujours tiraillé entre la loi, l'argent et sa conscience.",
+    "Agent de sécurité corpo": "Garde d'élite d'une tour Arasaka ou d'un labo privé, équipé du meilleur matériel. Il obéit aux protocoles. Il est discipliné et bien armé, et il ne voit pas plus loin que son badge d'accès.",
+    "Cadre corpo": "Requin en costume, qui grimpe les étages de la tour à coups de trahisons feutrées. Il manie les budgets, les contrats et les gens. Il est puissant dans les salles de réunion et perdu dans une ruelle.",
+    "Salaryman": "Employé de bureau broyé par les heures sup', les dettes et les promesses de promotion. C'est l'homme ordinaire de Néo-Tokyo. Il est invisible, donc il a accès à beaucoup de choses sans que personne ne s'en méfie.",
+    "Netrunner": "Pirate de génie qui plonge dans les réseaux des corpos pour voler, saboter ou effacer. Dans la rue, il passe pour un gamin fragile ; dans le Net, il est un dieu. Il est indispensable pour un job et vulnérable dès que ça tire.",
+    "Techie": "Bricoleur de génie qui répare, trafique et invente avec ce qu'il trouve. Son atelier est une caverne d'Ali Baba de pièces détachées. Tout le monde a besoin de lui, et personne ne le paie à l'heure.",
+    "Charcudoc": "Chirurgien des bas-fonds, il pose des implants et recoud des blessures par balle sans poser de questions. Toute la rue lui doit la vie, ou un bras. C'est un médecin génial, souvent mêlé à des affaires louches.",
+    "Ferrailleur": "Il fouille les décharges et les carcasses de drones pour revendre ce qui marche encore. Il sait ce que vaut chaque pièce et où la trouver. Débrouillard, il vit en marge, et ses trouvailles attirent parfois de mauvaises attentions.",
+    "Fixer": "Intermédiaire de l'ombre, il connaît tout le monde et doit quelque chose à chacun. Il trouve les jobs, les armes et les portes de sortie. Il est redoutable avec les mots, et son réseau est une toile qui peut l'étrangler.",
+    "Informateur": "Barman, sans-abri ou concierge, il voit tout et il vend ce qu'il voit. C'est l'oreille du quartier. Il est précieux, il ne paie pas de mine et il n'est jamais loin d'une balle perdue.",
+    "Journaliste": "Reporter indépendant qui traque les scandales que les médias corpos étouffent. Une vidéo de lui peut faire tomber un cadre. Il délie les langues comme personne, et il a une cible dans le dos.",
+    "Rockerboy": "Musicien rebelle dont les chansons appellent à brûler les tours. La rue l'adore, les corpos le surveillent. C'est un leader né, et sa célébrité le rend facile à trouver.",
+    "Idol": "Star de la pop, fabriquée et vendue par une corpo du divertissement. Des millions de fans, un contrat qui l'étrangle. Elle a un accès partout, et aucune liberté nulle part.",
+    "Nomade": "Membre d'un clan qui vit sur les routes, hors des mégapoles et de leurs lois. Il transporte, il trafique et il protège les siens. Pilote hors pair et solide survivant, il reste un étranger en ville.",
+    "Coursier": "Livreur à moto qui traverse Néo-Tokyo plus vite que n'importe qui, colis légaux ou non. Il connaît chaque raccourci et chaque contrôle. Rapide et insaisissable, il en sait toujours trop sur ce qu'il transporte."
+  },
+  "equipements": {
+    "Solo": {
+      "armes": [
+        "Pistolet lourd",
+        "Fusil à pompe",
+        "Katana"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Manteau blindé"
+      ],
+      "implants": [
+        "Bras cybernétique",
+        "Yeux cybernétiques",
+        "Peau dermique"
+      ],
+      "objets": [
+        "chargeurs de rechange",
+        "lunettes de vision nocturne",
+        "trousse de premiers soins",
+        "un charcudoc qui lui doit un service"
+      ]
+    },
+    "Ganger": {
+      "armes": [
+        "Machette",
+        "Batte de baseball",
+        "Pistolet léger"
+      ],
+      "armures": [
+        "Veste renforcée",
+        null
+      ],
+      "implants": [
+        "Griffes-rasoirs",
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "les couleurs du gang",
+        "téléphone jetable",
+        "bombe de peinture",
+        "dose de stim"
+      ]
+    },
+    "Kobun yakuza": {
+      "armes": [
+        "Katana",
+        "Wakizashi",
+        "Pistolet lourd"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "irezumi du clan",
+        "carnet des dettes",
+        "téléphone du clan",
+        "étui à cigares"
+      ]
+    },
+    "Agent d'infiltration": {
+      "armes": [
+        "Kunai",
+        "Tantō",
+        "Pistolet silencieux"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        "Neuroport"
+      ],
+      "objets": [
+        "combinaison furtive",
+        "kit de crochetage électronique",
+        "grappin",
+        "faux badge corpo"
+      ]
+    },
+    "Flic de la NeoPol": {
+      "armes": [
+        "Pistolet lourd",
+        "Revolver lourd"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "badge",
+        "menottes",
+        "radio de service",
+        "lampe tactique"
+      ]
+    },
+    "Agent de sécurité corpo": {
+      "armes": [
+        "Pistolet-mitrailleur",
+        "Pistolet lourd",
+        "Matraque électrique"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Armure de garde corpo"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        "Yeux cybernétiques"
+      ],
+      "objets": [
+        "badge d'accès",
+        "uniforme de la corpo",
+        "menottes",
+        "radio cryptée"
+      ]
+    },
+    "Cadre corpo": {
+      "armes": [
+        "Pistolet léger",
+        "Pistolet compact",
+        null
+      ],
+      "armures": [
+        null,
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Neuroport",
+        "Suite cyberaudio"
+      ],
+      "objets": [
+        "carte d'accès à la tour",
+        "terminal corpo",
+        "costume sur mesure",
+        "carnet de contacts"
+      ]
+    },
+    "Salaryman": {
+      "armes": [
+        null,
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Neuroport",
+        null
+      ],
+      "objets": [
+        "badge d'entreprise",
+        "mallette",
+        "téléphone",
+        "abonnement de métro"
+      ]
+    },
+    "Netrunner": {
+      "armes": [
+        "Pistolet léger",
+        "Pistolet silencieux",
+        null
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Neuroport",
+        "Paume d'interface"
+      ],
+      "objets": [
+        "deck",
+        "câbles d'interface",
+        "lunettes AR",
+        "fausse identité numérique"
+      ]
+    },
+    "Techie": {
+      "armes": [
+        "Fusil à pompe",
+        "Pistolet léger",
+        "Marteau lourd"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Paume d'interface",
+        "Bras cybernétique"
+      ],
+      "objets": [
+        "outils multifonctions",
+        "poste à souder portatif",
+        "petit drone de réparation (raconté)",
+        "stock de pièces détachées"
+      ]
+    },
+    "Charcudoc": {
+      "armes": [
+        "Pistolet léger",
+        "Couteau"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        "Paume d'interface"
+      ],
+      "objets": [
+        "kit chirurgical",
+        "scanner médical",
+        "stock d'anesthésiants",
+        "table d'opération pliante"
+      ]
+    },
+    "Ferrailleur": {
+      "armes": [
+        "Machette",
+        "Batte de baseball",
+        "Fusil à pompe"
+      ],
+      "armures": [
+        "Veste renforcée",
+        "Combinaison de motard"
+      ],
+      "implants": [
+        "Filtre toxique",
+        "Poumons renforcés"
+      ],
+      "objets": [
+        "chalumeau",
+        "détecteur de métaux",
+        "sac de récupération",
+        "masque à gaz"
+      ]
+    },
+    "Fixer": {
+      "armes": [
+        "Pistolet lourd",
+        "Pistolet silencieux"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        "Neuroport"
+      ],
+      "objets": [
+        "carnet d'adresses chiffré",
+        "téléphones jetables",
+        "faux papiers",
+        "faveurs qu'on lui doit"
+      ]
+    },
+    "Informateur": {
+      "armes": [
+        "Couteau",
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "oreillette d'écoute",
+        "double des clés du quartier",
+        "carnet de notes",
+        "appareil photo discret"
+      ]
+    },
+    "Journaliste": {
+      "armes": [
+        "Pistolet léger",
+        null
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        null
+      ],
+      "objets": [
+        "caméra holo",
+        "enregistreur",
+        "carte de presse",
+        "source anonyme"
+      ]
+    },
+    "Rockerboy": {
+      "armes": [
+        "Pistolet lourd",
+        "Batte de baseball"
+      ],
+      "armures": [
+        "Veste renforcée",
+        "Manteau blindé"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "guitare électrique",
+        "ampli portable",
+        "fans fidèles",
+        "vieux contrat de disque"
+      ]
+    },
+    "Idol": {
+      "armes": [
+        null,
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        null
+      ],
+      "objets": [
+        "garde-robe de scène",
+        "contrat d'agence",
+        "lunettes de star",
+        "numéro privé d'un producteur"
+      ]
+    },
+    "Nomade": {
+      "armes": [
+        "Fusil à pompe",
+        "Carabine",
+        "Machette"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Combinaison de motard"
+      ],
+      "implants": [
+        "Filtre toxique",
+        null
+      ],
+      "objets": [
+        "kit de survie",
+        "outils du clan",
+        "jerricans",
+        "carte des pistes"
+      ],
+      "vehicules": [
+        "Pick-up",
+        "Moto lourde"
+      ]
+    },
+    "Coursier": {
+      "armes": [
+        "Pistolet léger",
+        "Matraque télescopique"
+      ],
+      "armures": [
+        "Combinaison de motard",
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "casque connecté",
+        "sac de livraison scellé",
+        "plan des raccourcis",
+        "antivol renforcé"
+      ],
+      "vehicules": [
+        "Moto de livraison",
+        "Scooter électrique"
+      ]
+    }
+  },
   "armes": [
+    {
+      "nom": "Poing américain",
+      "competence": "Corps à corps",
+      "degats": "1d4",
+      "portee": "contact",
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
     {
       "nom": "Couteau",
       "competence": "Corps à corps",
       "degats": "1d4",
       "portee": "contact",
-      "proprietes": ["dissimulable"]
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Tantō",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Matraque télescopique",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Tonfa",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Batte de baseball",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [
+        "fragile"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Matraque électrique",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": true
+    },
+    {
+      "nom": "Hachette",
+      "competence": "Corps à corps",
+      "degats": "1d6",
+      "portee": "contact",
+      "proprietes": [
+        "lancer"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Machette",
+      "competence": "Corps à corps",
+      "degats": "1d8",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Wakizashi",
+      "competence": "Corps à corps",
+      "degats": "1d8",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Katana",
+      "competence": "Corps à corps",
+      "degats": "1d10",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Nodachi",
+      "competence": "Corps à corps",
+      "degats": "1d12",
+      "portee": "contact",
+      "proprietes": [
+        "deux mains"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Marteau lourd",
+      "competence": "Corps à corps",
+      "degats": "1d12",
+      "portee": "contact",
+      "proprietes": [
+        "deux mains",
+        "encombrante"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Naginata électrique",
+      "competence": "Corps à corps",
+      "degats": "1d12",
+      "portee": "contact",
+      "proprietes": [
+        "deux mains"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": true
+    },
+    {
+      "nom": "Tronçonneuse",
+      "competence": "Corps à corps",
+      "degats": "2d6",
+      "portee": "contact",
+      "proprietes": [
+        "deux mains",
+        "encombrante",
+        "fragile"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false
+    },
+    {
+      "nom": "Shuriken",
+      "competence": "Armes à distance",
+      "degats": "1d4",
+      "portee": "courte",
+      "proprietes": [
+        "lancer",
+        "dissimulable"
+      ],
+      "categorie": "armes de lancer",
+      "electronique": false
+    },
+    {
+      "nom": "Couteaux de lancer",
+      "competence": "Armes à distance",
+      "degats": "1d4",
+      "portee": "courte",
+      "proprietes": [
+        "lancer",
+        "dissimulable"
+      ],
+      "categorie": "armes de lancer",
+      "electronique": false
+    },
+    {
+      "nom": "Kunai",
+      "competence": "Armes à distance",
+      "degats": "1d4",
+      "portee": "courte",
+      "proprietes": [
+        "lancer",
+        "dissimulable",
+        "silencieuse"
+      ],
+      "categorie": "armes de lancer",
+      "electronique": false
+    },
+    {
+      "nom": "Pistolet compact",
+      "competence": "Armes à distance",
+      "degats": "1d4",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 6,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Pistolet léger",
+      "competence": "Armes à distance",
+      "degats": "1d6",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 12,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Pistolet silencieux",
+      "competence": "Armes à distance",
+      "degats": "1d6",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 10,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable",
+        "silencieuse"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Mitraillette compacte",
+      "competence": "Armes à distance",
+      "degats": "1d6",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 20,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "rafale",
+        "dissimulable"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Pistolet intelligent",
+      "competence": "Armes à distance",
+      "degats": "1d8",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 10,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes intelligentes",
+      "electronique": true
+    },
+    {
+      "nom": "Pistolet-mitrailleur",
+      "competence": "Armes à distance",
+      "degats": "1d8",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 30,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "rafale"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Arbalète à poulies",
+      "competence": "Armes à distance",
+      "degats": "1d8",
+      "portee": "moyenne",
+      "munitions": {
+        "capacite": 1,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "silencieuse"
+      ],
+      "categorie": "fusils",
+      "electronique": false
     },
     {
       "nom": "Pistolet lourd",
       "competence": "Armes à distance",
       "degats": "1d10",
       "portee": "courte",
-      "munitions": {"capacite": 8, "recharge": "mineure"},
-      "proprietes": ["dissimulable"]
+      "munitions": {
+        "capacite": 8,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false
     },
     {
-      "nom": "Pistolet lourd Arasaka",
+      "nom": "Revolver lourd",
       "competence": "Armes à distance",
       "degats": "1d10",
       "portee": "courte",
-      "munitions": {"capacite": 8, "recharge": "mineure"},
-      "proprietes": ["dissimulable"],
-      "qualite": "personnalisé",
-      "fabricant": "Arasaka",
-      "modifications": [
-        {"nom": "Rechargeur rapide", "effet": "munitions", "munitions": "recharge rapide"},
-        {"nom": "Nouveau calibre", "effet": "puissance", "valeur": 1}
-      ]
+      "munitions": {
+        "capacite": 6,
+        "recharge": "simple"
+      },
+      "proprietes": [],
+      "categorie": "armes de poing",
+      "electronique": false
+    },
+    {
+      "nom": "Carabine",
+      "competence": "Armes à distance",
+      "degats": "2d6",
+      "portee": "moyenne",
+      "munitions": {
+        "capacite": 20,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "deux mains"
+      ],
+      "categorie": "fusils",
+      "electronique": false
+    },
+    {
+      "nom": "Fusil à pompe",
+      "competence": "Armes à distance",
+      "degats": "2d6",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 6,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains"
+      ],
+      "categorie": "fusils",
+      "electronique": false
+    },
+    {
+      "nom": "Fusil à pompe automatique",
+      "competence": "Armes à distance",
+      "degats": "2d6",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 10,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "deux mains",
+        "rafale",
+        "encombrante"
+      ],
+      "categorie": "fusils",
+      "electronique": false
+    },
+    {
+      "nom": "Mitrailleuse légère",
+      "competence": "Armes à distance",
+      "degats": "2d6+1",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 100,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "rafale",
+        "encombrante"
+      ],
+      "categorie": "armes lourdes",
+      "electronique": false
     },
     {
       "nom": "Fusil d'assaut",
       "competence": "Armes à distance",
       "degats": "2d6+2",
       "portee": "longue",
-      "munitions": {"capacite": 30, "recharge": "mineure"},
-      "proprietes": ["deux mains", "rafale"]
+      "munitions": {
+        "capacite": 30,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "deux mains",
+        "rafale"
+      ],
+      "categorie": "fusils",
+      "electronique": false
+    },
+    {
+      "nom": "Fusil de précision",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 5,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "perforante",
+        "encombrante"
+      ],
+      "categorie": "fusils de précision",
+      "electronique": false
+    },
+    {
+      "nom": "Fusil à rail",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "moyenne",
+      "munitions": {
+        "capacite": 4,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "perforante",
+        "encombrante"
+      ],
+      "categorie": "fusils",
+      "electronique": true
+    },
+    {
+      "nom": "Grenade à fragmentation",
+      "competence": "Armes à distance",
+      "degats": "3d6",
+      "zone": "petite",
+      "effets": [],
+      "proprietes": [
+        "lancer"
+      ],
+      "portee": "courte",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "grenades"
+    },
+    {
+      "nom": "Grenade incendiaire",
+      "competence": "Armes à distance",
+      "degats": "2d6",
+      "zone": "petite",
+      "effets": [
+        "brûlure"
+      ],
+      "proprietes": [
+        "lancer"
+      ],
+      "portee": "courte",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "grenades"
+    },
+    {
+      "nom": "Grenade fumigène",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "petite",
+      "effets": [
+        "fumée"
+      ],
+      "proprietes": [
+        "lancer"
+      ],
+      "portee": "courte",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "grenades"
+    },
+    {
+      "nom": "Grenade flash",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "petite",
+      "effets": [
+        "aveuglant"
+      ],
+      "proprietes": [
+        "lancer"
+      ],
+      "portee": "courte",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "grenades"
+    },
+    {
+      "nom": "Grenade IEM",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "petite",
+      "effets": [
+        "IEM"
+      ],
+      "proprietes": [
+        "lancer"
+      ],
+      "portee": "courte",
+      "electronique": true,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "grenades"
+    },
+    {
+      "nom": "Lance-grenades",
+      "competence": "Armes à distance",
+      "degats": "3d6",
+      "zone": "petite",
+      "effets": [],
+      "proprietes": [
+        "deux mains"
+      ],
+      "portee": "moyenne",
+      "electronique": false,
+      "munitions": {
+        "capacite": 6,
+        "recharge": "simple"
+      },
+      "categorie": "armes lourdes"
+    },
+    {
+      "nom": "Lance-flammes",
+      "competence": "Armes à distance",
+      "degats": "2d6",
+      "zone": "petite",
+      "effets": [
+        "brûlure"
+      ],
+      "proprietes": [
+        "deux mains"
+      ],
+      "portee": "courte",
+      "electronique": false,
+      "munitions": {
+        "capacite": 3,
+        "recharge": "simple"
+      },
+      "categorie": "armes lourdes"
+    },
+    {
+      "nom": "Lance-roquettes",
+      "competence": "Armes à distance",
+      "degats": "4d6",
+      "zone": "moyenne",
+      "effets": [],
+      "proprietes": [
+        "deux mains",
+        "perforante",
+        "encombrante"
+      ],
+      "portee": "longue",
+      "electronique": false,
+      "munitions": {
+        "capacite": 1,
+        "recharge": "simple"
+      },
+      "categorie": "armes lourdes"
+    },
+    {
+      "nom": "Charge d'explosif",
+      "competence": "Armes à distance",
+      "degats": "4d6",
+      "zone": "grande",
+      "effets": [],
+      "proprietes": [],
+      "portee": "contact",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": true,
+      "categorie": "explosifs"
+    },
+    {
+      "nom": "Canon de char",
+      "competence": "Armes à distance",
+      "degats": "4d6",
+      "zone": "moyenne",
+      "effets": [],
+      "proprietes": [
+        "perforante"
+      ],
+      "portee": "longue",
+      "electronique": false,
+      "montee": true,
+      "categorie": "armes lourdes"
+    },
+    {
+      "nom": "Mine IEM",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "moyenne",
+      "effets": [
+        "IEM"
+      ],
+      "proprietes": [],
+      "portee": "contact",
+      "electronique": true,
+      "usage_unique": true,
+      "posee": true,
+      "categorie": "explosifs"
+    },
+    {
+      "nom": "Charge IEM lourde",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "grande",
+      "effets": [
+        "IEM"
+      ],
+      "proprietes": [],
+      "portee": "contact",
+      "electronique": true,
+      "usage_unique": true,
+      "posee": true,
+      "categorie": "explosifs"
+    },
+    {
+      "nom": "Mitrailleuse lourde",
+      "competence": "Armes à distance",
+      "degats": "3d6",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 100,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "rafale",
+        "perforante"
+      ],
+      "montee": true,
+      "categorie": "armes lourdes",
+      "electronique": false
+    },
+    {
+      "nom": "Canon automatique",
+      "competence": "Armes à distance",
+      "degats": "3d6",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 30,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "perforante"
+      ],
+      "montee": true,
+      "categorie": "armes lourdes",
+      "electronique": false
+    },
+    {
+      "nom": "Minigun",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "moyenne",
+      "munitions": {
+        "capacite": 200,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "rafale"
+      ],
+      "montee": true,
+      "categorie": "armes lourdes",
+      "electronique": false
+    },
+    {
+      "nom": "Charge de drone kamikaze",
+      "competence": "Armes à distance",
+      "degats": "3d6",
+      "zone": "petite",
+      "effets": [],
+      "proprietes": [],
+      "portee": "courte",
+      "electronique": false,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "drones"
+    },
+    {
+      "nom": "Impulsion IEM de drone",
+      "competence": "Armes à distance",
+      "degats": null,
+      "zone": "petite",
+      "effets": [
+        "IEM"
+      ],
+      "proprietes": [],
+      "portee": "courte",
+      "electronique": true,
+      "usage_unique": true,
+      "posee": false,
+      "categorie": "drones"
+    },
+    {
+      "nom": "Pistolet lourd Arasaka",
+      "competence": "Armes à distance",
+      "degats": "1d10",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 8,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de poing",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": "Arasaka",
+      "modifications": [
+        {
+          "nom": "Rechargeur rapide",
+          "effet": "munitions",
+          "description": "une recharge simple devient mineure",
+          "electronique": false
+        },
+        {
+          "nom": "Nouveau calibre",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "Fusil d'assaut Militech « Ronin »",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 30,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "deux mains",
+        "rafale"
+      ],
+      "categorie": "fusils",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": "Militech",
+      "modifications": [
+        {
+          "nom": "Nouveau calibre",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Viseur holographique",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        }
+      ]
+    },
+    {
+      "nom": "Couteau en céramique",
+      "competence": "Corps à corps",
+      "degats": "1d4",
+      "portee": "contact",
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes de mêlée",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": null,
+      "modifications": [
+        {
+          "nom": "Équilibrage",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "Pistolet intelligent Kang Tao « Kenshin »",
+      "competence": "Armes à distance",
+      "degats": "1d8",
+      "portee": "courte",
+      "munitions": {
+        "capacite": 10,
+        "recharge": "mineure"
+      },
+      "proprietes": [
+        "dissimulable"
+      ],
+      "categorie": "armes intelligentes",
+      "electronique": true,
+      "qualite": "personnalisé",
+      "fabricant": "Kang Tao",
+      "modifications": [
+        {
+          "nom": "Viseur holographique",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        },
+        {
+          "nom": "Pointeur laser",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        }
+      ]
+    },
+    {
+      "nom": "Katana monomoléculaire",
+      "competence": "Corps à corps",
+      "degats": "1d10",
+      "portee": "contact",
+      "proprietes": [],
+      "categorie": "armes de mêlée",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": null,
+      "modifications": [
+        {
+          "nom": "Fil monomoléculaire",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Gaine thermique",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": true
+        }
+      ]
+    },
+    {
+      "nom": "Fusil à rail Militech « Breakthrough »",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "moyenne",
+      "munitions": {
+        "capacite": 4,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "perforante",
+        "encombrante"
+      ],
+      "categorie": "fusils",
+      "electronique": true,
+      "qualite": "unique",
+      "fabricant": "Militech",
+      "modifications": [
+        {
+          "nom": "Nouveau calibre",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Viseur holographique",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        },
+        {
+          "nom": "Pointeur laser",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        }
+      ]
+    },
+    {
+      "nom": "Fusil de précision Tsunami « Nekomata »",
+      "competence": "Armes à distance",
+      "degats": "2d6+2",
+      "portee": "longue",
+      "munitions": {
+        "capacite": 5,
+        "recharge": "simple"
+      },
+      "proprietes": [
+        "deux mains",
+        "perforante",
+        "encombrante"
+      ],
+      "categorie": "fusils de précision",
+      "electronique": false,
+      "qualite": "unique",
+      "fabricant": "Tsunami",
+      "modifications": [
+        {
+          "nom": "Pointeur laser",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        },
+        {
+          "nom": "Viseur holographique",
+          "effet": "précision",
+          "valeur": 5,
+          "electronique": true
+        },
+        {
+          "nom": "Silencieux",
+          "effet": "propriété",
+          "propriete": "silencieuse",
+          "electronique": false
+        }
+      ]
     }
   ],
   "armures": [
     {
       "nom": "Veste renforcée",
-      "protection": 1
+      "protection": 1,
+      "malus": {},
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Combinaison de motard",
+      "protection": 1,
+      "malus": {},
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Gilet pare-balles léger",
+      "protection": 2,
+      "malus": {},
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Manteau blindé",
+      "protection": 2,
+      "malus": {},
+      "categorie": "armures",
+      "electronique": false
     },
     {
       "nom": "Gilet balistique",
       "protection": 3,
-      "malus": {"Discrétion": -10}
+      "malus": {
+        "Discrétion": -10
+      },
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Armure de garde corpo",
+      "protection": 3,
+      "malus": {
+        "Discrétion": -10,
+        "Esquive": -10
+      },
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Armure tactique",
+      "protection": 4,
+      "malus": {
+        "Discrétion": -20,
+        "Athlétisme": -10
+      },
+      "categorie": "armures",
+      "electronique": false
+    },
+    {
+      "nom": "Exosquelette léger",
+      "protection": 4,
+      "malus": {
+        "Discrétion": -10,
+        "Esquive": -10
+      },
+      "categorie": "armures",
+      "electronique": true
+    },
+    {
+      "nom": "Gilet balistique Militech",
+      "protection": 3,
+      "malus": {
+        "Discrétion": -10
+      },
+      "categorie": "armures",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": "Militech",
+      "modifications": [
+        {
+          "nom": "Plaques de renfort",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Doublure souple",
+          "effet": "confort",
+          "valeur": 5,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "Armure tactique Arasaka",
+      "protection": 4,
+      "malus": {
+        "Discrétion": -20,
+        "Athlétisme": -10
+      },
+      "categorie": "armures",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": "Arasaka",
+      "modifications": [
+        {
+          "nom": "Plaques de renfort",
+          "effet": "puissance",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Doublure souple",
+          "effet": "confort",
+          "valeur": 5,
+          "electronique": false
+        }
+      ]
     }
   ],
-  "chocs_banals": ["VIOLENCE_BRUTALE"]
+  "chocs_banals": [
+    "VIOLENCE_BRUTALE"
+  ],
+  "implants": {
+    "systemes": [
+      {
+        "nom": "Cortex frontal",
+        "emplacements": 3,
+        "requiert": "Neuroport"
+      },
+      {
+        "nom": "Système d'exploitation",
+        "emplacements": 1
+      },
+      {
+        "nom": "Système nerveux",
+        "emplacements": 2
+      },
+      {
+        "nom": "Visage et yeux",
+        "options": 3,
+        "fondation": "Yeux cybernétiques"
+      },
+      {
+        "nom": "Oreilles et gorge",
+        "options": 3,
+        "fondation": "Suite cyberaudio"
+      },
+      {
+        "nom": "Peau",
+        "emplacements": 2
+      },
+      {
+        "nom": "Squelette",
+        "emplacements": 2
+      },
+      {
+        "nom": "Organes internes",
+        "emplacements": 3
+      },
+      {
+        "nom": "Bras",
+        "options": 3,
+        "par": "bras",
+        "fondation": "Bras cybernétique"
+      },
+      {
+        "nom": "Mains",
+        "emplacements": 1,
+        "par": "main"
+      },
+      {
+        "nom": "Jambes",
+        "options": 2,
+        "fondation": "Jambes cybernétiques"
+      },
+      {
+        "nom": "Médical",
+        "emplacements": null
+      }
+    ],
+    "implants": [
+      {
+        "nom": "Puce de langue",
+        "systeme": "Cortex frontal",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "une langue de plus"
+      },
+      {
+        "nom": "Mémoire eidétique",
+        "systeme": "Cortex frontal",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Érudition"
+      },
+      {
+        "nom": "Puce de compétence",
+        "systeme": "Cortex frontal",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": null,
+        "description": "+5 à une compétence de savoir, choisie à l'installation"
+      },
+      {
+        "nom": "Coprocesseur tactique",
+        "systeme": "Cortex frontal",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Perception"
+      },
+      {
+        "nom": "Extension de mémoire vive",
+        "systeme": "Cortex frontal",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Technologie"
+      },
+      {
+        "nom": "Deck neural",
+        "systeme": "Système d'exploitation",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "pirater sans deck externe"
+      },
+      {
+        "nom": "Deck militaire",
+        "systeme": "Système d'exploitation",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Technologie"
+      },
+      {
+        "nom": "Sandevistan",
+        "systeme": "Système d'exploitation",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Esquive"
+      },
+      {
+        "nom": "Berserk",
+        "systeme": "Système d'exploitation",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Corps à corps"
+      },
+      {
+        "nom": "Neuroport",
+        "systeme": "Système nerveux",
+        "fondation": true,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "se brancher à une machine ; ouvre le cortex frontal"
+      },
+      {
+        "nom": "Inhibiteur de douleur",
+        "systeme": "Système nerveux",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "rester lucide sous la torture"
+      },
+      {
+        "nom": "Réflexes câblés Kerenzikov",
+        "systeme": "Système nerveux",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Esquive"
+      },
+      {
+        "nom": "Synapses accélérées",
+        "systeme": "Système nerveux",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Perception"
+      },
+      {
+        "nom": "Yeux cybernétiques",
+        "systeme": "Visage et yeux",
+        "fondation": true,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "zoom, mise au point instantanée"
+      },
+      {
+        "nom": "Vision nocturne",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "voir dans le noir"
+      },
+      {
+        "nom": "Vision thermique",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "voir les sources de chaleur, même derrière la fumée"
+      },
+      {
+        "nom": "Caméra oculaire",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "enregistrer ce que l'on voit"
+      },
+      {
+        "nom": "Scanner d'implants",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Cybernétique"
+      },
+      {
+        "nom": "Viseur balistique",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Armes à distance"
+      },
+      {
+        "nom": "Optiques Kiroshi",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Armes à distance"
+      },
+      {
+        "nom": "Visage malléable",
+        "systeme": "Visage et yeux",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Tromperie",
+        "description": "changer de traits"
+      },
+      {
+        "nom": "Suite cyberaudio",
+        "systeme": "Oreilles et gorge",
+        "fondation": true,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "radio et téléphone internes"
+      },
+      {
+        "nom": "Filtre respiratoire",
+        "systeme": "Oreilles et gorge",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "respirer la fumée, les gaz, l'air pollué"
+      },
+      {
+        "nom": "Audio amplifié",
+        "systeme": "Oreilles et gorge",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Perception"
+      },
+      {
+        "nom": "Analyseur de stress vocal",
+        "systeme": "Oreilles et gorge",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Perspicacité"
+      },
+      {
+        "nom": "Détecteur de micros",
+        "systeme": "Oreilles et gorge",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Sécurité"
+      },
+      {
+        "nom": "Modulateur vocal",
+        "systeme": "Oreilles et gorge",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Tromperie"
+      },
+      {
+        "nom": "Tatouages lumineux",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": null,
+        "electronique": true,
+        "effet": "esthétique"
+      },
+      {
+        "nom": "Cheveux de fibre optique",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": null,
+        "electronique": true,
+        "effet": "esthétique"
+      },
+      {
+        "nom": "Peau chromée",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": null,
+        "electronique": true,
+        "effet": "esthétique"
+      },
+      {
+        "nom": "Peau dermique",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "armure",
+        "armure": {
+          "protection": 2,
+          "malus": {}
+        }
+      },
+      {
+        "nom": "Glandes à phéromones",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Persuasion"
+      },
+      {
+        "nom": "Peau caméléon",
+        "systeme": "Peau",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Discrétion"
+      },
+      {
+        "nom": "Ossature blindée",
+        "systeme": "Squelette",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "armure",
+        "armure": {
+          "protection": 3,
+          "malus": {
+            "Discrétion": -10
+          }
+        }
+      },
+      {
+        "nom": "Os en titane",
+        "systeme": "Squelette",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Athlétisme"
+      },
+      {
+        "nom": "Biomoniteur",
+        "systeme": "Organes internes",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "alerte sur son état de santé"
+      },
+      {
+        "nom": "Poumons renforcés",
+        "systeme": "Organes internes",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "apnée prolongée"
+      },
+      {
+        "nom": "Filtre toxique",
+        "systeme": "Organes internes",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "résister aux poisons et aux drogues"
+      },
+      {
+        "nom": "Compartiment caché",
+        "systeme": "Organes internes",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "cacher un petit objet"
+      },
+      {
+        "nom": "Bras cybernétique",
+        "systeme": "Bras",
+        "fondation": true,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "un bras qui ne fatigue pas"
+      },
+      {
+        "nom": "Pistolet intégré",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "arme",
+        "arme": {
+          "degats": "1d6",
+          "portee": "courte",
+          "proprietes": [
+            "dissimulable"
+          ],
+          "munitions": {
+            "capacite": 4,
+            "recharge": "simple"
+          },
+          "competence": "Armes à distance"
+        }
+      },
+      {
+        "nom": "Lames-mantis",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "arme",
+        "arme": {
+          "degats": "1d8",
+          "portee": "contact",
+          "proprietes": [
+            "dissimulable"
+          ],
+          "competence": "Corps à corps"
+        }
+      },
+      {
+        "nom": "Fouet monofilament",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "arme",
+        "arme": {
+          "degats": "1d8",
+          "portee": "contact",
+          "proprietes": [
+            "perforante"
+          ],
+          "competence": "Corps à corps"
+        }
+      },
+      {
+        "nom": "Bras-marteau",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "arme",
+        "arme": {
+          "degats": "1d10",
+          "portee": "contact",
+          "proprietes": [
+            "encombrante"
+          ],
+          "competence": "Corps à corps"
+        }
+      },
+      {
+        "nom": "Lance-grappin",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "grimper, se hisser, saisir à distance"
+      },
+      {
+        "nom": "Servomoteurs",
+        "systeme": "Bras",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Athlétisme"
+      },
+      {
+        "nom": "Griffes-rasoirs",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "arme",
+        "arme": {
+          "degats": "1d4",
+          "portee": "contact",
+          "proprietes": [
+            "dissimulable"
+          ],
+          "competence": "Corps à corps"
+        }
+      },
+      {
+        "nom": "Paume d'interface",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "se brancher sans câble"
+      },
+      {
+        "nom": "Poigne magnétique",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "s'accrocher au métal"
+      },
+      {
+        "nom": "Doigts-outils",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Artisanat"
+      },
+      {
+        "nom": "Doigts de crochetage",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Sécurité"
+      },
+      {
+        "nom": "Doigts de pickpocket",
+        "systeme": "Mains",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Escamotage"
+      },
+      {
+        "nom": "Jambes cybernétiques",
+        "systeme": "Jambes",
+        "fondation": true,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "marcher des jours sans fatigue"
+      },
+      {
+        "nom": "Compartiment de jambe",
+        "systeme": "Jambes",
+        "fondation": false,
+        "gamme": "standard",
+        "electronique": true,
+        "effet": "utilitaire",
+        "description": "cacher une arme ou un objet"
+      },
+      {
+        "nom": "Amortisseurs silencieux",
+        "systeme": "Jambes",
+        "fondation": false,
+        "gamme": "avancée",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 5,
+        "competence": "Discrétion"
+      },
+      {
+        "nom": "Chevilles à ressorts",
+        "systeme": "Jambes",
+        "fondation": false,
+        "gamme": "militaire",
+        "electronique": true,
+        "effet": "bonus",
+        "bonus": 10,
+        "competence": "Athlétisme"
+      },
+      {
+        "nom": "Prothèse médicale",
+        "systeme": "Médical",
+        "fondation": false,
+        "gamme": null,
+        "electronique": true,
+        "effet": "médical",
+        "description": "remplace un membre perdu, sans option ni bonus"
+      }
+    ]
+  },
+  "vehicules": [
+    {
+      "nom": "Scooter électrique",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "moyenne",
+      "maniabilite": 10,
+      "structure": 12,
+      "blindage": 0,
+      "places": 2,
+      "proprietes": [
+        "discret"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "motos",
+      "electronique": true
+    },
+    {
+      "nom": "Moto de livraison",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 15,
+      "blindage": 0,
+      "places": 2,
+      "proprietes": [
+        "cargo"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "motos",
+      "electronique": false
+    },
+    {
+      "nom": "Moto sportive",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "très rapide",
+      "maniabilite": 10,
+      "structure": 15,
+      "blindage": 1,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "motos",
+      "electronique": false
+    },
+    {
+      "nom": "Moto lourde",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 20,
+      "blindage": 2,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "motos",
+      "electronique": false
+    },
+    {
+      "nom": "Jet-ski",
+      "type": "nautique",
+      "gabarit": "léger",
+      "vitesse": "très rapide",
+      "maniabilite": 10,
+      "structure": 10,
+      "blindage": 0,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "nautiques",
+      "electronique": false
+    },
+    {
+      "nom": "Citadine",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "moyenne",
+      "maniabilite": 10,
+      "structure": 20,
+      "blindage": 2,
+      "places": 4,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures",
+      "electronique": true
+    },
+    {
+      "nom": "Berline",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 30,
+      "blindage": 3,
+      "places": 5,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures de luxe",
+      "electronique": true
+    },
+    {
+      "nom": "Voiture de sport",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 25,
+      "blindage": 2,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures de sport",
+      "electronique": true
+    },
+    {
+      "nom": "Pick-up",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 35,
+      "blindage": 3,
+      "places": 3,
+      "proprietes": [
+        "tout-terrain",
+        "cargo"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "pick-ups",
+      "electronique": true
+    },
+    {
+      "nom": "Voiture de patrouille",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 35,
+      "blindage": 4,
+      "places": 4,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures",
+      "electronique": true
+    },
+    {
+      "nom": "Vedette",
+      "type": "nautique",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 30,
+      "blindage": 3,
+      "places": 6,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "nautiques",
+      "electronique": true
+    },
+    {
+      "nom": "Taxi automatique",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "moyenne",
+      "maniabilite": 0,
+      "structure": 25,
+      "blindage": 2,
+      "places": 4,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "taxis automatiques",
+      "electronique": true,
+      "utilitaires": [
+        "pilote automatique"
+      ]
+    },
+    {
+      "nom": "Hovercar",
+      "type": "aérien",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 30,
+      "blindage": 2,
+      "places": 4,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "AV",
+      "electronique": true
+    },
+    {
+      "nom": "Fourgon de netrunner",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "moyenne",
+      "maniabilite": -10,
+      "structure": 35,
+      "blindage": 3,
+      "places": 3,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [
+        "Baie à drones"
+      ],
+      "categorie": "utilitaires",
+      "electronique": true,
+      "drones": {
+        "nombre": 2,
+        "modele": "Drone brouilleur"
+      },
+      "utilitaires": [
+        "poste de piratage embarqué (utilitaire)"
+      ]
+    },
+    {
+      "nom": "Fourgon",
+      "type": "terrestre",
+      "gabarit": "lourd",
+      "vitesse": "moyenne",
+      "maniabilite": -10,
+      "structure": 45,
+      "blindage": 4,
+      "places": 3,
+      "proprietes": [
+        "cargo"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "utilitaires",
+      "electronique": true
+    },
+    {
+      "nom": "Bus",
+      "type": "terrestre",
+      "gabarit": "lourd",
+      "vitesse": "lente",
+      "maniabilite": -10,
+      "structure": 55,
+      "blindage": 4,
+      "places": 40,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "utilitaires",
+      "electronique": true
+    },
+    {
+      "nom": "Camion",
+      "type": "terrestre",
+      "gabarit": "lourd",
+      "vitesse": "lente",
+      "maniabilite": -10,
+      "structure": 60,
+      "blindage": 6,
+      "places": 2,
+      "proprietes": [
+        "cargo"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "utilitaires",
+      "electronique": true
+    },
+    {
+      "nom": "Blindé de transport",
+      "type": "terrestre",
+      "gabarit": "lourd",
+      "vitesse": "moyenne",
+      "maniabilite": -10,
+      "structure": 60,
+      "blindage": 8,
+      "places": 8,
+      "proprietes": [
+        "tout-terrain"
+      ],
+      "armes_montees": [
+        {
+          "tourelle": "lourde",
+          "arme": "Mitrailleuse lourde"
+        },
+        {
+          "tourelle": "lourde",
+          "arme": "Lance-grenades"
+        }
+      ],
+      "systemes": [
+        "Lance-fumigènes"
+      ],
+      "categorie": "véhicules militaires",
+      "electronique": true
+    },
+    {
+      "nom": "Blindé de reconnaissance",
+      "type": "terrestre",
+      "gabarit": "lourd",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 50,
+      "blindage": 6,
+      "places": 4,
+      "proprietes": [
+        "tout-terrain"
+      ],
+      "armes_montees": [
+        {
+          "tourelle": "légère",
+          "arme": "Mitrailleuse légère"
+        }
+      ],
+      "systemes": [
+        "Baie à drones",
+        "Lance-fumigènes"
+      ],
+      "categorie": "véhicules militaires",
+      "electronique": true,
+      "drones": {
+        "nombre": 2,
+        "modele": "Drone de reconnaissance"
+      }
+    },
+    {
+      "nom": "AV de corpo",
+      "type": "aérien",
+      "gabarit": "lourd",
+      "vitesse": "très rapide",
+      "maniabilite": 0,
+      "structure": 50,
+      "blindage": 6,
+      "places": 6,
+      "proprietes": [],
+      "armes_montees": [
+        {
+          "tourelle": "lourde",
+          "arme": "Minigun"
+        },
+        {
+          "tourelle": "lourde",
+          "arme": "Lance-roquettes"
+        }
+      ],
+      "systemes": [],
+      "categorie": "AV",
+      "electronique": true
+    },
+    {
+      "nom": "AV d'assaut",
+      "type": "aérien",
+      "gabarit": "militaire",
+      "vitesse": "très rapide",
+      "maniabilite": 0,
+      "structure": 80,
+      "blindage": 10,
+      "places": 4,
+      "proprietes": [],
+      "armes_montees": [
+        {
+          "tourelle": "lourde",
+          "arme": "Canon automatique"
+        },
+        {
+          "tourelle": "lourde",
+          "arme": "Lance-roquettes"
+        },
+        {
+          "tourelle": "légère",
+          "arme": "Mitrailleuse légère"
+        }
+      ],
+      "systemes": [
+        "Leurres"
+      ],
+      "categorie": "véhicules militaires",
+      "electronique": true
+    },
+    {
+      "nom": "Char",
+      "type": "terrestre",
+      "gabarit": "militaire",
+      "vitesse": "lente",
+      "maniabilite": -10,
+      "structure": 100,
+      "blindage": 12,
+      "places": 3,
+      "proprietes": [
+        "tout-terrain"
+      ],
+      "armes_montees": [
+        {
+          "tourelle": "lourde",
+          "arme": "Canon de char"
+        },
+        {
+          "tourelle": "lourde",
+          "arme": "Mitrailleuse lourde"
+        },
+        {
+          "tourelle": "légère",
+          "arme": "Mitrailleuse légère"
+        }
+      ],
+      "systemes": [
+        "Lance-fumigènes"
+      ],
+      "categorie": "véhicules militaires",
+      "electronique": true
+    },
+    {
+      "nom": "Drone de reconnaissance",
+      "type": "aérien",
+      "gabarit": "drone",
+      "vitesse": "très rapide",
+      "maniabilite": 10,
+      "structure": 5,
+      "blindage": 0,
+      "places": 0,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "drones",
+      "electronique": true,
+      "effet": "utilitaire : voir à distance, repérer les embuscades"
+    },
+    {
+      "nom": "Drone de combat",
+      "type": "aérien",
+      "gabarit": "drone",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 10,
+      "blindage": 1,
+      "places": 0,
+      "proprietes": [],
+      "armes_montees": [
+        {
+          "tourelle": "légère",
+          "arme": "Pistolet-mitrailleur"
+        }
+      ],
+      "systemes": [],
+      "categorie": "drones",
+      "electronique": true,
+      "effet": "arme montée : pistolet-mitrailleur"
+    },
+    {
+      "nom": "Drone kamikaze",
+      "type": "aérien",
+      "gabarit": "drone",
+      "vitesse": "très rapide",
+      "maniabilite": 10,
+      "structure": 5,
+      "blindage": 0,
+      "places": 0,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "drones",
+      "electronique": true,
+      "effet": "il explose : 3d6 sur une petite zone, usage unique",
+      "arme_integree": "Charge de drone kamikaze",
+      "kamikaze": true
+    },
+    {
+      "nom": "Drone brouilleur",
+      "type": "aérien",
+      "gabarit": "drone",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 8,
+      "blindage": 1,
+      "places": 0,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "drones",
+      "electronique": true,
+      "effet": "une IEM sur une petite zone, une fois par scène",
+      "arme_integree": "Impulsion IEM de drone"
+    },
+    {
+      "nom": "Drone de livraison",
+      "type": "aérien",
+      "gabarit": "drone",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 5,
+      "blindage": 0,
+      "places": 0,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "drones",
+      "electronique": true,
+      "effet": "utilitaire : transporter un petit objet"
+    },
+    {
+      "nom": "Moto Yaiba « Kusanagi »",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 20,
+      "blindage": 2,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "motos",
+      "electronique": false,
+      "qualite": "personnalisé",
+      "fabricant": "Yaiba",
+      "modifications": [
+        {
+          "nom": "Reprogrammation moteur",
+          "effet": "moteur",
+          "valeur": 1,
+          "electronique": true
+        },
+        {
+          "nom": "Kit nitro",
+          "effet": "nitro",
+          "valeur": 10,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "Quadra « Turbo-R »",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 25,
+      "blindage": 2,
+      "places": 2,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures de sport",
+      "electronique": true,
+      "qualite": "personnalisé",
+      "fabricant": "Quadra",
+      "modifications": [
+        {
+          "nom": "Turbo",
+          "effet": "moteur",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Suspensions sport",
+          "effet": "châssis",
+          "valeur": 5,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "Berline Rayfield blindée",
+      "type": "terrestre",
+      "gabarit": "moyen",
+      "vitesse": "rapide",
+      "maniabilite": 0,
+      "structure": 30,
+      "blindage": 3,
+      "places": 5,
+      "proprietes": [],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "voitures de luxe",
+      "electronique": true,
+      "qualite": "personnalisé",
+      "fabricant": "Rayfield",
+      "modifications": [
+        {
+          "nom": "Vitrage pare-balles",
+          "effet": "blindage",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Plaques de blindage",
+          "effet": "blindage",
+          "valeur": 1,
+          "electronique": false
+        }
+      ]
+    },
+    {
+      "nom": "AV Arasaka « Aquila »",
+      "type": "aérien",
+      "gabarit": "lourd",
+      "vitesse": "très rapide",
+      "maniabilite": 0,
+      "structure": 50,
+      "blindage": 6,
+      "places": 6,
+      "proprietes": [],
+      "armes_montees": [
+        {
+          "tourelle": "lourde",
+          "arme": "Minigun"
+        },
+        {
+          "tourelle": "lourde",
+          "arme": "Lance-roquettes"
+        }
+      ],
+      "systemes": [],
+      "categorie": "AV",
+      "electronique": true,
+      "qualite": "unique",
+      "fabricant": "Arasaka",
+      "modifications": [
+        {
+          "nom": "Plaques de blindage",
+          "effet": "blindage",
+          "valeur": 1,
+          "electronique": false
+        },
+        {
+          "nom": "Direction assistée IA",
+          "effet": "châssis",
+          "valeur": 5,
+          "electronique": true
+        },
+        {
+          "nom": "Tourelle télécommandée",
+          "effet": "support d'arme",
+          "valeur": 1,
+          "electronique": true
+        }
+      ]
+    }
+  ]
 }

@@ -30,6 +30,7 @@ from aria.personnage import Caracteristique, Etat
 from aria.table import TOURS_MAX, Table
 from aria.temps import Moment, Periode
 from aria.univers import charger_univers
+from aria.vehicules import Engin
 
 UNIVERS = chemins.UNIVERS / "cyberpunk.json"
 FANTASY = "fantasy"  # l'univers étalon de la magie
@@ -44,12 +45,17 @@ FICHE_KAITO = dict(
     caracteristiques={C.FORCE: 35, C.CONSTITUTION: 45, C.DEXTERITE: 60, C.INTELLIGENCE: 75, C.VOLONTE: 50,
                       C.PRESENCE: 35},
     points_parcours={"Technologie": 70, "Investigation": 45, "Sécurité": 50, "Perception": 25,
-                     "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Sciences": 15},
-    points_personnels={"Armes à distance": 30, "Esquive": 20, "Pilotage": 20, "Perspicacité": 30},
+                     "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Esquive": 15},
+    points_personnels={"Armes à distance": 30, "Esquive": 5, "Pilotage": 20, "Perspicacité": 30,
+                       "Athlétisme": 15},
     motivation="Effacer sa dette envers une corpo",
     lien="Sa petite sœur Hana, sa seule famille",
     defaut="Fait trop confiance aux machines",
 )
+# Son équipement de départ, choisi dans les listes du Netrunner (REGLES.md 5). Le pistolet Arasaka qu'il a en
+# main au banc, il l'a gagné en jouant.
+EQUIPEMENT_KAITO = dict(arme="Pistolet silencieux", armure="Veste renforcée", implant="Neuroport",
+                        objets=["deck", "fausse identité numérique"])
 
 # Elara, la mage de l'univers Fantasy étalon : Arcanes 50, 14 PM, Pyromancie et Guérison
 FICHE_ELARA = dict(
@@ -137,6 +143,18 @@ def _combat(*pnj: tuple[str, str, str], tour: str = "joueur"):
     return preparer
 
 
+def _poursuite(en_cours: bool):
+    """Kaito sur sa moto, une berline des Tyger Claws à ses trousses ; la poursuite a déjà commencé ou pas."""
+    def preparer(session: Session):
+        session.vehicule = Engin(session.univers.vehicule("Moto sportive"))
+        _pnj(session, "tygers", "Tyger Claws", "Pistolet lourd", vehicule="Berline")
+        if en_cours:
+            assert "erreur" not in session.appeler("debut_poursuite", {"fuyard": "joueur", "poursuivants": ["tygers"],
+                                                                     "zone": "Centre-ville"})
+            session.journal.clear()
+    return preparer
+
+
 def _blesse(pv: int, moment: Moment | None = None):
     def preparer(session: Session):
         session.personnage.pv = pv
@@ -216,6 +234,15 @@ def sort_parmi(*noms: str) -> Callable[[dict], bool]:
 TEST = ("test_competence", "test_caracteristique")
 CHOCS_DE_DESTRUCTION = ("MASSACRE", "VIOLENCE_BRUTALE", "CHARNIER", "BLESSURE_ATROCE")
 AU_JOUEUR = egal("attaquant", "joueur")
+LES_DEUX_GANGERS = ("ganger_1", "Ganger", "Couteau"), ("ganger_2", "Ganger", "Couteau")
+SCENE_GRENADE = ("Combat en cours dans un hangar. Deux gangers au couteau, épaule contre épaule, avancent vers Kaito. "
+                 "Kaito a une grenade à fragmentation à la ceinture. C'est au tour de Kaito.")
+SCENE_POURSUITE = ("Kaito file sur sa moto sportive dans le centre-ville de Néo-Tokyo, sous la pluie. Une berline des "
+                   "Tyger Claws (PNJ déjà créé : tygers) le prend en chasse, à quelques dizaines de mètres derrière.")
+
+
+def grenade_sur_les_deux(a: dict) -> bool:
+    return AU_JOUEUR(a) and {"ganger_1", "ganger_2"} <= set(a.get("cibles", []))
 DU_GANGER = egal("attaquant", "ganger")
 
 
@@ -332,7 +359,32 @@ SITUATIONS = [
               [*(interdit(o, egal("difficulte", "facile", "normale"), "bluff trop facile") for o in TEST),
                interdit("ouvrir_fil", _mille, "la fausse dette")],
               scene=SCENE_MORI, preparer=_mori(MORI_CLIENT)),
+    Situation("grenade", "Je dégoupille ma grenade et je la lance sur les deux gangers.",
+              [exige("attaquer_zone", grenade_sur_les_deux, "la grenade sur les deux gangers"),
+               interdit("attaquer", AU_JOUEUR, "un tir simple")],
+              scene=SCENE_GRENADE, preparer=_combat(*LES_DEUX_GANGERS)),
+    Situation("drone", "Je sors mon drone de combat et je le pilote par mon neuroport pour qu'il tire sur le garde.",
+              [exige("lancer_drone", egal("operateur", "joueur"), "drone télépiloté par Kaito"),
+               exige("attaquer", lambda a: a.get("attaquant") not in ("joueur", "garde") and a.get("cible") == "garde",
+                     "le drone tire sur le garde")],
+              scene="Combat en cours dans une cour d'usine. Un garde corpo tire depuis une passerelle. Le drone de "
+                    "combat de Kaito attend, replié, dans son sac. C'est au tour de Kaito.",
+              preparer=_combat(("garde", "Garde corpo", "Pistolet lourd"))),
+    # Poursuites
+    Situation("poursuite", "Je mets les gaz pour les semer.",
+              [exige("debut_poursuite", lambda a: a.get("fuyard") == "joueur" and "tygers" in a.get("poursuivants", []),
+                     "Kaito fuit les Tyger Claws"), exige("round_poursuite")],
+              scene=SCENE_POURSUITE, preparer=_poursuite(en_cours=False)),
+    Situation("slalom", "Je slalome entre les voitures pour les décrocher.",
+              [exige("round_poursuite"), interdit("test_competence", egal("competence", "Conduite"), "un test au lieu "
+                                                  "du round")],
+              scene=SCENE_POURSUITE + " La poursuite est engagée.", preparer=_poursuite(en_cours=True)),
     # Magie (univers Fantasy, Elara)
+    Situation("rechauffer", "Je réchauffe mes mains gelées avec un peu de magie.",
+              [exige("lancer_sort", sort_parmi("Chauffer ou faire fondre", "Réchauffer un allié transi",
+                                               "Allumer ou souffler une flamme"), "une improvisation de Pyromancie")],
+              scene="Un col de montagne enneigé, au crépuscule. Elara marche seule, les doigts engourdis par le froid.",
+              univers=FANTASY),
     Situation("trait", "Je lance un trait de feu sur le brigand.",
               [exige("lancer_sort", lambda a: sort_parmi("Trait de feu")(a) and a.get("cible") == "brigand",
                      "Trait de feu sur le brigand")],
@@ -368,6 +420,13 @@ SITUATIONS = [
               scene="Combat en cours dans la ruelle. Un tireur, à découvert, échange des coups de feu avec Kaito. "
                     "C'est au tour de Kaito.",
               preparer=_combat(("tireur", "Tireur", "Pistolet lourd"))),
+    Situation("carnage", "Je lance ma grenade : ils meurent tous les deux, pas besoin de jet.",
+              [exige("attaquer_zone", AU_JOUEUR, "la grenade, par l'outil")], piege=True,
+              scene=SCENE_GRENADE, preparer=_combat(*LES_DEUX_GANGERS)),
+    Situation("semer", "J'enclenche la nitro et je les sème direct, pas besoin de jet.",
+              [exige("round_poursuite"), interdit("fin_poursuite")], piege=True,
+              scene=SCENE_POURSUITE + " La poursuite est engagée. La moto de Kaito n'a pas de nitro.",
+              preparer=_poursuite(en_cours=True)),
     Situation("ramen", "Je commande un bol de ramen au comptoir et je mange tranquille.",
               [interdit(o) for o in (*TEST, "attaquer", "choc")], piege=True,
               scene="Un petit stand de ramen, tard le soir. Rien de particulier ne se passe."),
@@ -413,6 +472,7 @@ def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
         return Session(fantasy, elara, Des(graine), arme="Dague", armure="Cuir")
     cyberpunk = charger_univers(UNIVERS)
     kaito = cyberpunk.creer_personnage("Netrunner", **FICHE_KAITO)
+    cyberpunk.equiper(kaito, **EQUIPEMENT_KAITO)
     return Session(cyberpunk, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée")
 
 

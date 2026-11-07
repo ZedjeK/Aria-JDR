@@ -35,12 +35,12 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_trente_sept_situations_dont_dix_pieges():
-    assert len(SITUATIONS) == 37
-    assert sum(s.piege for s in SITUATIONS) == 10
-    assert len({s.nom for s in SITUATIONS}) == 37
-    assert len({s.joueur for s in SITUATIONS}) == 37  # le faux serveur les reconnaît à la phrase du joueur
-    assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 5
+def test_quarante_quatre_situations_dont_douze_pieges():
+    assert len(SITUATIONS) == 44
+    assert sum(s.piege for s in SITUATIONS) == 12
+    assert len({s.nom for s in SITUATIONS}) == 44
+    assert len({s.joueur for s in SITUATIONS}) == 44  # le faux serveur les reconnaît à la phrase du joueur
+    assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 6
 
 
 @pytest.mark.parametrize("s", SITUATIONS, ids=lambda s: s.nom)

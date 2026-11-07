@@ -270,7 +270,7 @@ def test_raccourci_et_coup_de_chance():
 
 def session_motarde(*des) -> Session:
     donnees = donnees_cyberpunk()
-    donnees["vehicules"] = [
+    donnees["vehicules"] = donnees.get("vehicules", []) + [
         {"nom": "Moto sportive", "type": "terrestre", "gabarit": "léger", "vitesse": "très rapide",
          "maniabilite": 10, "structure": 15, "blindage": 1, "places": 2},
         {"nom": "Berline", "type": "terrestre", "gabarit": "moyen", "vitesse": "rapide", "maniabilite": 0,

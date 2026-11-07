@@ -157,6 +157,44 @@ class Bibliotheque:
             domaines=[e for e in self.domaines if permis(e)] if magie else [],
         )
 
+    # --- Composer un univers ---
+
+    def composer(self, genre: str, magie: bool, nom: str, cadre: str = "", curseur: str = "standard",
+                 monde_impitoyable: bool = False, chocs_banals: list[str] = (), en_plus: dict | None = None) -> dict:
+        """Le JSON d'un univers pioché dans la bibliothèque : tout ce qui a droit au genre et à la magie,
+        les modèles de marque compris, avec les parcours, leurs descriptions et leurs listes de départ.
+        Les noms restent ceux de la bibliothèque : les adapter au cadre, c'est le travail du générateur.
+        `en_plus` : des objets propres à cet univers, ajoutés à ses listes (par exemple {"armes": [...]})."""
+        f = self.filtrer(genre, magie)
+        fiche = f.genres[genre]
+        sans = lambda entree, *cles: {k: v for k, v in entree.items() if k not in ("genres", *cles)}  # noqa: E731
+        mods = {m["nom"]: sans(m, "pour") for m in f.modifications}
+        listes = {"arme": [], "armure": [], "véhicule": []}
+        for m in f.modeles:
+            base = {"arme": self.arme, "armure": self.armure, "véhicule": self.vehicule}[m["type"]](m["base"])
+            listes[m["type"]].append(sans(dict(base, nom=m["nom"], qualite=m["qualite"], fabricant=m.get("fabricant"),
+                                               modifications=[mods[n] for n in m["modifications"]])))
+        donnees = {
+            "nom": nom, "genre": genre, "cadre": cadre, "curseur": curseur, "monde_impitoyable": monde_impitoyable,
+            "magie": magie, "habillage": dict(fiche["habillage"]),
+            "competences_thematiques": [dict(c) for c in fiche["competences_thematiques"]],
+            "parcours": {p["nom"]: list(p["competences"]) for p in f.parcours},
+            "descriptions": {p["nom"]: p["description"] for p in f.parcours},
+            "equipements": {p["nom"]: p["equipement"] for p in f.parcours if p.get("equipement")},
+            "armes": [sans(a) for a in f.armes] + listes["arme"],
+            "armures": [sans(a) for a in f.armures] + listes["armure"],
+            "chocs_banals": list(chocs_banals),
+        }
+        if f.implants:
+            donnees["implants"] = {"systemes": [dict(x) for x in f.systemes], "implants": [sans(i) for i in f.implants]}
+        if f.vehicules:
+            donnees["vehicules"] = [sans(v) for v in f.vehicules] + listes["véhicule"]
+        if magie and f.domaines:
+            donnees["domaines"] = [sans(d) for d in f.domaines]
+        for cle, objets in (en_plus or {}).items():
+            donnees[cle] = donnees.get(cle, []) + list(objets)
+        return donnees
+
     # --- Vérifications ---
 
     def verifier(self) -> list[str]:
