@@ -2,6 +2,7 @@
 name = "aria-jdr"
 version = "0.1.0"
 description = "Moteur de JDR solo avec un MJ LLM local, sur un socle de règles d100 multi-univers."
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = []
 

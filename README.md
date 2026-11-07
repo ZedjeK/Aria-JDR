@@ -90,3 +90,7 @@ Certains antivirus signalent à tort les exe PyInstaller : c'est un faux positif
 ```bash
 .venv\Scripts\python.exe -m pytest
 ```
+
+## Licence
+
+Code et règles sous licence [MIT](LICENSE).
