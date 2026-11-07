@@ -23,6 +23,27 @@ Chaque univers fixe deux réglages qui modulent les règles :
 | **Curseur de létalité** | Héroïque, Standard, Réaliste | PV, points de destin, mort instantanée, repos, tests de Santé mentale |
 | **Monde impitoyable** | Oui, Non | Les chocs légers ne déclenchent plus de test de Santé mentale |
 
+### 1.3 La bibliothèque
+
+Aria-JDR est une **bibliothèque** : tout ce qui peut exister dans une partie y est rangé une seule fois (parcours, compétences thématiques, domaines et sorts, armes, armures, modifications, implants, véhicules, événements de route…), avec ses étiquettes :
+
+- **ses genres**, un par un ou par raccourci : *médiéval* (Fantasy, Dark fantasy), *moderne* (Contemporain, Horreur, Militaire, Cyberpunk, Post-apo), *futuriste* (Cyberpunk, Science-fiction), *tous* ;
+- **sa condition de magie** : seulement avec magie (le Mage, les domaines), ou indifférent ;
+- **électronique** ou non : c'est ce qui grille sous une IEM (voir 7.10).
+
+Une campagne ne crée rien de zéro :
+
+1. Le joueur choisit le genre, le cadre et la magie.
+2. Le **filtre** ne garde de la bibliothèque que ce qui y a droit.
+3. Le **générateur** pioche dans ce qui reste, adapte les noms au cadre et à l'époque (le pistolet lourd devient un Colt .45 dans les années 1920), et ajoute quelques touches propres à la campagne, que le moteur vérifie.
+4. L'univers de la campagne est **une copie figée** dans son dossier : si la bibliothèque évolue, la campagne en cours ne change pas.
+
+La bibliothèque se remplit genre par genre, et elle grandit en jouant : un objet, un PNJ ou un sort inventé en campagne peut y être versé, après validation du joueur.
+
+Ainsi, **le logiciel porte tout ce qui est règle et contenu ; le LLM n'a qu'à raconter** l'histoire autour.
+
+Les listes de la bibliothèque vivent dans des fichiers de données que le moteur vérifie ; les annexes de ce livre en sont des vues lisibles.
+
 ---
 
 ## 2. Résolution des actions
@@ -199,13 +220,13 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Un parcours a un nom, une description de 3 phrases (ce qu'il fait, comment le monde le voit, ses forces et sa faiblesse) et 8 compétences distinctes.
 - Un parcours de lanceur de sorts contient la Magie, seulement dans un univers qui l'active ; il conseille des domaines, sans les imposer.
 - Un parcours n'est pas obligé de savoir se défendre : un salaryman ou un fermier n'a ni arme ni Esquive. Mais si le personnage du joueur n'a aucune compétence parmi Corps à corps, Armes à distance, Esquive ou Magie, la création le prévient : sans compagnon pour le protéger, le premier combat peut lui être fatal. Le joueur choisit en connaissance de cause.
-- À la création, tout l'équipement du personnage est de qualité **commune** (voir 7.5) : rien d'usé, rien de personnalisé, qui se gagne en jouant.
+- À la création, tout l'équipement du personnage est **d'origine** (voir 7.5) : rien d'usé, rien de personnalisé, qui se gagne en jouant.
 - Le parcours donne **une armure au plus**, et beaucoup n'en donnent pas : c'est le métier qui décide. À la création, sa protection est de **3 au plus** ; les armures de protection 4 se gagnent en jouant (les PNJ peuvent en porter d'emblée). Une armure implantée et une armure portée ne se cumulent pas (voir 11.3), dès la création.
 - Le parcours donne aussi **de 2 à 3 objets racontés** (un deck, une trousse de soins, un badge…). Ils n'ont jamais de bonus chiffré, mais ils peuvent ouvrir ou fermer une action : sans deck, pas de piratage à distance. C'est le MJ qui en juge. On peut les perdre, se les faire voler ou les casser.
 - Dans un univers qui a des implants, le parcours peut donner **un implant de gamme standard** (un neuroport, des lames-mantis…), qui coûte ses 2 points de Santé mentale maximum dès la création (voir 11.4). Les implants avancés et militaires se gagnent en jouant.
 - Un parcours peut ne donner **aucune arme** (une idol, un salaryman…). Comme pour la défense, la création prévient sans interdire : le personnage devra en trouver une, ou compter sur ses compagnons.
-- L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur le choisit dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est commun, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
-- L'argent, les prix et l'encombrement restent à définir (voir 12) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
+- L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur le choisit dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est d'origine, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
+- L'argent, les prix et l'encombrement restent à définir (voir 13) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
 - Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
 
 ### Exemple : un Netrunner en Cyberpunk
@@ -237,7 +258,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort reste à définir (voir 12) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
+- Apprendre un nouveau sort reste à définir (voir 13) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -312,7 +333,7 @@ Chaque univers a **sa propre armurerie**. Le moteur ne fournit que le format des
 | Qualité | Voir l'échelle ci-dessous |
 | Modifications | Selon la qualité |
 
-Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer. Une arme **fragile** se brise sur une maladresse.
+Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer. Une arme **fragile** se brise sur une maladresse. Contre une arme **perforante**, l'armure (ou le blindage) ne compte qu'à moitié.
 
 **Fiche d'armure** : même principe (protection, malus, propriétés, qualité, modifications). L'armure réduit les dégâts reçus d'une valeur fixe.
 
@@ -327,11 +348,11 @@ Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer
 | Qualité | Emplacements de modification | Ce que c'est |
 |---|---|---|
 | **Usé** | 0 | Un objet abîmé, d'occasion ou bricolé, avec un défaut |
-| **Commun** | 1 | L'objet de base, celui de l'armurerie |
+| **D'origine** | 1 | L'objet tel qu'il sort de l'atelier, celui de l'armurerie |
 | **Personnalisé** | 2 | Un objet retouché par quelqu'un qui s'y connaît |
 | **Unique** | 3 | Un objet d'exception, avec un nom et une histoire ; il peut être généré, mais rarement |
 
-Les modifications (un viseur, un nouveau calibre, des plaques de renfort…) donnent les bonus de l'objet. Les noms des qualités suivent le genre : en Fantasy, un objet personnalisé est « de maître ».
+Les modifications (un viseur, un nouveau calibre, des plaques de renfort…) donnent les bonus de l'objet. Les noms des qualités suivent le genre : en Fantasy et en Dark fantasy, un objet d'origine est « ordinaire » et un objet personnalisé est « de maître ».
 
 **Le défaut d'un objet usé**, au choix dans cette liste :
 
@@ -339,7 +360,7 @@ Les modifications (un viseur, un nouveau calibre, des plaques de renfort…) don
 - une armure : −1 de protection (jamais en dessous de 1), ou un malus de −10 en plus ;
 - un implant d'occasion ou du marché noir, mal calibré : 2 points de Santé mentale maximum perdus en plus (voir 11.4).
 
-Un jet réussi de la compétence de l'objet (Artisanat pour une arme ou une armure, Cybernétique pour un implant, selon l'univers) **répare** un objet usé : il devient commun.
+Un jet réussi de la compétence de l'objet (Artisanat pour une arme ou une armure, Cybernétique pour un implant, selon l'univers) **répare** un objet usé : il redevient d'origine.
 
 Au-dessus de l'échelle, un objet **légendaire** est écrit à la main pour la campagne, et jamais généré.
 
@@ -363,6 +384,16 @@ Au-dessus de l'échelle, un objet **légendaire** est écrit à la main pour la 
 6. Les modifications sont des objets : on les trouve, on les achète, on les récupère sur une arme usée. Chaque modification d'un implant coûte en plus 1 point de Santé mentale maximum (voir 11.4).
 
 Les noms suivent le genre, pas les effets : en Fantasy, un « affûtage de maître » plutôt qu'un fil monomoléculaire. Des runes ne sont possibles que dans un univers avec magie, avec exactement les mêmes effets. Exemples en annexe F.
+
+**Les fabricants**
+
+Une arme, une armure, un implant ou un véhicule peut porter la marque d'un fabricant (une corpo, une forge, une guilde…). Un fabricant, c'est :
+
+1. **Ses catégories** : ce qu'il fabrique, dans une liste fermée (armes de poing, fusils, armes intelligentes, armes de mêlée, armures, implants optiques, implants neuro, motos, voitures, utilitaires, AV…). Le code refuse une marque sur un objet qui n'est pas de ses catégories.
+2. **Une modification d'usine par catégorie**, prise dans les listes de modifications : elle occupe un emplacement de l'objet. Un fabricant peut aussi n'en donner aucune, et sortir des objets usés.
+3. **Une réputation**, racontée : qui l'aime, qui la déteste, ce qu'elle dit de son porteur. Le MJ en joue avec les PNJ.
+
+Le générateur peut inventer des fabricants pour les catégories qui n'en ont pas, avec les mêmes règles. Ils suivent le genre : des corpos en Cyberpunk, des forges et des guildes en Fantasy. Exemples en annexe F.
 
 **Exemple**
 
@@ -396,7 +427,60 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 - Pas de bonus de Force : il est déjà compté dans les dégâts de leur arme.
 - Par défaut : Dextérité 50, Constitution 50, Perception 25.
 - Un PNJ peut avoir d'autres talents chiffrés (Médecine 70 pour un charcudoc, Perspicacité 60 pour un psy…) ; ses autres compétences valent 25. Il peut ainsi soigner un perso ou l'aider en thérapie.
-- Son équipement est commun par défaut, usé pour un PNJ démuni (un ganger fauché), et jusqu'à personnalisé pour un PNJ puissant ou important (voir 7.5). Un objet unique reste rare, réservé par le MJ à des PNJ marquants ; un objet légendaire est toujours écrit à la main.
+- Son équipement est d'origine par défaut, usé pour un PNJ démuni (un ganger fauché), et jusqu'à personnalisé pour un PNJ puissant ou important (voir 7.5). Un objet unique reste rare, réservé par le MJ à des PNJ marquants ; un objet légendaire est toujours écrit à la main.
+
+### 7.9 Les armes de zone
+
+Une grenade, une roquette ou un obus touche une **zone**, pas une cible. Le combat n'a pas de carte : les zones sont abstraites, comme la propriété « zone » des sorts.
+
+| Zone | Cibles au plus | Exemples |
+|---|---|---|
+| Petite | 2 cibles proches | grenade, lance-flammes |
+| Moyenne | 4 cibles proches | roquette, obus de char |
+| Grande | tous ceux qui sont là, 8 au plus | charge d'explosif, frappe d'AV |
+
+Le MJ désigne les cibles présentes dans la zone, **alliés compris** ; le moteur vérifie leur nombre.
+
+**Le jet de l'attaquant** : Athlétisme pour une grenade lancée, Armes à distance pour un lanceur, Explosifs (ou Artisanat sans cette compétence thématique) pour une charge posée.
+
+| Résultat | Effet |
+|---|---|
+| Réussite | Le projectile tombe où il faut : les dégâts entiers sur chaque cible |
+| Échec | Il dévie : la moitié des dégâts, et les cibles ont +20 pour esquiver |
+| Maladresse | Il tombe aux pieds du lanceur : lui et ses voisins deviennent les cibles |
+
+**Se protéger** : chaque cible peut esquiver (c'est sa défense gratuite du round). Esquive réussie, la moitié des dégâts ; majeure ou critique, aucun. Un couvert lourd divise aussi les dégâts par deux, en plus de l'esquive. L'armure compte, sauf contre une arme perforante.
+
+**Bornes** : des dégâts de 2d6 à 4d6, au-delà des armes ordinaires ; un lanceur se tient à deux mains ; de 1 à 6 munitions ; une grenade ou une charge s'utilise une seule fois.
+
+**Les effets spéciaux**
+
+| Effet | Ce qu'il fait |
+|---|---|
+| Brûlure | Comme un sort persistant (10.6) : un jet de Constitution au début de chaque tour, 1d3 dégâts s'il est raté, 3 fois au plus |
+| Fumée | Pas de dégâts ; tirer à travers donne un couvert lourd (−40) pendant 3 rounds |
+| Aveuglant | Pas de dégâts ; test de Constitution, sinon −20 à tout pendant 1 round |
+| IEM | Pas de dégâts ; tout ce qui est électronique dans la zone est touché (voir 7.10) |
+
+Exemples en annexe F.
+
+### 7.10 L'IEM et l'électronique
+
+Une impulsion électromagnétique (grenade, mine, charge, drone brouilleur) touche tout ce qui porte l'étiquette **électronique** dans sa zone, selon sa fragilité :
+
+| Ce qui est touché | Sans protection | Avec un blindage IEM |
+|---|---|---|
+| Drone | Grillé : une épave, à réparer en atelier | Coupé 1 round |
+| Petite électronique (deck externe, téléphone, lunettes AR, radio) | Grillée : hors d'usage jusqu'à réparation (Bricolage tech) | Coupée 1 round |
+| Implant | Coupé 1 round : plus de bonus ni d'effet ; une arme implantée est inutilisable, un système d'exploitation est éteint | Aucun effet |
+| Yeux cybernétiques | Coupés 1 round, et la cible est aveuglée : −20 à tout pendant ce round | Aucun effet |
+| Arme intelligente, modification électronique | Les bonus électroniques (viseur, pointeur, arme intelligente) sont coupés 1 round ; l'arme tire toujours | Aucun effet |
+| Véhicule terrestre moderne | −1 cran de vitesse et pilote automatique coupé, pendant 1 round | Aucun effet |
+| Véhicule aérien | Test de Pilotage difficile, sinon c'est l'accident (12.5) | Aucun effet |
+| Arme ou objet mécanique | Rien | — |
+
+- Un implant ne grille jamais : il est seulement coupé.
+- Le **blindage IEM** est une modification (pour un implant, un drone, une arme intelligente, une petite électronique) ou un système défensif (pour un véhicule). Le **pare-feu**, lui, protège du piratage, pas de l'IEM.
 
 ---
 
@@ -663,7 +747,7 @@ Un implant **médical** remplace un membre perdu sans l'améliorer : ni option, 
 
 ### 11.4 Le prix : l'humanité
 
-Un implant a une **gamme**, qui fixe sa puissance et son prix, et une **qualité** (usé, commun, personnalisé, unique, voir 7.5), qui dit son état et ses emplacements de modification. Chaque implant baisse la **Santé mentale maximum**, comme le Mythe en Horreur ; les armes et les armures ne coûtent jamais de Santé mentale.
+Un implant a une **gamme**, qui fixe sa puissance et son prix, et une **qualité** (usé, d'origine, personnalisé, unique, voir 7.5), qui dit son état et ses emplacements de modification. Chaque implant baisse la **Santé mentale maximum**, comme le Mythe en Horreur ; les armes et les armures ne coûtent jamais de Santé mentale.
 
 | Implant | SM maximum perdue |
 |---|---|
@@ -678,18 +762,283 @@ La perte est la même à la création et pour un implant posé en cours de jeu :
 
 ---
 
-## 12. À définir
+## 12. Véhicules
+
+### 12.1 La fiche du véhicule
+
+| Champ | Contenu |
+|---|---|
+| **Nom** | Le nom dans l'univers |
+| **Type** | Terrestre, aérien, nautique ou spatial |
+| **Vitesse** | Lente, moyenne, rapide ou très rapide |
+| **Maniabilité** | −10, 0 ou +10 aux jets de Pilotage |
+| **Structure** | Les « PV » du véhicule |
+| **Blindage** | Sa protection : il réduit les dégâts, comme une armure |
+| **Places** | Le conducteur compris |
+| **Armes montées** | Sur ses points d'emport (voir 12.7) |
+| **Propriétés** | Tout-terrain, amphibie, discret, cargo… |
+| **Qualité** | Usé, d'origine, personnalisé ou unique, avec les mêmes emplacements de modification que les armes (voir 7.5) |
+
+**Bornes**, vérifiées par le code avant les modifications :
+
+| Gabarit | Exemples | Structure | Blindage |
+|---|---|---|---|
+| Léger | moto, scooter, jet-ski | 10 à 20 | 0 à 2 |
+| Moyen | voiture, pick-up, hovercar | 20 à 40 | 2 à 4 |
+| Lourd | camion, bus, blindé léger | 40 à 60 | 4 à 8 |
+| Militaire | char, hélicoptère d'assaut | 60 à 100 | 8 à 12 |
+
+Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval est léger, rapide, avec une structure de 15, aucun blindage et une maniabilité de +10. Une monture se soigne au lieu de se réparer, et elle peut paniquer (voir 12.5).
+
+### 12.2 Conduire
+
+- Conduire normalement ne demande aucun jet, comme marcher.
+- Un jet de **Pilotage** (Conduite, Équitation… selon l'univers) quand la conduite devient risquée : manœuvre dangereuse, terrain difficile, mauvais temps, vitesse excessive, véhicule inconnu. Le MJ fixe la difficulté dans la liste de 2.3, et la **maniabilité** s'ajoute.
+- Une réussite avec complication, hors combat : on passe, avec un prix (une aile arrachée, un temps perdu, un témoin). Un échec : on n'y arrive pas, on perd du temps ou du terrain. Une maladresse : l'accident (voir 12.5).
+- En combat, conduire compte comme un **déplacement** ; une manœuvre risquée (dérapage, se faufiler, sauter un obstacle) est une **action simple**, avec son jet. Les passagers, eux, agissent normalement.
+
+### 12.3 Les poursuites
+
+**La distance**, en crans. Une poursuite commence en général à « Proche ».
+
+| Distance | Ce que ça veut dire |
+|---|---|
+| **Au contact** | Rattrapé : on peut aborder, éperonner, se battre |
+| **Proche** | Dans les rétros, à portée de tir courte |
+| **Loin** | On se voit encore, à portée de tir longue seulement |
+| **Semé** | Perdu de vue : la poursuite est finie |
+
+**Chaque round** :
+
+1. Le moteur tire un **événement de la route** (1d10, dans la colonne de la zone, voir plus bas), et l'applique.
+2. Puis un **jet opposé de Pilotage** entre le fuyard et le poursuivant. Chacun ajoute la maniabilité de son véhicule ; le plus rapide ajoute +10 par cran de vitesse d'écart. Le terrain donne une difficulté choisie par le MJ, la même pour les deux.
+
+| Résultat du jet opposé | Effet |
+|---|---|
+| Réussite | Le gagnant gagne 1 cran (le fuyard vers « Semé », le poursuivant vers « Au contact ») |
+| Réussite majeure ou critique | Le gagnant gagne 2 crans |
+| Égalité | Rien ne bouge |
+| Maladresse de l'un des deux | Accident (voir 12.5) |
+
+- **Nitro** : +10 à un seul jet de la poursuite, une fois par scène.
+- **Les passagers** peuvent tirer à chaque round (voir 12.4).
+- **À pied**, mêmes règles, avec l'Athlétisme, sans vitesse ni maniabilité.
+- **Plusieurs poursuivants** : un jet opposé contre chacun, et chacun a sa distance.
+- Le MJ peut décider qu'un poursuivant renonce (blessé, à court de carburant, d'autres priorités).
+
+**Les événements de la route**
+
+| Événement | Effet ce round |
+|---|---|
+| Voie dégagée | Rien de spécial |
+| Ligne droite | Le bonus de vitesse est doublé |
+| Circulation dense | Le bonus de vitesse est annulé, la maniabilité doublée |
+| Obstacle soudain | Chacun fait un test de Pilotage normal avant le jet opposé |
+| Virage serré, chaussée glissante | Chacun fait un test de Pilotage difficile avant le jet opposé |
+| Terrain accidenté | Chacun fait un test de Pilotage difficile ; −20 en plus sans la propriété tout-terrain |
+| Raccourci | Le fuyard peut le tenter (Pilotage difficile) : réussi, un cran de plus ; raté, un cran de moins |
+| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué, il ne bouge pas ce round |
+| Coup de chance | +10 au jet opposé pour celui qui est en train de perdre |
+
+Un test d'obstacle raté fait perdre un cran (le fuyard se rapproche, le poursuivant s'éloigne) ; une maladresse, c'est l'accident (voir 12.5).
+
+**Les zones**, chacune avec ses événements (1d10) :
+
+| Événement | Centre-ville | Banlieue | Bas-quartiers | Zone industrielle | Autoroute | Hors de la ville |
+|---|---|---|---|---|---|---|
+| Voie dégagée | 1 | 1-2 | 1 | 1 | 1-2 | 1 |
+| Ligne droite | 2 | 3-4 | — | 2-3 | 3-6 | 2-4 |
+| Circulation dense | 3-5 | 5 | 2 | 4 | 7 | — |
+| Obstacle soudain | 6 | 6 | 3-4 | 5-6 | 8 | 8 |
+| Virage serré | 7 | 7 | 5 | 7 | — | — |
+| Terrain accidenté | — | — | — | — | — | 5-7 |
+| Raccourci | 8 | 8 | 6-7 | 8 | — | 9 |
+| Barrage | 9 | 9 | 8-9 | 9 | 9 | — |
+| Coup de chance | 10 | 10 | 10 | 10 | 10 | 10 |
+
+**Changer de zone**
+
+- Un fuyard qui gagne avec une réussite majeure ou un critique peut, au lieu de son deuxième cran, entraîner la poursuite dans une zone voisine de son choix.
+- Tous les 4 rounds, une poursuite qui dure passe d'elle-même dans une zone voisine, tirée au hasard par le moteur.
+
+| Zone | Zones voisines |
+|---|---|
+| Centre-ville | Banlieue, Bas-quartiers, Autoroute |
+| Banlieue | Centre-ville, Autoroute, Hors de la ville |
+| Bas-quartiers | Centre-ville, Zone industrielle |
+| Zone industrielle | Bas-quartiers, Autoroute |
+| Autoroute | Centre-ville, Banlieue, Zone industrielle, Hors de la ville |
+| Hors de la ville | Banlieue, Autoroute |
+
+Les événements et les zones gardent leurs effets ; leur décor suit le genre. En Fantasy, par exemple : le cœur de la cité, les faubourgs, les bas-fonds, le port, la route royale, la campagne ; un marché bondé, une charrette renversée, un gué, une herse qui se baisse. Une monture peut aussi paniquer sur un obstacle (voir 12.5).
+
+### 12.4 Le combat avec des véhicules
+
+**Tirer depuis un véhicule en mouvement**
+
+| Qui tire | Malus | Ce qu'il peut faire |
+|---|---|---|
+| Le conducteur | −20 | Une arme à une main seulement, et pas dans un round de manœuvre risquée |
+| Un passager | −10 | N'importe quelle arme |
+| Une arme montée | 0 | Tirée par un passager (ou par le conducteur avec un pilote automatique) : elle est stabilisée (voir 12.7) |
+
+**La portée selon la distance de la poursuite**
+
+| Distance | Armes qui portent |
+|---|---|
+| Au contact | Toutes, mêlée comprise |
+| Proche | Portée courte et au-delà |
+| Loin | Portée longue seulement |
+| Semé | Aucune |
+
+**Tirer sur un véhicule**
+
+| Cible | Difficulté | Effet si on touche |
+|---|---|---|
+| La carrosserie | Normale | Les dégâts, moins le blindage, sont retirés à la structure |
+| Un occupant | Couvert partiel (−20), lourd (−40) si le véhicule est blindé | Les dégâts touchent l'occupant, comme un tir normal |
+| Les pneus, le moteur | Difficile | Pas de dégâts, mais −1 cran de vitesse (pas sur un véhicule blindé) |
+
+**Éperonner**, au contact seulement : un jet opposé, le Pilotage de l'attaquant contre le Pilotage de la cible, ou son Esquive si c'est un piéton.
+
+| Gabarit de l'attaquant | Dégâts infligés |
+|---|---|
+| Léger | 1d6 |
+| Moyen | 2d6 |
+| Lourd | 3d6 |
+| Militaire | 4d6 |
+
+- +1d6 si le véhicule de l'attaquant est rapide ou très rapide.
+- L'attaquant prend la moitié des dégâts sur sa propre structure.
+- Contre un véhicule, les dégâts moins le blindage vont à la structure ; contre un piéton, à ses PV, moins son armure.
+- Ces dégâts dépassent volontairement les bornes des armes (7.5) : se faire renverser par un camion fait plus mal qu'un coup de fusil.
+
+### 12.5 Dégâts, accidents et réparation
+
+**L'état du véhicule**
+
+| Structure restante | État | Effet |
+|---|---|---|
+| Plus de la moitié | Intact | Aucun |
+| La moitié ou moins | Endommagé | −1 cran de vitesse et −10 de maniabilité |
+| 0 | Épave | Il ne roule plus ; les occupants doivent sortir, et seul un atelier peut le réparer |
+
+**L'accident**, sur une maladresse au volant : les dégâts dépendent de la vitesse au moment du choc.
+
+| Vitesse | Dégâts à chaque occupant | Dégâts à la structure |
+|---|---|---|
+| Lente | 1d4 | 1d6 |
+| Moyenne | 1d6 | 2d6 |
+| Rapide | 2d6 | 3d6 |
+| Très rapide | 3d6 | 4d6 |
+
+- L'armure protège les occupants, comme contre un coup.
+- Sur un véhicule léger (moto, monture…), les occupants prennent 1d6 de plus : pas de carrosserie pour encaisser.
+- En poursuite, l'accidenté a perdu : le fuyard est rattrapé, le poursuivant est semé.
+
+**La réparation** : un jet de Mécanique (Bricolage, Forge… selon l'univers), hors combat, un par véhicule et par demi-journée. C'est la table de la Médecine (8.1), doublée : critique 4d6 de structure, réussite majeure 2d6, réussite 1d6, échec rien, maladresse −1d6. Dans un atelier, Facile ; en pleine rue, Normale ; une épave ne se répare qu'en atelier.
+
+**Les montures** vivent :
+
+- Leur structure, ce sont leurs PV : à 0, elles sont mourantes, comme un personnage.
+- Elles se soignent avec la Survie (s'occuper des animaux), avec la table de la Médecine, et pas en atelier.
+- Sur un obstacle, un barrage, un tir ou une explosion, le cavalier fait un test d'Équitation Normal (Facile avec le dressage de guerre). Raté, la monture panique pendant 1 round : le cavalier ne la contrôle plus, et il perd un cran s'il est en poursuite.
+
+### 12.6 Personnaliser son véhicule
+
+Deux couches, bien séparées : la mécanique, qui passe par les modifications, et l'esthétique, qui est libre.
+
+**La qualité**, comme pour les armes (voir 7.5) :
+
+| Qualité | Emplacements de modification | Exemple |
+|---|---|---|
+| Usé | 0, et un défaut | une épave qui tousse |
+| D'origine | 1 | le modèle tel qu'il sort de l'usine |
+| Personnalisé | 2 | une caisse retouchée par un pro |
+| Unique | 3 | la légende du quartier |
+
+**Le défaut d'un véhicule usé**, un seul au choix :
+
+| Défaut | Effet |
+|---|---|
+| Moteur fatigué | un cran de vitesse en moins |
+| Direction molle | −5 de maniabilité |
+| Carrosserie rouillée | −5 de structure |
+| Capricieux | il refuse de démarrer sur une maladresse au jet de Pilotage |
+
+**Les modifications**, un seul effet chacune, une seule fois par véhicule ; la pose se fait hors combat, par un jet de l'artisanat de l'univers (Mécanique, Bricolage, Forge…), comme en 7.5 :
+
+| Effet | Ce que ça donne | Plafond total |
+|---|---|---|
+| Moteur | +1 cran de vitesse | +1 cran |
+| Châssis | +5 de maniabilité | +10 |
+| Renfort | +5 de structure | +10 |
+| Blindage | +1 de blindage | +2 |
+| Propriété | une propriété en plus | une seule |
+| Support d'arme | un point d'emport en plus | un seul |
+| Nitro | +10 à un seul jet de Pilotage | une fois par scène |
+| Utilitaire | un effet raconté, sans bonus | — |
+
+**L'esthétique** ne prend aucun emplacement, ne demande aucun jet et ne donne aucun bonus. Mais le MJ en tient compte dans l'histoire : ce qui se voit, on le reconnaît, on le suit, on le retrouve.
+
+| Élément | Ce que ça fait en jeu |
+|---|---|
+| Peinture, vinyles, logos | On reconnaît le véhicule |
+| Néons, éclairage | Il se voit de loin la nuit, et ne peut pas être « discret » |
+| Jantes, kit carrosserie | Du style |
+| Échappement sport | On l'entend arriver, et il ne peut pas être « discret » |
+| Peinture mate, vitres teintées | Plus difficile à repérer et à reconnaître |
+
+Exemples de modifications en annexe F.
+
+### 12.7 Armement, systèmes défensifs et drones
+
+**Les points d'emport**, selon le gabarit :
+
+| Gabarit | Points d'emport | Ce qu'on y monte |
+|---|---|---|
+| Léger | 0 | rien : le passager tire à la main |
+| Moyen | 1 | une tourelle légère |
+| Lourd | 2 | des tourelles légères ou lourdes |
+| Militaire | 3 | tout, y compris les armes de zone |
+
+Une **tourelle légère** porte une arme à distance ordinaire ; une **tourelle lourde**, une arme lourde montée ou une arme de zone (7.9).
+
+**Les armes lourdes montées** : trop lourdes pour un homme, elles ont leurs propres bornes (jusqu'à 3d6) et ne se tirent que d'un véhicule ou d'un trépied. Exemples en annexe F.
+
+**Les systèmes défensifs**, qui occupent un emplacement de modification :
+
+| Système | Effet |
+|---|---|
+| Lance-fumigènes | Une fois par scène : un écran de fumée autour du véhicule, couvert lourd (−40) pendant 3 rounds |
+| Leurres | Une fois par scène : une roquette ou un missile qui visait le véhicule rate d'office |
+| Blindage IEM | Le véhicule résiste aux IEM (7.10) |
+| Baie à drones | Le véhicule transporte et lance 2 drones |
+
+**Les drones** sont des mini-véhicules, avec la même fiche, dans leur propre gabarit :
+
+| Gabarit | Structure | Blindage | Vitesse |
+|---|---|---|---|
+| Drone | 5 à 10 | 0 à 1 | rapide ou très rapide |
+
+- **Télépiloté** : l'opérateur dépense une action simple par round pour le faire agir, avec son Pilotage (ou son Piratage par un neuroport). Un opérateur pilote un seul drone à la fois.
+- **Autonome** : le drone agit seul à son tour, avec un score fixe de 40.
+- Un drone est électronique : une IEM le grille, sauf blindage IEM (7.10).
+
+---
+
+## 13. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
-- Les effets chiffrés des propriétés **perforante** et **rafale**.
+- L'effet chiffré de la propriété **rafale**.
 - L'apprentissage de nouveaux sorts avec l'XP, et le fichier `sorts.md`.
 - Les effets de magie hors V1 : invocation, transformation, téléportation… (voir 10.9).
 - Les tables de crises passagères et de troubles durables.
 - L'inventaire : encombrement et prix.
 - Les règles de pouvoirs pour le genre Super-héros (hors V1).
 - Les implants : la pose (jet du charcudoc et conséquences d'un échec).
-- Les armes de zone (grenades, lance-flammes, lance-roquettes) et les véhicules.
+- Les vaisseaux spatiaux, pour la science-fiction : à voir avec ce genre (gabarits spatiaux, zones spatiales, postes d'équipage). En Cyberpunk, l'espace reste raconté.
 
 ---
 
@@ -1352,6 +1701,7 @@ Armes à distance :
 | Chargeur grande capacité | munitions doublées |
 | Rechargeur rapide | une recharge simple devient mineure |
 | Lampe tactique | utilitaire : éclairer sans lâcher son arme |
+| Blindage IEM | utilitaire : l'arme intelligente ou l'objet électronique résiste aux IEM (aussi sur un drone, un deck, un téléphone…) |
 
 Armes de mêlée :
 
@@ -1383,3 +1733,145 @@ Implants (1 point de Santé mentale maximum chacune) :
 | Gaine discrète | utilitaire : l'implant échappe aux scanners |
 
 Les implants-armes (lames-mantis, griffes-rasoirs…) prennent aussi les modifications de mêlée ou de tir.
+
+**Les modifications de véhicules**
+
+| Modification | Effet |
+|---|---|
+| Reprogrammation moteur | Moteur : +1 cran de vitesse |
+| Turbo | Moteur : +1 cran de vitesse |
+| Suspensions sport | Châssis : +5 de maniabilité |
+| Direction assistée IA | Châssis : +5 de maniabilité |
+| Châssis renforcé | Renfort : +5 de structure |
+| Pare-buffle | Renfort : +5 de structure |
+| Plaques de blindage | Blindage : +1 |
+| Vitrage pare-balles | Blindage : +1 |
+| Pneus tout-terrain | Propriété : tout-terrain |
+| Moteur électrique silencieux | Propriété : discret |
+| Coffre agrandi | Propriété : cargo |
+| Tourelle télécommandée | Support d'arme |
+| Kit nitro | Nitro |
+| Pilote automatique | Utilitaire : le véhicule roule seul jusqu'à une adresse |
+| GPS piraté | Utilitaire : invisible pour les contrôles de la NeoPol |
+| Compartiment secret | Utilitaire : cacher des armes ou un passager |
+
+**Les armes de zone** (voir 7.9)
+
+| Arme | Dégâts | Zone | Portée | Munitions | Propriétés | Genres |
+|---|---|---|---|---|---|---|
+| Grenade à fragmentation | 3d6 | petite | courte | usage unique | lancer | moderne |
+| Grenade incendiaire | 2d6 | petite | courte | usage unique | lancer, brûlure | moderne |
+| Grenade fumigène | — | petite | courte | usage unique | lancer, fumée | moderne |
+| Grenade flash | — | petite | courte | usage unique | lancer, aveuglant | moderne |
+| Grenade IEM | — | petite | courte | usage unique | lancer, IEM | futuriste |
+| Lance-grenades | 3d6 | petite | moyenne | 6, recharge simple | deux mains | moderne |
+| Lance-flammes | 2d6 | petite | courte | 3, recharge simple | deux mains, brûlure | moderne |
+| Lance-roquettes | 4d6 | moyenne | longue | 1, recharge simple | deux mains, perforante, encombrante | moderne |
+| Charge d'explosif | 4d6 | grande | contact (posée) | usage unique | — | moderne |
+| Canon de char | 4d6 | moyenne | longue | arme montée | perforante | Militaire, Cyberpunk |
+| Mine IEM | — | moyenne | contact (posée) | usage unique | IEM | futuriste |
+| Charge IEM lourde | — | grande | contact (posée) | usage unique | IEM | futuriste, Militaire |
+
+**Les armes lourdes montées** (voir 12.7)
+
+| Arme | Dégâts | Portée | Munitions | Propriétés | Genres |
+|---|---|---|---|---|---|
+| Mitrailleuse lourde | 3d6 | longue | 100 | rafale, perforante | moderne |
+| Canon automatique | 3d6 | longue | 30 | perforante | moderne |
+| Minigun | 2d6+2 | moyenne | 200 | rafale | moderne |
+
+**Les fabricants**
+
+| Fabricant | Catégories | Modification d'usine | Réputation |
+|---|---|---|---|
+| Arasaka | armes de poing, armures, AV | rechargeur rapide (armes), plaques de renfort (armures), plaques de blindage (AV) | Luxe et fiabilité ; la rue la hait, la police la respecte |
+| Militech | fusils, armes lourdes, armures, véhicules militaires | nouveau calibre (armes), plaques de renfort (armures), plaques de blindage (véhicules) | La puissance brute, l'armée, les mercenaires |
+| Kang Tao | armes intelligentes, armes de poing | viseur holographique | La high-tech chinoise ; les netrunners adorent |
+| Tsunami | fusils de précision | pointeur laser | L'élégance japonaise, à un prix exorbitant |
+| Budget Arms | armes de poing, fusils | aucune : l'arme sort usée | L'arme des gangers fauchés |
+| Kiroshi | implants optiques | calibrage fin | La référence des yeux cybernétiques |
+| Zetatech | implants neuro, decks | pare-feu | Le cerveau des netrunners |
+| Biotechnica | implants de peau, organes internes | gaine discrète | Le biotech qui ne se voit pas |
+| Yaiba | motos | reprogrammation moteur | La moto des coursiers qui se respectent |
+| Quadra | voitures de sport | turbo | Le muscle américain |
+| Rayfield | voitures de luxe | vitrage pare-balles | La voiture des cadres corpo |
+| Thorton | pick-ups, utilitaires | pneus tout-terrain | Le robuste, le pratique ; les nomades |
+| Delamain | taxis automatiques | pilote automatique | Le taxi intelligent qui ne pose pas de questions |
+
+### Fantasy
+
+**Les modifications des montures** (aussi en Dark fantasy)
+
+| Modification | Effet |
+|---|---|
+| Fers de course | Moteur : +1 cran de vitesse |
+| Dressage de guerre | Châssis : +5 de maniabilité, et elle panique moins vite |
+| Barde de cuir | Blindage : +1 |
+| Barde de mailles | Blindage : +2 |
+| Selle de bât | Propriété : cargo |
+| Fers étouffés | Propriété : discret |
+
+## Annexe G — Véhicules
+
+Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Militaire, Cyberpunk, Post-apo ; *futuriste* : Cyberpunk, Science-fiction. Tous sont d'origine ; les modèles de marque montrent ce que donnent les modifications (voir 12.6).
+
+**Légers**
+
+| Véhicule | Type | Vitesse | Maniab. | Structure | Blindage | Places | Propriétés | Genres |
+|---|---|---|---|---|---|---|---|---|
+| Scooter électrique | terrestre | moyenne | +10 | 12 | 0 | 2 | discret | moderne |
+| Moto de livraison | terrestre | rapide | +10 | 15 | 0 | 2 | cargo | moderne |
+| Moto sportive | terrestre | très rapide | +10 | 15 | 1 | 2 | — | moderne |
+| Moto lourde | terrestre | rapide | 0 | 20 | 2 | 2 | — | moderne |
+| Jet-ski | nautique | très rapide | +10 | 10 | 0 | 2 | — | moderne |
+
+**Moyens**
+
+| Véhicule | Type | Vitesse | Maniab. | Structure | Blindage | Places | Propriétés | Genres |
+|---|---|---|---|---|---|---|---|---|
+| Citadine | terrestre | moyenne | +10 | 20 | 2 | 4 | — | moderne |
+| Berline | terrestre | rapide | 0 | 30 | 3 | 5 | — | moderne |
+| Voiture de sport | terrestre | très rapide | +10 | 25 | 2 | 2 | — | moderne |
+| Pick-up | terrestre | rapide | 0 | 35 | 3 | 3 | tout-terrain, cargo | moderne |
+| Voiture de patrouille | terrestre | rapide | 0 | 35 | 4 | 4 | — | moderne |
+| Vedette | nautique | rapide | 0 | 30 | 3 | 6 | — | moderne |
+| Taxi automatique | terrestre | moyenne | 0 | 25 | 2 | 4 | pilote automatique | futuriste |
+| Hovercar | aérien | rapide | 0 | 30 | 2 | 4 | — | futuriste |
+| Fourgon de netrunner | terrestre | moyenne | −10 | 35 | 3 | 3 | baie à drones (2 drones brouilleurs) ; poste de piratage embarqué (utilitaire) | futuriste |
+
+**Lourds**
+
+| Véhicule | Type | Vitesse | Maniab. | Structure | Blindage | Places | Propriétés | Genres |
+|---|---|---|---|---|---|---|---|---|
+| Fourgon | terrestre | moyenne | −10 | 45 | 4 | 3 | cargo | moderne |
+| Bus | terrestre | lente | −10 | 55 | 4 | 40 | — | moderne |
+| Camion | terrestre | lente | −10 | 60 | 6 | 2 | cargo | moderne |
+| Blindé de transport | terrestre | moyenne | −10 | 60 | 8 | 8 | tout-terrain ; tourelle lourde : mitrailleuse lourde ; tourelle légère : lance-grenades ; lance-fumigènes | moderne |
+| Blindé de reconnaissance | terrestre | rapide | 0 | 50 | 6 | 4 | tout-terrain ; tourelle légère : mitrailleuse légère ; baie à drones (2 drones de reconnaissance) ; lance-fumigènes | moderne |
+| AV de corpo | aérien | très rapide | 0 | 50 | 6 | 6 | tourelle légère : minigun ; tourelle lourde : lance-roquettes | Cyberpunk |
+
+**Militaires**
+
+| Véhicule | Type | Vitesse | Maniab. | Structure | Blindage | Places | Propriétés | Genres |
+|---|---|---|---|---|---|---|---|---|
+| AV d'assaut | aérien | très rapide | 0 | 80 | 10 | 4 | tourelles lourdes : canon automatique, lance-roquettes ; tourelle légère : mitrailleuse légère ; leurres | Militaire, Cyberpunk |
+| Char | terrestre | lente | −10 | 100 | 12 | 3 | tout-terrain ; tourelles lourdes : canon de char, mitrailleuse lourde ; tourelle légère : mitrailleuse légère ; lance-fumigènes | Militaire, Cyberpunk |
+
+**Drones** (voir 12.7)
+
+| Drone | Vitesse | Structure | Blindage | Effet | Genres |
+|---|---|---|---|---|---|
+| Drone de reconnaissance | très rapide | 5 | 0 | utilitaire : voir à distance, repérer les embuscades | futuriste, Militaire |
+| Drone de combat | rapide | 10 | 1 | arme montée : pistolet-mitrailleur | futuriste, Militaire |
+| Drone kamikaze | très rapide | 5 | 0 | il explose : 3d6 sur une petite zone, usage unique | futuriste, Militaire |
+| Drone brouilleur | rapide | 8 | 1 | une IEM sur une petite zone, une fois par scène | futuriste |
+| Drone de livraison | rapide | 5 | 0 | utilitaire : transporter un petit objet | futuriste, Contemporain |
+
+**Les modèles de marque : exemples de qualité**
+
+| Véhicule | Qualité | Modifications |
+|---|---|---|
+| Moto Yaiba « Kusanagi » | personnalisé | reprogrammation moteur (très rapide), kit nitro |
+| Quadra « Turbo-R » | personnalisé | turbo, suspensions sport |
+| Berline Arasaka blindée | personnalisé | plaques de blindage, vitrage pare-balles |
+| AV Arasaka « Aquila » | unique | plaques de blindage, direction assistée IA, tourelle télécommandée |
