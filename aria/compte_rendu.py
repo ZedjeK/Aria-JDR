@@ -64,6 +64,17 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return _decrire_sort(r)
     if o == "attaquer_zone":
         return _decrire_zone(r)
+    if o == "piloter":
+        return ([f"🚗 {r['vehicule']} : Pilotage {jet(r)}"] + ([f"   → {r['cale']}"] if "cale" in r else [])
+                + (_decrire_accident(r["accident"]) if "accident" in r else []))
+    if o == "reparer":
+        return [f"🔧 {r['vehicule']} : {jet(r)} → {r['structure_rendue']:+d} structure ({r['structure']}, {r['etat']})"]
+    if o == "debut_poursuite":
+        return [f"🏁 Poursuite : {r['fuyard']} fuit, {r['zone']}"]
+    if o == "round_poursuite":
+        return _decrire_poursuite(r)
+    if o == "fin_poursuite":
+        return ["🏁 Fin de la poursuite" + (f" : {r['issue']}" if r.get("issue") else "")]
     if o == "poser_implant":
         return [f"🦾 {r['implant']} : {jet(r)}"
                 + (f" → posé, −{r['sm_max_perdue']} SM maximum ({r['sm_max']})" if r["pose"] else " → pas posé")]
@@ -126,6 +137,36 @@ def _decrire_zone(r: dict) -> list[str]:
         if "contre_l_eclat" in c:
             lignes.append(f"   → {c['qui']}, Constitution : {jet(c['contre_l_eclat'])}")
         lignes += [f"   → {c['qui']} : {effet}" for effet in c.get("effets", [])]
+    return lignes
+
+
+def _decrire_accident(a: dict) -> list[str]:
+    lignes = [f"💥 Accident, {a['vehicule']} ({a['vitesse']}) : −{a['structure_perdue']} structure → {a['etat']}"]
+    for o in a["occupants"]:
+        lignes.append(f"   → {o['qui']} : {o['degats']} dégâts" + (f", il reste {o['pv']} PV" if "pv" in o else ""))
+        if o.get("etat", Etat.ACTIF.value) != Etat.ACTIF.value:
+            lignes.append(f"   → {o['qui']} est {o['etat']}")
+    return lignes
+
+
+def _decrire_poursuite(r: dict) -> list[str]:
+    if "evenement" not in r:
+        return ["🏁 Poursuite : " + (r.get("issue") or "des poursuivants renoncent")]
+    lignes = [f"🏁 Round {r['round']} de poursuite, {r['zone']} : {r['evenement']}"]
+    for o in r.get("obstacles", []):
+        lignes.append(f"   {o['qui']} : {jet(o)} → {o['effet']}")
+    for d in r.get("duels", []):
+        jets = f"{jet(d['fuyard'])} contre {jet(d['jet_poursuivant'])}" if "fuyard" in d else "pas de jet"
+        issue = f"{d['gagnant']} gagne {d['crans']} cran{'s' if d['crans'] > 1 else ''}" if d["gagnant"] else "rien ne bouge"
+        lignes.append(f"   {d['poursuivant']} : {jets} → {issue} ({d['distance']})")
+        lignes += [f"   → {e}" for e in d.get("effets", [])]
+    for a in r.get("accidents", []):
+        lignes += _decrire_accident(a)
+    lignes += [f"   → {e}" for e in r.get("effets", [])]
+    if r.get("nouvelle_zone"):
+        lignes.append(f"   → La poursuite passe : {r['nouvelle_zone']}")
+    if r.get("issue"):
+        lignes.append(f"   → Fin : {r['issue']}")
     return lignes
 
 

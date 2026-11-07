@@ -16,6 +16,7 @@ from aria import chemins
 from aria.equipement import verifier_arme, verifier_armure
 from aria.magie import verifier_domaines
 from aria.personnage import COMPETENCES_SOCLE, MAGIE, NB_COMPETENCES_PARCOURS
+from aria.vehicules import GABARITS, vehicule_depuis_dict, verifier_vehicule
 
 DOSSIER = chemins.RESSOURCES / "bibliotheque"
 GENRES = ("Fantasy", "Dark fantasy", "Horreur", "Contemporain", "Militaire", "Science-fiction", "Cyberpunk", "Post-apo")
@@ -41,17 +42,6 @@ EFFETS_MODIFICATION = {
     "montures": {"moteur", "châssis", "renfort", "blindage", "propriété"},
 }
 PLAFONDS = {"précision": 10, "puissance_arme": 2, "puissance_armure": 2, "puissance_implant": 10, "propriété": 1}
-VITESSES = ("lente", "moyenne", "rapide", "très rapide")
-MANIABILITES = (-10, 0, 10)
-TYPES_VEHICULE = ("terrestre", "aérien", "nautique", "spatial")
-# Les bornes des véhicules (REGLES.md 12.1 et 12.7) : structure, blindage, points d'emport
-GABARITS = {
-    "léger": ((10, 20), (0, 2), 0),
-    "moyen": ((20, 40), (2, 4), 1),
-    "lourd": ((40, 60), (4, 8), 2),
-    "militaire": ((60, 100), (8, 12), 3),
-    "drone": ((5, 10), (0, 1), 1),
-}
 CATEGORIES_IMPLANT = {
     "Visage et yeux": "implants optiques", "Cortex frontal": "implants neuro", "Système nerveux": "implants neuro",
     "Peau": "implants de peau", "Organes internes": "organes internes",
@@ -272,20 +262,14 @@ class Bibliotheque:
         noms = {v["nom"] for v in self.vehicules}
         for v in self.vehicules:
             nom = v["nom"]
-            if v["gabarit"] not in GABARITS:
-                erreurs.append(f"{nom} : gabarit inconnu « {v['gabarit']} ».")
+            try:
+                erreurs += [f"{nom} : {e}" for e in verifier_vehicule(vehicule_depuis_dict(v), generee=True)]
+            except (KeyError, ValueError, TypeError) as erreur:
+                erreurs.append(f"{nom} : fiche mal formée ({erreur}).")
                 continue
-            (s_min, s_max), (b_min, b_max), emports = GABARITS[v["gabarit"]]
-            if not s_min <= v["structure"] <= s_max:
-                erreurs.append(f"{nom} : en gabarit {v['gabarit']}, la structure va de {s_min} à {s_max}.")
-            if not b_min <= v["blindage"] <= b_max:
-                erreurs.append(f"{nom} : en gabarit {v['gabarit']}, le blindage va de {b_min} à {b_max}.")
-            if v["vitesse"] not in VITESSES:
-                erreurs.append(f"{nom} : vitesse inconnue « {v['vitesse']} ».")
-            if v["maniabilite"] not in MANIABILITES:
-                erreurs.append(f"{nom} : la maniabilité vaut −10, 0 ou +10.")
-            if v["type"] not in TYPES_VEHICULE:
-                erreurs.append(f"{nom} : type inconnu « {v['type']} ».")
+            if v["gabarit"] not in GABARITS:
+                continue
+            emports = GABARITS[v["gabarit"]][2]
             if len(v["armes_montees"]) > emports:
                 erreurs.append(f"{nom} : {len(v['armes_montees'])} armes montées pour {emports} points d'emport.")
             for monte in v["armes_montees"]:
@@ -344,6 +328,9 @@ class Bibliotheque:
                 verifier = verifier_arme if m["type"] == "arme" else verifier_armure
                 monter = _arme_moteur if m["type"] == "arme" else _armure_moteur
                 erreurs += [f"{nom} : {e}" for e in verifier(monter(objet), generee=True)]
+            else:
+                objet = dict(base, qualite=m["qualite"], fabricant=m.get("fabricant"), modifications=mods)
+                erreurs += [f"{nom} : {e}" for e in verifier_vehicule(vehicule_depuis_dict(objet), generee=True)]
             precision = sum(x.get("valeur", 0) for x in mods if x["effet"] == "précision")
             puissance = sum(x.get("valeur", 0) for x in mods if x["effet"] == "puissance")
             proprietes = sum(1 for x in mods if x["effet"] == "propriété")

@@ -686,36 +686,7 @@ class Combat:
 
     def appliquer_degats(self, victime: Combattant, degats: int) -> RapportBlessure:
         """Retire des PV et applique blessure grave, mort instantanée et agonie (REGLES.md 7.6)."""
-        fiche = victime.fiche
-        rapport = RapportBlessure(victime.nom, degats, fiche.pv, fiche.pv)
-        if degats <= 0:
-            rapport.etat = fiche.etat
-            return rapport
-
-        base = fiche.pv_max_base
-        if self.curseur.mort_instantanee and degats >= base:
-            fiche.pv = 0
-            fiche.etat = Etat.MORT
-            rapport.pv_apres, rapport.etat, rapport.mort_instantanee = 0, Etat.MORT, True
-            return rapport
-
-        fiche.pv = max(0, fiche.pv - degats)
-        if degats * 2 >= base:
-            rapport.blessure_grave = True
-            fiche.blessure_grave = True
-            fiche.pv = min(fiche.pv, fiche.pv_max)
-        if fiche.pv == 0:
-            if fiche.etat not in (Etat.MORT, Etat.MOURANT):
-                fiche.etat = Etat.MOURANT
-                victime.sursis = True
-        elif rapport.blessure_grave and fiche.etat is Etat.ACTIF:
-            test = tester(self.des, fiche.carac(Caracteristique.CONSTITUTION))
-            rapport.test_constitution = test
-            if not test.reussi:
-                fiche.etat = Etat.INCONSCIENT
-        rapport.pv_apres = fiche.pv
-        rapport.etat = fiche.etat
-        return rapport
+        return blesser(self.des, self.curseur, victime, degats)
 
     # --- Après les coups ---------------------------------------------------------------
 
@@ -761,6 +732,41 @@ class Combat:
 
     def actifs(self, camp: str) -> list[Combattant]:
         return [c for c in self.ordre if c.camp == camp and c.conscient]
+
+
+def blesser(des: Des, curseur: Curseur, victime: Combattant, degats: int) -> RapportBlessure:
+    """Retire des PV et applique blessure grave, mort instantanée et agonie (REGLES.md 7.6),
+    en combat comme dehors (un accident de la route)."""
+    fiche = victime.fiche
+    rapport = RapportBlessure(victime.nom, degats, fiche.pv, fiche.pv)
+    if degats <= 0:
+        rapport.etat = fiche.etat
+        return rapport
+
+    base = fiche.pv_max_base
+    if curseur.mort_instantanee and degats >= base:
+        fiche.pv = 0
+        fiche.etat = Etat.MORT
+        rapport.pv_apres, rapport.etat, rapport.mort_instantanee = 0, Etat.MORT, True
+        return rapport
+
+    fiche.pv = max(0, fiche.pv - degats)
+    if degats * 2 >= base:
+        rapport.blessure_grave = True
+        fiche.blessure_grave = True
+        fiche.pv = min(fiche.pv, fiche.pv_max)
+    if fiche.pv == 0:
+        if fiche.etat not in (Etat.MORT, Etat.MOURANT):
+            fiche.etat = Etat.MOURANT
+            victime.sursis = True
+    elif rapport.blessure_grave and fiche.etat is Etat.ACTIF:
+        test = tester(des, fiche.carac(Caracteristique.CONSTITUTION))
+        rapport.test_constitution = test
+        if not test.reussi:
+            fiche.etat = Etat.INCONSCIENT
+    rapport.pv_apres = fiche.pv
+    rapport.etat = fiche.etat
+    return rapport
 
 
 def subir_iem(combattant: Combattant, source: str) -> list[str]:

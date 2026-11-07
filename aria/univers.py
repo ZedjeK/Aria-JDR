@@ -42,6 +42,7 @@ from aria.personnage import (
 )
 from aria.reglages import Curseur
 from aria.sante_mentale import Choc, ReglagesMentaux
+from aria.vehicules import Vehicule, vehicule_depuis_dict, vehicule_vers_dict, verifier_vehicule
 
 MAX_COMPETENCES_THEMATIQUES = 3
 BASE_MAX_THEMATIQUE = 10
@@ -74,6 +75,7 @@ class Univers:
     domaines: tuple[Domaine, ...] = ()  # les domaines de magie, si l'univers en a
     systemes: tuple[Systeme, ...] = ()  # les systèmes du corps, si l'univers a des implants
     implants: tuple[Implant, ...] = ()  # le catalogue des implants (REGLES.md 11)
+    vehicules: tuple[Vehicule, ...] = ()  # les véhicules et les montures (REGLES.md 12)
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -92,6 +94,9 @@ class Univers:
 
     def armure(self, nom: str) -> Armure:
         return _trouver(self.armures, nom, "armure")
+
+    def vehicule(self, nom: str) -> Vehicule:
+        return _trouver(self.vehicules, nom, "véhicule")
 
     def domaine(self, nom: str) -> Domaine:
         return _trouver(self.domaines, nom, "domaine de magie")
@@ -175,6 +180,8 @@ class Univers:
             erreurs += verifier_domaines(self.domaines)
         if self.implants:
             erreurs += verifier_catalogue(self.systemes, self.implants, set(disponibles))
+        for vehicule in self.vehicules:
+            erreurs += [f"{vehicule.nom} : {e}" for e in verifier_vehicule(vehicule, generee=genere)]
         return erreurs
 
 
@@ -211,6 +218,7 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             systemes=tuple(systeme_depuis_dict(s) for s in donnees.get("implants", {}).get("systemes", [])),
             implants=tuple(implant_depuis_dict(i, _arme_depuis_dict, _armure_depuis_dict)
                            for i in donnees.get("implants", {}).get("implants", [])),
+            vehicules=tuple(vehicule_depuis_dict(v) for v in donnees.get("vehicules", [])),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -304,7 +312,8 @@ def univers_vers_dict(univers: Univers) -> dict:
             for d in univers.domaines
         ],
     } | ({"implants": {"systemes": [_systeme_vers_dict(s) for s in univers.systemes],
-                       "implants": [_implant_vers_dict(i) for i in univers.implants]}} if univers.implants else {})
+                       "implants": [_implant_vers_dict(i) for i in univers.implants]}} if univers.implants else {}) \
+      | ({"vehicules": [vehicule_vers_dict(v) for v in univers.vehicules]} if univers.vehicules else {})
 
 
 def _systeme_vers_dict(s: Systeme) -> dict:

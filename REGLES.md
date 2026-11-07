@@ -827,7 +827,7 @@ Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval es
 
 - **Nitro** : +10 à un seul jet de la poursuite, une fois par scène.
 - **Les passagers** peuvent tirer à chaque round (voir 12.4).
-- **À pied**, mêmes règles, avec l'Athlétisme, sans vitesse ni maniabilité.
+- **À pied**, mêmes règles, avec l'Athlétisme, sans vitesse ni maniabilité. Contre un véhicule, le coureur compte un cran sous « lente ».
 - **Plusieurs poursuivants** : un jet opposé contre chacun, et chacun a sa distance.
 - Le MJ peut décider qu'un poursuivant renonce (blessé, à court de carburant, d'autres priorités).
 
@@ -842,8 +842,8 @@ Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval es
 | Virage serré, chaussée glissante | Chacun fait un test de Pilotage difficile avant le jet opposé |
 | Terrain accidenté | Chacun fait un test de Pilotage difficile ; −20 en plus sans la propriété tout-terrain |
 | Raccourci | Le fuyard peut le tenter (Pilotage difficile) : réussi, un cran de plus ; raté, un cran de moins |
-| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué, il ne bouge pas ce round |
-| Coup de chance | +10 au jet opposé pour celui qui est en train de perdre |
+| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué : il ne bouge pas ce round, et perd le jet opposé sans le lancer |
+| Coup de chance | +10 au jet opposé pour celui qui est en train de perdre : le fuyard jusqu'à « Proche », le poursuivant à « Loin » |
 
 Un test d'obstacle raté fait perdre un cran (le fuyard se rapproche, le poursuivant s'éloigne) ; une maladresse, c'est l'accident (voir 12.5).
 
@@ -969,7 +969,7 @@ Deux couches, bien séparées : la mécanique, qui passe par les modifications, 
 | Moteur fatigué | un cran de vitesse en moins |
 | Direction molle | −5 de maniabilité |
 | Carrosserie rouillée | −5 de structure |
-| Capricieux | il refuse de démarrer sur une maladresse au jet de Pilotage |
+| Capricieux | sur une maladresse au jet de Pilotage, il cale au lieu de l'accident : pas de dégâts, mais il s'arrête (en poursuite, il a perdu) |
 
 **Les modifications**, un seul effet chacune, une seule fois par véhicule ; la pose se fait hors combat, par un jet de l'artisanat de l'univers (Mécanique, Bricolage, Forge…), comme en 7.5 :
 

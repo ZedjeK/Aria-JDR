@@ -14,7 +14,8 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import implants as implants_, magie, progression, sante_mentale, soins
+from aria import implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
+from aria import vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -30,6 +31,7 @@ from aria.combat import (
     RapportAttaque,
     RapportZone,
     TypeAction,
+    blesser,
     laisser_pour_mort,
     tester_embuscade,
 )
@@ -126,7 +128,10 @@ class Session:
     moment: Moment = Moment(1, Periode.MATIN)
     arme: str | None = None
     armure: str | None = None
+    vehicule: "vehicules_.Engin | str | dict | None" = None  # un nom de l'univers, ou sa sauvegarde
     pnj: dict[str, Combattant] = field(default_factory=dict)
+    engins: dict[str, vehicules_.Engin] = field(default_factory=dict)  # les véhicules des PNJ
+    poursuite: poursuite_.Poursuite | None = None
     combat: Combat | None = None
     dernier_test: dict | None = None
     journal: list[dict] = field(default_factory=list)
@@ -141,6 +146,10 @@ class Session:
             self.joueur.arme = self.arme_par_nom(self.arme)
             self.joueur._charger(self.joueur.arme)
         self.equiper_implants()
+        if isinstance(self.vehicule, str):
+            self.vehicule = vehicules_.Engin(u.vehicule(self.vehicule))
+        elif isinstance(self.vehicule, dict):
+            self.vehicule = vehicules_.engin_depuis_dict(self.vehicule, {v.nom: v for v in u.vehicules})
         # Le LLM parle avec les noms de l'univers (« Piratage ») ; le moteur, avec ceux du socle.
         self.noms_competences = {u.nom_affiche(nom): nom for nom in self.personnage.competences}
         self.memoire = Memoire(self.campagne)
@@ -170,7 +179,8 @@ class Session:
             _verifier_objet(arguments, outil.parametres(self))
             resultat = outil.fonction(self, **arguments)
         except (ErreurOutil, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
-                implants_.ImplantImpossible, ValueError, KeyError) as erreur:
+                implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
+                ValueError, KeyError) as erreur:
             resultat = {"erreur": str(erreur).strip("'\"")}
         self.journal.append({"outil": nom, "arguments": arguments, "resultat": resultat})
         return resultat
@@ -214,6 +224,15 @@ class Session:
         """Les implants du joueur, avec le catalogue de l'univers."""
         u = self.univers
         return implants_.Corps({i.nom: i for i in u.implants}, {s.nom: s for s in u.systemes}, self.personnage.implants)
+
+    def engin(self, identifiant: str) -> "vehicules_.Engin | None":
+        """Le véhicule de quelqu'un : celui du joueur, ou celui donné au PNJ à sa création."""
+        self.combattant(identifiant)
+        return self.vehicule if identifiant == JOUEUR else self.engins.get(identifiant)
+
+    def blesser(self, victime: Combattant, degats: int):
+        """Des dégâts hors des coups (un accident) : blessure grave, agonie, comme en combat."""
+        return blesser(self.des, self.univers.curseur, victime, degats)
 
     def equiper_implants(self):
         """L'armure et les armes implantées du joueur, telles que le combat les voit."""
@@ -330,7 +349,8 @@ def etat(session: Session) -> dict:
             "troubles": [t.type.value for t in p.troubles], "folie": p.folie,
         } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {})
           | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
-             if p.implants else {}),
+             if p.implants else {})
+          | ({"vehicule": _etat_engin(session.vehicule)} if session.vehicule else {}),
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:
@@ -340,6 +360,8 @@ def etat(session: Session) -> dict:
                               "budget_joueur": {t.value: session.joueur.budget.restants(t) for t in TypeAction}}
         if session.combat.fumee:
             resultat["combat"]["fumee_rounds"] = session.combat.fumee
+    if session.poursuite:
+        resultat["poursuite"] = _etat_poursuite(session)
     return resultat
 
 
@@ -503,7 +525,8 @@ def point_de_destin(session: Session, usage: str) -> dict:
            "dexterite": {"type": "integer", "minimum": 15, "maximum": 90},
            "competences": {"type": "object", "additionalProperties": True,
                            "description": "Autres talents, par exemple {\"Médecine\": 70}."},
-       } | ({
+       } | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
+                               "poursuite.")} if s.univers.vehicules else {}) | ({
            "magie": {"type": "integer", "minimum": PNJ_COMPETENCE[0], "maximum": PNJ_COMPETENCE[1],
                      "description": "Pour un lanceur de sorts : son pourcentage de Magie."},
            "pm": {"type": "integer", "minimum": PNJ_PM[0], "maximum": PNJ_PM[1], "description": "Ses points de magie."},
@@ -513,7 +536,7 @@ def point_de_destin(session: Session, usage: str) -> dict:
 def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: int, pv: int,
               arme: str | None = None, armure: str | None = None, dexterite: int = 50,
               competences: dict | None = None, magie: int | None = None, pm: int = 0,
-              sorts: list | None = None) -> dict:
+              sorts: list | None = None, vehicule: str | None = None) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -538,7 +561,10 @@ def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: i
     u = session.univers
     session.pnj[identifiant] = Combattant(fiche, camp, u.arme(arme) if arme else None,
                                           u.armure(armure) if armure else None)
-    return {"pnj": identifiant, **_etat_combattant(session.pnj[identifiant])}
+    if vehicule:
+        session.engins[identifiant] = vehicules_.Engin(u.vehicule(vehicule))
+    return {"pnj": identifiant, **_etat_combattant(session.pnj[identifiant])} | (
+        {"vehicule": vehicule} if vehicule else {})
 
 
 @outil("Tester une embuscade : la Perception du joueur contre la Discrétion des agresseurs.",
@@ -705,6 +731,155 @@ def attaquer_zone(session: Session, attaquant: str, cibles: list, couvert_lourd:
         [session.participant(c) for c in couvert_lourd], [session.participant(c) for c in sans_esquive],
         [session.participant(c) for c in voisins], DIFFICULTES[difficulte])
     return _rapport_zone(rapport)
+
+
+# --- Véhicules et poursuites (REGLES.md 12) ---------------------------------------------------
+
+def _etat_engin(e: vehicules_.Engin) -> dict:
+    etat = {"nom": e.nom, "structure": e.structure, "structure_max": e.modele.structure_max, "etat": e.etat,
+            "vitesse": e.vitesse, "maniabilite": e.maniabilite, "blindage": e.modele.blindage_total}
+    if e.modele.nitro:
+        etat["nitro"] = "utilisée" if e.nitro_utilisee else "prête"
+    return etat
+
+
+def _etat_poursuite(session: Session) -> dict:
+    p = session.poursuite
+    return {"zone": p.zone, "round": p.round, "fuyard": p.fuyard.nom,
+            "distances": {c.identifiant: p.distance(c.identifiant) for c in p.poursuivants},
+            "abandons": sorted(p.abandons)} | ({"issue": p.issue} if p.issue else {})
+
+
+def _rapport_accident(a: vehicules_.RapportAccident) -> dict:
+    occupants = []
+    for qui, degats, blessure in a.occupants:
+        o = {"qui": qui, "degats": degats}
+        if blessure:
+            o |= {"pv": blessure.pv_apres, "blessure_grave": blessure.blessure_grave, "etat": blessure.etat.value}
+        occupants.append(o)
+    return {"vehicule": a.vehicule, "vitesse": a.vitesse, "structure_perdue": a.structure_perdue, "etat": a.etat,
+            "occupants": occupants}
+
+
+def _vehicule_du_joueur(session: Session) -> vehicules_.Engin:
+    if not session.vehicule:
+        raise ErreurOutil("Le joueur n'a pas de véhicule.")
+    return session.vehicule
+
+
+@outil("Une manœuvre risquée au volant ou en selle (dérapage, se faufiler, sauter un obstacle, vitesse "
+       "excessive) : jet de Pilotage plus la maniabilité. Conduire normalement ne demande aucun jet. "
+       "En combat, c'est une action simple. Maladresse : l'accident.",
+       lambda s: _objet({"difficulte": _difficulte()}),
+       disponible=lambda s: bool(s.vehicule))
+def piloter(session: Session, difficulte: str = "normale") -> dict:
+    engin = _vehicule_du_joueur(session)
+    if session.combat:
+        session.combat.action_simple(session.joueur)
+    r = vehicules_.piloter(session.des, session.joueur, engin, DIFFICULTES[difficulte], blesser=session.blesser)
+    resultat = {"vehicule": engin.nom, **_test(r.test)}
+    if r.cale:
+        resultat["cale"] = "Le moteur cale : le véhicule usé refuse de repartir pour l'instant."
+    if r.accident:
+        resultat["accident"] = _rapport_accident(r.accident)
+    return resultat
+
+
+@outil("Réparer le véhicule du joueur (ou soigner sa monture), hors combat : une fois par demi-journée. "
+       "Facile en atelier ; une épave ne se répare qu'en atelier.",
+       lambda s: _objet({"reparateur": _ids(s, "Qui répare : le joueur ou un PNJ (mécano, palefrenier)."),
+                         "atelier": {"type": "boolean", "description": "Dans un atelier (ou une écurie) ?"}},
+                        ["reparateur"]),
+       disponible=lambda s: bool(s.vehicule))
+def reparer(session: Session, reparateur: str, atelier: bool = False) -> dict:
+    if session.combat:
+        raise ErreurOutil("On ne répare pas en plein combat.")
+    engin = _vehicule_du_joueur(session)
+    r = vehicules_.reparer(session.des, session.combattant(reparateur), engin, session.moment, atelier)
+    return {"vehicule": engin.nom, **_resume(r.test), "structure_rendue": r.structure_rendue,
+            "structure": r.structure, "etat": engin.etat}
+
+
+@outil("Commencer une poursuite, en véhicule, en selle ou à pied. Le fuyard et ses poursuivants : chacun avec "
+       "son véhicule (celui du joueur, ou celui donné au PNJ à sa création), sinon à pied. Elle commence en général "
+       "à « proche ». Ensuite, un round_poursuite par round.",
+       lambda s: _objet({
+           "fuyard": _ids(s, "Celui qui fuit."),
+           "poursuivants": {"type": "array", "items": _enum(s.ids()), "description": "Ceux qui le poursuivent."},
+           "zone": _enum(poursuite_.ZONES, "Où commence la poursuite (le décor suit le genre)."),
+           "distance": _enum(poursuite_.DISTANCES[:3], "La distance de départ."),
+       }, ["fuyard", "poursuivants", "zone"]),
+       disponible=lambda s: s.poursuite is None)
+def debut_poursuite(session: Session, fuyard: str, poursuivants: list, zone: str, distance: str = "proche") -> dict:
+    if fuyard in poursuivants:
+        raise ErreurOutil("Le fuyard ne se poursuit pas lui-même.")
+    conducteur = lambda i: poursuite_.Conducteur(i, session.combattant(i), session.engin(i))  # noqa: E731
+    p = poursuite_.Poursuite(conducteur(fuyard), [conducteur(i) for i in dict.fromkeys(poursuivants)], zone,
+                             {i: poursuite_.DISTANCES.index(distance) for i in poursuivants})
+    session.poursuite = p
+    return _etat_poursuite(session) | {
+        "vehicules": {c.identifiant: c.engin.nom if c.engin else "à pied" for c in [p.fuyard, *p.poursuivants]}}
+
+
+def _rapport_round(r: poursuite_.RapportRound, session: Session) -> dict:
+    resultat = {"round": r.round, "zone": r.zone, "evenement": r.evenement.value}
+    if r.obstacles:
+        resultat["obstacles"] = [{"qui": o.qui, **_resume(o.test), "effet": o.effet} for o in r.obstacles]
+    duels = []
+    for d in r.duels:
+        duel = {"poursuivant": d.poursuivant, "gagnant": d.gagnant, "crans": d.crans, "distance": d.distance}
+        if d.fuyard_test:
+            duel |= {"fuyard": _resume(d.fuyard_test), "jet_poursuivant": _resume(d.poursuivant_test)}
+        if d.effets:
+            duel["effets"] = d.effets
+        duels.append(duel)
+    if duels:
+        resultat["duels"] = duels
+    if r.accidents:
+        resultat["accidents"] = [_rapport_accident(a) for a in r.accidents]
+    if r.effets:
+        resultat["effets"] = r.effets
+    if r.nouvelle_zone:
+        resultat["nouvelle_zone"] = r.nouvelle_zone
+    resultat["distances"] = _etat_poursuite(session)["distances"]
+    if r.issue:
+        resultat["issue"] = r.issue
+    return resultat
+
+
+@outil("Un round de poursuite : le moteur tire l'événement de la route, fait passer les obstacles, lance les jets "
+       "opposés de Pilotage et déplace les distances. Au contact, on peut se battre ; semé, c'est fini.",
+       lambda s: _objet({
+           "difficulte": _enum(DIFFICULTES, "Le terrain, la même pour tous."),
+           "nitro": {"type": "array", "items": _enum(s.ids()), "description": "Ceux qui allument leur nitro."},
+           "raccourci": {"type": "boolean", "description": "Le fuyard tente le raccourci s'il se présente."},
+           "vers_zone": _enum(poursuite_.ZONES, "Sur une réussite majeure, le fuyard entraîne la poursuite là "
+                                                "(une zone voisine)."),
+           "abandons": {"type": "array", "items": _enum(s.ids()),
+                        "description": "Les poursuivants qui renoncent (blessés, à court de carburant…)."},
+       }),
+       disponible=lambda s: s.poursuite is not None)
+def round_poursuite(session: Session, difficulte: str = "normale", nitro: list = (), raccourci: bool = False,
+                    vers_zone: str | None = None, abandons: list = ()) -> dict:
+    p = session.poursuite
+    if p is None:
+        raise ErreurOutil("Aucune poursuite en cours : appelle d'abord debut_poursuite.")
+    for i in abandons:
+        p.abandonner(i)
+    if p.issue:
+        return _etat_poursuite(session)
+    r = p.jouer_round(session.des, DIFFICULTES[difficulte], set(nitro), raccourci, vers_zone, session.blesser)
+    return _rapport_round(r, session)
+
+
+@outil("Finir la poursuite (semé, rattrapé, ou le combat commence).", lambda s: _objet({}),
+       disponible=lambda s: s.poursuite is not None)
+def fin_poursuite(session: Session) -> dict:
+    if session.poursuite is None:
+        raise ErreurOutil("Aucune poursuite en cours.")
+    etat = _etat_poursuite(session)
+    session.poursuite = None
+    return etat
 
 
 def _rapport_sort(r: magie.RapportSort) -> dict:
@@ -945,6 +1120,10 @@ def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
         session.memoire.ajouter_souvenir(souvenir)
     except OSError as erreur:
         raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}).") from erreur
+    session.poursuite = None
+    for engin in [session.vehicule, *session.engins.values()]:
+        if engin:
+            engin.nitro_utilisee = False  # la nitro revient à chaque scène
     return {"souvenir": souvenir}
 
 
