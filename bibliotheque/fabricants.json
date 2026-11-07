@@ -1,0 +1,142 @@
+[
+  {
+    "nom": "Arasaka",
+    "categories": {
+      "armes de poing": "Rechargeur rapide",
+      "armures": "Plaques de renfort",
+      "AV": "Plaques de blindage"
+    },
+    "reputation": "Luxe et fiabilité ; la rue la hait, la police la respecte",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Militech",
+    "categories": {
+      "fusils": "Nouveau calibre",
+      "armes lourdes": "Nouveau calibre",
+      "armures": "Plaques de renfort",
+      "véhicules militaires": "Plaques de blindage"
+    },
+    "reputation": "La puissance brute, l'armée, les mercenaires",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Kang Tao",
+    "categories": {
+      "armes intelligentes": "Viseur holographique",
+      "armes de poing": "Viseur holographique"
+    },
+    "reputation": "La high-tech chinoise ; les netrunners adorent",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Tsunami",
+    "categories": {
+      "fusils de précision": "Pointeur laser"
+    },
+    "reputation": "L'élégance japonaise, à un prix exorbitant",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Budget Arms",
+    "categories": {
+      "armes de poing": null,
+      "fusils": null
+    },
+    "reputation": "L'arme des gangers fauchés",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Kiroshi",
+    "categories": {
+      "implants optiques": "Calibrage fin"
+    },
+    "reputation": "La référence des yeux cybernétiques",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Zetatech",
+    "categories": {
+      "implants neuro": "Pare-feu",
+      "decks": "Pare-feu"
+    },
+    "reputation": "Le cerveau des netrunners",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Biotechnica",
+    "categories": {
+      "implants de peau": "Gaine discrète",
+      "organes internes": "Gaine discrète"
+    },
+    "reputation": "Le biotech qui ne se voit pas",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Yaiba",
+    "categories": {
+      "motos": "Reprogrammation moteur"
+    },
+    "reputation": "La moto des coursiers qui se respectent",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Quadra",
+    "categories": {
+      "voitures de sport": "Turbo"
+    },
+    "reputation": "Le muscle américain",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Rayfield",
+    "categories": {
+      "voitures de luxe": "Vitrage pare-balles"
+    },
+    "reputation": "La voiture des cadres corpo",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Thorton",
+    "categories": {
+      "pick-ups": "Pneus tout-terrain",
+      "utilitaires": "Pneus tout-terrain"
+    },
+    "reputation": "Le robuste, le pratique ; les nomades",
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Delamain",
+    "categories": {
+      "taxis automatiques": "Pilote automatique"
+    },
+    "reputation": "Le taxi intelligent qui ne pose pas de questions",
+    "genres": [
+      "Cyberpunk"
+    ]
+  }
+]

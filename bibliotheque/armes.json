@@ -1,0 +1,933 @@
+[
+  {
+    "nom": "Poing américain",
+    "competence": "Corps à corps",
+    "degats": "1d4",
+    "portee": "contact",
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Couteau",
+    "competence": "Corps à corps",
+    "degats": "1d4",
+    "portee": "contact",
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Tantō",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Matraque télescopique",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Tonfa",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Batte de baseball",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [
+      "fragile"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Matraque électrique",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Hachette",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [
+      "lancer"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Machette",
+    "competence": "Corps à corps",
+    "degats": "1d8",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Wakizashi",
+    "competence": "Corps à corps",
+    "degats": "1d8",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Katana",
+    "competence": "Corps à corps",
+    "degats": "1d10",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Nodachi",
+    "competence": "Corps à corps",
+    "degats": "1d12",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Marteau lourd",
+    "competence": "Corps à corps",
+    "degats": "1d12",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains",
+      "encombrante"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Naginata électrique",
+    "competence": "Corps à corps",
+    "degats": "1d12",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Tronçonneuse",
+    "competence": "Corps à corps",
+    "degats": "2d6",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains",
+      "encombrante",
+      "fragile"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Shuriken",
+    "competence": "Armes à distance",
+    "degats": "1d4",
+    "portee": "courte",
+    "proprietes": [
+      "lancer",
+      "dissimulable"
+    ],
+    "categorie": "armes de lancer",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Couteaux de lancer",
+    "competence": "Armes à distance",
+    "degats": "1d4",
+    "portee": "courte",
+    "proprietes": [
+      "lancer",
+      "dissimulable"
+    ],
+    "categorie": "armes de lancer",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Kunai",
+    "competence": "Armes à distance",
+    "degats": "1d4",
+    "portee": "courte",
+    "proprietes": [
+      "lancer",
+      "dissimulable",
+      "silencieuse"
+    ],
+    "categorie": "armes de lancer",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pistolet compact",
+    "competence": "Armes à distance",
+    "degats": "1d4",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 6,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pistolet léger",
+    "competence": "Armes à distance",
+    "degats": "1d6",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 12,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pistolet silencieux",
+    "competence": "Armes à distance",
+    "degats": "1d6",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 10,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "dissimulable",
+      "silencieuse"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Mitraillette compacte",
+    "competence": "Armes à distance",
+    "degats": "1d6",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 20,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "rafale",
+      "dissimulable"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pistolet intelligent",
+    "competence": "Armes à distance",
+    "degats": "1d8",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 10,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes intelligentes",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Pistolet-mitrailleur",
+    "competence": "Armes à distance",
+    "degats": "1d8",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 30,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "rafale"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Arbalète à poulies",
+    "competence": "Armes à distance",
+    "degats": "1d8",
+    "portee": "moyenne",
+    "munitions": {
+      "capacite": 1,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains",
+      "silencieuse"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pistolet lourd",
+    "competence": "Armes à distance",
+    "degats": "1d10",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 8,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Revolver lourd",
+    "competence": "Armes à distance",
+    "degats": "1d10",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 6,
+      "recharge": "simple"
+    },
+    "proprietes": [],
+    "categorie": "armes de poing",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Carabine",
+    "competence": "Armes à distance",
+    "degats": "2d6",
+    "portee": "moyenne",
+    "munitions": {
+      "capacite": 20,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fusil à pompe",
+    "competence": "Armes à distance",
+    "degats": "2d6",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 6,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fusil à pompe automatique",
+    "competence": "Armes à distance",
+    "degats": "2d6",
+    "portee": "courte",
+    "munitions": {
+      "capacite": 10,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "deux mains",
+      "rafale",
+      "encombrante"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Mitrailleuse légère",
+    "competence": "Armes à distance",
+    "degats": "2d6+1",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 100,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains",
+      "rafale",
+      "encombrante"
+    ],
+    "categorie": "armes lourdes",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fusil d'assaut",
+    "competence": "Armes à distance",
+    "degats": "2d6+2",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 30,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "deux mains",
+      "rafale"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fusil de précision",
+    "competence": "Armes à distance",
+    "degats": "2d6+2",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 5,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains",
+      "perforante",
+      "encombrante"
+    ],
+    "categorie": "fusils de précision",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fusil à rail",
+    "competence": "Armes à distance",
+    "degats": "2d6+2",
+    "portee": "moyenne",
+    "munitions": {
+      "capacite": 4,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains",
+      "perforante",
+      "encombrante"
+    ],
+    "categorie": "fusils",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Grenade à fragmentation",
+    "competence": "Armes à distance",
+    "degats": "3d6",
+    "zone": "petite",
+    "effets": [],
+    "proprietes": [
+      "lancer"
+    ],
+    "portee": "courte",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "grenades"
+  },
+  {
+    "nom": "Grenade incendiaire",
+    "competence": "Armes à distance",
+    "degats": "2d6",
+    "zone": "petite",
+    "effets": [
+      "brûlure"
+    ],
+    "proprietes": [
+      "lancer"
+    ],
+    "portee": "courte",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "grenades"
+  },
+  {
+    "nom": "Grenade fumigène",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "petite",
+    "effets": [
+      "fumée"
+    ],
+    "proprietes": [
+      "lancer"
+    ],
+    "portee": "courte",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "grenades"
+  },
+  {
+    "nom": "Grenade flash",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "petite",
+    "effets": [
+      "aveuglant"
+    ],
+    "proprietes": [
+      "lancer"
+    ],
+    "portee": "courte",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "grenades"
+  },
+  {
+    "nom": "Grenade IEM",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "petite",
+    "effets": [
+      "IEM"
+    ],
+    "proprietes": [
+      "lancer"
+    ],
+    "portee": "courte",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "usage_unique": true,
+    "posee": false,
+    "categorie": "grenades"
+  },
+  {
+    "nom": "Lance-grenades",
+    "competence": "Armes à distance",
+    "degats": "3d6",
+    "zone": "petite",
+    "effets": [],
+    "proprietes": [
+      "deux mains"
+    ],
+    "portee": "moyenne",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "munitions": {
+      "capacite": 6,
+      "recharge": "recharge simple"
+    },
+    "categorie": "armes lourdes"
+  },
+  {
+    "nom": "Lance-flammes",
+    "competence": "Armes à distance",
+    "degats": "2d6",
+    "zone": "petite",
+    "effets": [
+      "brûlure"
+    ],
+    "proprietes": [
+      "deux mains"
+    ],
+    "portee": "courte",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "munitions": {
+      "capacite": 3,
+      "recharge": "recharge simple"
+    },
+    "categorie": "armes lourdes"
+  },
+  {
+    "nom": "Lance-roquettes",
+    "competence": "Armes à distance",
+    "degats": "4d6",
+    "zone": "moyenne",
+    "effets": [],
+    "proprietes": [
+      "deux mains",
+      "perforante",
+      "encombrante"
+    ],
+    "portee": "longue",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "munitions": {
+      "capacite": 1,
+      "recharge": "recharge simple"
+    },
+    "categorie": "armes lourdes"
+  },
+  {
+    "nom": "Charge d'explosif",
+    "competence": "Armes à distance",
+    "degats": "4d6",
+    "zone": "grande",
+    "effets": [],
+    "proprietes": [
+      "—"
+    ],
+    "portee": "contact",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false,
+    "usage_unique": true,
+    "posee": true,
+    "categorie": "explosifs"
+  },
+  {
+    "nom": "Canon de char",
+    "competence": "Armes à distance",
+    "degats": "4d6",
+    "zone": "moyenne",
+    "effets": [],
+    "proprietes": [
+      "perforante"
+    ],
+    "portee": "longue",
+    "genres": [
+      "Militaire",
+      "Cyberpunk"
+    ],
+    "electronique": false,
+    "montee": true,
+    "categorie": "armes lourdes"
+  },
+  {
+    "nom": "Mine IEM",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "moyenne",
+    "effets": [
+      "IEM"
+    ],
+    "proprietes": [],
+    "portee": "contact",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "usage_unique": true,
+    "posee": true,
+    "categorie": "explosifs"
+  },
+  {
+    "nom": "Charge IEM lourde",
+    "competence": "Armes à distance",
+    "degats": null,
+    "zone": "grande",
+    "effets": [
+      "IEM"
+    ],
+    "proprietes": [],
+    "portee": "contact",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": true,
+    "usage_unique": true,
+    "posee": true,
+    "categorie": "explosifs"
+  },
+  {
+    "nom": "Mitrailleuse lourde",
+    "competence": "Armes à distance",
+    "degats": "3d6",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 100,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "rafale",
+      "perforante"
+    ],
+    "montee": true,
+    "categorie": "armes lourdes",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Canon automatique",
+    "competence": "Armes à distance",
+    "degats": "3d6",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 30,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "perforante"
+    ],
+    "montee": true,
+    "categorie": "armes lourdes",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Minigun",
+    "competence": "Armes à distance",
+    "degats": "2d6+2",
+    "portee": "moyenne",
+    "munitions": {
+      "capacite": 200,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "rafale"
+    ],
+    "montee": true,
+    "categorie": "armes lourdes",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Dague",
+    "competence": "Corps à corps",
+    "degats": "1d4",
+    "portee": "contact",
+    "proprietes": [
+      "dissimulable"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Bâton",
+    "competence": "Corps à corps",
+    "degats": "1d6",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Épée longue",
+    "competence": "Corps à corps",
+    "degats": "1d8",
+    "portee": "contact",
+    "proprietes": [],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Hache d'armes",
+    "competence": "Corps à corps",
+    "degats": "1d12",
+    "portee": "contact",
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "armes de mêlée",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Arc long",
+    "competence": "Armes à distance",
+    "degats": "1d8",
+    "portee": "longue",
+    "munitions": {
+      "capacite": 20,
+      "recharge": "mineure"
+    },
+    "proprietes": [
+      "deux mains",
+      "silencieuse"
+    ],
+    "categorie": "armes de trait",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Arbalète",
+    "competence": "Armes à distance",
+    "degats": "1d10",
+    "portee": "moyenne",
+    "munitions": {
+      "capacite": 1,
+      "recharge": "simple"
+    },
+    "proprietes": [
+      "deux mains"
+    ],
+    "categorie": "armes de trait",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  }
+]

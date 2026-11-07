@@ -1,0 +1,817 @@
+{
+  "systemes": [
+    {
+      "nom": "Cortex frontal",
+      "emplacements": 3,
+      "requiert": "Neuroport"
+    },
+    {
+      "nom": "Système d'exploitation",
+      "emplacements": 1
+    },
+    {
+      "nom": "Système nerveux",
+      "emplacements": 2
+    },
+    {
+      "nom": "Visage et yeux",
+      "options": 3,
+      "fondation": "Yeux cybernétiques"
+    },
+    {
+      "nom": "Oreilles et gorge",
+      "options": 3,
+      "fondation": "Suite cyberaudio"
+    },
+    {
+      "nom": "Peau",
+      "emplacements": 2
+    },
+    {
+      "nom": "Squelette",
+      "emplacements": 2
+    },
+    {
+      "nom": "Organes internes",
+      "emplacements": 3
+    },
+    {
+      "nom": "Bras",
+      "options": 3,
+      "par": "bras",
+      "fondation": "Bras cybernétique"
+    },
+    {
+      "nom": "Mains",
+      "emplacements": 1,
+      "par": "main"
+    },
+    {
+      "nom": "Jambes",
+      "options": 2,
+      "fondation": "Jambes cybernétiques"
+    },
+    {
+      "nom": "Médical",
+      "emplacements": null
+    }
+  ],
+  "implants": [
+    {
+      "nom": "Puce de langue",
+      "systeme": "Cortex frontal",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "une langue de plus"
+    },
+    {
+      "nom": "Mémoire eidétique",
+      "systeme": "Cortex frontal",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Érudition"
+    },
+    {
+      "nom": "Puce de compétence",
+      "systeme": "Cortex frontal",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": null,
+      "description": "+5 à une compétence de savoir, choisie à l'installation"
+    },
+    {
+      "nom": "Coprocesseur tactique",
+      "systeme": "Cortex frontal",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Perception"
+    },
+    {
+      "nom": "Extension de mémoire vive",
+      "systeme": "Cortex frontal",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Technologie"
+    },
+    {
+      "nom": "Deck neural",
+      "systeme": "Système d'exploitation",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "pirater sans deck externe"
+    },
+    {
+      "nom": "Deck militaire",
+      "systeme": "Système d'exploitation",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Technologie"
+    },
+    {
+      "nom": "Sandevistan",
+      "systeme": "Système d'exploitation",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Esquive"
+    },
+    {
+      "nom": "Berserk",
+      "systeme": "Système d'exploitation",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Corps à corps"
+    },
+    {
+      "nom": "Neuroport",
+      "systeme": "Système nerveux",
+      "fondation": true,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "se brancher à une machine ; ouvre le cortex frontal"
+    },
+    {
+      "nom": "Inhibiteur de douleur",
+      "systeme": "Système nerveux",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "rester lucide sous la torture"
+    },
+    {
+      "nom": "Réflexes câblés Kerenzikov",
+      "systeme": "Système nerveux",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Esquive"
+    },
+    {
+      "nom": "Synapses accélérées",
+      "systeme": "Système nerveux",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Perception"
+    },
+    {
+      "nom": "Yeux cybernétiques",
+      "systeme": "Visage et yeux",
+      "fondation": true,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "zoom, mise au point instantanée"
+    },
+    {
+      "nom": "Vision nocturne",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "voir dans le noir"
+    },
+    {
+      "nom": "Vision thermique",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "voir les sources de chaleur, même derrière la fumée"
+    },
+    {
+      "nom": "Caméra oculaire",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "enregistrer ce que l'on voit"
+    },
+    {
+      "nom": "Scanner d'implants",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Cybernétique"
+    },
+    {
+      "nom": "Viseur balistique",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Armes à distance"
+    },
+    {
+      "nom": "Optiques Kiroshi",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Armes à distance"
+    },
+    {
+      "nom": "Visage malléable",
+      "systeme": "Visage et yeux",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Tromperie",
+      "description": "changer de traits"
+    },
+    {
+      "nom": "Suite cyberaudio",
+      "systeme": "Oreilles et gorge",
+      "fondation": true,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "radio et téléphone internes"
+    },
+    {
+      "nom": "Filtre respiratoire",
+      "systeme": "Oreilles et gorge",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "respirer la fumée, les gaz, l'air pollué"
+    },
+    {
+      "nom": "Audio amplifié",
+      "systeme": "Oreilles et gorge",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Perception"
+    },
+    {
+      "nom": "Analyseur de stress vocal",
+      "systeme": "Oreilles et gorge",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Perspicacité"
+    },
+    {
+      "nom": "Détecteur de micros",
+      "systeme": "Oreilles et gorge",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Sécurité"
+    },
+    {
+      "nom": "Modulateur vocal",
+      "systeme": "Oreilles et gorge",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Tromperie"
+    },
+    {
+      "nom": "Tatouages lumineux",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": null,
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "esthétique"
+    },
+    {
+      "nom": "Cheveux de fibre optique",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": null,
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "esthétique"
+    },
+    {
+      "nom": "Peau chromée",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": null,
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "esthétique"
+    },
+    {
+      "nom": "Peau dermique",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "armure",
+      "armure": {
+        "protection": 2,
+        "malus": {}
+      }
+    },
+    {
+      "nom": "Glandes à phéromones",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Persuasion"
+    },
+    {
+      "nom": "Peau caméléon",
+      "systeme": "Peau",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Discrétion"
+    },
+    {
+      "nom": "Ossature blindée",
+      "systeme": "Squelette",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "armure",
+      "armure": {
+        "protection": 3,
+        "malus": {
+          "Discrétion": -10
+        }
+      }
+    },
+    {
+      "nom": "Os en titane",
+      "systeme": "Squelette",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Athlétisme"
+    },
+    {
+      "nom": "Biomoniteur",
+      "systeme": "Organes internes",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "alerte sur son état de santé"
+    },
+    {
+      "nom": "Poumons renforcés",
+      "systeme": "Organes internes",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "apnée prolongée"
+    },
+    {
+      "nom": "Filtre toxique",
+      "systeme": "Organes internes",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "résister aux poisons et aux drogues"
+    },
+    {
+      "nom": "Compartiment caché",
+      "systeme": "Organes internes",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "cacher un petit objet"
+    },
+    {
+      "nom": "Bras cybernétique",
+      "systeme": "Bras",
+      "fondation": true,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "un bras qui ne fatigue pas"
+    },
+    {
+      "nom": "Pistolet intégré",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "arme",
+      "arme": {
+        "degats": "1d6",
+        "portee": "courte",
+        "proprietes": [
+          "dissimulable"
+        ],
+        "munitions": {
+          "capacite": 4,
+          "recharge": "simple"
+        },
+        "competence": "Armes à distance"
+      }
+    },
+    {
+      "nom": "Lames-mantis",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "arme",
+      "arme": {
+        "degats": "1d8",
+        "portee": "contact",
+        "proprietes": [
+          "dissimulable"
+        ],
+        "competence": "Corps à corps"
+      }
+    },
+    {
+      "nom": "Fouet monofilament",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "arme",
+      "arme": {
+        "degats": "1d8",
+        "portee": "contact",
+        "proprietes": [
+          "perforante"
+        ],
+        "competence": "Corps à corps"
+      }
+    },
+    {
+      "nom": "Bras-marteau",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "arme",
+      "arme": {
+        "degats": "1d10",
+        "portee": "contact",
+        "proprietes": [
+          "encombrante"
+        ],
+        "competence": "Corps à corps"
+      }
+    },
+    {
+      "nom": "Lance-grappin",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "grimper, se hisser, saisir à distance"
+    },
+    {
+      "nom": "Servomoteurs",
+      "systeme": "Bras",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Athlétisme"
+    },
+    {
+      "nom": "Griffes-rasoirs",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "arme",
+      "arme": {
+        "degats": "1d4",
+        "portee": "contact",
+        "proprietes": [
+          "dissimulable"
+        ],
+        "competence": "Corps à corps"
+      }
+    },
+    {
+      "nom": "Paume d'interface",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "se brancher sans câble"
+    },
+    {
+      "nom": "Poigne magnétique",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "s'accrocher au métal"
+    },
+    {
+      "nom": "Doigts-outils",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Artisanat"
+    },
+    {
+      "nom": "Doigts de crochetage",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Sécurité"
+    },
+    {
+      "nom": "Doigts de pickpocket",
+      "systeme": "Mains",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Escamotage"
+    },
+    {
+      "nom": "Jambes cybernétiques",
+      "systeme": "Jambes",
+      "fondation": true,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "marcher des jours sans fatigue"
+    },
+    {
+      "nom": "Compartiment de jambe",
+      "systeme": "Jambes",
+      "fondation": false,
+      "gamme": "standard",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "utilitaire",
+      "description": "cacher une arme ou un objet"
+    },
+    {
+      "nom": "Amortisseurs silencieux",
+      "systeme": "Jambes",
+      "fondation": false,
+      "gamme": "avancée",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 5,
+      "competence": "Discrétion"
+    },
+    {
+      "nom": "Chevilles à ressorts",
+      "systeme": "Jambes",
+      "fondation": false,
+      "gamme": "militaire",
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "bonus",
+      "bonus": 10,
+      "competence": "Athlétisme"
+    },
+    {
+      "nom": "Prothèse médicale",
+      "systeme": "Médical",
+      "fondation": false,
+      "gamme": null,
+      "genres": [
+        "Cyberpunk"
+      ],
+      "electronique": true,
+      "effet": "médical",
+      "description": "remplace un membre perdu, sans option ni bonus"
+    }
+  ]
+}

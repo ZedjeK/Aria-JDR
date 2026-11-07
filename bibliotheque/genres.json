@@ -1,0 +1,262 @@
+{
+  "Fantasy": {
+    "habillage": {
+      "Corps à corps": "Armes de mêlée",
+      "Investigation": "Enquête",
+      "Persuasion": "Éloquence",
+      "Tromperie": "Duperie",
+      "Escamotage": "Larcin",
+      "Arts": "Musique & contes",
+      "Érudition": "Lettres & légendes",
+      "Sciences": "Philosophie naturelle",
+      "Occultisme": "Savoir occulte",
+      "Artisanat": "Forge & artisanat",
+      "Technologie": "Mécanismes",
+      "Sécurité": "Crochetage & pièges",
+      "Pilotage": "Équitation & navigation"
+    },
+    "magie": {
+      "statut": "activée",
+      "nom": "Arcanes"
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Alchimie",
+        "base": 5,
+        "description": "potions, poisons, élixirs"
+      },
+      {
+        "nom": "Foi",
+        "base": 5,
+        "description": "prières et miracles"
+      }
+    ],
+    "implants": false
+  },
+  "Dark fantasy": {
+    "habillage": {
+      "Corps à corps": "Armes de mêlée",
+      "Perception": "Vigilance",
+      "Perspicacité": "Méfiance",
+      "Investigation": "Enquête",
+      "Persuasion": "Éloquence",
+      "Tromperie": "Duperie",
+      "Escamotage": "Larcin",
+      "Arts": "Chants & récits",
+      "Érudition": "Lettres anciennes",
+      "Sciences": "Philosophie naturelle",
+      "Occultisme": "Savoir impie",
+      "Artisanat": "Forge & artisanat",
+      "Technologie": "Mécanismes",
+      "Sécurité": "Crochetage & pièges",
+      "Pilotage": "Équitation"
+    },
+    "magie": {
+      "statut": "activée",
+      "nom": "Sorcellerie"
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Démonologie",
+        "base": 5,
+        "description": "nommer, reconnaître, repousser par les rites ; jamais invoquer d'allié"
+      },
+      {
+        "nom": "Foi",
+        "base": 5,
+        "description": "prières, exorcismes, inquisition"
+      }
+    ],
+    "implants": false
+  },
+  "Horreur": {
+    "habillage": {
+      "Corps à corps": "Combat rapproché",
+      "Perspicacité": "Psychologie",
+      "Tromperie": "Mensonge",
+      "Escamotage": "Pickpocket",
+      "Commandement": "Meneur",
+      "Érudition": "Culture générale",
+      "Artisanat": "Mécanique",
+      "Technologie": "Informatique",
+      "Sécurité": "Serrures & alarmes",
+      "Pilotage": "Conduite"
+    },
+    "magie": {
+      "statut": "activée",
+      "nom": "Rituels"
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Mythe",
+        "base": 0,
+        "description": "savoir interdit ; réduit la SM maximum"
+      }
+    ],
+    "implants": false
+  },
+  "Contemporain": {
+    "habillage": {
+      "Corps à corps": "Combat rapproché",
+      "Perspicacité": "Psychologie",
+      "Tromperie": "Mensonge",
+      "Escamotage": "Pickpocket",
+      "Commandement": "Meneur",
+      "Érudition": "Culture générale",
+      "Artisanat": "Mécanique",
+      "Technologie": "Informatique",
+      "Sécurité": "Serrures & alarmes",
+      "Pilotage": "Conduite"
+    },
+    "magie": {
+      "statut": "désactivée",
+      "nom": null
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Bureaucratie",
+        "base": 5,
+        "description": "Démarches, administrations, paperasse et passe-droits."
+      },
+      {
+        "nom": "Réseau",
+        "base": 5,
+        "description": "Contacts, indics et services rendus : savoir à qui demander quoi."
+      }
+    ],
+    "implants": false
+  },
+  "Militaire": {
+    "habillage": {
+      "Discrétion": "Camouflage",
+      "Corps à corps": "Combat rapproché",
+      "Perception": "Observation",
+      "Investigation": "Renseignement",
+      "Érudition": "Histoire militaire",
+      "Artisanat": "Mécanique",
+      "Technologie": "Électronique",
+      "Sécurité": "Pièges & déminage",
+      "Pilotage": "Conduite & pilotage"
+    },
+    "magie": {
+      "statut": "désactivée",
+      "nom": null
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Transmissions",
+        "base": 5,
+        "description": "radios, chiffrement, brouillage"
+      },
+      {
+        "nom": "Explosifs",
+        "base": 5,
+        "description": "Poser, désamorcer et doser des charges."
+      }
+    ],
+    "implants": false
+  },
+  "Science-fiction": {
+    "habillage": {
+      "Athlétisme": "Athlétisme (zéro G)",
+      "Corps à corps": "Combat rapproché",
+      "Persuasion": "Diplomatie",
+      "Érudition": "Xénoculture",
+      "Occultisme": "Anomalies",
+      "Artisanat": "Ingénierie",
+      "Technologie": "Systèmes & IA",
+      "Sécurité": "Contre-mesures",
+      "Pilotage": "Conduite & pilotage"
+    },
+    "magie": {
+      "statut": "activée",
+      "nom": "Psionique"
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Astrogation",
+        "base": 5,
+        "description": "sauts hyperspatiaux"
+      },
+      {
+        "nom": "Artillerie embarquée",
+        "base": 5,
+        "description": "Les armes de bord d'un vaisseau ou d'un véhicule."
+      }
+    ],
+    "implants": false
+  },
+  "Cyberpunk": {
+    "habillage": {
+      "Discrétion": "Infiltration",
+      "Corps à corps": "Combat rapproché",
+      "Perception": "Vigilance",
+      "Perspicacité": "Empathie",
+      "Investigation": "Data-mining",
+      "Persuasion": "Négociation",
+      "Tromperie": "Arnaque",
+      "Escamotage": "Doigts agiles",
+      "Arts": "Performance",
+      "Commandement": "Meneur",
+      "Érudition": "Éducation",
+      "Occultisme": "Légendes urbaines",
+      "Artisanat": "Bricolage tech",
+      "Technologie": "Piratage",
+      "Sécurité": "Contre-mesures",
+      "Pilotage": "Conduite"
+    },
+    "magie": {
+      "statut": "désactivée",
+      "nom": null
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Cybernétique",
+        "base": 5,
+        "description": "Installer, régler et maîtriser ses implants ; repérer ceux des autres."
+      },
+      {
+        "nom": "Réseau",
+        "base": 5,
+        "description": "Fixers, contacts et dettes de faveur : savoir à qui demander quoi."
+      }
+    ],
+    "implants": true
+  },
+  "Post-apo": {
+    "habillage": {
+      "Corps à corps": "Bagarre",
+      "Perception": "Vigilance",
+      "Perspicacité": "Flair",
+      "Investigation": "Enquête",
+      "Persuasion": "Marchandage",
+      "Tromperie": "Embrouille",
+      "Escamotage": "Chapardage",
+      "Arts": "Conteur",
+      "Commandement": "Meneur",
+      "Érudition": "Savoir d'avant",
+      "Occultisme": "Superstitions",
+      "Artisanat": "Bricolage",
+      "Technologie": "Tech d'avant",
+      "Sécurité": "Pièges",
+      "Pilotage": "Conduite"
+    },
+    "magie": {
+      "statut": "option",
+      "nom": "Psi"
+    },
+    "competences_thematiques": [
+      {
+        "nom": "Récupération",
+        "base": 5,
+        "description": "fouiller les ruines"
+      },
+      {
+        "nom": "Purification",
+        "base": 5,
+        "description": "eau, nourriture, décontamination"
+      }
+    ],
+    "implants": false
+  }
+}

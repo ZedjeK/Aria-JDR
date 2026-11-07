@@ -1,0 +1,518 @@
+[
+  {
+    "nom": "Viseur holographique",
+    "pour": "armes à distance",
+    "effet": "précision",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Pointeur laser",
+    "pour": "armes à distance",
+    "effet": "précision",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Nouveau calibre",
+    "pour": "armes à distance",
+    "effet": "puissance",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Munitions perforantes",
+    "pour": "armes à distance",
+    "effet": "propriété",
+    "propriete": "perforante",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Silencieux",
+    "pour": "armes à distance",
+    "effet": "propriété",
+    "propriete": "silencieuse",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Canon raccourci",
+    "pour": "armes à distance",
+    "effet": "propriété",
+    "propriete": "dissimulable",
+    "sauf": "deux mains",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Chargeur grande capacité",
+    "pour": "armes à distance",
+    "effet": "munitions",
+    "description": "munitions doublées",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Rechargeur rapide",
+    "pour": "armes à distance",
+    "effet": "munitions",
+    "description": "une recharge simple devient mineure",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Lampe tactique",
+    "pour": "armes à distance",
+    "effet": "utilitaire",
+    "description": "éclairer sans lâcher son arme",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Blindage IEM",
+    "pour": "objets électroniques",
+    "effet": "utilitaire",
+    "description": "l'objet électronique résiste aux IEM (arme intelligente, drone, deck, téléphone…)",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Équilibrage",
+    "pour": "armes de mêlée",
+    "effet": "précision",
+    "valeur": 5,
+    "genres": [
+      "tous"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Poignée ergonomique",
+    "pour": "armes de mêlée",
+    "effet": "précision",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fil monomoléculaire",
+    "pour": "armes de mêlée",
+    "effet": "puissance",
+    "valeur": 1,
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Gaine thermique",
+    "pour": "armes de mêlée",
+    "effet": "puissance",
+    "valeur": 1,
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Lame rétractable",
+    "pour": "armes de mêlée",
+    "effet": "propriété",
+    "propriete": "dissimulable",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Affûtage de maître",
+    "pour": "armes de mêlée",
+    "effet": "puissance",
+    "valeur": 1,
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Plaques de renfort",
+    "pour": "armures",
+    "effet": "puissance",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Doublure souple",
+    "pour": "armures",
+    "effet": "confort",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Revêtement furtif",
+    "pour": "armures",
+    "effet": "confort",
+    "valeur": 5,
+    "competence": "Discrétion",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Poches tactiques",
+    "pour": "armures",
+    "effet": "utilitaire",
+    "description": "tout à portée de main",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Isolation thermique",
+    "pour": "armures",
+    "effet": "utilitaire",
+    "description": "supporter le froid et le feu ambiant",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Calibrage fin",
+    "pour": "implants",
+    "effet": "puissance",
+    "valeur": 5,
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Pare-feu",
+    "pour": "implants",
+    "effet": "utilitaire",
+    "description": "l'implant résiste au piratage",
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Blindage IEM d'implant",
+    "pour": "implants",
+    "effet": "utilitaire",
+    "description": "l'implant résiste aux impulsions électromagnétiques",
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Gaine discrète",
+    "pour": "implants",
+    "effet": "utilitaire",
+    "description": "l'implant échappe aux scanners",
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Reprogrammation moteur",
+    "pour": "véhicules",
+    "effet": "moteur",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Turbo",
+    "pour": "véhicules",
+    "effet": "moteur",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Suspensions sport",
+    "pour": "véhicules",
+    "effet": "châssis",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Direction assistée IA",
+    "pour": "véhicules",
+    "effet": "châssis",
+    "valeur": 5,
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Châssis renforcé",
+    "pour": "véhicules",
+    "effet": "renfort",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pare-buffle",
+    "pour": "véhicules",
+    "effet": "renfort",
+    "valeur": 5,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Plaques de blindage",
+    "pour": "véhicules",
+    "effet": "blindage",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Vitrage pare-balles",
+    "pour": "véhicules",
+    "effet": "blindage",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pneus tout-terrain",
+    "pour": "véhicules",
+    "effet": "propriété",
+    "propriete": "tout-terrain",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Moteur électrique silencieux",
+    "pour": "véhicules",
+    "effet": "propriété",
+    "propriete": "discret",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Coffre agrandi",
+    "pour": "véhicules",
+    "effet": "propriété",
+    "propriete": "cargo",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Tourelle télécommandée",
+    "pour": "véhicules",
+    "effet": "support d'arme",
+    "valeur": 1,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Kit nitro",
+    "pour": "véhicules",
+    "effet": "nitro",
+    "valeur": 10,
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Pilote automatique",
+    "pour": "véhicules",
+    "effet": "utilitaire",
+    "description": "le véhicule roule seul jusqu'à une adresse",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "GPS piraté",
+    "pour": "véhicules",
+    "effet": "utilitaire",
+    "description": "invisible pour les contrôles de la police",
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Compartiment secret",
+    "pour": "véhicules",
+    "effet": "utilitaire",
+    "description": "cacher des armes ou un passager",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Lance-fumigènes",
+    "pour": "véhicules",
+    "effet": "défensif",
+    "description": "une fois par scène : couvert lourd (−40) pendant 3 rounds",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Leurres",
+    "pour": "véhicules",
+    "effet": "défensif",
+    "description": "une fois par scène : une roquette ou un missile qui visait le véhicule rate d'office",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Blindage IEM de véhicule",
+    "pour": "véhicules",
+    "effet": "défensif",
+    "description": "le véhicule résiste aux IEM",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Baie à drones",
+    "pour": "véhicules",
+    "effet": "défensif",
+    "valeur": 2,
+    "description": "le véhicule transporte et lance 2 drones",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fers de course",
+    "pour": "montures",
+    "effet": "moteur",
+    "valeur": 1,
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Dressage de guerre",
+    "pour": "montures",
+    "effet": "châssis",
+    "valeur": 5,
+    "description": "et la monture panique moins vite (test Facile)",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Barde de cuir",
+    "pour": "montures",
+    "effet": "blindage",
+    "valeur": 1,
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Caparaçon renforcé",
+    "pour": "montures",
+    "effet": "renfort",
+    "valeur": 5,
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Selle de bât",
+    "pour": "montures",
+    "effet": "propriété",
+    "propriete": "cargo",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Fers étouffés",
+    "pour": "montures",
+    "effet": "propriété",
+    "propriete": "discret",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  }
+]

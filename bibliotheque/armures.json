@@ -1,0 +1,128 @@
+[
+  {
+    "nom": "Veste renforcée",
+    "protection": 1,
+    "malus": {},
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Combinaison de motard",
+    "protection": 1,
+    "malus": {},
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Gilet pare-balles léger",
+    "protection": 2,
+    "malus": {},
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Manteau blindé",
+    "protection": 2,
+    "malus": {},
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Gilet balistique",
+    "protection": 3,
+    "malus": {
+      "Discrétion": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Armure de garde corpo",
+    "protection": 3,
+    "malus": {
+      "Discrétion": -10,
+      "Esquive": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Armure tactique",
+    "protection": 4,
+    "malus": {
+      "Discrétion": -20,
+      "Athlétisme": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Exosquelette léger",
+    "protection": 4,
+    "malus": {
+      "Discrétion": -10,
+      "Esquive": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Cuir",
+    "protection": 1,
+    "malus": {},
+    "categorie": "armures",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Cotte de mailles",
+    "protection": 3,
+    "malus": {
+      "Discrétion": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Plates",
+    "protection": 4,
+    "malus": {
+      "Discrétion": -20,
+      "Athlétisme": -10
+    },
+    "categorie": "armures",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false
+  }
+]

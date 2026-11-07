@@ -11,6 +11,7 @@ $racine = $PSScriptRoot
     --paths "$racine" `
     --specpath "$racine\build" --workpath "$racine\build" --distpath "$racine\dist" `
     --add-data "$racine\univers;univers" `
+    --add-data "$racine\bibliotheque;bibliotheque" `
     --add-data "$racine\aria\prompts;aria\prompts" `
     "$racine\aria\__main__.py"
 if ($LASTEXITCODE -ne 0) { throw "La construction a échoué." }

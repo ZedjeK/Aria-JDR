@@ -13,6 +13,7 @@ Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier
 - **Le code arbitre** : jets de dés, points de vie, Santé mentale, progression. C'est le moteur, dans le dossier `aria/`.
 - **Le LLM raconte** : il décrit les scènes, fait parler les personnages et appelle le moteur quand une règle s'applique.
 - **Les univers** sont des fichiers JSON dans le dossier `univers/` : réglages, noms des compétences, parcours et armurerie. Le moteur les vérifie au chargement.
+- **La bibliothèque** (dossier `bibliotheque/`) range une seule fois tout ce qui peut exister dans une partie : les parcours des 8 genres, les armes, les armures, les modifications, les fabricants, les implants, les véhicules et les drones, les domaines de magie. Chaque entrée dit dans quels genres elle a sa place ; une campagne ne garde que ce qui a droit à son genre et à sa magie. Le moteur vérifie toute la bibliothèque au chargement, avec les règles du jeu.
 
 ## Installation (Windows)
 

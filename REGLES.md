@@ -1708,15 +1708,15 @@ Des modèles, pas une liste figée : le générateur les adapte au cadre. Toutes
 
 | Objet | Qualité | Bonus de ses modifications |
 |---|---|---|
-| Pistolet lourd Arasaka | personnalisé | +1 aux dégâts |
-| Fusil d'assaut Militech « Ronin » | personnalisé | +5 au jet |
-| Couteau Kang Tao en céramique | personnalisé | +5 au jet |
-| Pistolet intelligent Tsunami « Kenshin » | personnalisé | +10 au jet |
-| Katana monomoléculaire | personnalisé | +2 aux dégâts |
-| Gilet balistique Kang Tao | personnalisé | 10 points de malus en moins |
-| Armure tactique Arasaka | personnalisé | +1 de protection |
-| Fusil à rail Militech « Breakthrough » | unique | +10 au jet et +2 aux dégâts |
-| Fusil de précision Tsunami « Nekomata » | unique | +10 au jet et une propriété en plus (silencieuse) |
+| Pistolet lourd Arasaka | personnalisé | +1 aux dégâts, recharge mineure (rechargeur rapide, nouveau calibre) |
+| Fusil d'assaut Militech « Ronin » | personnalisé | +5 au jet, +1 aux dégâts (viseur holographique, nouveau calibre) |
+| Couteau en céramique | personnalisé | +5 au jet (équilibrage) |
+| Pistolet intelligent Kang Tao « Kenshin » | personnalisé | +10 au jet (viseur holographique, pointeur laser) |
+| Katana monomoléculaire | personnalisé | +2 aux dégâts (fil monomoléculaire, gaine thermique) |
+| Gilet balistique Militech | personnalisé | +1 de protection, 5 points de malus en moins |
+| Armure tactique Arasaka | personnalisé | +1 de protection, 5 points de malus en moins |
+| Fusil à rail Militech « Breakthrough » | unique | +10 au jet, +1 aux dégâts (nouveau calibre, viseur, pointeur laser) |
+| Fusil de précision Tsunami « Nekomata » | unique | +10 au jet, silencieuse (pointeur laser, viseur, silencieux) |
 
 **Les modifications**
 
@@ -1839,7 +1839,7 @@ Les implants-armes (lames-mantis, griffes-rasoirs…) prennent aussi les modific
 | Fers de course | Moteur : +1 cran de vitesse |
 | Dressage de guerre | Châssis : +5 de maniabilité, et elle panique moins vite |
 | Barde de cuir | Blindage : +1 |
-| Barde de mailles | Blindage : +2 |
+| Caparaçon renforcé | Renfort : +5 de structure |
 | Selle de bât | Propriété : cargo |
 | Fers étouffés | Propriété : discret |
 
@@ -1863,7 +1863,7 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 |---|---|---|---|---|---|---|---|---|
 | Citadine | terrestre | moyenne | +10 | 20 | 2 | 4 | — | moderne |
 | Berline | terrestre | rapide | 0 | 30 | 3 | 5 | — | moderne |
-| Voiture de sport | terrestre | très rapide | +10 | 25 | 2 | 2 | — | moderne |
+| Voiture de sport | terrestre | rapide | +10 | 25 | 2 | 2 | — | moderne |
 | Pick-up | terrestre | rapide | 0 | 35 | 3 | 3 | tout-terrain, cargo | moderne |
 | Voiture de patrouille | terrestre | rapide | 0 | 35 | 4 | 4 | — | moderne |
 | Vedette | nautique | rapide | 0 | 30 | 3 | 6 | — | moderne |
@@ -1878,9 +1878,9 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 | Fourgon | terrestre | moyenne | −10 | 45 | 4 | 3 | cargo | moderne |
 | Bus | terrestre | lente | −10 | 55 | 4 | 40 | — | moderne |
 | Camion | terrestre | lente | −10 | 60 | 6 | 2 | cargo | moderne |
-| Blindé de transport | terrestre | moyenne | −10 | 60 | 8 | 8 | tout-terrain ; tourelle lourde : mitrailleuse lourde ; tourelle légère : lance-grenades ; lance-fumigènes | moderne |
+| Blindé de transport | terrestre | moyenne | −10 | 60 | 8 | 8 | tout-terrain ; tourelles lourdes : mitrailleuse lourde, lance-grenades ; lance-fumigènes | moderne |
 | Blindé de reconnaissance | terrestre | rapide | 0 | 50 | 6 | 4 | tout-terrain ; tourelle légère : mitrailleuse légère ; baie à drones (2 drones de reconnaissance) ; lance-fumigènes | moderne |
-| AV de corpo | aérien | très rapide | 0 | 50 | 6 | 6 | tourelle légère : minigun ; tourelle lourde : lance-roquettes | Cyberpunk |
+| AV de corpo | aérien | très rapide | 0 | 50 | 6 | 6 | tourelles lourdes : minigun, lance-roquettes | Cyberpunk |
 
 **Militaires**
 
@@ -1903,7 +1903,7 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 
 | Véhicule | Qualité | Modifications |
 |---|---|---|
-| Moto Yaiba « Kusanagi » | personnalisé | reprogrammation moteur (très rapide), kit nitro |
-| Quadra « Turbo-R » | personnalisé | turbo, suspensions sport |
-| Berline Arasaka blindée | personnalisé | plaques de blindage, vitrage pare-balles |
+| Moto lourde Yaiba « Kusanagi » | personnalisé | reprogrammation moteur (très rapide), kit nitro |
+| Voiture de sport Quadra « Turbo-R » | personnalisé | turbo (très rapide), suspensions sport |
+| Berline Rayfield blindée | personnalisé | vitrage pare-balles, plaques de blindage |
 | AV Arasaka « Aquila » | unique | plaques de blindage, direction assistée IA, tourelle télécommandée |

@@ -1,0 +1,3126 @@
+[
+  {
+    "nom": "Solo",
+    "genre": "Cyberpunk",
+    "categorie": "La rue armée",
+    "description": "Mercenaire augmenté, payé pour protéger, escorter ou tuer. C'est le premier qu'on appelle quand ça tire, le dernier qu'on invite à une négociation. Il a vendu un peu de son humanité à chaque implant.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Perception",
+      "Intimidation",
+      "Pilotage",
+      "Cybernétique"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet lourd",
+        "Fusil à pompe",
+        "Katana"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Manteau blindé"
+      ],
+      "implants": [
+        "Bras cybernétique",
+        "Yeux cybernétiques",
+        "Peau dermique"
+      ],
+      "objets": [
+        "chargeurs de rechange",
+        "lunettes de vision nocturne",
+        "trousse de premiers soins",
+        "un charcudoc qui lui doit un service"
+      ]
+    }
+  },
+  {
+    "nom": "Ganger",
+    "genre": "Cyberpunk",
+    "categorie": "La rue armée",
+    "description": "Membre d'un gang de quartier, qui vit de racket, de deal et de guerres de territoire. Pour lui, la loyauté envers la bande passe avant tout. Il est dangereux en meute et beaucoup moins quand il est seul.",
+    "competences": [
+      "Corps à corps",
+      "Armes à distance",
+      "Intimidation",
+      "Athlétisme",
+      "Perception",
+      "Escamotage",
+      "Pilotage",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Machette",
+        "Batte de baseball",
+        "Pistolet léger"
+      ],
+      "armures": [
+        "Veste renforcée",
+        null
+      ],
+      "implants": [
+        "Griffes-rasoirs",
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "les couleurs du gang",
+        "téléphone jetable",
+        "bombe de peinture",
+        "dose de stim"
+      ]
+    }
+  },
+  {
+    "nom": "Kobun yakuza",
+    "genre": "Cyberpunk",
+    "categorie": "La rue armée",
+    "description": "Soldat d'un clan, lié par le giri et tatoué jusqu'aux os. Il gère les tripots et les dettes de son oyabun. Respecté et craint dans le quartier, il ne peut jamais tourner le dos à son clan.",
+    "competences": [
+      "Intimidation",
+      "Persuasion",
+      "Corps à corps",
+      "Armes à distance",
+      "Réseau",
+      "Perspicacité",
+      "Tromperie",
+      "Perception"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Katana",
+        "Wakizashi",
+        "Pistolet lourd"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "irezumi du clan",
+        "carnet des dettes",
+        "téléphone du clan",
+        "étui à cigares"
+      ]
+    }
+  },
+  {
+    "nom": "Agent d'infiltration",
+    "genre": "Cyberpunk",
+    "categorie": "La rue armée",
+    "description": "Le shinobi des corporations : vol de prototypes, sabotage, extraction de cadres. Il entre là où personne n'entre et repart sans laisser de trace. Il est redoutable seul, et on le sacrifie sans hésiter s'il est pris.",
+    "competences": [
+      "Discrétion",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Tromperie",
+      "Sécurité",
+      "Perception",
+      "Escamotage"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Kunai",
+        "Tantō",
+        "Pistolet silencieux"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        "Neuroport"
+      ],
+      "objets": [
+        "combinaison furtive",
+        "kit de crochetage électronique",
+        "grappin",
+        "faux badge corpo"
+      ]
+    }
+  },
+  {
+    "nom": "Flic de la NeoPol",
+    "genre": "Cyberpunk",
+    "categorie": "L'ordre et les corpos",
+    "description": "Inspecteur dans une police sous-payée et à moitié rachetée par les corpos. Il a un badge, une arme et des enquêtes qu'on lui demande d'enterrer. Il est utile, mais toujours tiraillé entre la loi, l'argent et sa conscience.",
+    "competences": [
+      "Armes à distance",
+      "Investigation",
+      "Intimidation",
+      "Perception",
+      "Pilotage",
+      "Perspicacité",
+      "Corps à corps",
+      "Réseau"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet lourd",
+        "Revolver lourd"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "badge",
+        "menottes",
+        "radio de service",
+        "lampe tactique"
+      ]
+    }
+  },
+  {
+    "nom": "Agent de sécurité corpo",
+    "genre": "Cyberpunk",
+    "categorie": "L'ordre et les corpos",
+    "description": "Garde d'élite d'une tour Arasaka ou d'un labo privé, équipé du meilleur matériel. Il obéit aux protocoles. Il est discipliné et bien armé, et il ne voit pas plus loin que son badge d'accès.",
+    "competences": [
+      "Armes à distance",
+      "Esquive",
+      "Perception",
+      "Sécurité",
+      "Intimidation",
+      "Athlétisme",
+      "Commandement",
+      "Cybernétique"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet-mitrailleur",
+        "Pistolet lourd",
+        "Matraque électrique"
+      ],
+      "armures": [
+        "Gilet balistique",
+        "Armure de garde corpo"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        "Yeux cybernétiques"
+      ],
+      "objets": [
+        "badge d'accès",
+        "uniforme de la corpo",
+        "menottes",
+        "radio cryptée"
+      ]
+    }
+  },
+  {
+    "nom": "Cadre corpo",
+    "genre": "Cyberpunk",
+    "categorie": "L'ordre et les corpos",
+    "description": "Requin en costume, qui grimpe les étages de la tour à coups de trahisons feutrées. Il manie les budgets, les contrats et les gens. Il est puissant dans les salles de réunion et perdu dans une ruelle.",
+    "competences": [
+      "Persuasion",
+      "Commandement",
+      "Érudition",
+      "Tromperie",
+      "Perspicacité",
+      "Investigation",
+      "Réseau",
+      "Armes à distance"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet léger",
+        "Pistolet compact",
+        null
+      ],
+      "armures": [
+        null,
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Neuroport",
+        "Suite cyberaudio"
+      ],
+      "objets": [
+        "carte d'accès à la tour",
+        "terminal corpo",
+        "costume sur mesure",
+        "carnet de contacts"
+      ]
+    }
+  },
+  {
+    "nom": "Salaryman",
+    "genre": "Cyberpunk",
+    "categorie": "L'ordre et les corpos",
+    "description": "Employé de bureau broyé par les heures sup', les dettes et les promesses de promotion. C'est l'homme ordinaire de Néo-Tokyo. Il est invisible, donc il a accès à beaucoup de choses sans que personne ne s'en méfie.",
+    "competences": [
+      "Érudition",
+      "Persuasion",
+      "Investigation",
+      "Perspicacité",
+      "Technologie",
+      "Commandement",
+      "Pilotage",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        null,
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Neuroport",
+        null
+      ],
+      "objets": [
+        "badge d'entreprise",
+        "mallette",
+        "téléphone",
+        "abonnement de métro"
+      ]
+    }
+  },
+  {
+    "nom": "Netrunner",
+    "genre": "Cyberpunk",
+    "categorie": "La tech",
+    "description": "Pirate de génie qui plonge dans les réseaux des corpos pour voler, saboter ou effacer. Dans la rue, il passe pour un gamin fragile ; dans le Net, il est un dieu. Il est indispensable pour un job et vulnérable dès que ça tire.",
+    "competences": [
+      "Technologie",
+      "Investigation",
+      "Sécurité",
+      "Perception",
+      "Discrétion",
+      "Artisanat",
+      "Tromperie",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet léger",
+        "Pistolet silencieux",
+        null
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Neuroport",
+        "Paume d'interface"
+      ],
+      "objets": [
+        "deck",
+        "câbles d'interface",
+        "lunettes AR",
+        "fausse identité numérique"
+      ]
+    }
+  },
+  {
+    "nom": "Techie",
+    "genre": "Cyberpunk",
+    "categorie": "La tech",
+    "description": "Bricoleur de génie qui répare, trafique et invente avec ce qu'il trouve. Son atelier est une caverne d'Ali Baba de pièces détachées. Tout le monde a besoin de lui, et personne ne le paie à l'heure.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Sciences",
+      "Sécurité",
+      "Pilotage",
+      "Perception",
+      "Escamotage",
+      "Armes à distance"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Fusil à pompe",
+        "Pistolet léger",
+        "Marteau lourd"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Paume d'interface",
+        "Bras cybernétique"
+      ],
+      "objets": [
+        "outils multifonctions",
+        "poste à souder portatif",
+        "petit drone de réparation (raconté)",
+        "stock de pièces détachées"
+      ]
+    }
+  },
+  {
+    "nom": "Charcudoc",
+    "genre": "Cyberpunk",
+    "categorie": "La tech",
+    "description": "Chirurgien des bas-fonds, il pose des implants et recoud des blessures par balle sans poser de questions. Toute la rue lui doit la vie, ou un bras. C'est un médecin génial, souvent mêlé à des affaires louches.",
+    "competences": [
+      "Médecine",
+      "Cybernétique",
+      "Sciences",
+      "Technologie",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet léger",
+        "Couteau"
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        "Paume d'interface"
+      ],
+      "objets": [
+        "kit chirurgical",
+        "scanner médical",
+        "stock d'anesthésiants",
+        "table d'opération pliante"
+      ]
+    }
+  },
+  {
+    "nom": "Ferrailleur",
+    "genre": "Cyberpunk",
+    "categorie": "La tech",
+    "description": "Il fouille les décharges et les carcasses de drones pour revendre ce qui marche encore. Il sait ce que vaut chaque pièce et où la trouver. Débrouillard, il vit en marge, et ses trouvailles attirent parfois de mauvaises attentions.",
+    "competences": [
+      "Artisanat",
+      "Survie",
+      "Perception",
+      "Escamotage",
+      "Athlétisme",
+      "Persuasion",
+      "Sécurité",
+      "Corps à corps"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Machette",
+        "Batte de baseball",
+        "Fusil à pompe"
+      ],
+      "armures": [
+        "Veste renforcée",
+        "Combinaison de motard"
+      ],
+      "implants": [
+        "Filtre toxique",
+        "Poumons renforcés"
+      ],
+      "objets": [
+        "chalumeau",
+        "détecteur de métaux",
+        "sac de récupération",
+        "masque à gaz"
+      ]
+    }
+  },
+  {
+    "nom": "Fixer",
+    "genre": "Cyberpunk",
+    "categorie": "Les gens de parole",
+    "description": "Intermédiaire de l'ombre, il connaît tout le monde et doit quelque chose à chacun. Il trouve les jobs, les armes et les portes de sortie. Il est redoutable avec les mots, et son réseau est une toile qui peut l'étrangler.",
+    "competences": [
+      "Réseau",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Intimidation",
+      "Perception",
+      "Armes à distance",
+      "Investigation"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet lourd",
+        "Pistolet silencieux"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Gilet pare-balles léger"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        "Neuroport"
+      ],
+      "objets": [
+        "carnet d'adresses chiffré",
+        "téléphones jetables",
+        "faux papiers",
+        "faveurs qu'on lui doit"
+      ]
+    }
+  },
+  {
+    "nom": "Informateur",
+    "genre": "Cyberpunk",
+    "categorie": "Les gens de parole",
+    "description": "Barman, sans-abri ou concierge, il voit tout et il vend ce qu'il voit. C'est l'oreille du quartier. Il est précieux, il ne paie pas de mine et il n'est jamais loin d'une balle perdue.",
+    "competences": [
+      "Réseau",
+      "Perception",
+      "Discrétion",
+      "Perspicacité",
+      "Tromperie",
+      "Escamotage",
+      "Investigation",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Couteau",
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "oreillette d'écoute",
+        "double des clés du quartier",
+        "carnet de notes",
+        "appareil photo discret"
+      ]
+    }
+  },
+  {
+    "nom": "Journaliste",
+    "genre": "Cyberpunk",
+    "categorie": "Les gens de parole",
+    "description": "Reporter indépendant qui traque les scandales que les médias corpos étouffent. Une vidéo de lui peut faire tomber un cadre. Il délie les langues comme personne, et il a une cible dans le dos.",
+    "competences": [
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Discrétion",
+      "Réseau",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet léger",
+        null
+      ],
+      "armures": [
+        null,
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        null
+      ],
+      "objets": [
+        "caméra holo",
+        "enregistreur",
+        "carte de presse",
+        "source anonyme"
+      ]
+    }
+  },
+  {
+    "nom": "Rockerboy",
+    "genre": "Cyberpunk",
+    "categorie": "Les gens de parole",
+    "description": "Musicien rebelle dont les chansons appellent à brûler les tours. La rue l'adore, les corpos le surveillent. C'est un leader né, et sa célébrité le rend facile à trouver.",
+    "competences": [
+      "Arts",
+      "Persuasion",
+      "Commandement",
+      "Perspicacité",
+      "Intimidation",
+      "Réseau",
+      "Corps à corps",
+      "Pilotage"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet lourd",
+        "Batte de baseball"
+      ],
+      "armures": [
+        "Veste renforcée",
+        "Manteau blindé"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "guitare électrique",
+        "ampli portable",
+        "fans fidèles",
+        "vieux contrat de disque"
+      ]
+    }
+  },
+  {
+    "nom": "Idol",
+    "genre": "Cyberpunk",
+    "categorie": "Les gens de parole",
+    "description": "Star de la pop, fabriquée et vendue par une corpo du divertissement. Des millions de fans, un contrat qui l'étrangle. Elle a un accès partout, et aucune liberté nulle part.",
+    "competences": [
+      "Arts",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Athlétisme",
+      "Réseau",
+      "Érudition",
+      "Esquive"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        null,
+        "Pistolet compact"
+      ],
+      "armures": [
+        null
+      ],
+      "implants": [
+        "Yeux cybernétiques",
+        null
+      ],
+      "objets": [
+        "garde-robe de scène",
+        "contrat d'agence",
+        "lunettes de star",
+        "numéro privé d'un producteur"
+      ]
+    }
+  },
+  {
+    "nom": "Nomade",
+    "genre": "Cyberpunk",
+    "categorie": "La route",
+    "description": "Membre d'un clan qui vit sur les routes, hors des mégapoles et de leurs lois. Il transporte, il trafique et il protège les siens. Pilote hors pair et solide survivant, il reste un étranger en ville.",
+    "competences": [
+      "Pilotage",
+      "Survie",
+      "Armes à distance",
+      "Artisanat",
+      "Perception",
+      "Athlétisme",
+      "Persuasion",
+      "Corps à corps"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Fusil à pompe",
+        "Carabine",
+        "Machette"
+      ],
+      "armures": [
+        "Manteau blindé",
+        "Combinaison de motard"
+      ],
+      "implants": [
+        "Filtre toxique",
+        null
+      ],
+      "objets": [
+        "kit de survie",
+        "outils du clan",
+        "jerricans",
+        "carte des pistes"
+      ],
+      "vehicules": [
+        "Pick-up",
+        "Moto lourde"
+      ]
+    }
+  },
+  {
+    "nom": "Coursier",
+    "genre": "Cyberpunk",
+    "categorie": "La route",
+    "description": "Livreur à moto qui traverse Néo-Tokyo plus vite que n'importe qui, colis légaux ou non. Il connaît chaque raccourci et chaque contrôle. Rapide et insaisissable, il en sait toujours trop sur ce qu'il transporte.",
+    "competences": [
+      "Pilotage",
+      "Athlétisme",
+      "Perception",
+      "Esquive",
+      "Discrétion",
+      "Réseau",
+      "Artisanat",
+      "Armes à distance"
+    ],
+    "magie": false,
+    "equipement": {
+      "armes": [
+        "Pistolet léger",
+        "Matraque télescopique"
+      ],
+      "armures": [
+        "Combinaison de motard",
+        "Veste renforcée"
+      ],
+      "implants": [
+        "Suite cyberaudio",
+        null
+      ],
+      "objets": [
+        "casque connecté",
+        "sac de livraison scellé",
+        "plan des raccourcis",
+        "antivol renforcé"
+      ],
+      "vehicules": [
+        "Moto de livraison",
+        "Scooter électrique"
+      ]
+    }
+  },
+  {
+    "nom": "Homme d'armes",
+    "genre": "Fantasy",
+    "categorie": "Le fer",
+    "description": "Soldat de métier, ancien garde ou vétéran d'une guerre oubliée, il vit de son épée et de sa réputation. Dans une taverne, on lui cède la place ; sur un champ de bataille, on se range derrière lui. Il est solide et rassurant, et démuni face aux énigmes et aux intrigues de cour.",
+    "competences": [
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Intimidation",
+      "Perception",
+      "Commandement",
+      "Pilotage",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chevalier",
+    "genre": "Fantasy",
+    "categorie": "Le fer",
+    "description": "Fils de noblesse lié par un serment, à un seigneur, à un dieu ou à une cause perdue. Sa lance et son nom ouvrent les portes des châteaux. Il est redoutable à cheval et respecté partout, et il est prisonnier de son honneur quand le monde, lui, n'en a pas.",
+    "competences": [
+      "Corps à corps",
+      "Pilotage",
+      "Commandement",
+      "Persuasion",
+      "Athlétisme",
+      "Intimidation",
+      "Érudition",
+      "Foi"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Garde de la cité",
+    "genre": "Fantasy",
+    "categorie": "Le fer",
+    "description": "Il veille sur les remparts et les ruelles, entre ivrognes, voleurs et nobles capricieux. Il connaît sa ville par cœur et tout le monde le connaît. Il est utile dans une enquête, mais lié par ses ordres et son capitaine.",
+    "competences": [
+      "Corps à corps",
+      "Armes à distance",
+      "Perception",
+      "Intimidation",
+      "Investigation",
+      "Perspicacité",
+      "Athlétisme",
+      "Commandement"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Barbare",
+    "genre": "Fantasy",
+    "categorie": "Le fer",
+    "description": "Né dans les steppes ou les montagnes, loin des lois des royaumes. Il se bat avec une fureur que les chevaliers ne comprennent pas. Il est endurant et terrifiant, et la civilisation le regarde comme une bête.",
+    "competences": [
+      "Corps à corps",
+      "Athlétisme",
+      "Survie",
+      "Intimidation",
+      "Esquive",
+      "Perception",
+      "Pilotage",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Rôdeur",
+    "genre": "Fantasy",
+    "categorie": "Le fer",
+    "description": "Chasseur et éclaireur des marches sauvages, il connaît chaque sentier et chaque piste. Les villageois l'appellent quand une bête rôde, les seigneurs quand une armée doit passer. Il est imbattable en forêt et à l'étroit entre les murs d'une ville.",
+    "competences": [
+      "Armes à distance",
+      "Survie",
+      "Discrétion",
+      "Perception",
+      "Athlétisme",
+      "Corps à corps",
+      "Médecine",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Voleur",
+    "genre": "Fantasy",
+    "categorie": "L'ombre",
+    "description": "Monte-en-l'air, coupe-bourse ou cambrioleur de guilde, il ouvre ce qui est fermé et prend ce qui brille. On le méprise en public et on l'engage en secret. Agile et rusé, il évite le combat loyal, qu'il a toutes les chances de perdre.",
+    "competences": [
+      "Escamotage",
+      "Sécurité",
+      "Discrétion",
+      "Tromperie",
+      "Perception",
+      "Corps à corps",
+      "Athlétisme",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Assassin",
+    "genre": "Fantasy",
+    "categorie": "L'ombre",
+    "description": "Lame d'une confrérie ou tueur solitaire, il règle les héritages trop lents et les rivalités trop longues. Il frappe une fois, dans l'ombre, avec du poison s'il le faut. Il est mortel par surprise et fragile dès qu'on le voit venir.",
+    "competences": [
+      "Discrétion",
+      "Corps à corps",
+      "Esquive",
+      "Alchimie",
+      "Tromperie",
+      "Perception",
+      "Athlétisme",
+      "Sécurité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Contrebandier",
+    "genre": "Fantasy",
+    "categorie": "L'ombre",
+    "description": "Il fait passer les épices, les reliques et les fugitifs entre les ports et les frontières. Il connaît les criques, les douaniers corrompus et les routes oubliées. Il est débrouillard et beau parleur, et il est toujours à une trahison de la potence.",
+    "competences": [
+      "Pilotage",
+      "Tromperie",
+      "Persuasion",
+      "Perception",
+      "Armes à distance",
+      "Discrétion",
+      "Escamotage",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mage",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Érudit des Arcanes, formé dans une tour ou auprès d'un maître exigeant. On le craint autant qu'on le recherche, car un sort bien placé change le cours d'une bataille. Il est redoutable à distance et se brise vite au corps à corps, et chaque sort lui coûte.",
+    "competences": [
+      "Magie",
+      "Occultisme",
+      "Érudition",
+      "Perception",
+      "Perspicacité",
+      "Médecine",
+      "Persuasion",
+      "Esquive"
+    ],
+    "magie": true,
+    "domaines_conseilles": "au choix, selon son école",
+    "sans_magie": "remplacé par l'Érudit"
+  },
+  {
+    "nom": "Prêtre",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Serviteur d'un dieu, il bénit, il soigne et il guide les fidèles, parfois l'épée à la main. Son temple lui donne une autorité que les seigneurs respectent. Il est un pilier pour les siens, et un ennemi juré pour les autres cultes.",
+    "competences": [
+      "Foi",
+      "Médecine",
+      "Persuasion",
+      "Perspicacité",
+      "Érudition",
+      "Magie",
+      "Corps à corps",
+      "Commandement"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Guérison, plus un domaine propre à son dieu",
+    "sans_magie": "Savoir occulte remplace Arcanes, et sa Foi devient rites, sermons et réconfort, sans miracles"
+  },
+  {
+    "nom": "Érudit",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Archiviste, précepteur ou chercheur, il lit les langues mortes et se souvient de ce que le monde a oublié. Les rois le consultent, les bibliothèques lui ouvrent leurs portes. Il est précieux pour comprendre, et inutile pour se défendre.",
+    "competences": [
+      "Érudition",
+      "Sciences",
+      "Occultisme",
+      "Investigation",
+      "Perspicacité",
+      "Persuasion",
+      "Médecine",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Alchimiste",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Il distille les potions, les poisons et les poudres qui explosent. Moitié savant, moitié charlatan aux yeux du peuple. Il est inventif et redouté, et chacune de ses fioles peut lui sauter au visage.",
+    "competences": [
+      "Alchimie",
+      "Sciences",
+      "Médecine",
+      "Perception",
+      "Artisanat",
+      "Tromperie",
+      "Armes à distance",
+      "Érudition"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Guérisseur",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Herboriste de village ou rebouteux des routes, il soigne avec les plantes, les mains et les prières. On le paie en pain et en reconnaissance. Il est indispensable et aimé, et il est sans défense quand la violence arrive.",
+    "competences": [
+      "Médecine",
+      "Survie",
+      "Alchimie",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Foi",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Druide",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Gardien des forêts anciennes, il parle aux bêtes et fait plier les ronces. Les villages le craignent et le consultent à la fois. Il est puissant dans les bois, sans pouvoir dans les cités de pierre.",
+    "competences": [
+      "Magie",
+      "Survie",
+      "Médecine",
+      "Perception",
+      "Discrétion",
+      "Perspicacité",
+      "Occultisme",
+      "Corps à corps"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Nature, plus Guérison ou Givre",
+    "sans_magie": "remplacé par le Guérisseur ou le Rôdeur"
+  },
+  {
+    "nom": "Lame-mage",
+    "genre": "Fantasy",
+    "categorie": "Le savoir et la foi",
+    "description": "Guerrier qui mêle l'acier et les sorts, formé dans un ordre martial ou une académie de guerre. Il charge là où les mages restent en retrait. Il est polyvalent, mais il n'égale ni le vrai guerrier ni le vrai mage.",
+    "competences": [
+      "Magie",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Occultisme",
+      "Perception",
+      "Intimidation",
+      "Pilotage"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Pyromancie ou Givre",
+    "sans_magie": "remplacé par le Chevalier ou l'Homme d'armes"
+  },
+  {
+    "nom": "Barde",
+    "genre": "Fantasy",
+    "categorie": "La parole et la route",
+    "description": "Conteur, musicien et colporteur de nouvelles, il est bienvenu dans chaque château et chaque taverne. Ses chansons font et défont les réputations. Il est charmeur et curieux, et sa langue lui attire autant d'ennuis qu'elle l'en sort.",
+    "competences": [
+      "Arts",
+      "Persuasion",
+      "Tromperie",
+      "Perspicacité",
+      "Érudition",
+      "Escamotage",
+      "Corps à corps",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Marchand",
+    "genre": "Fantasy",
+    "categorie": "La parole et la route",
+    "description": "Il fait voyager le sel, la soie et l'argent d'un royaume à l'autre. Il négocie comme d'autres se battent. Il est riche en contacts et en opportunités, et sa caravane est une cible ambulante.",
+    "competences": [
+      "Persuasion",
+      "Perspicacité",
+      "Pilotage",
+      "Érudition",
+      "Tromperie",
+      "Perception",
+      "Intimidation",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Noble",
+    "genre": "Fantasy",
+    "categorie": "La parole et la route",
+    "description": "Héritier d'une maison, il manie les alliances, les mariages et les poisons de cour. Son nom ouvre toutes les portes, et ses ennemis aussi. Il est puissant dans les salons et vulnérable dès qu'il perd ses gardes.",
+    "competences": [
+      "Persuasion",
+      "Commandement",
+      "Érudition",
+      "Tromperie",
+      "Perspicacité",
+      "Arts",
+      "Pilotage",
+      "Corps à corps"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Forgeron",
+    "genre": "Fantasy",
+    "categorie": "La parole et la route",
+    "description": "Artisan respecté, il fabrique les armes des chevaliers et les outils des paysans. Sa forge est le cœur du village. Il est fort et habile de ses mains, et il connaît l'acier mieux que quiconque, mais il est attaché à son atelier.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Athlétisme",
+      "Corps à corps",
+      "Perception",
+      "Persuasion",
+      "Sciences",
+      "Intimidation"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Marin",
+    "genre": "Fantasy",
+    "categorie": "La parole et la route",
+    "description": "Matelot, pêcheur ou corsaire, il a vu des ports que les cartes ignorent. Il est à l'aise sur un pont qui tangue et au milieu d'une rixe de port. Il est endurant et bagarreur, mais perdu dès qu'il s'éloigne de la mer.",
+    "competences": [
+      "Pilotage",
+      "Athlétisme",
+      "Corps à corps",
+      "Survie",
+      "Perception",
+      "Technologie",
+      "Intimidation",
+      "Arts"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mercenaire",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Une lame à louer dans un monde qui brûle. Sans foi ni bannière, il ne connaît que la parole du contrat et le poids de l'or. Il est endurant et pragmatique, ne fait confiance à personne, et personne ne lui fait confiance.",
+    "competences": [
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Intimidation",
+      "Survie",
+      "Perception",
+      "Commandement",
+      "Artisanat"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chevalier déchu",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Il a perdu ses terres, son seigneur ou son honneur, parfois les trois. Il garde son armure cabossée et une colère froide. Il est redoutable et fier, et hanté par ce qu'il a fait ou laissé faire.",
+    "competences": [
+      "Corps à corps",
+      "Pilotage",
+      "Intimidation",
+      "Commandement",
+      "Foi",
+      "Érudition",
+      "Athlétisme",
+      "Perspicacité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chasseur de sorcières",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Traqueur au service d'un ordre implacable, il brûle ce que d'autres n'osent même pas nommer. Les villages le redoutent autant que les créatures qu'il pourchasse. Il est armé, savant et inflexible, et il voit des hérétiques partout, parfois à tort.",
+    "competences": [
+      "Corps à corps",
+      "Armes à distance",
+      "Occultisme",
+      "Investigation",
+      "Intimidation",
+      "Perception",
+      "Foi",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Tueur de monstres",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Il vit de primes sur les goules, les loups-garous et les choses des marais. On le paie, puis on le chasse du village. Il connaît chaque bête et son point faible, et il est seul, toujours.",
+    "competences": [
+      "Corps à corps",
+      "Esquive",
+      "Occultisme",
+      "Survie",
+      "Perception",
+      "Athlétisme",
+      "Médecine",
+      "Sciences"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Flagellant",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Fanatique qui expie les péchés du monde dans la douleur, et qui fait expier ceux des autres. Les foules le suivent, les prêtres s'en méfient. Il ne connaît ni la peur ni la mesure, ce qui fait de lui un allié aussi dangereux qu'un ennemi.",
+    "competences": [
+      "Corps à corps",
+      "Foi",
+      "Intimidation",
+      "Persuasion",
+      "Athlétisme",
+      "Perspicacité",
+      "Arts",
+      "Occultisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Déserteur",
+    "genre": "Dark fantasy",
+    "categorie": "Le fer",
+    "description": "Il a fui une guerre qu'il ne comprenait plus, et on le pend s'il est repris. Il sait se cacher, voler et survivre. Il est rusé et endurant, et il est toujours sur le qui-vive.",
+    "competences": [
+      "Discrétion",
+      "Survie",
+      "Armes à distance",
+      "Perception",
+      "Tromperie",
+      "Athlétisme",
+      "Escamotage",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pilleur de tombes",
+    "genre": "Dark fantasy",
+    "categorie": "L'ombre et la survie",
+    "description": "Il descend dans les cryptes et les tertres pour en remonter l'or des morts. Il connaît les pièges, les malédictions et les gardiens qui ne dorment jamais. Il est hardi et cupide, et parfois il réveille ce qu'il fallait laisser dormir.",
+    "competences": [
+      "Sécurité",
+      "Occultisme",
+      "Discrétion",
+      "Perception",
+      "Érudition",
+      "Escamotage",
+      "Athlétisme",
+      "Corps à corps"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Bandit de grand chemin",
+    "genre": "Dark fantasy",
+    "categorie": "L'ombre et la survie",
+    "description": "Il détrousse les voyageurs sur les routes que plus aucun seigneur ne protège. Pour les uns c'est un hors-la-loi, pour les autres un héros du peuple. Il est rapide et sans scrupules, et la corde l'attend au prochain bourg.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Intimidation",
+      "Pilotage",
+      "Discrétion",
+      "Survie",
+      "Tromperie",
+      "Perception"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Rat des bas-fonds",
+    "genre": "Dark fantasy",
+    "categorie": "L'ombre et la survie",
+    "description": "Il est né dans la boue des cités, entre les égouts, les tripots et la peste. Il survit à tout parce qu'il ne croit à rien. Il est malin et insaisissable, et il trahit avant d'être trahi.",
+    "competences": [
+      "Escamotage",
+      "Discrétion",
+      "Tromperie",
+      "Perspicacité",
+      "Corps à corps",
+      "Perception",
+      "Sécurité",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Fossoyeur",
+    "genre": "Dark fantasy",
+    "categorie": "L'ombre et la survie",
+    "description": "Il enterre les morts de la peste et des guerres, et il sait ce qui remue parfois sous la terre. On l'évite dans la rue et on l'appelle la nuit. Il est solide et sans illusions, et il en sait trop sur ce qui suit la mort.",
+    "competences": [
+      "Occultisme",
+      "Médecine",
+      "Athlétisme",
+      "Perception",
+      "Perspicacité",
+      "Artisanat",
+      "Corps à corps",
+      "Érudition"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Sorcier renégat",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Il a lu ce qu'il ne fallait pas lire, et il a survécu. Pourchassé par l'Église, il marchande avec des puissances qui finissent toujours par réclamer leur dû. Son pouvoir est immense, et chaque pacte le rapproche du bûcher, ou de pire.",
+    "competences": [
+      "Magie",
+      "Démonologie",
+      "Occultisme",
+      "Tromperie",
+      "Perspicacité",
+      "Discrétion",
+      "Médecine",
+      "Esquive"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Nécromancie, Illusion",
+    "sans_magie": "remplacé par l'Occultiste"
+  },
+  {
+    "nom": "Occultiste",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Collectionneur de grimoires interdits, il connaît les rituels sans toujours oser les accomplir. Il sait nommer les démons et les éloigner. Il est savant et précieux, et son savoir lui ronge l'âme.",
+    "competences": [
+      "Occultisme",
+      "Démonologie",
+      "Érudition",
+      "Investigation",
+      "Perspicacité",
+      "Persuasion",
+      "Sciences",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Exorciste",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Prêtre-guerrier qui chasse les démons des corps et des lieux, par la prière et par le feu. L'Église l'envoie là où les autres ont échoué. Il est implacable face aux ténèbres, et chaque possession lui laisse une cicatrice.",
+    "competences": [
+      "Foi",
+      "Magie",
+      "Démonologie",
+      "Persuasion",
+      "Perspicacité",
+      "Occultisme",
+      "Médecine",
+      "Corps à corps"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Guérison, Pyromancie (le feu qui purifie)",
+    "sans_magie": "Savoir impie remplace Sorcellerie, et ses exorcismes deviennent des rites, sans effet chiffré"
+  },
+  {
+    "nom": "Moine",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Copiste, infirmier ou ermite, il garde la foi et le savoir dans un monde qui sombre. Son monastère est un dernier refuge. Il est sage et charitable, et il n'est pas fait pour la violence du dehors.",
+    "competences": [
+      "Foi",
+      "Médecine",
+      "Persuasion",
+      "Perspicacité",
+      "Érudition",
+      "Arts",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Inquisiteur",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Juge de l'Église, il traque l'hérésie avec des questions, des aveux et des bûchers. Sa simple arrivée vide les rues. Il est redoutable d'intelligence et de pouvoir, et il est sûr d'avoir raison.",
+    "competences": [
+      "Investigation",
+      "Intimidation",
+      "Foi",
+      "Perspicacité",
+      "Érudition",
+      "Persuasion",
+      "Corps à corps",
+      "Commandement"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Médecin de peste",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Sous son masque à bec, il soigne les mourants que tous les autres fuient. Il a vu la maladie de trop près pour croire encore aux remèdes miracles. Il est précieux et respecté, et la contagion le guette à chaque visite.",
+    "competences": [
+      "Médecine",
+      "Sciences",
+      "Occultisme",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Érudition",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Sorcière des marais",
+    "genre": "Dark fantasy",
+    "categorie": "Le savoir, la foi et les ténèbres",
+    "description": "Elle vit seule au bord des tourbières, entre les herbes, les os et les esprits. Les villageois viennent la voir en cachette, puis la dénoncent. Elle connaît les remèdes et les malédictions, et le bûcher n'est jamais loin.",
+    "competences": [
+      "Magie",
+      "Survie",
+      "Médecine",
+      "Occultisme",
+      "Perspicacité",
+      "Tromperie",
+      "Discrétion",
+      "Corps à corps"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Nature, Nécromancie",
+    "sans_magie": "une rebouteuse, avec Savoir impie à la place de Sorcellerie, ou remplacée par le Médecin de peste"
+  },
+  {
+    "nom": "Colporteur",
+    "genre": "Dark fantasy",
+    "categorie": "La parole et les gens",
+    "description": "Chanteur des ruines et marchand de nouvelles, il traverse les terres dévastées avec sa charrette. Il sait ce qui se passe partout, et il le vend. Il est charmeur et méfiant, et toujours sur une route peu sûre.",
+    "competences": [
+      "Arts",
+      "Persuasion",
+      "Tromperie",
+      "Perspicacité",
+      "Escamotage",
+      "Pilotage",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Noble décadent",
+    "genre": "Dark fantasy",
+    "categorie": "La parole et les gens",
+    "description": "Héritier d'une maison qui pourrit de l'intérieur, entre fêtes, complots et poisons. Il a de l'or, des gardes et des secrets inavouables. Il est puissant mais corrompu, et entouré de gens qui attendent sa chute.",
+    "competences": [
+      "Persuasion",
+      "Commandement",
+      "Tromperie",
+      "Perspicacité",
+      "Érudition",
+      "Arts",
+      "Pilotage",
+      "Corps à corps"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Serf",
+    "genre": "Dark fantasy",
+    "categorie": "La parole et les gens",
+    "description": "Paysan attaché à une terre qui ne lui appartient pas, il a survécu aux famines, aux guerres et aux seigneurs. Il est le peuple qu'on oublie. Il est endurant et débrouillard, et il a une colère qui couve.",
+    "competences": [
+      "Survie",
+      "Athlétisme",
+      "Artisanat",
+      "Perception",
+      "Corps à corps",
+      "Perspicacité",
+      "Pilotage",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Détective privé",
+    "genre": "Horreur",
+    "categorie": "Ceux qui cherchent",
+    "description": "Il vit de filatures, d'adultères et de disparitions que la police a classées trop vite. Il a appris à se méfier de tout le monde. Il est méthodique et discret, et une affaire de trop va le mener là où il ne fallait pas aller.",
+    "competences": [
+      "Investigation",
+      "Perception",
+      "Perspicacité",
+      "Tromperie",
+      "Discrétion",
+      "Armes à distance",
+      "Pilotage",
+      "Sécurité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Policier",
+    "genre": "Horreur",
+    "categorie": "Ceux qui cherchent",
+    "description": "Inspecteur de la criminelle, il a vu des scènes que ses collègues refusent de décrire. Il a un badge, une arme et des rapports qu'il n'ose pas finir. Il est efficace et protégé par l'institution, et l'institution n'a pas de case pour ce qu'il découvre.",
+    "competences": [
+      "Armes à distance",
+      "Investigation",
+      "Intimidation",
+      "Perception",
+      "Pilotage",
+      "Perspicacité",
+      "Corps à corps",
+      "Persuasion"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Journaliste",
+    "genre": "Horreur",
+    "categorie": "Ceux qui cherchent",
+    "description": "Reporter d'investigation, il tire sur un fil qui mène toujours plus loin. Ses sources disparaissent les unes après les autres. Il délie les langues comme personne, et il ne sait pas s'arrêter.",
+    "competences": [
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Érudition",
+      "Discrétion",
+      "Technologie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Enquêteur du paranormal",
+    "genre": "Horreur",
+    "categorie": "Ceux qui cherchent",
+    "description": "Avec caméras, détecteurs et une chaîne qui compte trois mille abonnés, il traque les fantômes. Tout le monde se moque de lui, jusqu'au jour où le détecteur s'affole vraiment. Il est équipé et passionné, et il est totalement imprudent.",
+    "competences": [
+      "Technologie",
+      "Occultisme",
+      "Investigation",
+      "Perception",
+      "Artisanat",
+      "Arts",
+      "Persuasion",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Universitaire",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Professeur d'histoire, de linguistique ou d'anthropologie, il lit ce que personne ne sait plus lire. Un manuscrit légué à sa faculté va changer sa vie. Il est savant et méthodique, et il n'est pas fait pour courir.",
+    "competences": [
+      "Érudition",
+      "Sciences",
+      "Occultisme",
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Technologie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Archéologue",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Il fouille les sites oubliés, des déserts aux cavernes sous les montagnes. Il sait dater une pierre et lire une inscription morte. Il est endurant et curieux, et certaines tombes ont été scellées pour une bonne raison.",
+    "competences": [
+      "Érudition",
+      "Occultisme",
+      "Investigation",
+      "Athlétisme",
+      "Survie",
+      "Perception",
+      "Sciences",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Antiquaire",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Marchand de livres rares et d'objets anciens, il sait d'où vient chaque pièce, et à qui elle a coûté la raison. Les collectionneurs étranges le connaissent bien. Il est érudit et bien renseigné, et sa boutique attire les mauvaises personnes.",
+    "competences": [
+      "Érudition",
+      "Occultisme",
+      "Persuasion",
+      "Perception",
+      "Investigation",
+      "Tromperie",
+      "Arts",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Occultiste",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Collectionneur de grimoires, universitaire déchu ou héritier d'une lignée maudite. Il connaît les rituels, et il sait ce qu'ils coûtent. C'est la seule arme contre l'indicible, et chaque savoir interdit lui ronge un peu plus l'esprit.",
+    "competences": [
+      "Magie",
+      "Occultisme",
+      "Mythe",
+      "Érudition",
+      "Investigation",
+      "Perspicacité",
+      "Arts",
+      "Esquive"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Nécromancie, Illusion, adaptés à l'Horreur",
+    "sans_magie": "Persuasion remplace Rituels ; il connaît les rites sans pouvoir les accomplir"
+  },
+  {
+    "nom": "Médium",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Voyante de quartier ou spirite renommée, elle entend ce que les autres n'entendent pas. La moitié de ses clients sont des escrocs, et elle aussi, parfois. Elle est un pont avec l'au-delà, et l'au-delà sait qu'elle écoute.",
+    "competences": [
+      "Magie",
+      "Perspicacité",
+      "Occultisme",
+      "Persuasion",
+      "Tromperie",
+      "Perception",
+      "Arts",
+      "Esquive"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Nécromancie (parler aux morts), Illusion",
+    "sans_magie": "une voyante charlatan, avec Discrétion à la place de Rituels"
+  },
+  {
+    "nom": "Prêtre",
+    "genre": "Horreur",
+    "categorie": "Ceux qui savent",
+    "description": "Curé de campagne ou aumônier d'hôpital, il réconforte les vivants et enterre les morts. Il a la foi, mais pas toutes les réponses. Il est écouté et respecté, et il découvre que le Mal existe vraiment.",
+    "competences": [
+      "Occultisme",
+      "Perspicacité",
+      "Persuasion",
+      "Érudition",
+      "Médecine",
+      "Arts",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Médecin",
+    "genre": "Horreur",
+    "categorie": "Ceux qui soignent",
+    "description": "Urgentiste, légiste ou généraliste, il a vu la mort de près, mais jamais comme ça. Il soigne les corps quand tout s'effondre. Il est indispensable à un groupe et démuni dès qu'il faut fuir ou se battre.",
+    "competences": [
+      "Médecine",
+      "Sciences",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Investigation",
+      "Esquive",
+      "Pilotage"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Psychiatre",
+    "genre": "Horreur",
+    "categorie": "Ceux qui soignent",
+    "description": "Il écoute les délires de ses patients depuis des années, et certains commencent à se ressembler un peu trop. Il comprend les esprits brisés. Il est précieux pour garder le groupe debout, et il est le prochain sur la liste.",
+    "competences": [
+      "Perspicacité",
+      "Médecine",
+      "Persuasion",
+      "Sciences",
+      "Investigation",
+      "Érudition",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Infirmière",
+    "genre": "Horreur",
+    "categorie": "Ceux qui soignent",
+    "description": "De garde la nuit, elle a vu des patients guérir trop vite, ou mourir pour rien. Elle tient le coup quand les médecins craquent. Elle est solide, efficace et attentive, et elle est souvent la seule à remarquer ce qui cloche.",
+    "competences": [
+      "Médecine",
+      "Perspicacité",
+      "Perception",
+      "Athlétisme",
+      "Persuasion",
+      "Pilotage",
+      "Sciences",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Vétéran",
+    "genre": "Horreur",
+    "categorie": "Ceux qui se battent",
+    "description": "Ancien soldat revenu d'une guerre qu'il ne raconte pas. Il dort mal et il garde une arme sous l'oreiller. Il est le meilleur quand ça dégénère, et ses propres démons l'attendent déjà.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Survie",
+      "Perception",
+      "Intimidation",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chasseur",
+    "genre": "Horreur",
+    "categorie": "Ceux qui se battent",
+    "description": "Homme des bois et des campagnes isolées, il connaît chaque piste et chaque bête. Ces derniers temps, il trouve des traces qu'il ne sait pas nommer. Il est autonome et bon tireur, et méfiant envers les gens de la ville.",
+    "competences": [
+      "Armes à distance",
+      "Survie",
+      "Discrétion",
+      "Perception",
+      "Athlétisme",
+      "Pilotage",
+      "Médecine",
+      "Artisanat"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Voyou",
+    "genre": "Horreur",
+    "categorie": "Ceux qui se battent",
+    "description": "Petit truand des quartiers, il vit de cambriolages, de deals et de services rendus. Il connaît les gens que la police ne connaît pas. Il est débrouillard et pas regardant, et il a des dettes envers des gens dangereux.",
+    "competences": [
+      "Corps à corps",
+      "Escamotage",
+      "Sécurité",
+      "Intimidation",
+      "Tromperie",
+      "Discrétion",
+      "Perception",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Artiste",
+    "genre": "Horreur",
+    "categorie": "Les gens ordinaires… ou presque",
+    "description": "Peintre, écrivain ou musicien, il cherche l'inspiration dans les rêves, et les rêves lui répondent. Ses œuvres troublent ceux qui les regardent. Il est sensible et visionnaire, et fragile face à ce qu'il pressent.",
+    "competences": [
+      "Arts",
+      "Perspicacité",
+      "Érudition",
+      "Occultisme",
+      "Perception",
+      "Persuasion",
+      "Tromperie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Héritier fortuné",
+    "genre": "Horreur",
+    "categorie": "Les gens ordinaires… ou presque",
+    "description": "Il a hérité d'une fortune, d'un manoir et des secrets de famille qui vont avec. L'argent ouvre toutes les portes, même celles qu'il faudrait laisser closes. Il a des moyens et des relations, et un passé familial qui le rattrape.",
+    "competences": [
+      "Persuasion",
+      "Érudition",
+      "Pilotage",
+      "Arts",
+      "Perspicacité",
+      "Commandement",
+      "Armes à distance",
+      "Occultisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Ouvrier",
+    "genre": "Horreur",
+    "categorie": "Les gens ordinaires… ou presque",
+    "description": "Mécano, électricien ou homme à tout faire, il répare ce qui casse et descend là où les autres ne vont pas. Il croit ce qu'il touche. Il est solide et pratique, et il ne croit pas aux fantômes, jusqu'à la cave de trop.",
+    "competences": [
+      "Artisanat",
+      "Athlétisme",
+      "Pilotage",
+      "Perception",
+      "Sécurité",
+      "Corps à corps",
+      "Survie",
+      "Intimidation"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Sectateur",
+    "genre": "Horreur",
+    "categorie": "Les gens ordinaires… ou presque",
+    "description": "Membre d'un culte qui promet la vérité, la puissance ou l'éternité. Il connaît des secrets qu'il n'aurait jamais dû apprendre. Il est surtout fait pour les PNJ, mais c'est un perso fascinant pour qui veut jouer la rédemption, ou la chute.",
+    "competences": [
+      "Occultisme",
+      "Mythe",
+      "Tromperie",
+      "Persuasion",
+      "Discrétion",
+      "Corps à corps",
+      "Perspicacité",
+      "Arts"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Flic",
+    "genre": "Contemporain",
+    "categorie": "L'ordre",
+    "description": "Inspecteur de terrain, entre procédure et coups de pression. Il a un badge, une arme et un supérieur sur le dos. Efficace dans la rue comme dans un bureau, il est tenu par la loi… quand il la respecte.",
+    "competences": [
+      "Armes à distance",
+      "Investigation",
+      "Intimidation",
+      "Perception",
+      "Pilotage",
+      "Perspicacité",
+      "Corps à corps",
+      "Bureaucratie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Agent d'intervention",
+    "genre": "Contemporain",
+    "categorie": "L'ordre",
+    "description": "Membre d'une unité d'élite, il enfonce les portes quand les négociations échouent. Il est entraîné, équipé et soudé avec son équipe. C'est le meilleur dans l'assaut, mais il est bridé par la hiérarchie et les règles d'engagement.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Perception",
+      "Discrétion",
+      "Commandement",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Garde du corps",
+    "genre": "Contemporain",
+    "categorie": "L'ordre",
+    "description": "Il protège les riches, les célèbres et les menacés, et il prend la balle s'il le faut. Il voit le danger avant tout le monde. Il est vigilant et loyal, et il ne vit pas sa propre vie.",
+    "competences": [
+      "Corps à corps",
+      "Armes à distance",
+      "Perception",
+      "Perspicacité",
+      "Pilotage",
+      "Athlétisme",
+      "Intimidation",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Avocat",
+    "genre": "Contemporain",
+    "categorie": "L'ordre",
+    "description": "Pénaliste ou conseiller d'affaires, il connaît la loi assez bien pour la contourner. Il sait faire sortir un client et couler un adversaire. Il est redoutable dans un tribunal, et désarmé dans une ruelle.",
+    "competences": [
+      "Persuasion",
+      "Bureaucratie",
+      "Perspicacité",
+      "Tromperie",
+      "Érudition",
+      "Investigation",
+      "Réseau",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Voyou",
+    "genre": "Contemporain",
+    "categorie": "La rue",
+    "description": "Petit truand des quartiers, il vit de deals, de rackets et de services rendus. Il connaît les gens que la police ne connaît pas. Il est débrouillard et pas regardant, et il a des dettes envers des gens dangereux.",
+    "competences": [
+      "Corps à corps",
+      "Escamotage",
+      "Sécurité",
+      "Intimidation",
+      "Tromperie",
+      "Discrétion",
+      "Perception",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Cambrioleur",
+    "genre": "Contemporain",
+    "categorie": "La rue",
+    "description": "Spécialiste des coffres, des alarmes et des fenêtres du troisième étage. Il prépare chaque coup pendant des semaines. Il est précis et silencieux, et il suffit d'un imprévu pour que tout parte en vrille.",
+    "competences": [
+      "Sécurité",
+      "Discrétion",
+      "Athlétisme",
+      "Perception",
+      "Escamotage",
+      "Technologie",
+      "Tromperie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Escroc",
+    "genre": "Contemporain",
+    "categorie": "La rue",
+    "description": "Faux héritier, faux expert, vraie arnaque. Il change de nom comme de chemise. Il est charmeur et insaisissable, et toujours poursuivi par quelqu'un qu'il a plumé.",
+    "competences": [
+      "Tromperie",
+      "Persuasion",
+      "Perspicacité",
+      "Escamotage",
+      "Réseau",
+      "Arts",
+      "Érudition",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chauffeur",
+    "genre": "Contemporain",
+    "categorie": "La rue",
+    "description": "Taxi de nuit, livreur ou pilote pour les braquages, il connaît chaque rue et chaque raccourci. On l'engage pour arriver vite, ou pour repartir encore plus vite. Il est imbattable au volant, et il en sait toujours trop sur ses passagers.",
+    "competences": [
+      "Pilotage",
+      "Artisanat",
+      "Perception",
+      "Réseau",
+      "Esquive",
+      "Athlétisme",
+      "Tromperie",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Hacker",
+    "genre": "Contemporain",
+    "categorie": "Le savoir et la tech",
+    "description": "Il entre dans les systèmes comme d'autres entrent chez eux. Il travaille pour lui, pour un client ou pour une cause. Il est indispensable pour un coup moderne, et vulnérable dès qu'il quitte son écran.",
+    "competences": [
+      "Technologie",
+      "Investigation",
+      "Sécurité",
+      "Tromperie",
+      "Perception",
+      "Sciences",
+      "Réseau",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Journaliste",
+    "genre": "Contemporain",
+    "categorie": "Le savoir et la tech",
+    "description": "Reporter d'investigation, pigiste fauché ou star sur le déclin, il flaire le scandale. Son carnet d'adresses vaut de l'or, et ses ennemis aussi. Il délie les langues comme personne, et il est seul quand les menaces deviennent réelles.",
+    "competences": [
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Érudition",
+      "Réseau",
+      "Discrétion",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Médecin",
+    "genre": "Contemporain",
+    "categorie": "Le savoir et la tech",
+    "description": "Urgentiste ou chirurgien, il prend des décisions de vie ou de mort à trois heures du matin. Il garde son sang-froid quand tout le monde panique. Il est précieux partout, et il ne sait pas dire non à un blessé, même du mauvais côté.",
+    "competences": [
+      "Médecine",
+      "Sciences",
+      "Perspicacité",
+      "Perception",
+      "Pilotage",
+      "Persuasion",
+      "Athlétisme",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Technicien",
+    "genre": "Contemporain",
+    "categorie": "Le savoir et la tech",
+    "description": "Ingénieur, électricien ou mécanicien, il comprend comment les choses marchent, et comment les faire tomber en panne. Il entre partout avec une caisse à outils et un gilet orange. Il est pratique et ingénieux, et peu à l'aise avec les gens.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Sciences",
+      "Perception",
+      "Sécurité",
+      "Pilotage",
+      "Investigation",
+      "Corps à corps"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Politicien",
+    "genre": "Contemporain",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Élu local ou conseiller ministériel, il manie les promesses, les dossiers et les alliances de couloir. Il connaît les gens qui décident. Il est influent et habile, et il a des casseroles plein les placards.",
+    "competences": [
+      "Persuasion",
+      "Bureaucratie",
+      "Réseau",
+      "Tromperie",
+      "Commandement",
+      "Perspicacité",
+      "Érudition",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chef d'entreprise",
+    "genre": "Contemporain",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Patron d'une start-up ou d'un groupe familial, il pense en contrats, en parts de marché et en rapports de force. L'argent lui ouvre les portes. Il est puissant dans son monde et fragile dès qu'on menace son empire.",
+    "competences": [
+      "Persuasion",
+      "Commandement",
+      "Bureaucratie",
+      "Réseau",
+      "Perspicacité",
+      "Tromperie",
+      "Érudition",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Influenceur",
+    "genre": "Contemporain",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Des millions d'abonnés, une image à entretenir et des sponsors à satisfaire. Il peut mobiliser une foule avec une vidéo. Il est célèbre et persuasif, et il est surveillé en permanence.",
+    "competences": [
+      "Arts",
+      "Persuasion",
+      "Réseau",
+      "Perspicacité",
+      "Tromperie",
+      "Technologie",
+      "Athlétisme",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Étudiant",
+    "genre": "Contemporain",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Fac, colocation et petits boulots, il a la vie devant lui et pas un sou en poche. Il apprend vite et il connaît tout le monde. Il est curieux et adaptable, et totalement inexpérimenté quand les choses tournent mal.",
+    "competences": [
+      "Érudition",
+      "Technologie",
+      "Sciences",
+      "Persuasion",
+      "Athlétisme",
+      "Arts",
+      "Réseau",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Secouriste",
+    "genre": "Contemporain",
+    "categorie": "Le terrain",
+    "description": "Pompier, ambulancier ou membre d'une équipe de montagne, il court vers le danger quand tout le monde le fuit. Il est calme dans le chaos et précieux dans une crise. Il est aussi trop humain pour laisser quelqu'un derrière, même quand il le faudrait.",
+    "competences": [
+      "Médecine",
+      "Athlétisme",
+      "Pilotage",
+      "Perception",
+      "Survie",
+      "Esquive",
+      "Perspicacité",
+      "Commandement"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Ancien militaire",
+    "genre": "Contemporain",
+    "categorie": "Le terrain",
+    "description": "Revenu à la vie civile après des années d'opérations, il garde les réflexes et les cauchemars. Il fait de la sécurité privée ou des petits boulots. Il est redoutable quand ça dégénère, et il a du mal à trouver sa place ailleurs.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Survie",
+      "Perception",
+      "Discrétion",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Guide d'aventure",
+    "genre": "Contemporain",
+    "categorie": "Le terrain",
+    "description": "Guide de haute montagne, de jungle ou de désert, il emmène les touristes là où les cartes s'arrêtent. Il sait survivre partout. Il est autonome et endurant, et il est responsable des vies des autres.",
+    "competences": [
+      "Survie",
+      "Athlétisme",
+      "Perception",
+      "Médecine",
+      "Pilotage",
+      "Artisanat",
+      "Armes à distance",
+      "Commandement"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Combattant",
+    "genre": "Contemporain",
+    "categorie": "Le terrain",
+    "description": "Boxeur, pratiquant de MMA ou ancien champion, il vit de ses poings et de sa réputation dans les salles. Il sait encaisser comme personne. Il est redoutable au contact, mais un pistolet reste plus rapide qu'un crochet.",
+    "competences": [
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Intimidation",
+      "Perception",
+      "Perspicacité",
+      "Réseau",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Fantassin",
+    "genre": "Militaire",
+    "categorie": "Au front",
+    "description": "L'épine dorsale de toute armée : il marche, il tient la position, il tire. Il sait vivre avec peu et se battre avec moins encore. C'est un combattant complet, qui a besoin d'ordres et de camarades pour donner son meilleur.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Discrétion",
+      "Perception",
+      "Survie",
+      "Explosifs"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Tireur d'élite",
+    "genre": "Militaire",
+    "categorie": "Au front",
+    "description": "Il attend des heures, immobile, pour un seul tir. Une silhouette à huit cents mètres, une respiration retenue. Il est patient et mortel, et il est seul et exposé si on le repère.",
+    "competences": [
+      "Armes à distance",
+      "Discrétion",
+      "Perception",
+      "Survie",
+      "Athlétisme",
+      "Investigation",
+      "Esquive",
+      "Transmissions"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mitrailleur",
+    "genre": "Militaire",
+    "categorie": "Au front",
+    "description": "Il porte l'arme lourde et la caisse de munitions qui va avec. Quand il ouvre le feu, l'ennemi baisse la tête. C'est le pilier de la section en défense, et l'ennemi en fait sa première cible.",
+    "competences": [
+      "Armes à distance",
+      "Athlétisme",
+      "Esquive",
+      "Perception",
+      "Artisanat",
+      "Intimidation",
+      "Explosifs",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Commando",
+    "genre": "Militaire",
+    "categorie": "Au front",
+    "description": "Membre des forces spéciales, il frappe la nuit, loin derrière les lignes. Sabotage, raid, extraction : il fait ce que l'armée ne reconnaît pas officiellement. Il est polyvalent et redoutable, et souvent seul sans renforts.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Discrétion",
+      "Athlétisme",
+      "Explosifs",
+      "Survie",
+      "Perception",
+      "Sécurité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Éclaireur",
+    "genre": "Militaire",
+    "categorie": "Au front",
+    "description": "Il part devant, voit l'ennemi en premier et revient le dire. Il connaît le terrain mieux que les cartes. Il est discret et rapide, et il est le premier à tomber dans une embuscade.",
+    "competences": [
+      "Discrétion",
+      "Perception",
+      "Survie",
+      "Athlétisme",
+      "Armes à distance",
+      "Investigation",
+      "Pilotage",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Transmetteur",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Les yeux et la voix de l'unité : radios, chiffrement, brouillage, écoute ennemie. Sans lui, la section est sourde et aveugle. Il est précieux et donc ciblé en priorité, et il est moins à l'aise au contact.",
+    "competences": [
+      "Transmissions",
+      "Technologie",
+      "Armes à distance",
+      "Perception",
+      "Investigation",
+      "Discrétion",
+      "Sécurité",
+      "Pilotage"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Infirmier de combat",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Il porte une trousse et un fusil, et il sait se servir des deux. Il soigne sous le feu et ramène les blessés coûte que coûte. Tout le monde l'aime, et tout le monde a besoin de lui… au même moment.",
+    "competences": [
+      "Médecine",
+      "Armes à distance",
+      "Esquive",
+      "Athlétisme",
+      "Perspicacité",
+      "Survie",
+      "Perception",
+      "Pilotage"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Sapeur",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Démineur, poseur de charges et bâtisseur de ponts sous le feu. Il ouvre la route et la referme derrière lui. Il est indispensable et méthodique, et il n'a droit qu'à une erreur.",
+    "competences": [
+      "Sécurité",
+      "Explosifs",
+      "Artisanat",
+      "Perception",
+      "Athlétisme",
+      "Technologie",
+      "Armes à distance",
+      "Sciences"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mécanicien",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Il garde les blindés, les camions et les groupes électrogènes en état de marche, avec trois clés et beaucoup de jurons. Sans lui, l'armée s'arrête. Il est ingénieux et respecté, et il est rarement entraîné au combat d'infanterie.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Pilotage",
+      "Perception",
+      "Athlétisme",
+      "Armes à distance",
+      "Sciences",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pilote",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Aux commandes d'un hélicoptère, d'un char ou d'un avion d'appui, il change le cours d'un combat en un passage. Son engin est sa force et sa prison. Il est puissant aux commandes et vulnérable une fois abattu.",
+    "competences": [
+      "Pilotage",
+      "Artisanat",
+      "Transmissions",
+      "Perception",
+      "Armes à distance",
+      "Technologie",
+      "Survie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Opérateur de drones",
+    "genre": "Militaire",
+    "categorie": "Le soutien",
+    "description": "Depuis un écran, à des kilomètres, il voit tout et frappe sans être vu. C'est la guerre moderne. Il est redoutable pour repérer et guider, et il ne sert presque à rien quand l'ennemi arrive dans la tranchée.",
+    "competences": [
+      "Technologie",
+      "Pilotage",
+      "Perception",
+      "Transmissions",
+      "Investigation",
+      "Artisanat",
+      "Discrétion",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Officier",
+    "genre": "Militaire",
+    "categorie": "Le commandement et le renseignement",
+    "description": "Lieutenant ou capitaine, il décide et il porte le poids de chaque décision. Il connaît la stratégie et l'histoire des batailles. Il est respecté par ses hommes, s'il les mérite, et coincé entre eux et l'état-major.",
+    "competences": [
+      "Commandement",
+      "Érudition",
+      "Armes à distance",
+      "Persuasion",
+      "Perspicacité",
+      "Perception",
+      "Transmissions",
+      "Intimidation"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Sous-officier",
+    "genre": "Militaire",
+    "categorie": "Le commandement et le renseignement",
+    "description": "Le sergent qui transforme les ordres en actions et les bleus en soldats. Il gueule, il protège, il ramène ses hommes. C'est l'âme de la section, et il est usé par trop de campagnes.",
+    "competences": [
+      "Commandement",
+      "Armes à distance",
+      "Corps à corps",
+      "Intimidation",
+      "Athlétisme",
+      "Perception",
+      "Médecine",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Officier de renseignement",
+    "genre": "Militaire",
+    "categorie": "Le commandement et le renseignement",
+    "description": "Il lit les cartes, les interceptions et les visages des prisonniers. Il sait ce que l'ennemi va faire avant lui. Il est précieux et cérébral, et il est souvent loin du terrain qu'il analyse.",
+    "competences": [
+      "Investigation",
+      "Perspicacité",
+      "Tromperie",
+      "Persuasion",
+      "Érudition",
+      "Technologie",
+      "Perception",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Agent infiltré",
+    "genre": "Militaire",
+    "categorie": "Le commandement et le renseignement",
+    "description": "Il vit dans le camp ennemi sous une fausse identité, et un mot de travers le condamne. Il transmet, il sabote, il ment. C'est l'arme la plus discrète de la guerre, et la plus seule.",
+    "competences": [
+      "Tromperie",
+      "Discrétion",
+      "Investigation",
+      "Perspicacité",
+      "Escamotage",
+      "Corps à corps",
+      "Persuasion",
+      "Perception"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Interprète",
+    "genre": "Militaire",
+    "categorie": "Le commandement et le renseignement",
+    "description": "Recruté sur place ou formé aux langues, il fait le pont entre l'armée et les civils. Il comprend ce que disent vraiment les gens. Il est indispensable, et les deux camps le soupçonnent.",
+    "competences": [
+      "Persuasion",
+      "Perspicacité",
+      "Érudition",
+      "Investigation",
+      "Tromperie",
+      "Perception",
+      "Esquive",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Correspondant de guerre",
+    "genre": "Militaire",
+    "categorie": "Autour de la guerre",
+    "description": "Appareil photo et carnet en main, il suit les troupes là où l'histoire s'écrit. Il raconte ce que les communiqués taisent. Il est courageux et témoin de tout, et il n'est pas armé.",
+    "competences": [
+      "Investigation",
+      "Persuasion",
+      "Perspicacité",
+      "Arts",
+      "Perception",
+      "Discrétion",
+      "Esquive",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Aumônier",
+    "genre": "Militaire",
+    "categorie": "Autour de la guerre",
+    "description": "Il bénit les vivants, enterre les morts et écoute ceux qui ne dorment plus. Il ne porte pas d'arme, mais il porte le moral. Il est le soutien de toute l'unité, et il porte seul le poids de ce qu'il entend.",
+    "competences": [
+      "Perspicacité",
+      "Persuasion",
+      "Médecine",
+      "Érudition",
+      "Arts",
+      "Perception",
+      "Esquive",
+      "Commandement"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Contractor",
+    "genre": "Militaire",
+    "categorie": "Autour de la guerre",
+    "description": "Mercenaire d'une société militaire privée, il est mieux payé et moins encadré que les soldats. Il travaille pour le contrat, pas pour le drapeau. Il est bien équipé et efficace, et personne ne pleure un contractor.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Intimidation",
+      "Perception",
+      "Pilotage",
+      "Tromperie",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Partisan",
+    "genre": "Militaire",
+    "categorie": "Autour de la guerre",
+    "description": "Civil qui a pris les armes contre l'occupant, il connaît chaque ferme et chaque chemin creux. Il frappe et disparaît dans la population. Il est insaisissable et motivé, et ses proches paient ses actes.",
+    "competences": [
+      "Discrétion",
+      "Armes à distance",
+      "Explosifs",
+      "Survie",
+      "Tromperie",
+      "Perception",
+      "Escamotage",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pilote",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "As du manche, contrebandier ou ancien de la flotte, il fait voler ce qui ne devrait pas voler. Son vaisseau est sa maison et son arme. Il est génial aux commandes et se sent nu dès qu'il pose le pied au sol.",
+    "competences": [
+      "Pilotage",
+      "Astrogation",
+      "Technologie",
+      "Perception",
+      "Armes à distance",
+      "Artillerie embarquée",
+      "Esquive",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Navigateur",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "Il calcule les sauts, lit les cartes stellaires et sent les anomalies avant les capteurs. Une erreur de sa part, et le vaisseau sort au cœur d'une étoile. Il est précieux et méticuleux, et il passe sa vie penché sur des équations.",
+    "competences": [
+      "Astrogation",
+      "Sciences",
+      "Technologie",
+      "Pilotage",
+      "Perception",
+      "Érudition",
+      "Investigation",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Ingénieur",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "Mécanicien de bord ou technicien de station, il garde le vaisseau en vie avec du ruban adhésif et du génie. Il comprend les machines mieux que les gens. Il est irremplaçable à bord, et vulnérable dès qu'il faut tirer.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Sciences",
+      "Sécurité",
+      "Pilotage",
+      "Investigation",
+      "Perception",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Canonnier",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "Aux tourelles quand le vaisseau combat, il transforme les données de visée en coups au but. Il parle aux canons comme à des animaux familiers. Il est décisif en combat spatial, et beaucoup moins dans une coursive.",
+    "competences": [
+      "Artillerie embarquée",
+      "Armes à distance",
+      "Technologie",
+      "Perception",
+      "Artisanat",
+      "Astrogation",
+      "Athlétisme",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Capitaine",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "Commandant d'un cargo, d'un corsaire ou d'une frégate, il répond de chaque vie à bord. Il négocie les contrats, il décide quand fuir et quand se battre. Il est respecté de son équipage, et seul avec ses choix.",
+    "competences": [
+      "Commandement",
+      "Persuasion",
+      "Pilotage",
+      "Astrogation",
+      "Perspicacité",
+      "Armes à distance",
+      "Tromperie",
+      "Érudition"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Médecin de bord",
+    "genre": "Science-fiction",
+    "categorie": "L'équipage",
+    "description": "Il soigne les humains, les hybrides et parfois ce qu'il ne sait pas nommer. Son infirmerie est le cœur discret du vaisseau. Il est indispensable, et il découvre des pathologies qu'aucun manuel ne décrit.",
+    "competences": [
+      "Médecine",
+      "Sciences",
+      "Perspicacité",
+      "Érudition",
+      "Technologie",
+      "Persuasion",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Marine",
+    "genre": "Science-fiction",
+    "categorie": "Les armes",
+    "description": "Soldat d'élite des abordages et des débarquements, entraîné à se battre en apesanteur. Quand ça tourne mal sur une station, c'est lui qu'on envoie. C'est une force de frappe redoutable, disciplinée jusqu'à la rigidité.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Intimidation",
+      "Perception",
+      "Commandement",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chasseur de primes",
+    "genre": "Science-fiction",
+    "categorie": "Les armes",
+    "description": "Il traque les fugitifs d'un système à l'autre, pour une prime et sans poser de questions. Sa réputation le précède dans chaque spatioport. Il est tenace et efficace, et toujours une cible pour ceux qu'il a déjà livrés.",
+    "competences": [
+      "Armes à distance",
+      "Investigation",
+      "Perception",
+      "Intimidation",
+      "Pilotage",
+      "Corps à corps",
+      "Tromperie",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Agent de sécurité",
+    "genre": "Science-fiction",
+    "categorie": "Les armes",
+    "description": "Il garde une station, un convoi ou un cadre important, dans des coursives où un tir perdu peut percer la coque. Il connaît chaque sas et chaque protocole. Il est fiable et bien équipé, et il obéit à ceux qui le paient.",
+    "competences": [
+      "Armes à distance",
+      "Sécurité",
+      "Perception",
+      "Intimidation",
+      "Corps à corps",
+      "Perspicacité",
+      "Technologie",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Explorateur",
+    "genre": "Science-fiction",
+    "categorie": "Les découvreurs",
+    "description": "Il pose le pied le premier sur les mondes que personne n'a cartographiés. Il sait survivre dans des atmosphères hostiles et parmi des faunes inconnues. Il est autonome et curieux, et toujours le premier exposé à l'inconnu.",
+    "competences": [
+      "Survie",
+      "Perception",
+      "Érudition",
+      "Armes à distance",
+      "Athlétisme",
+      "Pilotage",
+      "Médecine",
+      "Sciences"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Xénobiologiste",
+    "genre": "Science-fiction",
+    "categorie": "Les découvreurs",
+    "description": "Scientifique des formes de vie extraterrestres, il étudie, classe et comprend. Pour lui, chaque créature est une merveille, même celle qui veut le dévorer. Il est brillant et passionné, et dangereusement curieux.",
+    "competences": [
+      "Sciences",
+      "Érudition",
+      "Occultisme",
+      "Investigation",
+      "Médecine",
+      "Technologie",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Diplomate",
+    "genre": "Science-fiction",
+    "categorie": "Les découvreurs",
+    "description": "Ambassadeur, médiateur ou négociateur de premiers contacts, il évite les guerres avec des mots. Il connaît les coutumes de dix espèces. Il est indispensable pour la paix, et démuni quand elle échoue.",
+    "competences": [
+      "Persuasion",
+      "Érudition",
+      "Perspicacité",
+      "Tromperie",
+      "Commandement",
+      "Arts",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chercheur d'anomalies",
+    "genre": "Science-fiction",
+    "categorie": "Les découvreurs",
+    "description": "Il traque les ruines d'espèces disparues et les phénomènes que la physique n'explique pas. Les universités le financent, les corpos le surveillent. Il est savant et intrépide, et certains artefacts n'auraient jamais dû être réveillés.",
+    "competences": [
+      "Occultisme",
+      "Érudition",
+      "Investigation",
+      "Survie",
+      "Sciences",
+      "Athlétisme",
+      "Perception",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Contrebandier",
+    "genre": "Science-fiction",
+    "categorie": "L'ombre",
+    "description": "Il fait passer ce que les douanes interdisent, d'un bout de la galaxie à l'autre. Il connaît chaque route discrète et chaque fonctionnaire corruptible. Il est débrouillard et beau parleur, et il a toujours une dette envers quelqu'un.",
+    "competences": [
+      "Pilotage",
+      "Tromperie",
+      "Persuasion",
+      "Astrogation",
+      "Sécurité",
+      "Armes à distance",
+      "Escamotage",
+      "Perception"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pirate informatique",
+    "genre": "Science-fiction",
+    "categorie": "L'ombre",
+    "description": "Il parle aux IA, trompe les systèmes de bord et vide les comptes des corpos. Dans ce monde, une IA mal protégée vaut une flotte. Il est indispensable et insaisissable, et dangereux pour tous ceux qui l'emploient.",
+    "competences": [
+      "Technologie",
+      "Sécurité",
+      "Investigation",
+      "Tromperie",
+      "Sciences",
+      "Perception",
+      "Discrétion",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Espion",
+    "genre": "Science-fiction",
+    "categorie": "L'ombre",
+    "description": "Agent d'une corporation ou d'une puissance stellaire, il change d'identité comme de station. Il vole des secrets et retourne des alliés. Il est subtil et mortel, et il ne sait plus très bien pour qui il travaille.",
+    "competences": [
+      "Tromperie",
+      "Discrétion",
+      "Sécurité",
+      "Perspicacité",
+      "Persuasion",
+      "Escamotage",
+      "Corps à corps",
+      "Technologie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mineur d'astéroïdes",
+    "genre": "Science-fiction",
+    "categorie": "Les gens ordinaires",
+    "description": "Il fore la roche dans le vide pour un salaire de misère et une ration d'oxygène. Les « Ceinturiens » sont durs comme leur métier. Il est endurant et solidaire des siens, et en colère contre ceux qui l'exploitent.",
+    "competences": [
+      "Artisanat",
+      "Athlétisme",
+      "Pilotage",
+      "Survie",
+      "Perception",
+      "Sciences",
+      "Corps à corps",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Colon",
+    "genre": "Science-fiction",
+    "categorie": "Les gens ordinaires",
+    "description": "Pionnier d'un monde lointain, il défriche, il construit et il défend ce qu'il a bâti. Il est loin de tout et autonome par force. Il est polyvalent et courageux, et sa colonie est toujours à une catastrophe près.",
+    "competences": [
+      "Survie",
+      "Artisanat",
+      "Médecine",
+      "Pilotage",
+      "Perception",
+      "Armes à distance",
+      "Persuasion",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Psion",
+    "genre": "Science-fiction",
+    "categorie": "La Psionique",
+    "description": "Né avec un don que la science explique mal, il ressent les émotions et plie la matière. On le surveille, on l'exploite ou on le craint. Il est unique et puissant, et son esprit est aussi sa plus grande faiblesse.",
+    "competences": [
+      "Magie",
+      "Perspicacité",
+      "Persuasion",
+      "Érudition",
+      "Occultisme",
+      "Perception",
+      "Esquive",
+      "Médecine"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Télékinésie, Empathie",
+    "sans_magie": "remplacé par le Diplomate ou le Chercheur d'anomalies"
+  },
+  {
+    "nom": "Chevalier psi",
+    "genre": "Science-fiction",
+    "categorie": "La Psionique",
+    "description": "Membre d'un ordre ancien qui mêle le combat et la discipline de l'esprit. Il protège, il juge et il garde la paix entre les étoiles. Il est redoutable et respecté, et son ordre exige une obéissance totale.",
+    "competences": [
+      "Magie",
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Érudition"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Télékinésie, Biokinésie",
+    "sans_magie": "remplacé par le Marine"
+  },
+  {
+    "nom": "Fouineur",
+    "genre": "Post-apo",
+    "categorie": "Survivre",
+    "description": "Pilleur de ruines, il descend là où personne ne va pour remonter ce qui fait vivre la communauté. Il connaît les pièges du monde d'avant. Débrouillard et discret, il préfère éviter les ennuis plutôt que les affronter.",
+    "competences": [
+      "Récupération",
+      "Perception",
+      "Discrétion",
+      "Sécurité",
+      "Technologie",
+      "Athlétisme",
+      "Survie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pisteur",
+    "genre": "Post-apo",
+    "categorie": "Survivre",
+    "description": "Chasseur des terres désolées, il trouve l'eau, le gibier et les pistes des pillards. Il sait survivre seul là où d'autres meurent. Il est autonome et précis, et il a du mal avec les gens.",
+    "competences": [
+      "Survie",
+      "Armes à distance",
+      "Perception",
+      "Discrétion",
+      "Purification",
+      "Athlétisme",
+      "Corps à corps",
+      "Médecine"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Vagabond",
+    "genre": "Post-apo",
+    "categorie": "Survivre",
+    "description": "Il marche depuis si longtemps qu'il a oublié d'où il vient. Il ne possède que ce qu'il porte, et il ne fait confiance qu'à son instinct. Il est increvable et imprévisible, et il est toujours de passage, nulle part chez lui.",
+    "competences": [
+      "Survie",
+      "Discrétion",
+      "Corps à corps",
+      "Esquive",
+      "Perspicacité",
+      "Escamotage",
+      "Purification",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Pillard",
+    "genre": "Post-apo",
+    "categorie": "La violence",
+    "description": "Membre d'une bande qui vit de raids sur les convois et les fermes. Il prend ce qu'il veut, parce qu'il le peut. Il est brutal et redouté, et sa bande peut se retourner contre lui au premier signe de faiblesse.",
+    "competences": [
+      "Corps à corps",
+      "Armes à distance",
+      "Intimidation",
+      "Pilotage",
+      "Athlétisme",
+      "Perception",
+      "Escamotage",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Milicien",
+    "genre": "Post-apo",
+    "categorie": "La violence",
+    "description": "Il défend les murs de sa communauté contre les pillards, les mutants et les affamés. Il connaît chaque visage du village. Il est fiable et protecteur, et prêt à tout pour les siens, même au pire.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Perception",
+      "Commandement",
+      "Intimidation",
+      "Sécurité",
+      "Athlétisme",
+      "Perspicacité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Gladiateur",
+    "genre": "Post-apo",
+    "categorie": "La violence",
+    "description": "Il se bat dans les arènes des seigneurs de guerre pour de l'eau, de la gloire ou sa liberté. La foule scande son nom. Il est spectaculaire et endurci, et il est la propriété de quelqu'un.",
+    "competences": [
+      "Corps à corps",
+      "Esquive",
+      "Athlétisme",
+      "Intimidation",
+      "Arts",
+      "Perception",
+      "Médecine",
+      "Perspicacité"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chasseur de mutants",
+    "genre": "Post-apo",
+    "categorie": "La violence",
+    "description": "Il traque les bêtes et les monstres nés des radiations, pour une prime ou par vengeance. Il connaît leurs habitudes et leurs faiblesses. Il est redoutable et expérimenté, et il ne fait pas toujours la différence entre un monstre et un mutant pacifique.",
+    "competences": [
+      "Armes à distance",
+      "Corps à corps",
+      "Survie",
+      "Perception",
+      "Occultisme",
+      "Sécurité",
+      "Médecine",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Marchand de caravane",
+    "genre": "Post-apo",
+    "categorie": "La route",
+    "description": "Il fait circuler l'eau, les munitions et les nouvelles entre des communautés qui se méfient de tout. Il est respecté parce qu'il est utile. Excellent négociateur, il est toujours sur la route, donc toujours exposé.",
+    "competences": [
+      "Persuasion",
+      "Perspicacité",
+      "Pilotage",
+      "Intimidation",
+      "Perception",
+      "Armes à distance",
+      "Survie",
+      "Purification"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Routier",
+    "genre": "Post-apo",
+    "categorie": "La route",
+    "description": "Pilote d'un engin bricolé, blindé et hérissé de pointes, il dévore les autoroutes mortes. Son véhicule est sa vie et son arme. Il est imbattable sur la route, et à pied, il n'est plus grand-chose.",
+    "competences": [
+      "Pilotage",
+      "Artisanat",
+      "Armes à distance",
+      "Perception",
+      "Athlétisme",
+      "Intimidation",
+      "Survie",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Messager",
+    "genre": "Post-apo",
+    "categorie": "La route",
+    "description": "Il porte les lettres, les traités et les colis entre des communautés que tout sépare. Il connaît les raccourcis et les zones à éviter. Il est rapide et endurant, et on le tue souvent pour ce qu'il transporte.",
+    "competences": [
+      "Athlétisme",
+      "Survie",
+      "Discrétion",
+      "Perception",
+      "Pilotage",
+      "Persuasion",
+      "Esquive",
+      "Purification"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Bricoleur",
+    "genre": "Post-apo",
+    "categorie": "Le savoir et la tech",
+    "description": "Il fait marcher un générateur avec des pièces de grille-pain et redonne vie aux machines d'avant. Son atelier est un trésor. Il est indispensable à toute communauté, et convoité par toutes les bandes.",
+    "competences": [
+      "Artisanat",
+      "Technologie",
+      "Récupération",
+      "Pilotage",
+      "Perception",
+      "Sciences",
+      "Corps à corps",
+      "Persuasion"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Toubib",
+    "genre": "Post-apo",
+    "categorie": "Le savoir et la tech",
+    "description": "Médecin formé sur le tas, il recoud, il ampute et il soigne avec ce qu'il trouve. On lui pardonne tout parce qu'on aura besoin de lui. Il est précieux et respecté, et il a toujours plus de patients que de médicaments.",
+    "competences": [
+      "Médecine",
+      "Purification",
+      "Sciences",
+      "Perspicacité",
+      "Perception",
+      "Persuasion",
+      "Récupération",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Archiviste",
+    "genre": "Post-apo",
+    "categorie": "Le savoir et la tech",
+    "description": "Gardien des livres et des savoirs d'avant, il essaie de comprendre ce qu'était le monde. Il sait lire les plans, les cartes et les manuels. Il est savant et précieux, et il est souvent pris pour un sorcier.",
+    "competences": [
+      "Érudition",
+      "Technologie",
+      "Sciences",
+      "Investigation",
+      "Arts",
+      "Persuasion",
+      "Perception",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Purificateur",
+    "genre": "Post-apo",
+    "categorie": "Le savoir et la tech",
+    "description": "Il sait rendre l'eau buvable, la nourriture saine et l'air respirable. Dans ce monde, c'est plus précieux que l'or. Il est vital pour une communauté, et les seigneurs de guerre se le disputent.",
+    "competences": [
+      "Purification",
+      "Sciences",
+      "Médecine",
+      "Artisanat",
+      "Persuasion",
+      "Perception",
+      "Survie",
+      "Armes à distance"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Chef de clan",
+    "genre": "Post-apo",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Il dirige une communauté, une bande ou une tribu, et il porte la survie de tous. Il décide qui mange, qui se bat et qui part. Il est respecté et craint, et entouré de rivaux qui attendent son erreur.",
+    "competences": [
+      "Commandement",
+      "Intimidation",
+      "Persuasion",
+      "Perspicacité",
+      "Armes à distance",
+      "Perception",
+      "Arts",
+      "Survie"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Prêcheur",
+    "genre": "Post-apo",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Il annonce la fin des temps, ou un nouveau commencement, à des survivants qui ont besoin d'y croire. Ses sermons rassemblent les foules. Il est charismatique et influent, et il est dangereux quand il croit à ce qu'il prêche.",
+    "competences": [
+      "Arts",
+      "Occultisme",
+      "Persuasion",
+      "Perspicacité",
+      "Tromperie",
+      "Commandement",
+      "Médecine",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Bonimenteur",
+    "genre": "Post-apo",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Il vend de l'eau « bénite », des remèdes miracles et des cartes vers des paradis qui n'existent pas. Il a toujours un tour d'avance. Il est charmeur et insaisissable, et il ne repasse jamais deux fois par le même village.",
+    "competences": [
+      "Tromperie",
+      "Persuasion",
+      "Escamotage",
+      "Perspicacité",
+      "Arts",
+      "Discrétion",
+      "Occultisme",
+      "Esquive"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Fermier",
+    "genre": "Post-apo",
+    "categorie": "Le pouvoir et la parole",
+    "description": "Il cultive une terre empoisonnée et la défend contre tout ce qui a faim. Il nourrit les autres. Il est tenace et pragmatique, et ses récoltes attirent tous les prédateurs.",
+    "competences": [
+      "Survie",
+      "Purification",
+      "Artisanat",
+      "Perception",
+      "Armes à distance",
+      "Médecine",
+      "Persuasion",
+      "Athlétisme"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mutant",
+    "genre": "Post-apo",
+    "categorie": "Les mutants",
+    "description": "Né avec un corps marqué par les radiations : peau écailleuse, yeux sans pupilles, carrure démesurée. Rejeté par les communautés, il vit en marge. Il est endurant et résistant, et il est la cible de tous les préjugés.",
+    "competences": [
+      "Athlétisme",
+      "Survie",
+      "Corps à corps",
+      "Intimidation",
+      "Discrétion",
+      "Perception",
+      "Occultisme",
+      "Purification"
+    ],
+    "magie": false
+  },
+  {
+    "nom": "Mutant psi",
+    "genre": "Post-apo",
+    "categorie": "Les mutants",
+    "description": "Les radiations lui ont donné un don : déplacer les objets, ressentir les émotions, soigner par la pensée. Les uns le vénèrent, les autres veulent le brûler. Il est puissant et unique, et son don le consume.",
+    "competences": [
+      "Magie",
+      "Perspicacité",
+      "Occultisme",
+      "Survie",
+      "Discrétion",
+      "Perception",
+      "Esquive",
+      "Intimidation"
+    ],
+    "magie": true,
+    "domaines_conseilles": "Télékinésie, Empathie, comme la Psionique de la science-fiction",
+    "sans_magie": "remplacé par le Mutant"
+  }
+]
