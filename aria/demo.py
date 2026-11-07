@@ -198,8 +198,8 @@ class Demo:
         c, k = self.combat, self.k
         budget = k.budget
         restantes = k.munitions_restantes() or 0
-        recharge_mineure = k.arme is not None and k.arme.munitions.recharge.value == "mineure"
-        peut_recharger = k.arme is not None and restantes < k.arme.munitions.capacite
+        recharge_mineure = k.arme is not None and k.arme.chargeur.recharge.value == "mineure"
+        peut_recharger = k.arme is not None and restantes < k.arme.chargeur.capacite
 
         deplacements, raison_deplacement = [], ""
         if k.a_vise:

@@ -68,8 +68,12 @@
       "portee": "courte",
       "munitions": {"capacite": 8, "recharge": "mineure"},
       "proprietes": ["dissimulable"],
-      "rarete": "peu commune",
-      "bonus": {"degats": 1}
+      "qualite": "personnalisé",
+      "fabricant": "Arasaka",
+      "modifications": [
+        {"nom": "Rechargeur rapide", "effet": "munitions", "munitions": "recharge rapide"},
+        {"nom": "Nouveau calibre", "effet": "puissance", "valeur": 1}
+      ]
     },
     {
       "nom": "Fusil d'assaut",

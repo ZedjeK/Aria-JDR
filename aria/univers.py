@@ -12,13 +12,13 @@ from pathlib import Path
 from aria.equipement import (
     Arme,
     Armure,
-    BonusArme,
-    BonusArmure,
     Munitions,
     Portee,
     Propriete,
-    Rarete,
+    Qualite,
     Recharge,
+    modification_depuis_dict,
+    modification_vers_dict,
     verifier_arme,
     verifier_armure,
 )
@@ -209,9 +209,15 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
     return univers
 
 
+def _qualite(d: dict) -> dict:
+    """Ce que les armes et les armures ont en commun : qualité, modifications, fabricant, défaut."""
+    return dict(qualite=Qualite(d.get("qualite", "d'origine")),
+                modifications=tuple(modification_depuis_dict(m) for m in d.get("modifications", [])),
+                fabricant=d.get("fabricant"), defaut=d.get("defaut"))
+
+
 def _arme_depuis_dict(d: dict) -> Arme:
     munitions = d.get("munitions")
-    bonus = d.get("bonus", {})
     return Arme(
         nom=d["nom"],
         competence=d["competence"],
@@ -219,22 +225,19 @@ def _arme_depuis_dict(d: dict) -> Arme:
         portee=Portee(d["portee"]),
         munitions=Munitions(munitions["capacite"], Recharge(munitions["recharge"])) if munitions else None,
         proprietes=frozenset(Propriete(p) for p in d.get("proprietes", [])),
-        rarete=Rarete.depuis_libelle(d.get("rarete", "commune")),
-        bonus=BonusArme(bonus.get("jet", 0), bonus.get("degats", 0),
-                        frozenset(Propriete(p) for p in bonus.get("proprietes", []))),
+        categorie=d.get("categorie", ""),
+        **_qualite(d),
     )
 
 
 def _armure_depuis_dict(d: dict) -> Armure:
-    bonus = d.get("bonus", {})
     return Armure(
         nom=d["nom"],
         protection=d["protection"],
         malus=dict(d.get("malus", {})),
         proprietes=frozenset(d.get("proprietes", [])),
-        rarete=Rarete.depuis_libelle(d.get("rarete", "commune")),
-        bonus=BonusArmure(bonus.get("protection", 0), bonus.get("malus_en_moins", 0),
-                          frozenset(bonus.get("proprietes", []))),
+        categorie=d.get("categorie", "armures"),
+        **_qualite(d),
     )
 
 
@@ -299,10 +302,19 @@ def _arme_vers_dict(arme: Arme) -> dict:
         "munitions": {"capacite": arme.munitions.capacite, "recharge": arme.munitions.recharge.value}
         if arme.munitions else None,
         "proprietes": sorted(p.value for p in arme.proprietes),
-        "rarete": arme.rarete.libelle,
-        "bonus": {"jet": arme.bonus.jet, "degats": arme.bonus.degats,
-                  "proprietes": sorted(p.value for p in arme.bonus.proprietes)},
-    }
+        "categorie": arme.categorie,
+    } | _qualite_vers_dict(arme)
+
+
+def _qualite_vers_dict(objet) -> dict:
+    d = {"qualite": objet.qualite.value}
+    if objet.modifications:
+        d["modifications"] = [modification_vers_dict(m) for m in objet.modifications]
+    if objet.fabricant:
+        d["fabricant"] = objet.fabricant
+    if objet.defaut:
+        d["defaut"] = objet.defaut
+    return d
 
 
 def _armure_vers_dict(armure: Armure) -> dict:
@@ -311,10 +323,8 @@ def _armure_vers_dict(armure: Armure) -> dict:
         "protection": armure.protection,
         "malus": dict(armure.malus),
         "proprietes": sorted(armure.proprietes),
-        "rarete": armure.rarete.libelle,
-        "bonus": {"protection": armure.bonus.protection, "malus_en_moins": armure.bonus.malus_en_moins,
-                  "proprietes": sorted(armure.bonus.proprietes)},
-    }
+        "categorie": armure.categorie,
+    } | _qualite_vers_dict(armure)
 
 
 def charger_univers(chemin: str | Path, genere: bool = False) -> Univers:

@@ -207,7 +207,7 @@ class Combattant:
 
     def _charger(self, arme: Arme):
         if arme.munitions:
-            self.munitions[arme] = arme.munitions.capacite
+            self.munitions[arme] = arme.chargeur.capacite
 
     def munitions_restantes(self) -> int | None:
         arme = self.arme
@@ -398,9 +398,9 @@ class Combat:
         arme = combattant.arme
         if not arme or not arme.munitions:
             raise ActionImpossible(f"{combattant.nom} n'a rien à recharger.")
-        action = TypeAction.MINEURE if arme.munitions.recharge is Recharge.MINEURE else TypeAction.SIMPLE
+        action = TypeAction.MINEURE if arme.chargeur.recharge is Recharge.MINEURE else TypeAction.SIMPLE
         self._agir(combattant, action)
-        combattant.munitions[arme] = arme.munitions.capacite
+        combattant.munitions[arme] = arme.chargeur.capacite
 
     # --- L'attaque ---------------------------------------------------------------------
 
@@ -474,10 +474,10 @@ class Combat:
                   bonus_majeure: BonusMajeure, rapport: RapportAttaque):
         formule = formule_degats(arme, source.force)
         protection = victime.protection
+        if arme.a(Propriete.PERFORANTE) or degre is Degre.CRITIQUE:
+            protection //= 2  # perforante ou critique : l'armure ne compte qu'à moitié (une seule fois)
         if degre is Degre.CRITIQUE:
-            # Dégâts maximum, et l'armure ne compte qu'à moitié
             brut = formule.maximum
-            protection //= 2
             rapport.effets.append("Critique : dégâts maximum, armure à moitié.")
         else:
             brut = self.des.jet(formule)

@@ -386,6 +386,14 @@ class Bibliotheque:
                     usine = fabricant["categories"][base["categorie"]]
                     if usine and usine not in m["modifications"]:
                         erreurs.append(f"{nom} : il manque la modification d'usine « {usine} ».")
+            if m["type"] in ("arme", "armure"):
+                # Le moteur vérifie l'objet monté, avec sa qualité et ses modifications (7.5)
+                objet = dict(base, qualite=m["qualite"], fabricant=m.get("fabricant"),
+                             modifications=[{k: v for k, v in x.items() if k not in ("pour", "genres", "electronique")}
+                                            for x in mods])
+                verifier = verifier_arme if m["type"] == "arme" else verifier_armure
+                monter = _arme_moteur if m["type"] == "arme" else _armure_moteur
+                erreurs += [f"{nom} : {e}" for e in verifier(monter(objet), generee=True)]
             precision = sum(x.get("valeur", 0) for x in mods if x["effet"] == "précision")
             puissance = sum(x.get("valeur", 0) for x in mods if x["effet"] == "puissance")
             proprietes = sum(1 for x in mods if x["effet"] == "propriété")
