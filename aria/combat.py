@@ -20,6 +20,14 @@ DEGATS_PERSISTANTS = "1d3"
 MAINS_NUES = Arme("Mains nues", CORPS_A_CORPS, "1d3", Portee.CONTACT)
 MALUS_DEFENSE_SUPPLEMENTAIRE = -20
 BONUS_VISER = 20
+# Les armes de zone et l'IEM (REGLES.md 7.9 et 7.10)
+TAILLE_ZONE = {"petite": 2, "moyenne": 4, "grande": 8}
+BONUS_ESQUIVE_DEVIATION = 20
+ROUNDS_FUMEE = 3
+MALUS_AVEUGLE = -20
+BRULURE, FUMEE, AVEUGLANT, IEM = "brûlure", "fumée", "aveuglant", "IEM"
+NATURE_IEM = "iem"  # l'électronique d'un combattant est coupée
+YEUX_CYBERNETIQUES = "Yeux cybernétiques"
 
 
 class ActionImpossible(Exception):
@@ -43,6 +51,14 @@ class Couvert(Enum):
     AUCUN = 0
     PARTIEL = -20
     LOURD = -40
+
+
+class IssueZone(Enum):
+    """Où tombe le projectile d'une arme de zone (REGLES.md 7.9)."""
+
+    REUSSITE = "réussite"
+    DEVIATION = "déviation"  # la moitié des dégâts, +20 pour esquiver
+    MALADRESSE = "maladresse"  # aux pieds du lanceur
 
 
 class BonusMajeure(Enum):
@@ -186,6 +202,8 @@ class Combattant:
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         self.effets: list[EffetEnCours] = []  # ce que les sorts lui ont laissé
         self.armure_implantee: Armure | None = None  # posée par la session, d'après les implants du personnage
+        self.armes_implantees: frozenset[str] = frozenset()  # leurs noms : une IEM les rend inutilisables
+        self.blindage_iem = False  # tout son équipement électronique est blindé
         if arme:
             self._charger(arme)
 
@@ -221,6 +239,8 @@ class Combattant:
     def valeur(self, competence: str) -> int:
         """La compétence avec les malus subis (blessure grave, armure) et les renforts ou entraves des sorts."""
         valeur = self.fiche.valeur(competence) + self.modificateur_magique
+        if self.iem and isinstance(self.fiche, Personnage):
+            valeur -= self.fiche.bonus_implants(competence)  # les implants sont coupés
         for armure in (self.armure, self.armure_implantee):
             if armure:
                 valeur += armure.malus_pour(competence)
@@ -231,10 +251,17 @@ class Combattant:
         return sum(e.valeur for e in self.effets if e.nature in ("renfort", "entrave"))
 
     @property
+    def iem(self) -> bool:
+        """Une IEM lui a coupé l'électronique pour le round (REGLES.md 7.10)."""
+        return any(e.nature == NATURE_IEM for e in self.effets)
+
+    @property
     def protection(self) -> int:
-        """La meilleure armure, portée ou implantée (elles ne se cumulent pas), plus celle des sorts."""
+        """La meilleure armure, portée ou implantée (elles ne se cumulent pas), plus celle des sorts.
+        Sous une IEM, l'armure implantée ne protège plus."""
         magique = sum(e.valeur for e in self.effets if e.nature == "protection")
-        armures = [a.protection_totale for a in (self.armure, self.armure_implantee) if a]
+        implantee = None if self.iem else self.armure_implantee
+        armures = [a.protection_totale for a in (self.armure, implantee) if a]
         return max(armures, default=0) + magique
 
     def consommer_effets_du_jet(self):
@@ -269,6 +296,32 @@ class RapportAttaque:
     degats_bruts: int = 0
     protection: int = 0
     blessure: RapportBlessure | None = None
+    effets: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RapportCibleZone:
+    """Ce qu'une cible prend dans la zone : son esquive, ses dégâts, ses effets."""
+
+    qui: str
+    esquive: Resultat | None = None
+    couvert_lourd: bool = False
+    degats_bruts: int = 0  # après déviation, esquive et couvert, avant l'armure
+    protection: int = 0
+    blessure: RapportBlessure | None = None
+    test_constitution: Resultat | None = None  # contre un éclat aveuglant
+    effets: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RapportZone:
+    attaquant: str
+    arme: str
+    competence: str
+    attaque: Resultat
+    issue: IssueZone
+    jet_degats: int = 0  # le jet de dégâts, le même pour toute la zone
+    cibles: list[RapportCibleZone] = field(default_factory=list)
     effets: list[str] = field(default_factory=list)
 
 
@@ -310,6 +363,7 @@ class Combat:
             combattant.surpris = True
         self.actif = self._prochain(0)  # l'indice, dans l'ordre, de celui dont c'est le tour
         self.sauvegardes: list[RapportSauvegarde] = []  # les effets persistants, en attente d'être racontés
+        self.fumee = 0  # les rounds de fumée qui restent : tirer à travers, c'est un couvert lourd
 
     # --- Le tour de parole ---------------------------------------------------------
 
@@ -423,11 +477,12 @@ class Combat:
         if cible.fiche.etat is Etat.MORT:
             raise ActionImpossible(f"{cible.nom} est déjà mort.")
         arme = attaquant.arme_en_main
-        if not arme.corps_a_corps and arme.munitions and attaquant.munitions[arme] == 0:
-            raise ActionImpossible(f"L'arme de {attaquant.nom} est vide : il faut recharger.")
+        if arme.zone:
+            raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone.")
+        self._verifier_arme_utilisable(attaquant, arme)
         self._agir(attaquant, TypeAction.SIMPLE)
 
-        modificateur = arme.bonus.jet
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet
         effets = []
         if not arme.corps_a_corps:
             modificateur += couvert.value
@@ -472,6 +527,126 @@ class Combat:
         elif issue is Issue.DEFENSEUR and defense is Defense.RIPOSTE:
             self._infliger(cible, cible.arme_de_melee, resultat_defense.degre, attaquant, bonus_majeure, rapport)
         return rapport
+
+    def _verifier_arme_utilisable(self, attaquant: Combattant, arme: Arme):
+        if not arme.corps_a_corps and arme.munitions and attaquant.munitions[arme] == 0:
+            raise ActionImpossible(f"L'arme de {attaquant.nom} est vide : il faut recharger.")
+        if attaquant.iem and arme.nom in attaquant.armes_implantees:
+            raise ActionImpossible(f"{arme.nom} est coupée par l'IEM jusqu'à la fin du round.")
+
+    # --- Les armes de zone (REGLES.md 7.9) ------------------------------------------------
+
+    @staticmethod
+    def competence_de_zone(combattant: Combattant, arme: Arme) -> str:
+        """Athlétisme pour une grenade lancée, Explosifs (ou Artisanat) pour une charge posée,
+        la compétence de l'arme pour un lanceur. Un PNJ a un seul pourcentage de combat (7.8)."""
+        competence = "Athlétisme" if arme.a(Propriete.LANCER) else "Explosifs" if arme.posee else arme.competence
+        fiche = combattant.fiche
+        if isinstance(fiche, FichePnj):
+            return competence if competence in fiche.competences else ARMES_A_DISTANCE
+        if competence == "Explosifs" and competence not in fiche.competences:
+            return "Artisanat"
+        return competence
+
+    def attaquer_zone(
+        self,
+        attaquant: Combattant,
+        cibles: list[Combattant],
+        couverts_lourds: list[Combattant] = (),
+        sans_esquive: list[Combattant] = (),
+        voisins: list[Combattant] = (),
+        difficulte: Difficulte = Difficulte.NORMALE,
+    ) -> RapportZone:
+        """Une grenade, une roquette, une charge : toute la zone est touchée, alliés compris.
+
+        `voisins` : ceux qui sont tout près du lanceur, touchés à sa place s'il fait une maladresse.
+        Chaque cible esquive (sa défense du round), sauf celles de `sans_esquive`.
+        """
+        arme = attaquant.arme
+        if not arme or not arme.zone:
+            raise ActionImpossible(f"{attaquant.nom} n'a pas d'arme de zone en main.")
+        taille = TAILLE_ZONE[arme.zone]
+        if len(cibles) > taille:
+            raise ActionImpossible(f"Une zone {arme.zone} touche {taille} cibles au plus.")
+        if len({id(c) for c in cibles}) != len(cibles):
+            raise ActionImpossible("Une même cible apparaît deux fois.")
+        self._verifier_arme_utilisable(attaquant, arme)
+        self._agir(attaquant, TypeAction.SIMPLE)
+
+        effets = []
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet
+        if attaquant.vise and not arme.posee:
+            modificateur += BONUS_VISER
+        attaquant.vise = False
+        if arme.munitions:
+            attaquant.munitions[arme] -= 1
+        elif arme.usage_unique:
+            attaquant.arme = None
+            effets.append(f"{arme.nom} est utilisée : elle ne sert qu'une fois.")
+
+        competence = self.competence_de_zone(attaquant, arme)
+        attaque = tester(self.des, attaquant.valeur(competence), difficulte, combat=True, modificateur=modificateur)
+        attaquant.cocher(competence, attaque)
+        if attaque.degre is Degre.MALADRESSE:
+            issue = IssueZone.MALADRESSE
+            cibles = [attaquant] + [v for v in voisins if v is not attaquant][:taille - 1]
+            effets.append(f"Maladresse : {arme.nom} tombe aux pieds de {attaquant.nom}.")
+        else:
+            issue = IssueZone.REUSSITE if attaque.reussi else IssueZone.DEVIATION
+            if issue is IssueZone.DEVIATION:
+                effets.append("Le projectile dévie : la moitié des dégâts, et +20 pour esquiver.")
+
+        rapport = RapportZone(attaquant.nom, arme.nom, competence, attaque, issue, effets=effets)
+        if arme.degats:
+            rapport.jet_degats = self.des.jet(formule_degats(arme))
+        for cible in cibles:
+            if cible.fiche.etat is Etat.MORT:
+                continue
+            rapport.cibles.append(self._subir_zone(arme, rapport.jet_degats, issue, cible,
+                                                   any(c is cible for c in couverts_lourds),
+                                                   not any(c is cible for c in sans_esquive)))
+        if FUMEE in arme.effets:
+            self.fumee = ROUNDS_FUMEE
+            effets.append(f"Fumée pendant {ROUNDS_FUMEE} rounds : tirer à travers, c'est un couvert lourd (−40).")
+        return rapport
+
+    def _subir_zone(self, arme: Arme, jet: int, issue: IssueZone, cible: Combattant, couvert_lourd: bool,
+                    esquive: bool) -> RapportCibleZone:
+        r = RapportCibleZone(cible.nom, couvert_lourd=couvert_lourd)
+        touchee = True
+        if arme.degats:
+            degats = jet // 2 if issue is IssueZone.DEVIATION else jet
+            if esquive and cible.conscient and not (cible.surpris and self.round == 1):
+                malus = MALUS_DEFENSE_SUPPLEMENTAIRE * cible.defenses_ce_round
+                cible.defenses_ce_round += 1
+                bonus = BONUS_ESQUIVE_DEVIATION if issue is IssueZone.DEVIATION else 0
+                r.esquive = tester(self.des, cible.valeur("Esquive"), combat=True, modificateur=malus + bonus)
+                cible.cocher("Esquive", r.esquive)
+                if r.esquive.degre in (Degre.MAJEURE, Degre.CRITIQUE):
+                    degats = 0
+                elif r.esquive.reussi:
+                    degats //= 2
+            if couvert_lourd:
+                degats //= 2
+            r.protection = cible.protection // 2 if arme.a(Propriete.PERFORANTE) else cible.protection
+            r.degats_bruts = degats
+            touchee = degats > 0
+            if touchee:
+                r.blessure = self.appliquer_degats(cible, max(0, degats - r.protection))
+        for effet in sorted(arme.effets):
+            if effet == BRULURE and touchee and cible.fiche.etat is not Etat.MORT:
+                cible.effets.append(EffetEnCours(arme.nom, "attaque", 0, None, persistant=True))
+                r.effets.append("brûlure : jet de Constitution au début de chacun de ses tours, 1d3 s'il est raté")
+            elif effet == AVEUGLANT and cible.conscient:
+                r.test_constitution = tester(self.des, cible.fiche.carac(Caracteristique.CONSTITUTION))
+                if r.test_constitution.reussi:
+                    r.effets.append("résiste à l'éclat")
+                else:
+                    cible.effets.append(EffetEnCours(arme.nom, "entrave", MALUS_AVEUGLE, 1))
+                    r.effets.append(f"aveuglé : {MALUS_AVEUGLE} à tout pendant 1 round")
+            elif effet == IEM:
+                r.effets += subir_iem(cible, arme.nom)
+        return r
 
     def _infliger(self, source: Combattant, arme: Arme, degre: Degre, victime: Combattant,
                   bonus_majeure: BonusMajeure, rapport: RapportAttaque):
@@ -579,12 +754,28 @@ class Combat:
             combattant.effets = [e for e in combattant.effets if e.persistant or e.rounds is None or e.rounds > 0]
             if self.round == 1:
                 combattant.surpris = False
+        self.fumee = max(0, self.fumee - 1)
         self.round += 1
         self.actif = self._prochain(0)
         return tests
 
     def actifs(self, camp: str) -> list[Combattant]:
         return [c for c in self.ordre if c.camp == camp and c.conscient]
+
+
+def subir_iem(combattant: Combattant, source: str) -> list[str]:
+    """Une IEM coupe l'électronique d'un combattant pendant 1 round (REGLES.md 7.10) : ses implants
+    (bonus, armure, armes implantées) et les bonus électroniques de ses armes. Un implant ne grille
+    jamais ; des yeux cybernétiques coupés l'aveuglent. Le blindage IEM le protège de tout."""
+    if combattant.blindage_iem:
+        return ["blindage IEM : aucun effet"]
+    combattant.effets.append(EffetEnCours(source, NATURE_IEM, 0, 1))
+    textes = ["électronique coupée 1 round : implants sans effet, viseurs et armes intelligentes sans bonus"]
+    if isinstance(combattant.fiche, Personnage) and any(p["nom"] == YEUX_CYBERNETIQUES
+                                                       for p in combattant.fiche.implants):
+        combattant.effets.append(EffetEnCours(source, "entrave", MALUS_AVEUGLE, 1))
+        textes.append(f"yeux cybernétiques coupés : aveuglé, {MALUS_AVEUGLE} à tout pendant 1 round")
+    return textes
 
 
 def laisser_pour_mort(combattant: Combattant):

@@ -454,7 +454,7 @@ Le MJ désigne les cibles présentes dans la zone, **alliés compris** ; le mote
 | Échec | Il dévie : la moitié des dégâts, et les cibles ont +20 pour esquiver |
 | Maladresse | Il tombe aux pieds du lanceur : lui et ses voisins deviennent les cibles |
 
-**Se protéger** : chaque cible peut esquiver (c'est sa défense gratuite du round). Esquive réussie, la moitié des dégâts ; majeure ou critique, aucun. Un couvert lourd divise aussi les dégâts par deux, en plus de l'esquive. L'armure compte, sauf contre une arme perforante.
+**Se protéger** : chaque cible peut esquiver (c'est sa défense gratuite du round). Esquive réussie, la moitié des dégâts ; majeure ou critique, aucun. Un couvert lourd divise aussi les dégâts par deux, en plus de l'esquive. L'armure compte, à moitié seulement contre une arme perforante (comme en 7.5).
 
 **Bornes** : des dégâts de 2d6 à 4d6, au-delà des armes ordinaires ; un lanceur se tient à deux mains ; de 1 à 6 munitions ; une grenade ou une charge s'utilise une seule fois.
 

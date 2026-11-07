@@ -26,7 +26,9 @@ from aria.combat import (
     Couvert,
     Defense,
     FichePnj,
+    NATURE_IEM,
     RapportAttaque,
+    RapportZone,
     TypeAction,
     laisser_pour_mort,
     tester_embuscade,
@@ -138,7 +140,7 @@ class Session:
         if self.arme:
             self.joueur.arme = self.arme_par_nom(self.arme)
             self.joueur._charger(self.joueur.arme)
-        self.joueur.armure_implantee = self.corps().armure() if u.implants else None
+        self.equiper_implants()
         # Le LLM parle avec les noms de l'univers (« Piratage ») ; le moteur, avec ceux du socle.
         self.noms_competences = {u.nom_affiche(nom): nom for nom in self.personnage.competences}
         self.memoire = Memoire(self.campagne)
@@ -212,6 +214,13 @@ class Session:
         """Les implants du joueur, avec le catalogue de l'univers."""
         u = self.univers
         return implants_.Corps({i.nom: i for i in u.implants}, {s.nom: s for s in u.systemes}, self.personnage.implants)
+
+    def equiper_implants(self):
+        """L'armure et les armes implantées du joueur, telles que le combat les voit."""
+        if self.univers.implants:
+            corps = self.corps()
+            self.joueur.armure_implantee = corps.armure()
+            self.joueur.armes_implantees = frozenset(a.nom for a in corps.armes())
 
     def armes_du_joueur(self) -> list:
         """L'armurerie de l'univers, plus les armes implantées du joueur (des lames-mantis…)."""
@@ -288,6 +297,8 @@ def _effets(c: Combattant) -> list[str]:
             textes.append(f"{e.sort} (armure +{e.valeur})")
         elif e.nature == "attaque":
             textes.append(f"{e.sort} (persistant)")
+        elif e.nature == NATURE_IEM:
+            textes.append(f"{e.sort} (électronique coupée)")
         else:
             textes.append(f"{e.sort} ({e.valeur:+d} à ses jets)")
     return textes
@@ -299,6 +310,8 @@ def _etat_combattant(c: Combattant) -> dict:
             "arme": c.arme.nom if c.arme else None, "armure": c.armure.nom if c.armure else None}
     if c.arme and c.arme.munitions:
         etat["munitions"] = c.munitions_restantes()
+    if c.arme and c.arme.zone:
+        etat["arme_de_zone"] = c.arme.zone
     if getattr(f, "sorts", None):
         etat["pm"] = f.pm
     if c.effets:
@@ -325,6 +338,8 @@ def etat(session: Session) -> dict:
         resultat["combat"] = {"round": session.combat.round, "ordre": [c.nom for c in session.combat.ordre],
                               "au_tour_de": au_tour_de.nom if au_tour_de else None,
                               "budget_joueur": {t.value: session.joueur.budget.restants(t) for t in TypeAction}}
+        if session.combat.fumee:
+            resultat["combat"]["fumee_rounds"] = session.combat.fumee
     return resultat
 
 
@@ -614,7 +629,8 @@ def _rapport_attaque(rapport: RapportAttaque) -> dict:
 
 
 @outil("Une attaque en combat (action simple). Le moteur gère la défense, les dégâts, l'armure et les blessures. "
-       "Au corps à corps, la cible peut esquiver ou riposter ; contre un tir, seul le couvert compte.",
+       "Au corps à corps, la cible peut esquiver ou riposter ; contre un tir, seul le couvert compte. "
+       "Une grenade, une roquette ou une charge passe par attaquer_zone.",
        lambda s: _objet({
            "attaquant": _ids(s, "Qui attaque."),
            "cible": _ids(s, "Qui est visé."),
@@ -631,6 +647,64 @@ def attaquer(session: Session, attaquant: str, cible: str, defense: str = "aucun
         session.participant(attaquant), session.participant(cible), DEFENSES[defense], COUVERTS[couvert],
         BONUS_MAJEURE[bonus_majeure], DIFFICULTES[difficulte])
     return _rapport_attaque(rapport)
+
+
+def _liste_ids(session: Session, description: str) -> dict:
+    return {"type": "array", "items": _enum(session.ids()), "description": description}
+
+
+def _rapport_zone(r: RapportZone) -> dict:
+    resultat = {"attaquant": r.attaquant, "arme": r.arme, "competence": r.competence, "attaque": _resume(r.attaque),
+                "issue": r.issue.value}
+    if r.jet_degats:
+        resultat["jet_degats"] = r.jet_degats
+    cibles = []
+    for c in r.cibles:
+        cible = {"qui": c.qui}
+        if c.esquive:
+            cible["esquive"] = _resume(c.esquive)
+        if c.couvert_lourd:
+            cible["couvert_lourd"] = True
+        if c.blessure:
+            b = c.blessure
+            cible |= {"degats_bruts": c.degats_bruts, "armure": c.protection, "degats": b.degats, "pv": b.pv_apres,
+                      "blessure_grave": b.blessure_grave, "etat": b.etat.value}
+            if b.test_constitution:
+                cible["test_constitution"] = _resume(b.test_constitution)
+        elif r.jet_degats:
+            cible["degats"] = 0
+        if c.test_constitution:
+            cible["contre_l_eclat"] = _resume(c.test_constitution)
+        if c.effets:
+            cible["effets"] = c.effets
+        cibles.append(cible)
+    resultat["cibles"] = cibles
+    if r.effets:
+        resultat["effets"] = r.effets
+    return resultat
+
+
+@outil("Une arme de zone (action simple) : grenade, lance-grenades, lance-flammes, roquette, charge posée. Elle "
+       "touche toute la zone, alliés compris : petite 2 cibles, moyenne 4, grande 8. Le moteur lance l'attaque "
+       "(ratée, elle dévie ; maladresse, elle tombe aux pieds du lanceur), l'esquive de chaque cible, les dégâts "
+       "et les effets (brûlure, fumée, aveuglant, IEM).",
+       lambda s: _objet({
+           "attaquant": _ids(s, "Qui lance, tire ou fait sauter la charge."),
+           "cibles": _liste_ids(s, "Tous ceux qui sont dans la zone, alliés compris."),
+           "couvert_lourd": _liste_ids(s, "Ceux qui sont derrière un couvert lourd : les dégâts sont divisés par deux."),
+           "sans_esquive": _liste_ids(s, "Ceux qui n'esquivent pas. Demande au joueur quand il est dans la zone."),
+           "voisins": _liste_ids(s, "Ceux qui sont tout près du lanceur : touchés à la place des cibles "
+                                    "s'il fait une maladresse."),
+           "difficulte": _difficulte(),
+       }, ["attaquant", "cibles"]),
+       disponible=lambda s: s.combat is not None and any(c.arme and c.arme.zone for c in s.combat.ordre))
+def attaquer_zone(session: Session, attaquant: str, cibles: list, couvert_lourd: list = (),
+                  sans_esquive: list = (), voisins: list = (), difficulte: str = "normale") -> dict:
+    rapport = session.combat_en_cours().attaquer_zone(
+        session.participant(attaquant), [session.participant(c) for c in cibles],
+        [session.participant(c) for c in couvert_lourd], [session.participant(c) for c in sans_esquive],
+        [session.participant(c) for c in voisins], DIFFICULTES[difficulte])
+    return _rapport_zone(rapport)
 
 
 def _rapport_sort(r: magie.RapportSort) -> dict:
@@ -705,7 +779,7 @@ def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | No
         raise ErreurOutil("On ne pose pas d'implant en plein combat.")
     r = implants_.poser(session.des, session.combattant(charcudoc).fiche, session.personnage, session.corps(),
                         session.univers.implant(implant), qualite, cote)
-    session.joueur.armure_implantee = session.corps().armure()
+    session.equiper_implants()
     return {"implant": implant, **_resume(r.test), "pose": r.pose, "sm_max_perdue": r.sm_max_perdue,
             "sm_max": session.personnage.sm_max, "sante_mentale": session.personnage.sm}
 

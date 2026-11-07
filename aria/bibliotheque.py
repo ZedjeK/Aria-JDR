@@ -13,7 +13,6 @@ from dataclasses import dataclass, field, fields, replace
 from pathlib import Path
 
 from aria import chemins
-from aria.des import Formule
 from aria.equipement import verifier_arme, verifier_armure
 from aria.magie import verifier_domaines
 from aria.personnage import COMPETENCES_SOCLE, MAGIE, NB_COMPETENCES_PARCOURS
@@ -58,10 +57,7 @@ CATEGORIES_IMPLANT = {
     "Peau": "implants de peau", "Organes internes": "organes internes",
 }
 DECKS = {"Deck neural", "Deck militaire"}
-# Les bornes des armes hors du commun (REGLES.md 7.9 et 12.7), en moyenne et en maximum des dés
-BORNES_ZONE = ((7, 14), 24)  # de 2d6 à 4d6
-BORNES_MONTEE = ((2.5, 10.5), 18)  # jusqu'à 3d6
-CHAMPS_BIBLIOTHEQUE = {"genres", "categorie", "electronique", "zone", "effets", "usage_unique", "posee", "montee"}
+CHAMPS_BIBLIOTHEQUE = {"genres"}
 
 
 class BibliothequeInvalide(ValueError):
@@ -84,11 +80,6 @@ def categorie_implant(implant: dict) -> str:
     if implant["nom"] in DECKS:
         return "decks"
     return CATEGORIES_IMPLANT.get(implant["systeme"], "cybermembres")
-
-
-def _moyenne_et_maximum(degats: str) -> tuple[float, int]:
-    formule = Formule.lire(degats)
-    return (formule.minimum + formule.maximum) / 2, formule.maximum
 
 
 def _arme_moteur(entree: dict):
@@ -220,25 +211,11 @@ class Bibliotheque:
     def _verifier_armes(self) -> list[str]:
         erreurs = []
         for entree in self.armes:
-            if entree.get("zone") or entree.get("montee"):
-                erreurs += self._verifier_arme_lourde(entree)
-                continue
             try:
                 erreurs += [f"{entree['nom']} : {e}" for e in verifier_arme(_arme_moteur(entree), generee=True)]
             except (KeyError, ValueError, TypeError) as erreur:
                 erreurs.append(f"{entree['nom']} : fiche mal formée ({erreur}).")
         return erreurs
-
-    def _verifier_arme_lourde(self, entree: dict) -> list[str]:
-        if entree.get("zone") and entree["zone"] not in ("petite", "moyenne", "grande"):
-            return [f"{entree['nom']} : zone inconnue « {entree['zone']} »."]
-        if not entree.get("degats"):
-            return [] if entree.get("effets") else [f"{entree['nom']} : ni dégâts ni effet."]
-        (bas, haut), maximum = BORNES_ZONE if entree.get("zone") else BORNES_MONTEE
-        moyenne, plus_haut = _moyenne_et_maximum(entree["degats"])
-        if not bas <= moyenne <= haut or plus_haut > maximum:
-            return [f"{entree['nom']} : dégâts {entree['degats']} hors des bornes de son type."]
-        return []
 
     def _verifier_armures(self) -> list[str]:
         erreurs = []

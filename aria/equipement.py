@@ -77,6 +77,7 @@ class Modification:
     competence: str | None = None  # pour un confort qui ne vaut que pour une compétence
     munitions: str | None = None  # pour l'effet « munitions » : chargeur doublé ou recharge rapide
     description: str = ""
+    electronique: bool = False  # coupée par une IEM (REGLES.md 7.10)
 
 
 @dataclass(frozen=True)
@@ -111,6 +112,13 @@ class Arme:
     fabricant: str | None = None
     defaut: str | None = None  # le défaut d'une arme usée
     categorie: str = ""
+    # Les armes de zone et les armes lourdes montées (REGLES.md 7.9 et 12.7)
+    zone: str | None = None  # « petite », « moyenne » ou « grande »
+    effets: frozenset[str] = frozenset()  # brûlure, fumée, aveuglant, IEM
+    usage_unique: bool = False  # une grenade, une charge : elle se consomme
+    posee: bool = False  # une charge ou une mine se pose au contact
+    montee: bool = False  # trop lourde pour un homme : seulement sur un véhicule ou un trépied
+    electronique: bool = False
 
     @property
     def corps_a_corps(self) -> bool:
@@ -118,11 +126,17 @@ class Arme:
 
     @property
     def bonus(self) -> BonusArme:
-        jet = _somme(self.modifications, PRECISION) - (5 if self.defaut == DEFAUT_JET else 0)
-        proprietes = {m.propriete for m in self.modifications if m.effet == PROPRIETE and m.propriete}
+        return self.bonus_sans()
+
+    def bonus_sans(self, electronique: bool = False) -> BonusArme:
+        """Les bonus de l'arme ; `electronique=True` les calcule sans les modifications électroniques,
+        coupées par une IEM (REGLES.md 7.10)."""
+        mods = [m for m in self.modifications if not (electronique and m.electronique)]
+        jet = _somme(mods, PRECISION) - (5 if self.defaut == DEFAUT_JET else 0)
+        proprietes = {m.propriete for m in mods if m.effet == PROPRIETE and m.propriete}
         if self.defaut == DEFAUT_FRAGILE:
             proprietes.add(Propriete.FRAGILE)
-        return BonusArme(jet, _somme(self.modifications, PUISSANCE), frozenset(proprietes))
+        return BonusArme(jet, _somme(mods, PUISSANCE), frozenset(proprietes))
 
     @property
     def chargeur(self) -> Munitions | None:
@@ -212,6 +226,10 @@ def formule_degats(arme: Arme, force: int | None = None) -> Formule:
 # Bornes de l'armurerie (REGLES.md 7.5), avant les modifications ; un objet légendaire y échappe
 MOYENNE_MIN, MOYENNE_MAX, MAXIMUM_DEGATS = 2.5, 9, 14  # de 1d4 à 2d6+2
 MOYENNE_UNE_MAIN = 5.5  # au-delà de 1d10, il faut deux mains
+BORNES_ZONE = (7, 14, 24)  # de 2d6 à 4d6 : moyenne mini, moyenne maxi, maximum (REGLES.md 7.9)
+BORNES_MONTEE = (2.5, 10.5, 18)  # jusqu'à 3d6 (REGLES.md 12.7)
+ZONES = ("petite", "moyenne", "grande")
+EFFETS_DE_ZONE = ("brûlure", "fumée", "aveuglant", "IEM")
 PROTECTION_MAX = 4
 PROTECTION_LOURDE, MALUS_LOURD = 3, -10  # dès 3 de protection, au moins un malus de −10
 EFFETS_ARME = {PRECISION, PUISSANCE, PROPRIETE, MUNITIONS, UTILITAIRE}
@@ -271,13 +289,27 @@ def verifier_arme(arme: Arme, generee: bool = False) -> list[str]:
         erreurs.append("L'arme n'a pas de nom.")
     if arme.competence not in (CORPS_A_CORPS, ARMES_A_DISTANCE):
         erreurs.append(f"Compétence d'arme inconnue : « {arme.competence} ».")
-    try:
-        degats = Formule.lire(arme.degats)
-    except ValueError as erreur:
-        erreurs.append(str(erreur))
+    if arme.zone is not None and arme.zone not in ZONES:
+        erreurs.append(f"Zone inconnue : « {arme.zone} ».")
+    for effet in arme.effets:
+        if effet not in EFFETS_DE_ZONE:
+            erreurs.append(f"Effet de zone inconnu : « {effet} ».")
+    if not arme.degats:
+        if not (arme.zone and arme.effets):  # une grenade fumigène, flash ou IEM : un effet sans dégâts
+            erreurs.append("Ni dégâts ni effet de zone.")
     else:
-        if arme.qualite is not Qualite.LEGENDAIRE:
-            erreurs += _verifier_degats(arme, degats)
+        try:
+            degats = Formule.lire(arme.degats)
+        except ValueError as erreur:
+            erreurs.append(str(erreur))
+        else:
+            if arme.zone or arme.montee:
+                bas, haut, maximum = BORNES_ZONE if arme.zone else BORNES_MONTEE
+                moyenne = (degats.minimum + degats.maximum) / 2
+                if not bas <= moyenne <= haut or degats.maximum > maximum:
+                    erreurs.append(f"Dégâts {degats} hors des bornes d'une arme {'de zone' if arme.zone else 'montée'}.")
+            elif arme.qualite is not Qualite.LEGENDAIRE:
+                erreurs += _verifier_degats(arme, degats)
     if arme.corps_a_corps:
         if arme.portee is not Portee.CONTACT:
             erreurs.append("Une arme de corps à corps a une portée « contact ».")
@@ -286,7 +318,7 @@ def verifier_arme(arme: Arme, generee: bool = False) -> list[str]:
         if any(m.effet == MUNITIONS for m in arme.modifications):
             erreurs.append("Une arme de corps à corps n'a pas de modification de munitions.")
     elif arme.competence == ARMES_A_DISTANCE:
-        if arme.munitions is None and not arme.a(Propriete.LANCER):
+        if arme.munitions is None and not (arme.a(Propriete.LANCER) or arme.usage_unique or arme.montee):
             erreurs.append("Une arme à distance a des munitions, sauf si elle se lance.")
         if arme.munitions and arme.munitions.capacite < 1:
             erreurs.append("La capacité en munitions doit être d'au moins 1.")
@@ -324,7 +356,8 @@ def modification_depuis_dict(d: dict) -> Modification:
         munitions = CHARGEUR_DOUBLE if "doubl" in description else RECHARGE_RAPIDE
     return Modification(d["nom"], d["effet"], d.get("valeur", 0),
                         Propriete(propriete) if propriete in {p.value for p in Propriete} else None,
-                        d.get("competence"), d.get("munitions", munitions), d.get("description", ""))
+                        d.get("competence"), d.get("munitions", munitions), d.get("description", ""),
+                        d.get("electronique", False))
 
 
 def modification_vers_dict(m: Modification) -> dict:
@@ -339,5 +372,7 @@ def modification_vers_dict(m: Modification) -> dict:
         d["munitions"] = m.munitions
     if m.description:
         d["description"] = m.description
+    if m.electronique:
+        d["electronique"] = True
     return d
 

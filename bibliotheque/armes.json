@@ -660,7 +660,7 @@
     "electronique": false,
     "munitions": {
       "capacite": 6,
-      "recharge": "recharge simple"
+      "recharge": "simple"
     },
     "categorie": "armes lourdes"
   },
@@ -682,7 +682,7 @@
     "electronique": false,
     "munitions": {
       "capacite": 3,
-      "recharge": "recharge simple"
+      "recharge": "simple"
     },
     "categorie": "armes lourdes"
   },
@@ -704,7 +704,7 @@
     "electronique": false,
     "munitions": {
       "capacite": 1,
-      "recharge": "recharge simple"
+      "recharge": "simple"
     },
     "categorie": "armes lourdes"
   },
@@ -714,9 +714,7 @@
     "degats": "4d6",
     "zone": "grande",
     "effets": [],
-    "proprietes": [
-      "—"
-    ],
+    "proprietes": [],
     "portee": "contact",
     "genres": [
       "moderne"

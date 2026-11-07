@@ -62,6 +62,8 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return _decrire_attaque(r)
     if o == "lancer_sort":
         return _decrire_sort(r)
+    if o == "attaquer_zone":
+        return _decrire_zone(r)
     if o == "poser_implant":
         return [f"🦾 {r['implant']} : {jet(r)}"
                 + (f" → posé, −{r['sm_max_perdue']} SM maximum ({r['sm_max']})" if r["pose"] else " → pas posé")]
@@ -103,6 +105,27 @@ def _decrire_attaque(r: dict) -> list[str]:
     else:
         lignes.append("   → Le coup est évité." if r["issue"] == "défenseur" else "   → Raté.")
     lignes += [f"   → {effet}" for effet in r.get("effets", [])]
+    return lignes
+
+
+def _decrire_zone(r: dict) -> list[str]:
+    degats = f", {r['jet_degats']} dégâts" if r.get("jet_degats") else ""
+    lignes = [f"💥 {r['attaquant']}, {r['arme']} : {jet(r['attaque'])} → {r['issue']}{degats}"]
+    lignes += [f"   → {effet}" for effet in r.get("effets", [])]
+    for c in r["cibles"]:
+        esquive = f" (esquive {jet(c['esquive'])})" if "esquive" in c else ""
+        if "pv" in c:
+            armure = f", l'armure en arrête {c['armure']}" if c["armure"] else ""
+            lignes.append(f"   → {c['qui']}{esquive} : {c['degats']} dégâts{armure}, il reste {c['pv']} PV")
+            if c["blessure_grave"]:
+                lignes.append("   → BLESSURE GRAVE !")
+            if c["etat"] != Etat.ACTIF.value:
+                lignes.append(f"   → {c['qui']} est {c['etat']}")
+        elif "degats" in c:
+            lignes.append(f"   → {c['qui']}{esquive} : indemne")
+        if "contre_l_eclat" in c:
+            lignes.append(f"   → {c['qui']}, Constitution : {jet(c['contre_l_eclat'])}")
+        lignes += [f"   → {c['qui']} : {effet}" for effet in c.get("effets", [])]
     return lignes
 
 

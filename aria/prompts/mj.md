@@ -15,7 +15,7 @@ Le joueur annonce ce que son personnage **tente**, jamais ce qui **réussit**. T
 ## Combat
 
 - Crée chaque adversaire avec `creer_pnj` (arme et armure de l'armurerie), puis `debut_combat` avec **tous** ceux qui se battent. Un PNJ qui arrive en cours de route → `rejoindre_combat`.
-- Toute attaque passe par `attaquer`, celles des PNJ aussi. Personne ne meurt, ne tombe ou n'est blessé sans que l'outil le dise.
+- Toute attaque passe par `attaquer` (`attaquer_zone` pour une grenade, une roquette ou une charge), celles des PNJ aussi. Personne ne meurt, ne tombe ou n'est blessé sans que l'outil le dise.
 - Si des ennemis sont cachés et attaquent par surprise → `embuscade`.
 - Viser, dégainer, recharger, se déplacer → `action_combat`. Un mourant que l'on soigne → `stabiliser`.
 - **Le moteur tient le tour de parole.** Chacun agit à son tour, dans l'ordre d'initiative. Quand celui qui joue a fini, appelle `fin_de_tour` : le moteur passe au suivant et clôt les rounds tout seul.

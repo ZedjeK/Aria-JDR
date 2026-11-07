@@ -237,6 +237,8 @@ def _arme_depuis_dict(d: dict) -> Arme:
         munitions=Munitions(munitions["capacite"], Recharge(munitions["recharge"])) if munitions else None,
         proprietes=frozenset(Propriete(p) for p in d.get("proprietes", [])),
         categorie=d.get("categorie", ""),
+        zone=d.get("zone"), effets=frozenset(d.get("effets", [])), usage_unique=d.get("usage_unique", False),
+        posee=d.get("posee", False), montee=d.get("montee", False), electronique=d.get("electronique", False),
         **_qualite(d),
     )
 
@@ -337,7 +339,9 @@ def _arme_vers_dict(arme: Arme) -> dict:
         if arme.munitions else None,
         "proprietes": sorted(p.value for p in arme.proprietes),
         "categorie": arme.categorie,
-    } | _qualite_vers_dict(arme)
+    } | {k: v for k, v in {"zone": arme.zone, "effets": sorted(arme.effets), "usage_unique": arme.usage_unique,
+                           "posee": arme.posee, "montee": arme.montee, "electronique": arme.electronique}.items()
+         if v} | _qualite_vers_dict(arme)
 
 
 def _qualite_vers_dict(objet) -> dict:
