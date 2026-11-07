@@ -278,42 +278,15 @@ class Bibliotheque:
         return erreurs
 
     def _verifier_implants(self) -> list[str]:
-        erreurs = []
-        systemes = {s["nom"]: s for s in self.systemes}
-        fondations = {s["fondation"] for s in self.systemes if "fondation" in s}
+        from aria.implants import implant_depuis_dict, systeme_depuis_dict, verifier_catalogue
+        from aria.univers import _arme_depuis_dict, _armure_depuis_dict
         competences = self.competences_du_genre("Cyberpunk") if "Cyberpunk" in self.genres else set(COMPETENCES_SOCLE)
-        for i in self.implants:
-            nom = i["nom"]
-            if i["systeme"] not in systemes:
-                erreurs.append(f"{nom} : système inconnu « {i['systeme']} ».")
-            if i["effet"] not in EFFETS_IMPLANT:
-                erreurs.append(f"{nom} : effet inconnu « {i['effet']} ».")
-            gamme = i.get("gamme")
-            if i["effet"] in ("esthétique", "médical"):
-                if gamme is not None:
-                    erreurs.append(f"{nom} : l'esthétique et le médical n'ont pas de gamme.")
-            elif gamme not in GAMMES:
-                erreurs.append(f"{nom} : gamme inconnue « {gamme} ».")
-            elif i["effet"] == "bonus":
-                if i.get("bonus") != GAMMES[gamme] or gamme == "standard":
-                    erreurs.append(f"{nom} : en gamme {gamme}, le bonus vaut +{GAMMES[gamme]}.")
-                if i.get("competence") is not None and i["competence"] not in competences:
-                    erreurs.append(f"{nom} : compétence inconnue « {i['competence']} ».")
-            elif gamme != "standard":
-                erreurs.append(f"{nom} : une arme, une armure ou un utilitaire est de gamme standard.")
-            if i["effet"] == "arme":
-                try:
-                    erreurs += [f"{nom} : {e}" for e in verifier_arme(_arme_moteur(dict(i["arme"], nom=nom)))]
-                except (KeyError, ValueError, TypeError) as erreur:
-                    erreurs.append(f"{nom} : arme mal formée ({erreur}).")
-            if i["effet"] == "armure":
-                try:
-                    erreurs += [f"{nom} : {e}" for e in verifier_armure(_armure_moteur(dict(i["armure"], nom=nom)))]
-                except (KeyError, ValueError, TypeError) as erreur:
-                    erreurs.append(f"{nom} : armure mal formée ({erreur}).")
-            if i["fondation"] and nom not in fondations and nom != "Neuroport":
-                erreurs.append(f"{nom} : fondation d'aucun système.")
-        return erreurs
+        try:
+            systemes = tuple(systeme_depuis_dict(s) for s in self.systemes)
+            implants = tuple(implant_depuis_dict(i, _arme_depuis_dict, _armure_depuis_dict) for i in self.implants)
+        except (KeyError, ValueError, TypeError) as erreur:
+            return [f"Implants mal formés ({erreur})."]
+        return verifier_catalogue(systemes, implants, competences)
 
     def _verifier_vehicules(self) -> list[str]:
         erreurs = []

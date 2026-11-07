@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import magie, progression, sante_mentale, soins
+from aria import implants as implants_, magie, progression, sante_mentale, soins
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -134,9 +134,11 @@ class Session:
 
     def __post_init__(self):
         u = self.univers
-        self.joueur = Combattant(self.personnage, "joueur",
-                                 u.arme(self.arme) if self.arme else None,
-                                 u.armure(self.armure) if self.armure else None)
+        self.joueur = Combattant(self.personnage, "joueur", None, u.armure(self.armure) if self.armure else None)
+        if self.arme:
+            self.joueur.arme = self.arme_par_nom(self.arme)
+            self.joueur._charger(self.joueur.arme)
+        self.joueur.armure_implantee = self.corps().armure() if u.implants else None
         # Le LLM parle avec les noms de l'univers (« Piratage ») ; le moteur, avec ceux du socle.
         self.noms_competences = {u.nom_affiche(nom): nom for nom in self.personnage.competences}
         self.memoire = Memoire(self.campagne)
@@ -166,7 +168,7 @@ class Session:
             _verifier_objet(arguments, outil.parametres(self))
             resultat = outil.fonction(self, **arguments)
         except (ErreurOutil, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
-                ValueError, KeyError) as erreur:
+                implants_.ImplantImpossible, ValueError, KeyError) as erreur:
             resultat = {"erreur": str(erreur).strip("'\"")}
         self.journal.append({"outil": nom, "arguments": arguments, "resultat": resultat})
         return resultat
@@ -205,6 +207,21 @@ class Session:
 
     def identifiant(self, combattant: Combattant) -> str:
         return JOUEUR if combattant is self.joueur else next(i for i, c in self.pnj.items() if c is combattant)
+
+    def corps(self) -> implants_.Corps:
+        """Les implants du joueur, avec le catalogue de l'univers."""
+        u = self.univers
+        return implants_.Corps({i.nom: i for i in u.implants}, {s.nom: s for s in u.systemes}, self.personnage.implants)
+
+    def armes_du_joueur(self) -> list:
+        """L'armurerie de l'univers, plus les armes implantées du joueur (des lames-mantis…)."""
+        return list(self.univers.armes) + (self.corps().armes() if self.univers.implants else [])
+
+    def arme_par_nom(self, nom: str):
+        for arme in self.armes_du_joueur():
+            if arme.nom == nom:
+                return arme
+        raise ErreurOutil(f"Arme inconnue : « {nom} ».")
 
     @property
     def a_la_magie(self) -> bool:
@@ -298,7 +315,9 @@ def etat(session: Session) -> dict:
         "joueur": _etat_combattant(session.joueur) | {
             "sante_mentale": p.sm, "sm_max": p.sm_max, "points_destin": p.points_destin, "xp": p.xp,
             "troubles": [t.type.value for t in p.troubles], "folie": p.folie,
-        } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {}),
+        } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {})
+          | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
+             if p.implants else {}),
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:
@@ -558,7 +577,7 @@ def rejoindre_combat(session: Session, pnj: list) -> dict:
        lambda s: _objet({
            "qui": _ids(s, "Qui agit."),
            "action": _enum(["deplacer", "viser", "recharger", "degainer"]),
-           "arme": _enum([a.nom for a in s.univers.armes] + ["aucune"], "Pour degainer."),
+           "arme": _enum([a.nom for a in s.armes_du_joueur()] + ["aucune"], "Pour degainer."),
        }, ["qui", "action"]))
 def action_combat(session: Session, qui: str, action: str, arme: str | None = None) -> dict:
     c, combattant = session.combat_en_cours(), session.participant(qui)
@@ -571,7 +590,7 @@ def action_combat(session: Session, qui: str, action: str, arme: str | None = No
     else:
         if arme is None:
             raise ErreurOutil("Pour degainer, précise l'arme.")
-        c.degainer(combattant, None if arme == "aucune" else session.univers.arme(arme))
+        c.degainer(combattant, None if arme == "aucune" else session.arme_par_nom(arme))
     return {"qui": qui, "action": action,
             "budget_restant": {t.value: combattant.budget.restants(t) for t in TypeAction},
             **({"munitions": combattant.munitions_restantes()} if combattant.arme and combattant.arme.munitions else {})}
@@ -668,6 +687,27 @@ def lancer_sort(session: Session, lanceur: str, sort: str, cible: str | None = N
     r = magie.lancer(session.des, qui, connus[sort], cibles, session.combat, COUVERTS[couvert], session.moment,
                      coute_sm=session.univers.genre == "Horreur")
     return _rapport_sort(r)
+
+
+@outil("Poser un implant au joueur, hors combat : le charcudoc (un PNJ, ou le joueur lui-même) fait un jet de "
+       "Médecine ou de Cybernétique. Réussi, l'implant est posé et la Santé mentale maximum baisse de son prix. "
+       "Les options demandent leur fondation (pas de lames-mantis sans bras cybernétique).",
+       lambda s: _objet({
+           "implant": _enum([i.nom for i in s.univers.implants]),
+           "charcudoc": _ids(s, "Qui pose l'implant."),
+           "cote": _enum(implants_.COTES, "Pour un bras ou une main : quel côté."),
+           "qualite": _enum(["d'origine", "usé"], "Usé : d'occasion ou du marché noir, il coûte 2 points de plus."),
+       }, ["implant", "charcudoc"]),
+       disponible=lambda s: bool(s.univers.implants))
+def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | None = None,
+                  qualite: str = "d'origine") -> dict:
+    if session.combat:
+        raise ErreurOutil("On ne pose pas d'implant en plein combat.")
+    r = implants_.poser(session.des, session.combattant(charcudoc).fiche, session.personnage, session.corps(),
+                        session.univers.implant(implant), qualite, cote)
+    session.joueur.armure_implantee = session.corps().armure()
+    return {"implant": implant, **_resume(r.test), "pose": r.pose, "sm_max_perdue": r.sm_max_perdue,
+            "sm_max": session.personnage.sm_max, "sante_mentale": session.personnage.sm}
 
 
 @outil("Stabiliser un combattant mourant avec un jet de Médecine (action simple).",

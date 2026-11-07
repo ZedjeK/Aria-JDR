@@ -62,6 +62,9 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return _decrire_attaque(r)
     if o == "lancer_sort":
         return _decrire_sort(r)
+    if o == "poser_implant":
+        return [f"🦾 {r['implant']} : {jet(r)}"
+                + (f" → posé, −{r['sm_max_perdue']} SM maximum ({r['sm_max']})" if r["pose"] else " → pas posé")]
     if o == "stabiliser":
         return [f"🩹 Stabiliser : {jet(r)} → {r['etat']}"]
     if o == "fin_de_tour":

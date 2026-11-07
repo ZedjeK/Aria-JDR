@@ -185,6 +185,7 @@ class Combattant:
         self.surpris = False
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         self.effets: list[EffetEnCours] = []  # ce que les sorts lui ont laissé
+        self.armure_implantee: Armure | None = None  # posée par la session, d'après les implants du personnage
         if arme:
             self._charger(arme)
 
@@ -220,8 +221,9 @@ class Combattant:
     def valeur(self, competence: str) -> int:
         """La compétence avec les malus subis (blessure grave, armure) et les renforts ou entraves des sorts."""
         valeur = self.fiche.valeur(competence) + self.modificateur_magique
-        if self.armure:
-            valeur += self.armure.malus_pour(competence)
+        for armure in (self.armure, self.armure_implantee):
+            if armure:
+                valeur += armure.malus_pour(competence)
         return valeur
 
     @property
@@ -230,9 +232,10 @@ class Combattant:
 
     @property
     def protection(self) -> int:
-        """L'armure portée, plus celle des sorts de protection."""
+        """La meilleure armure, portée ou implantée (elles ne se cumulent pas), plus celle des sorts."""
         magique = sum(e.valeur for e in self.effets if e.nature == "protection")
-        return (self.armure.protection_totale if self.armure else 0) + magique
+        armures = [a.protection_totale for a in (self.armure, self.armure_implantee) if a]
+        return max(armures, default=0) + magique
 
     def consommer_effets_du_jet(self):
         """Hors combat, un renfort ou une entrave d'un round vaut pour le prochain jet seulement."""

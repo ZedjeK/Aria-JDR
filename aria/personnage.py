@@ -126,6 +126,7 @@ class Personnage:
     blessure_grave: bool = False  # tant qu'elle n'est pas guérie : PV max divisés par deux, −20 partout
     points_destin: int = 0  # fixés par le curseur de l'univers au début de la campagne
     domaines: list[str] = field(default_factory=list)  # ses deux domaines de magie (REGLES.md 10.5)
+    implants: list[dict] = field(default_factory=list)  # les implants posés (REGLES.md 11, voir aria.implants)
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit
@@ -171,8 +172,12 @@ class Personnage:
         return self.competences[nom]
 
     def valeur(self, nom: str) -> int:
-        """La compétence avec le malus de blessure grave (−20 à toutes les actions)."""
-        return self.competence(nom) + (MALUS_BLESSURE_GRAVE if self.blessure_grave else 0)
+        """La compétence avec le malus de blessure grave (−20 à toutes les actions) et le bonus des implants."""
+        return self.competence(nom) + self.bonus_implants(nom) + (MALUS_BLESSURE_GRAVE if self.blessure_grave else 0)
+
+    def bonus_implants(self, nom: str) -> int:
+        """Le meilleur bonus d'implant pour cette compétence : ils ne se cumulent pas (REGLES.md 11.3)."""
+        return max((p.get("bonus", 0) for p in self.implants if p.get("competence") == nom), default=0)
 
     @property
     def pv_max_base(self) -> int:
@@ -186,8 +191,10 @@ class Personnage:
 
     @property
     def sm_max(self) -> int:
-        """La Volonté, et jamais plus de 99 − Mythe (compétence thématique de l'Horreur)."""
-        return min(self.carac(Caracteristique.VOLONTE), 99 - self.competences.get("Mythe", 0))
+        """La Volonté, et jamais plus de 99 − Mythe (compétence thématique de l'Horreur) ; chaque implant
+        en retire son prix (REGLES.md 11.4)."""
+        humanite = sum(p.get("sm", 0) for p in self.implants)
+        return max(0, min(self.carac(Caracteristique.VOLONTE), 99 - self.competences.get("Mythe", 0)) - humanite)
 
     @property
     def pm_max(self) -> int:

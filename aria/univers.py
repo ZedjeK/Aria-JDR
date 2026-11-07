@@ -22,6 +22,7 @@ from aria.equipement import (
     verifier_arme,
     verifier_armure,
 )
+from aria.implants import Implant, Systeme, implant_depuis_dict, systeme_depuis_dict, verifier_catalogue
 from aria.magie import (
     DOMAINES_PAR_PERSO,
     Domaine,
@@ -71,6 +72,8 @@ class Univers:
     chocs_banals: frozenset[Choc] = frozenset()
     chocs_normaux: frozenset[Choc] = frozenset()
     domaines: tuple[Domaine, ...] = ()  # les domaines de magie, si l'univers en a
+    systemes: tuple[Systeme, ...] = ()  # les systèmes du corps, si l'univers a des implants
+    implants: tuple[Implant, ...] = ()  # le catalogue des implants (REGLES.md 11)
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -95,6 +98,9 @@ class Univers:
 
     def sort(self, nom: str) -> Sort:
         return _trouver([s for d in self.domaines for s in d.tous], nom, "sort")
+
+    def implant(self, nom: str) -> Implant:
+        return _trouver(self.implants, nom, "implant")
 
     def sorts_connus(self, domaines: list[str]) -> list[Sort]:
         """Tous les sorts appris et toutes les improvisations de ces domaines (REGLES.md 10.5)."""
@@ -167,6 +173,8 @@ class Univers:
             if not self.magie_active:
                 erreurs.append("L'univers a des domaines de magie, mais la magie y est désactivée.")
             erreurs += verifier_domaines(self.domaines)
+        if self.implants:
+            erreurs += verifier_catalogue(self.systemes, self.implants, set(disponibles))
         return erreurs
 
 
@@ -200,6 +208,9 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             chocs_banals=frozenset(Choc[c] for c in donnees.get("chocs_banals", [])),
             chocs_normaux=frozenset(Choc[c] for c in donnees.get("chocs_normaux", [])),
             domaines=tuple(_domaine_depuis_dict(d) for d in donnees.get("domaines", [])),
+            systemes=tuple(systeme_depuis_dict(s) for s in donnees.get("implants", {}).get("systemes", [])),
+            implants=tuple(implant_depuis_dict(i, _arme_depuis_dict, _armure_depuis_dict)
+                           for i in donnees.get("implants", {}).get("implants", [])),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -290,7 +301,30 @@ def univers_vers_dict(univers: Univers) -> dict:
              "improvisations": [_sort_vers_dict(s) for s in d.improvisations]}
             for d in univers.domaines
         ],
-    }
+    } | ({"implants": {"systemes": [_systeme_vers_dict(s) for s in univers.systemes],
+                       "implants": [_implant_vers_dict(i) for i in univers.implants]}} if univers.implants else {})
+
+
+def _systeme_vers_dict(s: Systeme) -> dict:
+    return {k: v for k, v in {"nom": s.nom, "emplacements": s.emplacements, "options": s.options,
+                              "fondation": s.fondation, "requiert": s.requiert, "par": s.par}.items()
+            if v is not None or k == "emplacements"}
+
+
+def _implant_vers_dict(i: Implant) -> dict:
+    d = {"nom": i.nom, "systeme": i.systeme, "effet": i.effet, "gamme": i.gamme, "fondation": i.fondation,
+         "electronique": i.electronique}
+    if i.competence:
+        d["competence"] = i.competence
+    if i.bonus:
+        d["bonus"] = i.bonus
+    if i.arme:
+        d["arme"] = {k: v for k, v in _arme_vers_dict(i.arme).items() if k != "nom"}
+    if i.armure:
+        d["armure"] = {k: v for k, v in _armure_vers_dict(i.armure).items() if k != "nom"}
+    if i.description:
+        d["description"] = i.description
+    return d
 
 
 def _arme_vers_dict(arme: Arme) -> dict:
