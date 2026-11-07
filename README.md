@@ -1,5 +1,7 @@
 # Aria-JDR
 
+[![Tests](https://github.com/ZedjeK/Aria-JDR/actions/workflows/tests.yml/badge.svg)](https://github.com/ZedjeK/Aria-JDR/actions/workflows/tests.yml)
+
 Application de jeu de rôle solo : on choisit son univers (fantasy, cyberpunk, post-apo…), et un LLM local fait le maître du jeu sur un socle de règles d100 commun à tous les univers.
 
 Les règles du jeu sont dans [REGLES.md](REGLES.md).
