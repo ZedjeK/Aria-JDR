@@ -225,7 +225,12 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - Le parcours donne aussi **de 2 à 3 objets racontés** (un deck, une trousse de soins, un badge…). Ils n'ont jamais de bonus chiffré, mais ils peuvent ouvrir ou fermer une action : sans deck, pas de piratage à distance. C'est le MJ qui en juge. On peut les perdre, se les faire voler ou les casser.
 - Dans un univers qui a des implants, le parcours peut donner **un implant de gamme standard** (un neuroport, des lames-mantis…), qui coûte ses 2 points de Santé mentale maximum dès la création (voir 11.4). Les implants avancés et militaires se gagnent en jouant.
 - Un parcours peut ne donner **aucune arme** (une idol, un salaryman…). Comme pour la défense, la création prévient sans interdire : le personnage devra en trouver une, ou compter sur ses compagnons.
-- L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur le choisit dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est d'origine, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
+- **Le joueur choisit son équipement dans des listes.** Pour chaque case (arme, armure, implant, et véhicule si le métier l'exige), le parcours propose de 2 à 3 options ; pour les objets racontés, il en propose 3 ou 4, dont on garde 2. Toutes les options d'une case se valent, et chacune respecte les règles ci-dessus.
+- À la création, l'équipement est **générique** : pas de fabricant, car sa modification d'usine serait un bonus gratuit (voir 7.5). Les marques se gagnent en jouant.
+- Un parcours ne propose un **véhicule** (léger ou moyen, d'origine) que si le métier l'exige : le pick-up du nomade, la moto du coursier.
+- L'**esthétique** (tatouages lumineux, cheveux de fibre optique…) est offerte à la création, en plus du reste ; ensuite, elle s'achète (voir 13).
+- Un objet raconté peut être une **relation** (des fans fidèles, des faveurs qu'on lui doit, une source anonyme) : le MJ la fait jouer dans l'histoire, et elle pourra devenir un compagnon.
+- L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur écrit les listes de chaque parcours dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est d'origine, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
 - L'argent, les prix et l'encombrement restent à définir (voir 13) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
 - Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
 
@@ -1201,6 +1206,33 @@ Des modèles, pas une liste figée : le générateur d'univers les adapte au cad
 
 18. **Nomade** — Membre d'un clan qui vit sur les routes, hors des mégapoles et de leurs lois. Il transporte, il trafique et il protège les siens. Pilote hors pair et solide survivant, il reste un étranger en ville. *Conduite, Survie, Armes à distance, Bricolage tech, Vigilance, Athlétisme, Négociation, Combat rapproché.*
 19. **Coursier** — Livreur à moto qui traverse Néo-Tokyo plus vite que n'importe qui, colis légaux ou non. Il connaît chaque raccourci et chaque contrôle. Rapide et insaisissable, il en sait toujours trop sur ce qu'il transporte. *Conduite, Athlétisme, Vigilance, Esquive, Infiltration, Réseau, Bricolage tech, Armes à distance.*
+
+**Équipement de départ** (voir 5) : une option par case, et deux objets racontés.
+
+| Parcours | Arme | Armure | Implant (−2 SM) | Objets (2 parmi) |
+|---|---|---|---|---|
+| Solo | Pistolet lourd · Fusil à pompe · Katana | Gilet balistique (3) · Manteau blindé (2) | Bras cybernétique · Yeux cybernétiques · Peau dermique | chargeurs de rechange · lunettes de vision nocturne · trousse de premiers soins · un charcudoc qui lui doit un service |
+| Ganger | Machette · Batte de baseball · Pistolet léger | Veste renforcée (1) · — | Griffes-rasoirs · Suite cyberaudio · — | les couleurs du gang · téléphone jetable · bombe de peinture · dose de stim |
+| Kobun yakuza | Katana · Wakizashi · Pistolet lourd | Manteau blindé (2) · Veste renforcée (1) | Suite cyberaudio · — | irezumi du clan · carnet des dettes · téléphone du clan · étui à cigares |
+| Agent d'infiltration | Kunai · Tantō · Pistolet silencieux | — · Veste renforcée (1) | Yeux cybernétiques · Neuroport | combinaison furtive · kit de crochetage électronique · grappin · faux badge corpo |
+| Flic de la NeoPol | Pistolet lourd · Revolver lourd | Gilet balistique (3) · Gilet pare-balles léger (2) | Suite cyberaudio · — | badge · menottes · radio de service · lampe tactique |
+| Agent de sécurité corpo | Pistolet-mitrailleur · Pistolet lourd · Matraque électrique | Gilet balistique (3) · Armure de garde corpo (3) | Suite cyberaudio · Yeux cybernétiques | badge d'accès · uniforme de la corpo · menottes · radio cryptée |
+| Cadre corpo | Pistolet léger · Pistolet compact · — | — · Gilet pare-balles léger (2) | Neuroport · Suite cyberaudio | carte d'accès à la tour · terminal corpo · costume sur mesure · carnet de contacts |
+| Salaryman | — · Pistolet compact | — | Neuroport · — | badge d'entreprise · mallette · téléphone · abonnement de métro |
+| Netrunner | Pistolet léger · Pistolet silencieux · — | — · Veste renforcée (1) | Neuroport · Paume d'interface | deck · câbles d'interface · lunettes AR · fausse identité numérique |
+| Techie | Fusil à pompe · Pistolet léger · Marteau lourd | — · Veste renforcée (1) | Paume d'interface · Bras cybernétique | outils multifonctions · poste à souder portatif · petit drone de réparation (raconté) · stock de pièces détachées |
+| Charcudoc | Pistolet léger · Couteau | — · Veste renforcée (1) | Yeux cybernétiques · Paume d'interface | kit chirurgical · scanner médical · stock d'anesthésiants · table d'opération pliante |
+| Ferrailleur | Machette · Batte de baseball · Fusil à pompe | Veste renforcée (1) · Combinaison de motard (1) | Filtre toxique · Poumons renforcés | chalumeau · détecteur de métaux · sac de récupération · masque à gaz |
+| Fixer | Pistolet lourd · Pistolet silencieux | Manteau blindé (2) · Gilet pare-balles léger (2) | Suite cyberaudio · Neuroport | carnet d'adresses chiffré · téléphones jetables · faux papiers · faveurs qu'on lui doit |
+| Informateur | Couteau · Pistolet compact | — | Suite cyberaudio · — | oreillette d'écoute · double des clés du quartier · carnet de notes · appareil photo discret |
+| Journaliste | Pistolet léger · — | — · Veste renforcée (1) | Yeux cybernétiques · — | caméra holo · enregistreur · carte de presse · source anonyme |
+| Rockerboy | Pistolet lourd · Batte de baseball | Veste renforcée (1) · Manteau blindé (2) | Suite cyberaudio · — | guitare électrique · ampli portable · fans fidèles · vieux contrat de disque |
+| Idol | — · Pistolet compact | — | Yeux cybernétiques · — | garde-robe de scène · contrat d'agence · lunettes de star · numéro privé d'un producteur |
+
+| Parcours | Arme | Armure | Implant (−2 SM) | Véhicule | Objets (2 parmi) |
+|---|---|---|---|---|---|
+| Nomade | Fusil à pompe · Carabine · Machette | Manteau blindé (2) · Combinaison de motard (1) | Filtre toxique · — | Pick-up · Moto lourde | kit de survie · outils du clan · jerricans · carte des pistes |
+| Coursier | Pistolet léger · Matraque télescopique | Combinaison de motard (1) · Veste renforcée (1) | Suite cyberaudio · — | Moto de livraison · Scooter électrique | casque connecté · sac de livraison scellé · plan des raccourcis · antivol renforcé |
 
 ### Fantasy
 
