@@ -6,6 +6,7 @@ leurs souvenirs. Le moteur écrit tout ; le MJ lit.
 - souvenirs.md : le journal de la campagne. Chaque combat terminé y ajoute ses moments forts
   (racontés par le MJ) et son résultat (écrit par le moteur) ; chaque scène terminée, les siens.
 - pnj.md et fils.md : les PNJ rencontrés et les fils de l'histoire (voir memoire.py).
+- univers.json : l'univers de la campagne, écrit une fois par le générateur (une copie figée).
 - combat.md : la fiche du combat en cours, réécrite à chaque fin de round, puis supprimée
   quand le combat est versé dans les souvenirs.
 """
@@ -25,6 +26,11 @@ class Campagne:
     @classmethod
     def nommee(cls, nom: str) -> "Campagne":
         return cls(RACINE / nom)
+
+    @property
+    def univers(self) -> Path:
+        """L'univers de la campagne, écrit une fois par le générateur : une copie figée."""
+        return self.dossier / "univers.json"
 
     @property
     def sauvegarde(self) -> Path:
