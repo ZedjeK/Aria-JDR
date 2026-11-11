@@ -53,6 +53,9 @@ FIN_DE_SESSION = ("[Fin de session] Le joueur s'arrête là. Si un combat est en
                   "si besoin. Ne raconte rien.")
 
 
+NETRUNNER = "Netrunner"  # le parcours de Kaito, gardé dans tout univers généré tant que la création de perso n'existe pas
+
+
 class SansPersonnage(Exception):
     """Pas encore de création de personnage : seul Kaito, le Netrunner, peut jouer."""
 
@@ -77,15 +80,16 @@ class Jeu:
             if self.campagne.univers.is_file():
                 univers = charger_univers(self.campagne.univers)
             elif choix:
-                univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=budget)
+                univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=budget,
+                                                                gardes={NETRUNNER})
                 self.montrer_adaptation(univers, adaptation)
             else:
                 univers = charger_univers(banc.UNIVERS)
-            if "Netrunner" not in univers.parcours:
+            local = univers.nom_local  # le parcours et l'équipement de Kaito, sous les noms de cet univers
+            if local(NETRUNNER) not in univers.parcours:
                 raise SansPersonnage(f"{univers.nom} n'a pas de Netrunner pour Kaito : la création de personnage "
                                      "arrive à l'étape suivante.")
-            kaito = univers.creer_personnage("Netrunner", **banc.FICHE_KAITO)
-            local = univers.nom_local  # l'équipement de Kaito, sous les noms de cet univers
+            kaito = univers.creer_personnage(local(NETRUNNER), **banc.FICHE_KAITO)
             depart = {cle: local(v) if isinstance(v, str) else v for cle, v in banc.EQUIPEMENT_KAITO.items()}
             univers.equiper(kaito, **depart)
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
@@ -98,11 +102,20 @@ class Jeu:
         self.dire(f"\nUnivers créé : {univers.nom}" + (f" — {univers.cadre}" if univers.cadre else ""))
         if adaptation is None:
             return
-        for categorie, renommages in adaptation.renommages.items():
+        a = adaptation
+        for categorie, retires in a.retraits.items():
+            self.dire(f"  Retirés, {generateur.CATEGORIES[categorie]} : {', '.join(retires)}")
+        for categorie, renommages in a.renommages.items():
             self.dire(f"  {generateur.CATEGORIES[categorie].capitalize()} : "
-                      + ", ".join(f"{a} → {n}" for a, n in renommages.items()))
-        if not adaptation.renommages:
-            self.dire("  Les noms de la bibliothèque collent au cadre : rien n'est renommé.")
+                      + ", ".join(f"{x} → {n}" for x, n in renommages.items()))
+        if a.parcours_retires:
+            self.dire(f"  Parcours retirés : {', '.join(a.parcours_retires)}")
+        if a.parcours_renommes:
+            self.dire("  Parcours renommés : " + ", ".join(f"{x} → {n}" for x, n in a.parcours_renommes.items()))
+        for p in a.parcours_ajoutes:
+            self.dire(f"  Nouveau parcours : {p['nom']} — {p['description']}")
+        if not (a.retraits or a.renommages or a.parcours_retires or a.parcours_renommes or a.parcours_ajoutes):
+            self.dire("  La bibliothèque colle au cadre : rien n'a changé.")
         for refus in adaptation.refus:
             self.dire(f"  (écarté : {refus})")
 
