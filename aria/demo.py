@@ -34,8 +34,9 @@ KAITO = dict(
     nom="Kaito",
     caracteristiques={C.FORCE: 35, C.CONSTITUTION: 45, C.DEXTERITE: 60, C.INTELLIGENCE: 75, C.VOLONTE: 50, C.PRESENCE: 35},
     points_parcours={"Technologie": 70, "Investigation": 45, "Sécurité": 50, "Perception": 25,
-                     "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Sciences": 15},
-    points_personnels={"Armes à distance": 30, "Esquive": 20, "Pilotage": 20, "Perspicacité": 30},
+                     "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Esquive": 15},
+    points_personnels={"Armes à distance": 30, "Esquive": 5, "Pilotage": 20, "Perspicacité": 30,
+                       "Athlétisme": 15},
     motivation="Effacer sa dette envers une corpo",
     lien="Sa petite sœur Yuna, sa seule famille",
     defaut="Fait trop confiance aux machines",
@@ -198,8 +199,8 @@ class Demo:
         c, k = self.combat, self.k
         budget = k.budget
         restantes = k.munitions_restantes() or 0
-        recharge_mineure = k.arme is not None and k.arme.munitions.recharge.value == "mineure"
-        peut_recharger = k.arme is not None and restantes < k.arme.munitions.capacite
+        recharge_mineure = k.arme is not None and k.arme.chargeur.recharge.value == "mineure"
+        peut_recharger = k.arme is not None and restantes < k.arme.chargeur.capacite
 
         deplacements, raison_deplacement = [], ""
         if k.a_vise:

@@ -62,6 +62,43 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return _decrire_attaque(r)
     if o == "lancer_sort":
         return _decrire_sort(r)
+    if o == "attaquer_zone":
+        return _decrire_zone(r)
+    if o == "tirer_arme_montee":
+        return _decrire_zone(r) if "cibles" in r else _decrire_attaque(r)
+    if o == "tirer_sur_vehicule":
+        jet_ = f" : {jet(r['attaque'])}" if "attaque" in r else ""
+        lignes = [f"🎯 {r['attaquant']} tire sur {r['vehicule']} ({r['partie']}){jet_}"]
+        if "structure_perdue" in r:
+            lignes.append(f"   → −{r['structure_perdue']} structure (le blindage en arrête {r['blindage']}) → {r['etat']}")
+        elif "attaque" in r and not r["touche"]:
+            lignes.append("   → Raté.")
+        return lignes + [f"   → {e}" for e in r.get("effets", [])]
+    if o == "eperonner":
+        lignes = [f"🚗 {r['attaquant']} éperonne {r['cible']} : {jet(r['attaque'])} contre {jet(r['defense'])}"]
+        if r["touche"]:
+            reste = (f", il reste {r['pv']} PV" if "pv" in r
+                     else f", structure {r['structure_cible']}" if "structure_cible" in r else "")
+            lignes.append(f"   → {r['degats']} dégâts{reste} ; −{r['recul']} structure pour l'attaquant")
+        return lignes + [f"   → {e}" for e in r.get("effets", [])]
+    if o == "lance_fumigenes":
+        return [f"💨 {r['vehicule']} : écran de fumée, {r['fumee_rounds']} rounds"]
+    if o == "lancer_drone":
+        return [f"🛸 {r['drone']} lancé ({r['mode']})"]
+    if o == "piloter":
+        return ([f"🚗 {r['vehicule']} : Pilotage {jet(r)}"] + ([f"   → {r['cale']}"] if "cale" in r else [])
+                + (_decrire_accident(r["accident"]) if "accident" in r else []))
+    if o == "reparer":
+        return [f"🔧 {r['vehicule']} : {jet(r)} → {r['structure_rendue']:+d} structure ({r['structure']}, {r['etat']})"]
+    if o == "debut_poursuite":
+        return [f"🏁 Poursuite : {r['fuyard']} fuit, {r['zone']}"]
+    if o == "round_poursuite":
+        return _decrire_poursuite(r)
+    if o == "fin_poursuite":
+        return ["🏁 Fin de la poursuite" + (f" : {r['issue']}" if r.get("issue") else "")]
+    if o == "poser_implant":
+        return [f"🦾 {r['implant']} : {jet(r)}"
+                + (f" → posé, −{r['sm_max_perdue']} SM maximum ({r['sm_max']})" if r["pose"] else " → pas posé")]
     if o == "stabiliser":
         return [f"🩹 Stabiliser : {jet(r)} → {r['etat']}"]
     if o == "fin_de_tour":
@@ -100,6 +137,57 @@ def _decrire_attaque(r: dict) -> list[str]:
     else:
         lignes.append("   → Le coup est évité." if r["issue"] == "défenseur" else "   → Raté.")
     lignes += [f"   → {effet}" for effet in r.get("effets", [])]
+    return lignes
+
+
+def _decrire_zone(r: dict) -> list[str]:
+    degats = f", {r['jet_degats']} dégâts" if r.get("jet_degats") else ""
+    lignes = [f"💥 {r['attaquant']}, {r['arme']} : {jet(r['attaque'])} → {r['issue']}{degats}"]
+    lignes += [f"   → {effet}" for effet in r.get("effets", [])]
+    for c in r["cibles"]:
+        esquive = f" (esquive {jet(c['esquive'])})" if "esquive" in c else ""
+        if "pv" in c:
+            armure = f", l'armure en arrête {c['armure']}" if c["armure"] else ""
+            lignes.append(f"   → {c['qui']}{esquive} : {c['degats']} dégâts{armure}, il reste {c['pv']} PV")
+            if c["blessure_grave"]:
+                lignes.append("   → BLESSURE GRAVE !")
+            if c["etat"] != Etat.ACTIF.value:
+                lignes.append(f"   → {c['qui']} est {c['etat']}")
+        elif "degats" in c:
+            lignes.append(f"   → {c['qui']}{esquive} : indemne")
+        if "contre_l_eclat" in c:
+            lignes.append(f"   → {c['qui']}, Constitution : {jet(c['contre_l_eclat'])}")
+        lignes += [f"   → {c['qui']} : {effet}" for effet in c.get("effets", [])]
+    return lignes
+
+
+def _decrire_accident(a: dict) -> list[str]:
+    lignes = [f"💥 Accident, {a['vehicule']} ({a['vitesse']}) : −{a['structure_perdue']} structure → {a['etat']}"]
+    for o in a["occupants"]:
+        lignes.append(f"   → {o['qui']} : {o['degats']} dégâts" + (f", il reste {o['pv']} PV" if "pv" in o else ""))
+        if o.get("etat", Etat.ACTIF.value) != Etat.ACTIF.value:
+            lignes.append(f"   → {o['qui']} est {o['etat']}")
+    return lignes
+
+
+def _decrire_poursuite(r: dict) -> list[str]:
+    if "evenement" not in r:
+        return ["🏁 Poursuite : " + (r.get("issue") or "des poursuivants renoncent")]
+    lignes = [f"🏁 Round {r['round']} de poursuite, {r['zone']} : {r['evenement']}"]
+    for o in r.get("obstacles", []):
+        lignes.append(f"   {o['qui']} : {jet(o)} → {o['effet']}")
+    for d in r.get("duels", []):
+        jets = f"{jet(d['fuyard'])} contre {jet(d['jet_poursuivant'])}" if "fuyard" in d else "pas de jet"
+        issue = f"{d['gagnant']} gagne {d['crans']} cran{'s' if d['crans'] > 1 else ''}" if d["gagnant"] else "rien ne bouge"
+        lignes.append(f"   {d['poursuivant']} : {jets} → {issue} ({d['distance']})")
+        lignes += [f"   → {e}" for e in d.get("effets", [])]
+    for a in r.get("accidents", []):
+        lignes += _decrire_accident(a)
+    lignes += [f"   → {e}" for e in r.get("effets", [])]
+    if r.get("nouvelle_zone"):
+        lignes.append(f"   → La poursuite passe : {r['nouvelle_zone']}")
+    if r.get("issue"):
+        lignes.append(f"   → Fin : {r['issue']}")
     return lignes
 
 

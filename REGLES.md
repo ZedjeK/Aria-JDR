@@ -236,9 +236,10 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 
 ### Exemple : un Netrunner en Cyberpunk
 
-- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50.
-- **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Arnaque 30, Sciences 20.
-- **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40.
+- **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50 avant les implants.
+- **Parcours** (300 points) : Piratage 75, Data-mining 55, Contre-mesures 55, Vigilance 50, Infiltration 50, Bricolage tech 45, Esquive 45, Arnaque 30.
+- **Points personnels** (100 points) : Armes à distance 50, Esquive 50, Conduite 40, Empathie 40, Athlétisme 35.
+- **Équipement**, choisi dans les listes du Netrunner : un pistolet silencieux, une veste renforcée, un neuroport (2 points de Santé mentale maximum : SM 48), un deck et une fausse identité numérique.
 - **Roleplay** : veut effacer sa dette envers une corpo ; sa petite sœur est sa seule famille ; fait trop confiance aux machines.
 
 ---
@@ -454,7 +455,7 @@ Le MJ désigne les cibles présentes dans la zone, **alliés compris** ; le mote
 | Échec | Il dévie : la moitié des dégâts, et les cibles ont +20 pour esquiver |
 | Maladresse | Il tombe aux pieds du lanceur : lui et ses voisins deviennent les cibles |
 
-**Se protéger** : chaque cible peut esquiver (c'est sa défense gratuite du round). Esquive réussie, la moitié des dégâts ; majeure ou critique, aucun. Un couvert lourd divise aussi les dégâts par deux, en plus de l'esquive. L'armure compte, sauf contre une arme perforante.
+**Se protéger** : chaque cible peut esquiver (c'est sa défense gratuite du round). Esquive réussie, la moitié des dégâts ; majeure ou critique, aucun. Un couvert lourd divise aussi les dégâts par deux, en plus de l'esquive. L'armure compte, à moitié seulement contre une arme perforante (comme en 7.5).
 
 **Bornes** : des dégâts de 2d6 à 4d6, au-delà des armes ordinaires ; un lanceur se tient à deux mains ; de 1 à 6 munitions ; une grenade ou une charge s'utilise une seule fois.
 
@@ -827,7 +828,7 @@ Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval es
 
 - **Nitro** : +10 à un seul jet de la poursuite, une fois par scène.
 - **Les passagers** peuvent tirer à chaque round (voir 12.4).
-- **À pied**, mêmes règles, avec l'Athlétisme, sans vitesse ni maniabilité.
+- **À pied**, mêmes règles, avec l'Athlétisme, sans vitesse ni maniabilité. Contre un véhicule, le coureur compte un cran sous « lente ».
 - **Plusieurs poursuivants** : un jet opposé contre chacun, et chacun a sa distance.
 - Le MJ peut décider qu'un poursuivant renonce (blessé, à court de carburant, d'autres priorités).
 
@@ -842,8 +843,8 @@ Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval es
 | Virage serré, chaussée glissante | Chacun fait un test de Pilotage difficile avant le jet opposé |
 | Terrain accidenté | Chacun fait un test de Pilotage difficile ; −20 en plus sans la propriété tout-terrain |
 | Raccourci | Le fuyard peut le tenter (Pilotage difficile) : réussi, un cran de plus ; raté, un cran de moins |
-| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué, il ne bouge pas ce round |
-| Coup de chance | +10 au jet opposé pour celui qui est en train de perdre |
+| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué : il ne bouge pas ce round, et perd le jet opposé sans le lancer |
+| Coup de chance | +10 au jet opposé pour celui qui est en train de perdre : le fuyard jusqu'à « Proche », le poursuivant à « Loin » |
 
 Un test d'obstacle raté fait perdre un cran (le fuyard se rapproche, le poursuivant s'éloigne) ; une maladresse, c'est l'accident (voir 12.5).
 
@@ -903,6 +904,8 @@ Les événements et les zones gardent leurs effets ; leur décor suit le genre. 
 | La carrosserie | Normale | Les dégâts, moins le blindage, sont retirés à la structure |
 | Un occupant | Couvert partiel (−20), lourd (−40) si le véhicule est blindé | Les dégâts touchent l'occupant, comme un tir normal |
 | Les pneus, le moteur | Difficile | Pas de dégâts, mais −1 cran de vitesse (pas sur un véhicule blindé) |
+
+Un véhicule est **blindé** à partir d'un blindage de 4, modifications comprises. Une réparation réussie rend aussi la vitesse perdue.
 
 **Éperonner**, au contact seulement : un jet opposé, le Pilotage de l'attaquant contre le Pilotage de la cible, ou son Esquive si c'est un piéton.
 
@@ -969,7 +972,7 @@ Deux couches, bien séparées : la mécanique, qui passe par les modifications, 
 | Moteur fatigué | un cran de vitesse en moins |
 | Direction molle | −5 de maniabilité |
 | Carrosserie rouillée | −5 de structure |
-| Capricieux | il refuse de démarrer sur une maladresse au jet de Pilotage |
+| Capricieux | sur une maladresse au jet de Pilotage, il cale au lieu de l'accident : pas de dégâts, mais il s'arrête (en poursuite, il a perdu) |
 
 **Les modifications**, un seul effet chacune, une seule fois par véhicule ; la pose se fait hors combat, par un jet de l'artisanat de l'univers (Mécanique, Bricolage, Forge…), comme en 7.5 :
 
@@ -1028,6 +1031,7 @@ Une **tourelle légère** porte une arme à distance ordinaire ; une **tourelle 
 
 - **Télépiloté** : l'opérateur dépense une action simple par round pour le faire agir, avec son Pilotage (ou son Piratage par un neuroport). Un opérateur pilote un seul drone à la fois.
 - **Autonome** : le drone agit seul à son tour, avec un score fixe de 40.
+- Sa structure fait ses PV, son blindage son armure ; à 0, c'est une épave, sans agonie.
 - Un drone est électronique : une IEM le grille, sauf blindage IEM (7.10).
 
 ---
@@ -1708,15 +1712,15 @@ Des modèles, pas une liste figée : le générateur les adapte au cadre. Toutes
 
 | Objet | Qualité | Bonus de ses modifications |
 |---|---|---|
-| Pistolet lourd Arasaka | personnalisé | +1 aux dégâts |
-| Fusil d'assaut Militech « Ronin » | personnalisé | +5 au jet |
-| Couteau Kang Tao en céramique | personnalisé | +5 au jet |
-| Pistolet intelligent Tsunami « Kenshin » | personnalisé | +10 au jet |
-| Katana monomoléculaire | personnalisé | +2 aux dégâts |
-| Gilet balistique Kang Tao | personnalisé | 10 points de malus en moins |
-| Armure tactique Arasaka | personnalisé | +1 de protection |
-| Fusil à rail Militech « Breakthrough » | unique | +10 au jet et +2 aux dégâts |
-| Fusil de précision Tsunami « Nekomata » | unique | +10 au jet et une propriété en plus (silencieuse) |
+| Pistolet lourd Arasaka | personnalisé | +1 aux dégâts, recharge mineure (rechargeur rapide, nouveau calibre) |
+| Fusil d'assaut Militech « Ronin » | personnalisé | +5 au jet, +1 aux dégâts (viseur holographique, nouveau calibre) |
+| Couteau en céramique | personnalisé | +5 au jet (équilibrage) |
+| Pistolet intelligent Kang Tao « Kenshin » | personnalisé | +10 au jet (viseur holographique, pointeur laser) |
+| Katana monomoléculaire | personnalisé | +2 aux dégâts (fil monomoléculaire, gaine thermique) |
+| Gilet balistique Militech | personnalisé | +1 de protection, 5 points de malus en moins |
+| Armure tactique Arasaka | personnalisé | +1 de protection, 5 points de malus en moins |
+| Fusil à rail Militech « Breakthrough » | unique | +10 au jet, +1 aux dégâts (nouveau calibre, viseur, pointeur laser) |
+| Fusil de précision Tsunami « Nekomata » | unique | +10 au jet, silencieuse (pointeur laser, viseur, silencieux) |
 
 **Les modifications**
 
@@ -1839,7 +1843,7 @@ Les implants-armes (lames-mantis, griffes-rasoirs…) prennent aussi les modific
 | Fers de course | Moteur : +1 cran de vitesse |
 | Dressage de guerre | Châssis : +5 de maniabilité, et elle panique moins vite |
 | Barde de cuir | Blindage : +1 |
-| Barde de mailles | Blindage : +2 |
+| Caparaçon renforcé | Renfort : +5 de structure |
 | Selle de bât | Propriété : cargo |
 | Fers étouffés | Propriété : discret |
 
@@ -1863,7 +1867,7 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 |---|---|---|---|---|---|---|---|---|
 | Citadine | terrestre | moyenne | +10 | 20 | 2 | 4 | — | moderne |
 | Berline | terrestre | rapide | 0 | 30 | 3 | 5 | — | moderne |
-| Voiture de sport | terrestre | très rapide | +10 | 25 | 2 | 2 | — | moderne |
+| Voiture de sport | terrestre | rapide | +10 | 25 | 2 | 2 | — | moderne |
 | Pick-up | terrestre | rapide | 0 | 35 | 3 | 3 | tout-terrain, cargo | moderne |
 | Voiture de patrouille | terrestre | rapide | 0 | 35 | 4 | 4 | — | moderne |
 | Vedette | nautique | rapide | 0 | 30 | 3 | 6 | — | moderne |
@@ -1878,9 +1882,9 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 | Fourgon | terrestre | moyenne | −10 | 45 | 4 | 3 | cargo | moderne |
 | Bus | terrestre | lente | −10 | 55 | 4 | 40 | — | moderne |
 | Camion | terrestre | lente | −10 | 60 | 6 | 2 | cargo | moderne |
-| Blindé de transport | terrestre | moyenne | −10 | 60 | 8 | 8 | tout-terrain ; tourelle lourde : mitrailleuse lourde ; tourelle légère : lance-grenades ; lance-fumigènes | moderne |
+| Blindé de transport | terrestre | moyenne | −10 | 60 | 8 | 8 | tout-terrain ; tourelles lourdes : mitrailleuse lourde, lance-grenades ; lance-fumigènes | moderne |
 | Blindé de reconnaissance | terrestre | rapide | 0 | 50 | 6 | 4 | tout-terrain ; tourelle légère : mitrailleuse légère ; baie à drones (2 drones de reconnaissance) ; lance-fumigènes | moderne |
-| AV de corpo | aérien | très rapide | 0 | 50 | 6 | 6 | tourelle légère : minigun ; tourelle lourde : lance-roquettes | Cyberpunk |
+| AV de corpo | aérien | très rapide | 0 | 50 | 6 | 6 | tourelles lourdes : minigun, lance-roquettes | Cyberpunk |
 
 **Militaires**
 
@@ -1903,7 +1907,7 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 
 | Véhicule | Qualité | Modifications |
 |---|---|---|
-| Moto Yaiba « Kusanagi » | personnalisé | reprogrammation moteur (très rapide), kit nitro |
-| Quadra « Turbo-R » | personnalisé | turbo, suspensions sport |
-| Berline Arasaka blindée | personnalisé | plaques de blindage, vitrage pare-balles |
+| Moto lourde Yaiba « Kusanagi » | personnalisé | reprogrammation moteur (très rapide), kit nitro |
+| Voiture de sport Quadra « Turbo-R » | personnalisé | turbo (très rapide), suspensions sport |
+| Berline Rayfield blindée | personnalisé | vitrage pare-balles, plaques de blindage |
 | AV Arasaka « Aquila » | unique | plaques de blindage, direction assistée IA, tourelle télécommandée |

@@ -1,0 +1,619 @@
+[
+  {
+    "nom": "Scooter électrique",
+    "type": "terrestre",
+    "gabarit": "léger",
+    "vitesse": "moyenne",
+    "maniabilite": 10,
+    "structure": 12,
+    "blindage": 0,
+    "places": 2,
+    "proprietes": [
+      "discret"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "motos",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Moto de livraison",
+    "type": "terrestre",
+    "gabarit": "léger",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 15,
+    "blindage": 0,
+    "places": 2,
+    "proprietes": [
+      "cargo"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "motos",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Moto sportive",
+    "type": "terrestre",
+    "gabarit": "léger",
+    "vitesse": "très rapide",
+    "maniabilite": 10,
+    "structure": 15,
+    "blindage": 1,
+    "places": 2,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "motos",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Moto lourde",
+    "type": "terrestre",
+    "gabarit": "léger",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 20,
+    "blindage": 2,
+    "places": 2,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "motos",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Jet-ski",
+    "type": "nautique",
+    "gabarit": "léger",
+    "vitesse": "très rapide",
+    "maniabilite": 10,
+    "structure": 10,
+    "blindage": 0,
+    "places": 2,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "nautiques",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": false
+  },
+  {
+    "nom": "Citadine",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "moyenne",
+    "maniabilite": 10,
+    "structure": 20,
+    "blindage": 2,
+    "places": 4,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "voitures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Berline",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 30,
+    "blindage": 3,
+    "places": 5,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "voitures de luxe",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Voiture de sport",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 25,
+    "blindage": 2,
+    "places": 2,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "voitures de sport",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Pick-up",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 35,
+    "blindage": 3,
+    "places": 3,
+    "proprietes": [
+      "tout-terrain",
+      "cargo"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "pick-ups",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Voiture de patrouille",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 35,
+    "blindage": 4,
+    "places": 4,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "voitures",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Vedette",
+    "type": "nautique",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 30,
+    "blindage": 3,
+    "places": 6,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "nautiques",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Taxi automatique",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "moyenne",
+    "maniabilite": 0,
+    "structure": 25,
+    "blindage": 2,
+    "places": 4,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "taxis automatiques",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "utilitaires": [
+      "pilote automatique"
+    ]
+  },
+  {
+    "nom": "Hovercar",
+    "type": "aérien",
+    "gabarit": "moyen",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 30,
+    "blindage": 2,
+    "places": 4,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "AV",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Fourgon de netrunner",
+    "type": "terrestre",
+    "gabarit": "moyen",
+    "vitesse": "moyenne",
+    "maniabilite": -10,
+    "structure": 35,
+    "blindage": 3,
+    "places": 3,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [
+      "Baie à drones"
+    ],
+    "categorie": "utilitaires",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "drones": {
+      "nombre": 2,
+      "modele": "Drone brouilleur"
+    },
+    "utilitaires": [
+      "poste de piratage embarqué (utilitaire)"
+    ]
+  },
+  {
+    "nom": "Fourgon",
+    "type": "terrestre",
+    "gabarit": "lourd",
+    "vitesse": "moyenne",
+    "maniabilite": -10,
+    "structure": 45,
+    "blindage": 4,
+    "places": 3,
+    "proprietes": [
+      "cargo"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "utilitaires",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Bus",
+    "type": "terrestre",
+    "gabarit": "lourd",
+    "vitesse": "lente",
+    "maniabilite": -10,
+    "structure": 55,
+    "blindage": 4,
+    "places": 40,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "utilitaires",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Camion",
+    "type": "terrestre",
+    "gabarit": "lourd",
+    "vitesse": "lente",
+    "maniabilite": -10,
+    "structure": 60,
+    "blindage": 6,
+    "places": 2,
+    "proprietes": [
+      "cargo"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "utilitaires",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Blindé de transport",
+    "type": "terrestre",
+    "gabarit": "lourd",
+    "vitesse": "moyenne",
+    "maniabilite": -10,
+    "structure": 60,
+    "blindage": 8,
+    "places": 8,
+    "proprietes": [
+      "tout-terrain"
+    ],
+    "armes_montees": [
+      {
+        "tourelle": "lourde",
+        "arme": "Mitrailleuse lourde"
+      },
+      {
+        "tourelle": "lourde",
+        "arme": "Lance-grenades"
+      }
+    ],
+    "systemes": [
+      "Lance-fumigènes"
+    ],
+    "categorie": "véhicules militaires",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Blindé de reconnaissance",
+    "type": "terrestre",
+    "gabarit": "lourd",
+    "vitesse": "rapide",
+    "maniabilite": 0,
+    "structure": 50,
+    "blindage": 6,
+    "places": 4,
+    "proprietes": [
+      "tout-terrain"
+    ],
+    "armes_montees": [
+      {
+        "tourelle": "légère",
+        "arme": "Mitrailleuse légère"
+      }
+    ],
+    "systemes": [
+      "Baie à drones",
+      "Lance-fumigènes"
+    ],
+    "categorie": "véhicules militaires",
+    "genres": [
+      "moderne"
+    ],
+    "electronique": true,
+    "drones": {
+      "nombre": 2,
+      "modele": "Drone de reconnaissance"
+    }
+  },
+  {
+    "nom": "AV de corpo",
+    "type": "aérien",
+    "gabarit": "lourd",
+    "vitesse": "très rapide",
+    "maniabilite": 0,
+    "structure": 50,
+    "blindage": 6,
+    "places": 6,
+    "proprietes": [],
+    "armes_montees": [
+      {
+        "tourelle": "lourde",
+        "arme": "Minigun"
+      },
+      {
+        "tourelle": "lourde",
+        "arme": "Lance-roquettes"
+      }
+    ],
+    "systemes": [],
+    "categorie": "AV",
+    "genres": [
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "AV d'assaut",
+    "type": "aérien",
+    "gabarit": "militaire",
+    "vitesse": "très rapide",
+    "maniabilite": 0,
+    "structure": 80,
+    "blindage": 10,
+    "places": 4,
+    "proprietes": [],
+    "armes_montees": [
+      {
+        "tourelle": "lourde",
+        "arme": "Canon automatique"
+      },
+      {
+        "tourelle": "lourde",
+        "arme": "Lance-roquettes"
+      },
+      {
+        "tourelle": "légère",
+        "arme": "Mitrailleuse légère"
+      }
+    ],
+    "systemes": [
+      "Leurres"
+    ],
+    "categorie": "véhicules militaires",
+    "genres": [
+      "Militaire",
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Char",
+    "type": "terrestre",
+    "gabarit": "militaire",
+    "vitesse": "lente",
+    "maniabilite": -10,
+    "structure": 100,
+    "blindage": 12,
+    "places": 3,
+    "proprietes": [
+      "tout-terrain"
+    ],
+    "armes_montees": [
+      {
+        "tourelle": "lourde",
+        "arme": "Canon de char"
+      },
+      {
+        "tourelle": "lourde",
+        "arme": "Mitrailleuse lourde"
+      },
+      {
+        "tourelle": "légère",
+        "arme": "Mitrailleuse légère"
+      }
+    ],
+    "systemes": [
+      "Lance-fumigènes"
+    ],
+    "categorie": "véhicules militaires",
+    "genres": [
+      "Militaire",
+      "Cyberpunk"
+    ],
+    "electronique": true
+  },
+  {
+    "nom": "Cheval",
+    "type": "terrestre",
+    "gabarit": "léger",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 15,
+    "blindage": 0,
+    "places": 2,
+    "proprietes": [
+      "tout-terrain"
+    ],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "montures",
+    "genres": [
+      "médiéval"
+    ],
+    "electronique": false,
+    "monture": true
+  },
+  {
+    "nom": "Drone de reconnaissance",
+    "type": "aérien",
+    "gabarit": "drone",
+    "vitesse": "très rapide",
+    "maniabilite": 10,
+    "structure": 5,
+    "blindage": 0,
+    "places": 0,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "drones",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": true,
+    "effet": "utilitaire : voir à distance, repérer les embuscades"
+  },
+  {
+    "nom": "Drone de combat",
+    "type": "aérien",
+    "gabarit": "drone",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 10,
+    "blindage": 1,
+    "places": 0,
+    "proprietes": [],
+    "armes_montees": [
+      {
+        "tourelle": "légère",
+        "arme": "Pistolet-mitrailleur"
+      }
+    ],
+    "systemes": [],
+    "categorie": "drones",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": true,
+    "effet": "arme montée : pistolet-mitrailleur"
+  },
+  {
+    "nom": "Drone kamikaze",
+    "type": "aérien",
+    "gabarit": "drone",
+    "vitesse": "très rapide",
+    "maniabilite": 10,
+    "structure": 5,
+    "blindage": 0,
+    "places": 0,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "drones",
+    "genres": [
+      "futuriste",
+      "Militaire"
+    ],
+    "electronique": true,
+    "effet": "il explose : 3d6 sur une petite zone, usage unique",
+    "arme_integree": "Charge de drone kamikaze",
+    "kamikaze": true
+  },
+  {
+    "nom": "Drone brouilleur",
+    "type": "aérien",
+    "gabarit": "drone",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 8,
+    "blindage": 1,
+    "places": 0,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "drones",
+    "genres": [
+      "futuriste"
+    ],
+    "electronique": true,
+    "effet": "une IEM sur une petite zone, une fois par scène",
+    "arme_integree": "Impulsion IEM de drone"
+  },
+  {
+    "nom": "Drone de livraison",
+    "type": "aérien",
+    "gabarit": "drone",
+    "vitesse": "rapide",
+    "maniabilite": 10,
+    "structure": 5,
+    "blindage": 0,
+    "places": 0,
+    "proprietes": [],
+    "armes_montees": [],
+    "systemes": [],
+    "categorie": "drones",
+    "genres": [
+      "futuriste",
+      "Contemporain"
+    ],
+    "electronique": true,
+    "effet": "utilitaire : transporter un petit objet"
+  }
+]

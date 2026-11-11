@@ -1,0 +1,186 @@
+[
+  {
+    "nom": "Pistolet lourd Arasaka",
+    "type": "arme",
+    "base": "Pistolet lourd",
+    "fabricant": "Arasaka",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Rechargeur rapide",
+      "Nouveau calibre"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Fusil d'assaut Militech « Ronin »",
+    "type": "arme",
+    "base": "Fusil d'assaut",
+    "fabricant": "Militech",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Nouveau calibre",
+      "Viseur holographique"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Couteau en céramique",
+    "type": "arme",
+    "base": "Couteau",
+    "fabricant": null,
+    "qualite": "personnalisé",
+    "modifications": [
+      "Équilibrage"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Pistolet intelligent Kang Tao « Kenshin »",
+    "type": "arme",
+    "base": "Pistolet intelligent",
+    "fabricant": "Kang Tao",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Viseur holographique",
+      "Pointeur laser"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Katana monomoléculaire",
+    "type": "arme",
+    "base": "Katana",
+    "fabricant": null,
+    "qualite": "personnalisé",
+    "modifications": [
+      "Fil monomoléculaire",
+      "Gaine thermique"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Gilet balistique Militech",
+    "type": "armure",
+    "base": "Gilet balistique",
+    "fabricant": "Militech",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Plaques de renfort",
+      "Doublure souple"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Armure tactique Arasaka",
+    "type": "armure",
+    "base": "Armure tactique",
+    "fabricant": "Arasaka",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Plaques de renfort",
+      "Doublure souple"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Fusil à rail Militech « Breakthrough »",
+    "type": "arme",
+    "base": "Fusil à rail",
+    "fabricant": "Militech",
+    "qualite": "unique",
+    "modifications": [
+      "Nouveau calibre",
+      "Viseur holographique",
+      "Pointeur laser"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Fusil de précision Tsunami « Nekomata »",
+    "type": "arme",
+    "base": "Fusil de précision",
+    "fabricant": "Tsunami",
+    "qualite": "unique",
+    "modifications": [
+      "Pointeur laser",
+      "Viseur holographique",
+      "Silencieux"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Moto Yaiba « Kusanagi »",
+    "type": "véhicule",
+    "base": "Moto lourde",
+    "fabricant": "Yaiba",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Reprogrammation moteur",
+      "Kit nitro"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Quadra « Turbo-R »",
+    "type": "véhicule",
+    "base": "Voiture de sport",
+    "fabricant": "Quadra",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Turbo",
+      "Suspensions sport"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "Berline Rayfield blindée",
+    "type": "véhicule",
+    "base": "Berline",
+    "fabricant": "Rayfield",
+    "qualite": "personnalisé",
+    "modifications": [
+      "Vitrage pare-balles",
+      "Plaques de blindage"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  },
+  {
+    "nom": "AV Arasaka « Aquila »",
+    "type": "véhicule",
+    "base": "AV de corpo",
+    "fabricant": "Arasaka",
+    "qualite": "unique",
+    "modifications": [
+      "Plaques de blindage",
+      "Direction assistée IA",
+      "Tourelle télécommandée"
+    ],
+    "genres": [
+      "Cyberpunk"
+    ]
+  }
+]

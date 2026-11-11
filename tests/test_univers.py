@@ -111,7 +111,7 @@ def test_parcours_invalides():
 def test_armurerie_verifiee():
     def modifier(d):
         d["armes"].append({"nom": "Épée du destin", "competence": "Corps à corps", "degats": "4d20",
-                           "portee": "contact", "rarete": "légendaire"})
+                           "portee": "contact", "qualite": "légendaire"})
         d["armures"].append({"nom": "Exo", "protection": 5, "malus": {"Piratage": -20}})
     erreurs = erreurs_de(modifier)
     assert any("Épée du destin" in e and "légendaire" in e for e in erreurs)

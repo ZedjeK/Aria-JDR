@@ -3,14 +3,17 @@ import pytest
 from aria.equipement import (
     ARMES_A_DISTANCE,
     CORPS_A_CORPS,
+    DEFAUT_FRAGILE,
+    DEFAUT_JET,
+    DEFAUT_MALUS,
+    DEFAUT_PROTECTION,
     Arme,
     Armure,
-    BonusArme,
-    BonusArmure,
+    Modification,
     Munitions,
     Portee,
     Propriete,
-    Rarete,
+    Qualite,
     Recharge,
     bonus_force,
     formule_degats,
@@ -18,18 +21,30 @@ from aria.equipement import (
     verifier_armure,
 )
 
+VISEUR = Modification("Viseur holographique", "précision", 5)
+LASER = Modification("Pointeur laser", "précision", 5)
+CALIBRE = Modification("Nouveau calibre", "puissance", 1)
+SILENCIEUX = Modification("Silencieux", "propriété", propriete=Propriete.SILENCIEUSE)
+PERFORANTES = Modification("Munitions perforantes", "propriété", propriete=Propriete.PERFORANTE)
+CHARGEUR = Modification("Chargeur grande capacité", "munitions", munitions="chargeur doublé")
+RECHARGEUR = Modification("Rechargeur rapide", "munitions", munitions="recharge rapide")
+PLAQUES = Modification("Plaques de renfort", "puissance", 1)
+DOUBLURE = Modification("Doublure souple", "confort", 5)
+FURTIF = Modification("Revêtement furtif", "confort", 5, competence="Discrétion")
+
 EPEE = Arme("Épée longue", CORPS_A_CORPS, "1d8", Portee.CONTACT)
 ARC_ELFIQUE = Arme(
     "Arc long elfique", ARMES_A_DISTANCE, "1d8", Portee.LONGUE,
     munitions=Munitions(20, Recharge.MINEURE),
     proprietes=frozenset({Propriete.DEUX_MAINS, Propriete.SILENCIEUSE}),
-    rarete=Rarete.RARE, bonus=BonusArme(jet=10),
+    qualite=Qualite.PERSONNALISE, modifications=(Modification("Corde de maître", "précision", 5),
+                                                  Modification("Flèches équilibrées", "précision", 5)),
 )
 PISTOLET_ARASAKA = Arme(
     "Pistolet lourd Arasaka", ARMES_A_DISTANCE, "1d10", Portee.COURTE,
-    munitions=Munitions(8, Recharge.MINEURE),
+    munitions=Munitions(8, Recharge.SIMPLE),
     proprietes=frozenset({Propriete.DISSIMULABLE}),
-    rarete=Rarete.PEU_COMMUNE, bonus=BonusArme(degats=1),
+    qualite=Qualite.PERSONNALISE, modifications=(RECHARGEUR, CALIBRE), fabricant="Arasaka",
 )
 HARNOIS = Armure("Harnois de plates", 4, {"Discrétion": -20, "Athlétisme": -20, "Esquive": -20})
 
@@ -57,15 +72,22 @@ def test_formule_de_degats_au_corps_a_corps():
 
 
 def test_pas_de_bonus_de_force_a_distance():
-    assert str(formule_degats(PISTOLET_ARASAKA, force=90)) == "1d10+1"  # seulement le bonus de rareté
+    assert str(formule_degats(PISTOLET_ARASAKA, force=90)) == "1d10+1"  # seulement le nouveau calibre
 
 
-def test_proprietes_de_bonus_comptent_comme_proprietes():
-    arme = Arme("Dague runique", CORPS_A_CORPS, "1d4", Portee.CONTACT,
-                rarete=Rarete.RARE, bonus=BonusArme(proprietes=frozenset({Propriete.PERFORANTE})))
-    assert verifier_arme(arme) == []
-    assert arme.a(Propriete.PERFORANTE)
-    assert not arme.a(Propriete.FRAGILE)
+def test_les_modifications_font_les_bonus():
+    assert ARC_ELFIQUE.bonus.jet == 10 and PISTOLET_ARASAKA.bonus.degats == 1
+    arme = Arme("Pistolet", ARMES_A_DISTANCE, "1d8", Portee.COURTE, munitions=Munitions(10, Recharge.SIMPLE),
+                qualite=Qualite.ORIGINE, modifications=(SILENCIEUX,))
+    assert arme.a(Propriete.SILENCIEUSE) and not arme.a(Propriete.FRAGILE)
+
+
+def test_les_modifications_de_munitions():
+    arme = Arme("Fusil", ARMES_A_DISTANCE, "2d6", Portee.LONGUE, munitions=Munitions(6, Recharge.SIMPLE),
+                proprietes=frozenset({Propriete.DEUX_MAINS}), qualite=Qualite.PERSONNALISE,
+                modifications=(CHARGEUR, RECHARGEUR))
+    assert arme.chargeur == Munitions(12, Recharge.MINEURE)
+    assert arme.munitions == Munitions(6, Recharge.SIMPLE)  # le chargeur d'origine ne change pas
 
 
 def test_coherence_corps_a_corps():
@@ -76,7 +98,7 @@ def test_coherence_corps_a_corps():
 
 
 def test_arme_a_distance_sans_munitions():
-    sans = Arme("Fusil vide", ARMES_A_DISTANCE, "2d6+2", Portee.LONGUE)
+    sans = Arme("Fusil vide", ARMES_A_DISTANCE, "2d6+2", Portee.LONGUE, proprietes=frozenset({Propriete.DEUX_MAINS}))
     assert any("a des munitions" in e for e in verifier_arme(sans))
     javelot = Arme("Javelot", ARMES_A_DISTANCE, "1d8", Portee.COURTE, proprietes=frozenset({Propriete.LANCER}))
     assert verifier_arme(javelot) == []
@@ -88,34 +110,47 @@ def test_formule_et_competence_invalides():
     assert any("Formule de dés invalide" in e for e in erreurs)
 
 
+def _pistolet(qualite, *modifications, defaut=None):
+    return Arme("Pistolet", ARMES_A_DISTANCE, "1d8", Portee.COURTE, munitions=Munitions(10, Recharge.SIMPLE),
+                qualite=qualite, modifications=modifications, defaut=defaut)
+
+
 @pytest.mark.parametrize(
-    "rarete, bonus, valide",
+    "arme, erreur",
     [
-        (Rarete.COMMUNE, BonusArme(), True),
-        (Rarete.COMMUNE, BonusArme(jet=5), False),
-        (Rarete.PEU_COMMUNE, BonusArme(jet=5), True),
-        (Rarete.PEU_COMMUNE, BonusArme(degats=1), True),
-        (Rarete.PEU_COMMUNE, BonusArme(jet=10), False),
-        (Rarete.PEU_COMMUNE, BonusArme(jet=5, degats=1), False),  # « ou », pas « et »
-        (Rarete.PEU_COMMUNE, BonusArme(proprietes=frozenset({Propriete.SILENCIEUSE})), False),
-        (Rarete.RARE, BonusArme(jet=10), True),
-        (Rarete.RARE, BonusArme(degats=2), True),
-        (Rarete.RARE, BonusArme(degats=3), False),
-        (Rarete.RARE, BonusArme(jet=10, degats=2), False),
-        (Rarete.EXCEPTIONNELLE, BonusArme(jet=10, degats=2), True),
-        (Rarete.EXCEPTIONNELLE, BonusArme(jet=10, proprietes=frozenset({Propriete.PERFORANTE})), True),
-        (Rarete.EXCEPTIONNELLE, BonusArme(jet=20), False),  # deux bonus de « Rare », pas un bonus doublé
-        (Rarete.EXCEPTIONNELLE, BonusArme(jet=10, degats=2, proprietes=frozenset({Propriete.PERFORANTE})), False),
-        (Rarete.LEGENDAIRE, BonusArme(jet=40, degats=10), True),  # écrite à la main : pas de plafond
+        (_pistolet(Qualite.ORIGINE), None),
+        (_pistolet(Qualite.ORIGINE, VISEUR), None),
+        (_pistolet(Qualite.ORIGINE, VISEUR, LASER), "1 emplacement"),
+        (_pistolet(Qualite.PERSONNALISE, VISEUR, LASER), None),
+        (_pistolet(Qualite.PERSONNALISE, VISEUR, VISEUR), "une fois par objet"),
+        (_pistolet(Qualite.UNIQUE, VISEUR, LASER, CALIBRE), None),
+        (_pistolet(Qualite.UNIQUE, SILENCIEUX, PERFORANTES), "une seule propriété"),
+        (_pistolet(Qualite.USE, defaut=DEFAUT_JET), None),
+        (_pistolet(Qualite.USE), "défaut"),
+        (_pistolet(Qualite.USE, VISEUR, defaut=DEFAUT_JET), "0 emplacement"),
+        (_pistolet(Qualite.ORIGINE, defaut=DEFAUT_JET), "Seul un objet usé"),
+        (_pistolet(Qualite.ORIGINE, DOUBLURE), "ne va pas"),
     ],
 )
-def test_echelle_de_rarete_des_armes(rarete, bonus, valide):
-    arme = Arme("Arme test", CORPS_A_CORPS, "1d8", Portee.CONTACT, rarete=rarete, bonus=bonus)
-    assert (verifier_arme(arme) == []) == valide
+def test_qualite_et_emplacements(arme, erreur):
+    erreurs = verifier_arme(arme)
+    assert erreurs == [] if erreur is None else any(erreur in e for e in erreurs), erreurs
+
+
+def test_le_defaut_d_une_arme_usee():
+    assert _pistolet(Qualite.USE, defaut=DEFAUT_JET).bonus.jet == -5
+    assert _pistolet(Qualite.USE, defaut=DEFAUT_FRAGILE).a(Propriete.FRAGILE)
+
+
+def test_canon_raccourci_pas_sur_une_arme_a_deux_mains():
+    raccourci = Modification("Canon raccourci", "propriété", propriete=Propriete.DISSIMULABLE)
+    fusil = Arme("Fusil", ARMES_A_DISTANCE, "2d6", Portee.LONGUE, munitions=Munitions(6, Recharge.SIMPLE),
+                 proprietes=frozenset({Propriete.DEUX_MAINS}), modifications=(raccourci,))
+    assert any("deux mains" in e for e in verifier_arme(fusil))
 
 
 def test_legendaire_jamais_generee():
-    arme = Arme("Épée du destin", CORPS_A_CORPS, "4d20", Portee.CONTACT, rarete=Rarete.LEGENDAIRE)
+    arme = Arme("Épée du destin", CORPS_A_CORPS, "4d20", Portee.CONTACT, qualite=Qualite.LEGENDAIRE)
     assert verifier_arme(arme, generee=False) == []
     assert any("légendaire" in e for e in verifier_arme(arme, generee=True))
 
@@ -126,24 +161,31 @@ def test_armure_et_ses_malus():
     assert HARNOIS.malus_pour("Perception") == 0
 
 
-def test_bonus_d_armure():
-    maille_naine = Armure(
-        "Cotte de mailles naine", 3, {"Discrétion": -10},
-        rarete=Rarete.RARE, bonus=BonusArmure(malus_en_moins=10),
-    )
-    assert verifier_armure(maille_naine) == []
-    assert maille_naine.malus_pour("Discrétion") == 0  # le malus ne devient jamais un bonus
-    renforcee = Armure("Gilet renforcé", 3, {"Discrétion": -10}, rarete=Rarete.PEU_COMMUNE, bonus=BonusArmure(protection=1))
-    assert verifier_armure(renforcee) == []
-    assert renforcee.protection_totale == 4
+def test_modifications_d_armure():
+    gilet = Armure("Gilet balistique", 3, {"Discrétion": -10}, qualite=Qualite.PERSONNALISE,
+                   modifications=(PLAQUES, DOUBLURE))
+    assert verifier_armure(gilet) == []
+    assert gilet.protection_totale == 4
+    assert gilet.malus_pour("Discrétion") == -5
+    confortable = Armure("Gilet", 3, {"Discrétion": -10}, qualite=Qualite.PERSONNALISE, modifications=(DOUBLURE, FURTIF))
+    assert confortable.malus_pour("Discrétion") == 0  # le malus ne devient jamais un bonus
+    tactique = Armure("Armure tactique", 4, {"Discrétion": -20, "Athlétisme": -10}, modifications=(FURTIF,))
+    assert tactique.malus_pour("Discrétion") == -15 and tactique.malus_pour("Athlétisme") == -10
+
+
+def test_le_defaut_d_une_armure_usee():
+    veste = Armure("Veste", 1, qualite=Qualite.USE, defaut=DEFAUT_PROTECTION)
+    assert veste.protection_totale == 1  # jamais en dessous de 1
+    gilet = Armure("Gilet", 3, {"Discrétion": -10}, qualite=Qualite.USE, defaut=DEFAUT_MALUS)
+    assert gilet.malus_pour("Discrétion") == -20
 
 
 def test_armure_invalide():
-    armure = Armure("Armure absurde", -1, {"Discrétion": 20}, rarete=Rarete.PEU_COMMUNE, bonus=BonusArmure(protection=2))
+    armure = Armure("Armure absurde", -1, {"Discrétion": 20}, qualite=Qualite.ORIGINE, modifications=(PLAQUES, PLAQUES))
     erreurs = verifier_armure(armure)
     assert any("protection ne peut pas être négative" in e for e in erreurs)
     assert any("malus d'armure est négatif" in e for e in erreurs)
-    assert any("+1 de protection" in e for e in erreurs)
+    assert any("1 emplacement" in e for e in erreurs)
 
 
 @pytest.mark.parametrize(
@@ -171,4 +213,4 @@ def test_bornes_de_la_protection():
     assert any("de 1 à 4" in e for e in verifier_armure(Armure("Exosquelette", 5, {"Esquive": -20})))
     assert any("de 1 à 4" in e for e in verifier_armure(Armure("Rien du tout", 0)))
     # Le légendaire s'écrit à la main : il échappe aux bornes
-    assert verifier_armure(Armure("Égide divine", 8, rarete=Rarete.LEGENDAIRE)) == []
+    assert verifier_armure(Armure("Égide divine", 8, qualite=Qualite.LEGENDAIRE)) == []

@@ -61,10 +61,12 @@ class Jeu:
             # La campagne continue : Kaito tel qu'on l'a laissé, et le quartier sans l'embuscade
             partie = charger(self.campagne.sauvegarde)
             self.session = Session(partie.univers, partie.personnage, des or Des(), partie.moment,
-                                   arme=partie.arme_en_main, armure=partie.armure, campagne=self.campagne)
+                                   arme=partie.arme_en_main, armure=partie.armure, vehicule=partie.vehicule,
+                                   campagne=self.campagne)
         else:
             univers = charger_univers(banc.UNIVERS)
             kaito = univers.creer_personnage("Netrunner", **banc.FICHE_KAITO)
+            univers.equiper(kaito, **banc.EQUIPEMENT_KAITO)
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
                                    arme="Pistolet lourd Arasaka", armure="Veste renforcée", campagne=self.campagne)
         self.table = Table(serveur, self.session, budget, QUARTIER if self.reprise else SCENE, contexte=contexte)
@@ -120,7 +122,8 @@ class Jeu:
         arme = [s.joueur.arme.nom] if s.joueur.arme else []
         armure = s.joueur.armure.nom if s.joueur.armure else None
         sauvegarder(Partie(s.personnage, s.univers, s.moment, armes=arme, arme_en_main=arme[0] if arme else None,
-                           armure=armure), self.campagne.sauvegarde)
+                           armure=armure, vehicule=s.vehicule.vers_dict() if s.vehicule else None),
+                    self.campagne.sauvegarde)
 
     def afficher_etat(self):
         e = outils.etat(self.session)  # appelé en direct : ni le MJ ni le journal ne le voient

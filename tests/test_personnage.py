@@ -22,13 +22,14 @@ def netrunner(**changements):
         parcours="Netrunner",
         competences_parcours=[
             "Technologie", "Investigation", "Sécurité", "Perception",
-            "Discrétion", "Artisanat", "Tromperie", "Sciences",
+            "Discrétion", "Artisanat", "Tromperie", "Esquive",
         ],
         points_parcours={
             "Technologie": 70, "Investigation": 45, "Sécurité": 50, "Perception": 25,
-            "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Sciences": 15,
+            "Discrétion": 30, "Artisanat": 40, "Tromperie": 25, "Esquive": 15,
         },
-        points_personnels={"Armes à distance": 30, "Esquive": 20, "Pilotage": 20, "Perspicacité": 30},
+        points_personnels={"Armes à distance": 30, "Esquive": 5, "Pilotage": 20, "Perspicacité": 30,
+                       "Athlétisme": 15},
         motivation="Effacer sa dette envers une corpo",
         lien="Sa petite sœur, sa seule famille",
         defaut="Fait trop confiance aux machines",
@@ -60,10 +61,11 @@ def test_exemple_du_netrunner():
     assert perso.competence("Discrétion") == 50  # Infiltration
     assert perso.competence("Artisanat") == 45  # Bricolage tech
     assert perso.competence("Tromperie") == 30  # Arnaque
-    assert perso.competence("Sciences") == 20
     # Points personnels
     assert perso.competence("Armes à distance") == 50
-    assert perso.competence("Esquive") == 50  # base Dextérité / 2 = 30, + 20
+    assert perso.competence("Esquive") == 50  # base Dextérité / 2 = 30, + 15 du parcours et 5 personnels
+    assert perso.competence("Athlétisme") == 35
+    assert perso.competence("Sciences") == 5  # plus dans le parcours : sa base
     assert perso.competence("Pilotage") == 40  # Conduite
     assert perso.competence("Perspicacité") == 40  # Empathie
     # Les autres compétences restent à leur base
@@ -128,12 +130,12 @@ def test_competence_inconnue_ou_absente_de_l_univers():
 
 
 def test_total_des_points_de_parcours():
-    points = dict(netrunner()["points_parcours"], Sciences=16)
+    points = dict(netrunner()["points_parcours"], Esquive=16)
     assert any("totalisent 301 au lieu de 300" in e for e in erreurs_de(points_parcours=points))
 
 
 def test_points_de_parcours_hors_du_parcours():
-    points = dict(netrunner()["points_parcours"], Sciences=5, Médecine=10)
+    points = dict(netrunner()["points_parcours"], Esquive=5, Médecine=10)
     assert any("« Médecine » n'est pas une compétence du parcours" in e for e in erreurs_de(points_parcours=points))
 
 

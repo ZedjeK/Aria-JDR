@@ -397,3 +397,14 @@ def test_le_camp_surpris_perd_son_premier_round():
     assert rapport.defense is None  # surpris : pas de défense
     c.fin_de_round()
     assert c.peut_agir(k)
+
+
+def test_une_arme_perforante_divise_l_armure():
+    fusil = Arme("Fusil perforant", ARMES_A_DISTANCE, "1d10", Portee.COURTE, munitions=Munitions(8, Recharge.MINEURE),
+                 proprietes=frozenset({Propriete.PERFORANTE}))
+    k = kaito(arme=fusil)
+    garde = Combattant(FichePnj("Garde", combat=45, pv_max_base=30), "ennemis",
+                       armure=Armure("Armure tactique", 4, {"Discrétion": -20}))
+    combat = Combat(DesTruques(30, 8), [k, garde])  # 30 : réussite ; 8 dégâts, l'armure n'en arrête que 2
+    rapport = combat.attaquer(k, garde)
+    assert rapport.protection == 2 and rapport.blessure.degats == 6
