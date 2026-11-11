@@ -40,7 +40,7 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 .venv\Scripts\python.exe -m aria.banc
 ```
 
-Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 37 situations, dont 10 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur, de croire un faux souvenir ou de lancer un sort que le personnage ne connaît pas. Les situations de magie se jouent avec Elara, une mage, dans un univers de Fantasy étalon (`univers/fantasy.json`), avec les domaines de l'annexe C des règles. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
+Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 44 situations, dont 12 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur, de croire un faux souvenir ou de lancer un sort que le personnage ne connaît pas. Les situations de magie se jouent avec Elara, une mage, dans un univers de Fantasy étalon (`univers/fantasy.json`), avec les domaines de l'annexe C des règles. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
 
 ## Jouer avec le MJ
 
@@ -53,6 +53,12 @@ La même ruelle, mais en texte libre : tu écris ce que fait Kaito, et le MJ ret
 En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'ordre d'initiative, et le MJ te rend la main à chacun de tes tours. À chaque fin de round, le moteur écrit la fiche du combat (`combat.md`) et la donne au MJ, pour qu'il raconte avec les vrais PV. Quand le combat se termine, ses moments forts (racontés par le MJ) et son résultat (écrit par le moteur) rejoignent les souvenirs de la campagne (`souvenirs.md`), puis la fiche est effacée.
 
 `etat` affiche ta fiche, `quitter` termine la session : le MJ range la scène en cours dans la mémoire, puis viennent la progression des compétences et la sauvegarde. La partie est aussi sauvegardée après chaque action. Au lancement suivant, la campagne reprend là où tu l'as laissée, et le MJ te rappelle où vous en étiez.
+
+Pour une autre campagne, dans un univers généré depuis la bibliothèque, donne-lui un nom et un genre ; les réglages sont préremplis selon le genre (REGLES.md 1.2). L'univers est écrit une seule fois dans le dossier de la campagne (`univers.json`) et ne change plus ensuite. Tant que la création de personnage n'existe pas, c'est Kaito qui joue : seul un univers Cyberpunk a son parcours.
+
+```bash
+.venv\Scripts\python.exe -m aria.jeu --campagne osaka --genre Cyberpunk --nom "Osaka 2091" --cadre "Osaka sous la pluie acide"
+```
 
 Chaque campagne a son dossier, ici `.Aria-JDR\neo-tokyo-kaito\`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
 

@@ -23,6 +23,19 @@ Chaque univers fixe deux réglages qui modulent les règles :
 | **Curseur de létalité** | Héroïque, Standard, Réaliste | PV, points de destin, mort instantanée, repos, tests de Santé mentale |
 | **Monde impitoyable** | Oui, Non | Les chocs légers ne déclenchent plus de test de Santé mentale |
 
+À la création d'une campagne, ils sont **préremplis selon le genre** ; le joueur peut tout changer, sauf la magie là où le genre l'impose (annexe A) :
+
+| Genre | Létalité | Monde impitoyable | Chocs banals (sans test) | Magie |
+|---|---|---|---|---|
+| Fantasy | Héroïque | Non | Phénomène étrange, surnaturel indéniable | Activée |
+| Dark fantasy | Standard | Oui | Violence brutale, cadavre d'un inconnu | Activée |
+| Horreur | Réaliste | Non | Aucun | Activée |
+| Contemporain | Standard | Non | Aucun | Désactivée |
+| Militaire | Standard | Oui | Violence brutale, cadavre d'un inconnu | Désactivée |
+| Science-fiction | Standard | Non | Phénomène étrange | Activée |
+| Cyberpunk | Standard | Oui | Violence brutale | Désactivée |
+| Post-apo | Réaliste | Oui | Violence brutale, cadavre d'un inconnu | En option, désactivée par défaut |
+
 ### 1.3 La bibliothèque
 
 Aria-JDR est une **bibliothèque** : tout ce qui peut exister dans une partie y est rangé une seule fois (parcours, compétences thématiques, domaines et sorts, armes, armures, modifications, implants, véhicules, événements de route…), avec ses étiquettes :

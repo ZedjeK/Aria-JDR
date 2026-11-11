@@ -224,8 +224,17 @@ class Bibliotheque:
         return erreurs
 
     def _verifier_genres(self) -> list[str]:
+        from aria.reglages import Curseur
+        from aria.sante_mentale import Choc
         erreurs = [f"Genre manquant : {g}." for g in GENRES if g not in self.genres]
         for genre, fiche in self.genres.items():
+            reglages = fiche.get("reglages")
+            if reglages is None:
+                erreurs.append(f"{genre} : pas de réglages par défaut.")
+            else:
+                if reglages["curseur"] not in {c.value for c in Curseur}:
+                    erreurs.append(f"{genre} : curseur inconnu « {reglages['curseur']} ».")
+                erreurs += [f"{genre} : choc inconnu « {c} »." for c in reglages["chocs_banals"] if c not in Choc.__members__]
             for socle in fiche["habillage"]:
                 if socle not in COMPETENCES_SOCLE:
                     erreurs.append(f"{genre} : habillage d'une compétence qui n'est pas du socle « {socle} ».")
@@ -316,6 +325,13 @@ class Bibliotheque:
                     erreurs.append(f"{nom} : le système « {systeme} » n'est pas dans les modifications.")
             if "drones" in v and v["drones"]["modele"] not in noms:
                 erreurs.append(f"{nom} : drone inconnu « {v['drones']['modele']} ».")
+            # Une arme montée existe dans tous les genres de son véhicule : sinon l'univers composé la perd
+            portees = [m["arme"] for m in v["armes_montees"]] + ([v["arme_integree"]] if v.get("arme_integree") else [])
+            for arme in portees:
+                if arme in armes:
+                    manque = genres_de(v["genres"]) - genres_de(next(a for a in self.armes if a["nom"] == arme)["genres"])
+                    if manque:
+                        erreurs.append(f"{nom} : « {arme} » manque en {', '.join(sorted(manque))}.")
         return erreurs
 
     def _verifier_modeles(self) -> list[str]:

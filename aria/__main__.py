@@ -49,7 +49,7 @@ def menu(entree=input, sortie=print):
         try:
             if choix == "1":
                 if mj_disponible(entree, sortie):
-                    jeu.main()
+                    jeu.main([])
             elif choix == "2":
                 demo.main()
             elif choix == "3":

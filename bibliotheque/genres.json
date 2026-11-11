@@ -31,7 +31,15 @@
         "description": "prières et miracles"
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "héroïque",
+      "monde_impitoyable": false,
+      "chocs_banals": [
+        "PHENOMENE_ETRANGE",
+        "SURNATUREL_INDENIABLE"
+      ]
+    }
   },
   "Dark fantasy": {
     "habillage": {
@@ -67,7 +75,15 @@
         "description": "prières, exorcismes, inquisition"
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "standard",
+      "monde_impitoyable": true,
+      "chocs_banals": [
+        "VIOLENCE_BRUTALE",
+        "CADAVRE_INCONNU"
+      ]
+    }
   },
   "Horreur": {
     "habillage": {
@@ -93,7 +109,12 @@
         "description": "savoir interdit ; réduit la SM maximum"
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "réaliste",
+      "monde_impitoyable": false,
+      "chocs_banals": []
+    }
   },
   "Contemporain": {
     "habillage": {
@@ -124,7 +145,12 @@
         "description": "Contacts, indics et services rendus : savoir à qui demander quoi."
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "standard",
+      "monde_impitoyable": false,
+      "chocs_banals": []
+    }
   },
   "Militaire": {
     "habillage": {
@@ -154,7 +180,15 @@
         "description": "Poser, désamorcer et doser des charges."
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "standard",
+      "monde_impitoyable": true,
+      "chocs_banals": [
+        "VIOLENCE_BRUTALE",
+        "CADAVRE_INCONNU"
+      ]
+    }
   },
   "Science-fiction": {
     "habillage": {
@@ -184,7 +218,14 @@
         "description": "Les armes de bord d'un vaisseau ou d'un véhicule."
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "standard",
+      "monde_impitoyable": false,
+      "chocs_banals": [
+        "PHENOMENE_ETRANGE"
+      ]
+    }
   },
   "Cyberpunk": {
     "habillage": {
@@ -221,7 +262,14 @@
         "description": "Fixers, contacts et dettes de faveur : savoir à qui demander quoi."
       }
     ],
-    "implants": true
+    "implants": true,
+    "reglages": {
+      "curseur": "standard",
+      "monde_impitoyable": true,
+      "chocs_banals": [
+        "VIOLENCE_BRUTALE"
+      ]
+    }
   },
   "Post-apo": {
     "habillage": {
@@ -257,6 +305,14 @@
         "description": "eau, nourriture, décontamination"
       }
     ],
-    "implants": false
+    "implants": false,
+    "reglages": {
+      "curseur": "réaliste",
+      "monde_impitoyable": true,
+      "chocs_banals": [
+        "VIOLENCE_BRUTALE",
+        "CADAVRE_INCONNU"
+      ]
+    }
   }
 }

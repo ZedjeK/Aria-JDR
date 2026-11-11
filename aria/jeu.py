@@ -10,11 +10,14 @@ là où on l'a laissée.
 
 Lancement (après le banc, qui choisit le modèle) :
     .venv\\Scripts\\python.exe -m aria.jeu
+Une autre campagne, dans un univers généré depuis la bibliothèque :
+    .venv\\Scripts\\python.exe -m aria.jeu --campagne ma-campagne --genre Cyberpunk --cadre "Osaka, 2091"
 """
 
+import argparse
 import sys
 
-from aria import banc, chemins, llm, optimiseur, outils, progression
+from aria import banc, chemins, generateur, llm, optimiseur, outils, progression
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -50,9 +53,16 @@ FIN_DE_SESSION = ("[Fin de session] Le joueur s'arrête là. Si un combat est en
                   "si besoin. Ne raconte rien.")
 
 
+class SansPersonnage(Exception):
+    """Pas encore de création de personnage : seul Kaito, le Netrunner, peut jouer."""
+
+
 class Jeu:
     def __init__(self, serveur: llm.Serveur, budget: int | None, contexte: int = optimiseur.CONTEXTE_CIBLE,
-                 des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None):
+                 des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
+                 choix: "generateur.Choix | None" = None):
+        """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
+        encore d'univers prend Néo-Tokyo, l'univers étalon du banc."""
         self.entree, self.dire = entree, sortie
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
@@ -64,7 +74,15 @@ class Jeu:
                                    arme=partie.arme_en_main, armure=partie.armure, vehicule=partie.vehicule,
                                    campagne=self.campagne)
         else:
-            univers = charger_univers(banc.UNIVERS)
+            if self.campagne.univers.is_file():
+                univers = charger_univers(self.campagne.univers)
+            elif choix:
+                univers = generateur.creer_campagne(self.campagne, choix)
+            else:
+                univers = charger_univers(banc.UNIVERS)
+            if "Netrunner" not in univers.parcours:
+                raise SansPersonnage(f"{univers.nom} n'a pas de Netrunner pour Kaito : la création de personnage "
+                                     "arrive à l'étape suivante.")
             kaito = univers.creer_personnage("Netrunner", **banc.FICHE_KAITO)
             univers.equiper(kaito, **banc.EQUIPEMENT_KAITO)
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
@@ -155,9 +173,35 @@ class Jeu:
         self.dire(f"Kaito : {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, {k.points_destin} points de destin.")
 
 
-def main():
+def lire_arguments(arguments: list[str] | None = None):
+    parser = argparse.ArgumentParser(prog="aria.jeu", description="Jouer une campagne avec le MJ.")
+    parser.add_argument("--campagne", default=CAMPAGNE, help=f"son dossier dans .Aria-JDR (par défaut {CAMPAGNE})")
+    parser.add_argument("--genre", help="pour une nouvelle campagne : son genre (l'univers est généré)")
+    parser.add_argument("--nom", default="", help="le nom de l'univers (par défaut, celui du genre)")
+    parser.add_argument("--cadre", default="", help="le cadre, en une phrase")
+    return parser.parse_args(arguments)
+
+
+def choix_de(arguments) -> "generateur.Choix | None":
+    """Les choix d'une nouvelle campagne, préremplis par genre ; None pour reprendre une campagne."""
+    if not arguments.genre:
+        return None
+    return generateur.choix_par_defaut(generateur.charger(), arguments.genre, arguments.nom, arguments.cadre)
+
+
+def main(arguments: list[str] | None = None):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    arguments = lire_arguments(arguments)
+    campagne = Campagne.nommee(arguments.campagne)
+    try:
+        choix = choix_de(arguments)
+    except generateur.ChoixInvalide as erreur:
+        print(erreur)
+        return
+    if choix and campagne.univers.is_file():
+        print(f"La campagne « {arguments.campagne} » a déjà son univers : elle reprend telle quelle (sans --genre).")
+        return
     profil = banc.profil_valide()
     if profil is None:
         print("Pas de MJ qualifié sur ce PC. Lance d'abord le banc : .venv\\Scripts\\python.exe -m aria.banc")
@@ -174,7 +218,9 @@ def main():
             print(f"Le serveur du MJ ne démarre pas (détails : {JOURNAL_SERVEUR}). "
                   "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
             return
-        Jeu(serveur, profil["budget_reflexion"], reglages.contexte).jouer()
+        Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix).jouer()
+    except SansPersonnage as erreur:
+        print(erreur)
     except (KeyboardInterrupt, EOFError):
         print("\nPartie interrompue.")
     finally:
