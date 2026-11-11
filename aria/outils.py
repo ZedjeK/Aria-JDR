@@ -350,6 +350,8 @@ def _etat_combattant(c: Combattant) -> dict:
     f = c.fiche
     etat = {"nom": c.nom, "pv": f.pv, "pv_max": f.pv_max, "etat": f.etat.value, "blessure_grave": f.blessure_grave,
             "arme": c.arme.nom if c.arme else None, "armure": c.armure.nom if c.armure else None}
+    if c.arme and c.arme.calibre:
+        etat["calibre"] = c.arme.calibre
     if c.arme and c.arme.munitions:
         etat["munitions"] = c.munitions_restantes()
     if c.arme and c.arme.zone:

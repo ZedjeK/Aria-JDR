@@ -350,8 +350,11 @@ Chaque univers a **sa propre armurerie**. Le moteur ne fournit que le format des
 | Portée | Contact, courte, moyenne ou longue |
 | Munitions | Capacité et coût du rechargement (action mineure ou simple) ; vide pour une arme de mêlée |
 | Propriétés | Deux mains, rafale, perforante, dissimulable, lancer, silencieuse, encombrante, fragile… |
+| Calibre | Pour une arme à feu : une étiquette (« .45 ACP », « 5,56 mm »), sans effet sur les dégâts |
 | Qualité | Voir l'échelle ci-dessous |
 | Modifications | Selon la qualité |
+
+Le **calibre** suit l'époque : dans la bibliothèque, une arme à feu a la liste de ses calibres avec leur année (le pistolet lourd : .45 ACP en 1911, .357 Magnum en 1935, .44 Magnum en 1955, .50 AE en 1991), et une campagne prend le plus récent qui existe à l'année de son cadre. Il donne son nom juste à l'arme ; plus tard, l'inventaire s'en servira pour les munitions compatibles.
 
 Une arme **lancée** (javelot, dague…) quitte la main : il faut la récupérer. Une arme **fragile** se brise sur une maladresse. Contre une arme **perforante**, l'armure (ou le blindage) ne compte qu'à moitié.
 

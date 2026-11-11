@@ -119,6 +119,7 @@ class Arme:
     posee: bool = False  # une charge ou une mine se pose au contact
     montee: bool = False  # trop lourde pour un homme : seulement sur un véhicule ou un trépied
     electronique: bool = False
+    calibre: str | None = None  # une étiquette (« .45 ACP ») : aucun effet sur les dégâts
 
     @property
     def corps_a_corps(self) -> bool:
