@@ -77,17 +77,34 @@ class Jeu:
             if self.campagne.univers.is_file():
                 univers = charger_univers(self.campagne.univers)
             elif choix:
-                univers = generateur.creer_campagne(self.campagne, choix)
+                univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=budget)
+                self.montrer_adaptation(univers, adaptation)
             else:
                 univers = charger_univers(banc.UNIVERS)
             if "Netrunner" not in univers.parcours:
                 raise SansPersonnage(f"{univers.nom} n'a pas de Netrunner pour Kaito : la création de personnage "
                                      "arrive à l'étape suivante.")
             kaito = univers.creer_personnage("Netrunner", **banc.FICHE_KAITO)
-            univers.equiper(kaito, **banc.EQUIPEMENT_KAITO)
+            local = univers.nom_local  # l'équipement de Kaito, sous les noms de cet univers
+            depart = {cle: local(v) if isinstance(v, str) else v for cle, v in banc.EQUIPEMENT_KAITO.items()}
+            univers.equiper(kaito, **depart)
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
-                                   arme="Pistolet lourd Arasaka", armure="Veste renforcée", campagne=self.campagne)
+                                   arme=local("Pistolet lourd Arasaka"), armure=local("Veste renforcée"),
+                                   campagne=self.campagne)
         self.table = Table(serveur, self.session, budget, QUARTIER if self.reprise else SCENE, contexte=contexte)
+
+    def montrer_adaptation(self, univers, adaptation: "generateur.Adaptation | None"):
+        """Ce que le MJ a adapté au cadre, avant la première scène."""
+        self.dire(f"\nUnivers créé : {univers.nom}" + (f" — {univers.cadre}" if univers.cadre else ""))
+        if adaptation is None:
+            return
+        for categorie, renommages in adaptation.renommages.items():
+            self.dire(f"  {generateur.CATEGORIES[categorie].capitalize()} : "
+                      + ", ".join(f"{a} → {n}" for a, n in renommages.items()))
+        if not adaptation.renommages:
+            self.dire("  Les noms de la bibliothèque collent au cadre : rien n'est renommé.")
+        for refus in adaptation.refus:
+            self.dire(f"  (écarté : {refus})")
 
     def mort(self) -> bool:
         k = self.session.personnage
@@ -179,6 +196,7 @@ def lire_arguments(arguments: list[str] | None = None):
     parser.add_argument("--genre", help="pour une nouvelle campagne : son genre (l'univers est généré)")
     parser.add_argument("--nom", default="", help="le nom de l'univers (par défaut, celui du genre)")
     parser.add_argument("--cadre", default="", help="le cadre, en une phrase")
+    parser.add_argument("--surprends-moi", action="store_true", help="le MJ propose le nom et le cadre")
     return parser.parse_args(arguments)
 
 
@@ -187,6 +205,20 @@ def choix_de(arguments) -> "generateur.Choix | None":
     if not arguments.genre:
         return None
     return generateur.choix_par_defaut(generateur.charger(), arguments.genre, arguments.nom, arguments.cadre)
+
+
+def surprendre(serveur, choix, budget, entree=input, sortie=print):
+    """Le MJ propose un cadre ; le joueur le garde, ou en demande un autre. None s'il abandonne."""
+    refuses = []
+    while True:
+        propose = generateur.proposer_cadre(serveur, choix, budget, refuses)
+        sortie(f"\n{propose.nom} — {propose.cadre}")
+        reponse = entree("On garde ? (o : oui, n : un autre, q : abandonner) ").strip().lower()
+        if reponse in ("o", "oui", ""):
+            return propose
+        if reponse in ("q", "quitter"):
+            return None
+        refuses.append(propose.cadre)
 
 
 def main(arguments: list[str] | None = None):
@@ -218,6 +250,10 @@ def main(arguments: list[str] | None = None):
             print(f"Le serveur du MJ ne démarre pas (détails : {JOURNAL_SERVEUR}). "
                   "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
             return
+        if choix and arguments.surprends_moi:
+            choix = surprendre(serveur, choix, profil["budget_reflexion"])
+            if choix is None:
+                return
         Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix).jouer()
     except SansPersonnage as erreur:
         print(erreur)

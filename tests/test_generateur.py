@@ -80,7 +80,8 @@ def test_genre_inconnu(bibliotheque):
 def test_l_univers_de_la_campagne_est_une_copie_figee(tmp_path, bibliotheque):
     campagne = Campagne(tmp_path / "osaka")
     choix = choix_par_defaut(bibliotheque, "Cyberpunk", "Osaka 2091", "Osaka sous la pluie acide.")
-    u = creer_campagne(campagne, choix, bibliotheque)
+    u, adaptation = creer_campagne(campagne, choix, bibliotheque)
+    assert adaptation is None  # sans serveur, pas de LLM
     assert u.nom == "Osaka 2091" and u.cadre == "Osaka sous la pluie acide."
     ecrit = json.loads(campagne.univers.read_text(encoding="utf-8"))
     assert ecrit["nom"] == "Osaka 2091" and not campagne.univers.with_suffix(".tmp").exists()

@@ -85,6 +85,7 @@ class Univers:
     vehicules: tuple[Vehicule, ...] = ()  # les véhicules et les montures (REGLES.md 12)
     descriptions: dict[str, str] = field(default_factory=dict)  # nom du parcours → ses 3 phrases
     equipements: dict[str, dict] = field(default_factory=dict)  # nom du parcours → ses listes de départ (REGLES.md 5)
+    origines: dict[str, str] = field(default_factory=dict)  # nom adapté au cadre → nom dans la bibliothèque
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -103,6 +104,11 @@ class Univers:
 
     def armure(self, nom: str) -> Armure:
         return _trouver(self.armures, nom, "armure")
+
+    def nom_local(self, nom_bibliotheque: str) -> str:
+        """Le nom qu'un objet de la bibliothèque porte dans cet univers (le même s'il n'a pas été adapté)."""
+        return next((local for local, origine in self.origines.items() if origine == nom_bibliotheque),
+                    nom_bibliotheque)
 
     def vehicule(self, nom: str) -> Vehicule:
         return _trouver(self.vehicules, nom, "véhicule")
@@ -306,6 +312,7 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             vehicules=tuple(vehicule_depuis_dict(v) for v in donnees.get("vehicules", [])),
             descriptions=dict(donnees.get("descriptions", {})),
             equipements={nom: dict(listes) for nom, listes in donnees.get("equipements", {}).items()},
+            origines=dict(donnees.get("origines", {})),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -402,7 +409,8 @@ def univers_vers_dict(univers: Univers) -> dict:
                        "implants": [_implant_vers_dict(i) for i in univers.implants]}} if univers.implants else {}) \
       | ({"vehicules": [vehicule_vers_dict(v) for v in univers.vehicules]} if univers.vehicules else {}) \
       | ({"descriptions": dict(univers.descriptions)} if univers.descriptions else {}) \
-      | ({"equipements": dict(univers.equipements)} if univers.equipements else {})
+      | ({"equipements": dict(univers.equipements)} if univers.equipements else {}) \
+      | ({"origines": dict(univers.origines)} if univers.origines else {})
 
 
 def _systeme_vers_dict(s: Systeme) -> dict:
