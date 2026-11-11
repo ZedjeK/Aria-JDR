@@ -42,6 +42,12 @@ Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/
 
 Le banc lit la VRAM de la carte graphique, choisit le contexte et le cache qui tiennent, puis fait jouer au modèle 44 situations, dont 12 pièges où il serait tenté de trancher sans les dés, de jouer à la place du joueur, de croire un faux souvenir ou de lancer un sort que le personnage ne connaît pas. Les situations de magie se jouent avec Elara, une mage, dans un univers de Fantasy étalon (`univers/fantasy.json`), avec les domaines de l'annexe C des règles. Il garde le plus petit budget de réflexion qui passe : au moins 90 % des situations normales et tous les pièges, chacune réussie deux fois. Le résultat va dans `.Aria-JDR\profil_mj.json`. Si aucun modèle ne passe, il n'y a pas de MJ sur ce PC. `--tous` qualifie tous les modèles présents, pour comparer, et `--budgets 128 256 512` limite les budgets essayés, pour gagner du temps.
 
+Le générateur d'univers a son propre banc, avec le modèle retenu : cinq cadres de référence (Osaka 2091, Arkham 1925, le Mékong en 1968, un royaume médiéval, Lyon en 2061), joués deux fois. Le code vérifie que rien d'anachronique ne reste, que les noms ne sont ni anglais ni fautifs, et que l'univers a de 15 à 30 parcours. Il garde le plus petit budget qui réussit au moins 9 essais sur 10 (`budget_generateur` dans le profil). Le menu « qualifier » enchaîne les deux bancs.
+
+```bash
+.venv\Scripts\python.exe -m aria.banc_generateur --budgets 512
+```
+
 ## Jouer avec le MJ
 
 La même ruelle, mais en texte libre : tu écris ce que fait Kaito, et le MJ retenu par le banc appelle le moteur puis raconte. Chaque jet s'affiche avant la narration, pour que tu voies toujours ce que disent les dés.
@@ -57,8 +63,10 @@ En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'o
 Pour une autre campagne, dans un univers généré depuis la bibliothèque, donne-lui un nom et un genre ; les réglages sont préremplis selon le genre (REGLES.md 1.2). L'univers est écrit une seule fois dans le dossier de la campagne (`univers.json`) et ne change plus ensuite. Tant que la création de personnage n'existe pas, c'est Kaito qui joue : seul un univers Cyberpunk a son parcours.
 
 ```bash
-.venv\Scripts\python.exe -m aria.jeu --campagne osaka --genre Cyberpunk --nom "Osaka 2091" --cadre "Osaka sous la pluie acide"
+.venv\Scripts\python.exe -m aria.jeu --campagne osaka --genre Cyberpunk --nom "Osaka 2091" --cadre "Osaka sous la pluie acide" --annee 2091
 ```
+
+Le MJ adapte l'univers au cadre : tout ce qui apparaît après l'année du cadre est retiré par le code (sans `--annee`, le MJ la déduit du cadre), puis il retire ce qui n'a pas sa place, renomme ce qui jure et ajoute des parcours propres au cadre. `--surprends-moi` lui laisse proposer le nom et le cadre.
 
 Chaque campagne a son dossier, ici `.Aria-JDR\neo-tokyo-kaito\`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
 

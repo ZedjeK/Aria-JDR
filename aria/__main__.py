@@ -7,7 +7,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from aria import banc, chemins, demo, jeu, llm
+from aria import banc, banc_generateur, chemins, demo, jeu, llm
 
 MENU = """
 === Aria-JDR ===
@@ -53,8 +53,8 @@ def menu(entree=input, sortie=print):
             elif choix == "2":
                 demo.main()
             elif choix == "3":
-                if moteur_present(sortie):
-                    banc.qualifier(afficher=sortie)
+                if moteur_present(sortie) and banc.qualifier(afficher=sortie):
+                    banc_generateur.main([])  # puis le générateur d'univers, avec le modèle retenu
             elif choix == "4":
                 return
             else:

@@ -22,6 +22,7 @@ from aria.univers import Univers, UniversInvalide, charger_univers, univers_depu
 ACTIVEE, DESACTIVEE, OPTION = "activée", "désactivée", "option"
 NOM_MAX = 60
 CADRE_MAX = 400
+ANNEES = (-3000, 3000)
 
 
 class ChoixInvalide(ValueError):
@@ -43,9 +44,11 @@ class Choix:
     curseur: str = Curseur.STANDARD.value
     monde_impitoyable: bool = False
     chocs_banals: tuple[str, ...] = ()
+    annee: int | None = None  # l'année du cadre : ce qui apparaît plus tard est retiré (sinon, le LLM la déduit)
 
 
-def choix_par_defaut(bibliotheque: Bibliotheque, genre: str, nom: str = "", cadre: str = "") -> Choix:
+def choix_par_defaut(bibliotheque: Bibliotheque, genre: str, nom: str = "", cadre: str = "",
+                     annee: int | None = None) -> Choix:
     """Les réglages préremplis du genre (REGLES.md 1.2) : le joueur peut ensuite tout changer,
     sauf la magie là où le genre l'impose."""
     if genre not in bibliotheque.genres:
@@ -53,7 +56,7 @@ def choix_par_defaut(bibliotheque: Bibliotheque, genre: str, nom: str = "", cadr
     fiche = bibliotheque.genres[genre]
     reglages = fiche["reglages"]
     return Choix(genre, nom or genre, cadre, fiche["magie"]["statut"] == ACTIVEE, reglages["curseur"],
-                 reglages["monde_impitoyable"], tuple(reglages["chocs_banals"]))
+                 reglages["monde_impitoyable"], tuple(reglages["chocs_banals"]), annee)
 
 
 def verifier_choix(bibliotheque: Bibliotheque, choix: Choix) -> list[str]:
@@ -72,6 +75,8 @@ def verifier_choix(bibliotheque: Bibliotheque, choix: Choix) -> list[str]:
     if choix.curseur not in {c.value for c in Curseur}:
         erreurs.append(f"Curseur inconnu « {choix.curseur} ».")
     erreurs += [f"Choc inconnu « {c} »." for c in choix.chocs_banals if c not in Choc.__members__]
+    if choix.annee is not None and not ANNEES[0] <= choix.annee <= ANNEES[1]:
+        erreurs.append(f"L'année du cadre va de {ANNEES[0]} à {ANNEES[1]}.")
     return erreurs
 
 
@@ -145,7 +150,9 @@ class Adaptation:
 
     nom: str
     cadre: str
-    retraits: dict[str, list[str]] = field(default_factory=dict)  # catégorie → objets retirés
+    annee: int | None = None
+    retraits_epoque: dict[str, list[str]] = field(default_factory=dict)  # retirés par le code : apparus plus tard
+    retraits: dict[str, list[str]] = field(default_factory=dict)  # catégorie → objets retirés par le LLM
     renommages: dict[str, dict[str, str]] = field(default_factory=dict)  # catégorie → {ancien : nouveau}
     parcours_retires: list[str] = field(default_factory=list)
     parcours_renommes: dict[str, str] = field(default_factory=dict)
@@ -171,10 +178,11 @@ def _paires(noms: list[str]) -> dict:
         "required": ["de", "vers"], "additionalProperties": False}}
 
 
-OUTIL_NOMMER = _outil("nommer_univers", "Donner un nom et un cadre à l'univers.", {
+OUTIL_NOMMER = _outil("nommer_univers", "Donner un nom, un cadre et une année à l'univers.", {
     "nom": {"type": "string", "description": f"Le nom de l'univers, {NOM_MAX} caractères au plus."},
     "cadre": {"type": "string", "description": "Le cadre en deux phrases : où, quand, l'ambiance."},
-}, ["nom", "cadre"])
+    "annee": {"type": "integer", "description": "L'année où se passe la campagne (négative avant notre ère)."},
+}, ["nom", "cadre", "annee"])
 
 
 def outil_retirer(noms: list[str]) -> dict:
@@ -250,12 +258,14 @@ def _demander(serveur, consigne: dict, demande: str, outil: dict, valider, budge
     return None, []
 
 
-def _nom_et_cadre(arguments: dict | None) -> tuple[str, str]:
+def _nom_et_cadre(arguments: dict | None) -> tuple[str, str, int | None]:
     if not arguments:
-        return "", ""
+        return "", "", None
     nom = " ".join(str(arguments.get("nom", "")).split())
     cadre = " ".join(str(arguments.get("cadre", "")).split())
-    return (nom if 0 < len(nom) <= NOM_MAX else "", cadre if 0 < len(cadre) <= CADRE_PROPOSE_MAX else "")
+    annee = arguments.get("annee")
+    annee = annee if isinstance(annee, int) and not isinstance(annee, bool) and ANNEES[0] <= annee <= ANNEES[1] else None
+    return (nom if 0 < len(nom) <= NOM_MAX else "", cadre if 0 < len(cadre) <= CADRE_PROPOSE_MAX else "", annee)
 
 
 def proposer_cadre(serveur, choix: Choix, budget: int | None = None, deja_vus: list[str] = ()) -> Choix:
@@ -267,9 +277,9 @@ def proposer_cadre(serveur, choix: Choix, budget: int | None = None, deja_vus: l
     for _ in range(ESSAIS):
         arguments = _appel_outil(serveur, [_consigne(choix, choix.nom, ""), {"role": "user", "content": demande}],
                                  OUTIL_NOMMER, budget)
-        nom, cadre = _nom_et_cadre(arguments)
+        nom, cadre, annee = _nom_et_cadre(arguments)
         if nom and cadre:
-            return replace(choix, nom=nom, cadre=cadre)
+            return replace(choix, nom=nom, cadre=cadre, annee=annee)
     raise ChoixInvalide(["Le MJ n'a pas su proposer de cadre : écris-en un toi-même."])
 
 
@@ -337,7 +347,7 @@ def valider_retraits(proposes, categorie: str, donnees: dict) -> tuple[list[str]
         else:
             acceptes.append(nom)
     minimum = MINIMUMS.get(categorie, 0)
-    if len(noms) - len(acceptes) < minimum:
+    if acceptes and len(noms) - len(acceptes) < minimum:  # l'époque a pu passer sous le minimum : ne rien retirer reste permis
         return [], refus + [f"Il faut garder au moins {minimum} objets dans {CATEGORIES[categorie]} "
                             f"({len(noms)} aujourd'hui) : retire-en moins."]
     return acceptes, refus
@@ -508,13 +518,26 @@ def _ajouter_parcours(d: dict, p: dict):
     d.setdefault("equipements", {})[p["nom"]] = dict(p["equipement"])
 
 
+def retraits_par_epoque(donnees: dict, annee: int) -> dict[str, list[str]]:
+    """Ce que le code retire tout seul : les objets apparus après l'année du cadre. La bibliothèque garantit
+    qu'un véhicule n'est jamais plus ancien que ses armes : une arme retirée n'est jamais montée sur un
+    véhicule gardé."""
+    retraits = {}
+    for categorie in ORDRE_RETRAIT:
+        trop_recents = [x["nom"] for x in donnees.get(categorie, []) if x.get("apparition", ANNEES[0]) > annee]
+        if trop_recents:
+            retraits[categorie] = trop_recents
+    return retraits
+
+
 def appliquer(donnees: dict, adaptation: Adaptation) -> dict:
     """Rejoue l'adaptation sur une copie : retraits, renommages, tri et ajout des parcours. Garde la trace
     des noms de la bibliothèque. Ne change aucune règle."""
     d = json.loads(json.dumps(donnees))  # une copie profonde
     d["nom"], d["cadre"] = adaptation.nom, adaptation.cadre
-    for categorie in ORDRE_RETRAIT:
-        _retirer_objets(d, categorie, adaptation.retraits.get(categorie, []))
+    for retraits in (adaptation.retraits_epoque, adaptation.retraits):
+        for categorie in ORDRE_RETRAIT:
+            _retirer_objets(d, categorie, retraits.get(categorie, []))
     _renommer_objets(d, {a: n for r in adaptation.renommages.values() for a, n in r.items()})
     _retirer_parcours(d, adaptation.parcours_retires)
     _renommer_parcours(d, adaptation.parcours_renommes)
@@ -528,16 +551,22 @@ def appliquer(donnees: dict, adaptation: Adaptation) -> dict:
 def adapter(serveur, donnees: dict, choix: Choix, budget: int | None = None, gardes: set[str] = frozenset()) -> Adaptation:
     """Le LLM complète le nom et le cadre s'ils manquent, retire les objets anachroniques, renomme ce qui
     jure, trie les parcours puis en ajoute par paquets. `gardes` : les parcours qui doivent rester."""
-    nom, cadre = choix.nom, choix.cadre
-    if nom == choix.genre or not cadre:
+    nom, cadre, annee = choix.nom, choix.cadre, choix.annee
+    if nom == choix.genre or not cadre or annee is None:
         demande = f"Donne un nom à cet univers de {choix.genre}"
         demande += f", dont le cadre est : {cadre}." if cadre else ", et un cadre original."
-        nouveau_nom, nouveau_cadre = _nom_et_cadre(
+        demande += " Donne aussi l'année où se passe la campagne."
+        nouveau_nom, nouveau_cadre, nouvelle_annee = _nom_et_cadre(
             _appel_outil(serveur, [_consigne(choix, nom, cadre), {"role": "user", "content": demande}],
                          OUTIL_NOMMER, budget))
         nom = nouveau_nom if nom == choix.genre and nouveau_nom else nom
         cadre = cadre or nouveau_cadre
-    a = Adaptation(nom, cadre)
+        annee = annee if annee is not None else nouvelle_annee
+    a = Adaptation(nom, cadre, annee)
+    if annee is None:
+        a.refus.append("pas d'année pour le cadre : aucun objet n'est retiré par époque")
+    else:
+        a.retraits_epoque = retraits_par_epoque(donnees, annee)
     consigne = _consigne(choix, nom, cadre)
     d = appliquer(donnees, a)
 

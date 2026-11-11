@@ -17,7 +17,7 @@ Une autre campagne, dans un univers généré depuis la bibliothèque :
 import argparse
 import sys
 
-from aria import banc, chemins, generateur, llm, optimiseur, outils, progression
+from aria import banc, banc_generateur, chemins, generateur, llm, optimiseur, outils, progression
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -63,7 +63,7 @@ class SansPersonnage(Exception):
 class Jeu:
     def __init__(self, serveur: llm.Serveur, budget: int | None, contexte: int = optimiseur.CONTEXTE_CIBLE,
                  des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
-                 choix: "generateur.Choix | None" = None):
+                 choix: "generateur.Choix | None" = None, budget_generation: int | None = None):
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
         encore d'univers prend Néo-Tokyo, l'univers étalon du banc."""
         self.entree, self.dire = entree, sortie
@@ -80,7 +80,8 @@ class Jeu:
             if self.campagne.univers.is_file():
                 univers = charger_univers(self.campagne.univers)
             elif choix:
-                univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=budget,
+                generation = budget if budget_generation is None else budget_generation
+                univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=generation,
                                                                 gardes={NETRUNNER})
                 self.montrer_adaptation(univers, adaptation)
             else:
@@ -103,6 +104,8 @@ class Jeu:
         if adaptation is None:
             return
         a = adaptation
+        for categorie, retires in a.retraits_epoque.items():
+            self.dire(f"  Apparus après {a.annee}, {generateur.CATEGORIES[categorie]} : {', '.join(retires)}")
         for categorie, retires in a.retraits.items():
             self.dire(f"  Retirés, {generateur.CATEGORIES[categorie]} : {', '.join(retires)}")
         for categorie, renommages in a.renommages.items():
@@ -114,7 +117,8 @@ class Jeu:
             self.dire("  Parcours renommés : " + ", ".join(f"{x} → {n}" for x, n in a.parcours_renommes.items()))
         for p in a.parcours_ajoutes:
             self.dire(f"  Nouveau parcours : {p['nom']} — {p['description']}")
-        if not (a.retraits or a.renommages or a.parcours_retires or a.parcours_renommes or a.parcours_ajoutes):
+        if not (a.retraits_epoque or a.retraits or a.renommages or a.parcours_retires or a.parcours_renommes
+                or a.parcours_ajoutes):
             self.dire("  La bibliothèque colle au cadre : rien n'a changé.")
         for refus in adaptation.refus:
             self.dire(f"  (écarté : {refus})")
@@ -209,6 +213,7 @@ def lire_arguments(arguments: list[str] | None = None):
     parser.add_argument("--genre", help="pour une nouvelle campagne : son genre (l'univers est généré)")
     parser.add_argument("--nom", default="", help="le nom de l'univers (par défaut, celui du genre)")
     parser.add_argument("--cadre", default="", help="le cadre, en une phrase")
+    parser.add_argument("--annee", type=int, help="l'année du cadre (sinon, le MJ la déduit du cadre)")
     parser.add_argument("--surprends-moi", action="store_true", help="le MJ propose le nom et le cadre")
     return parser.parse_args(arguments)
 
@@ -217,7 +222,8 @@ def choix_de(arguments) -> "generateur.Choix | None":
     """Les choix d'une nouvelle campagne, préremplis par genre ; None pour reprendre une campagne."""
     if not arguments.genre:
         return None
-    return generateur.choix_par_defaut(generateur.charger(), arguments.genre, arguments.nom, arguments.cadre)
+    return generateur.choix_par_defaut(generateur.charger(), arguments.genre, arguments.nom, arguments.cadre,
+                                       arguments.annee)
 
 
 def surprendre(serveur, choix, budget, entree=input, sortie=print):
@@ -264,10 +270,11 @@ def main(arguments: list[str] | None = None):
                   "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
             return
         if choix and arguments.surprends_moi:
-            choix = surprendre(serveur, choix, profil["budget_reflexion"])
+            choix = surprendre(serveur, choix, banc_generateur.budget_generateur(profil))
             if choix is None:
                 return
-        Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix).jouer()
+        Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
+            budget_generation=banc_generateur.budget_generateur(profil)).jouer()
     except SansPersonnage as erreur:
         print(erreur)
     except (KeyboardInterrupt, EOFError):

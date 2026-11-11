@@ -7,7 +7,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1900
   },
   {
     "nom": "Combinaison de motard",
@@ -17,7 +18,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1930
   },
   {
     "nom": "Gilet pare-balles léger",
@@ -27,7 +29,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1975
   },
   {
     "nom": "Manteau blindé",
@@ -37,7 +40,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 2000
   },
   {
     "nom": "Gilet balistique",
@@ -49,7 +53,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1980
   },
   {
     "nom": "Armure de garde corpo",
@@ -62,7 +67,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 2010
   },
   {
     "nom": "Armure tactique",
@@ -75,7 +81,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 2000
   },
   {
     "nom": "Exosquelette léger",
@@ -88,7 +95,8 @@
     "genres": [
       "futuriste"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2040
   },
   {
     "nom": "Cuir",
@@ -98,7 +106,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Cotte de mailles",
@@ -110,7 +119,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 800
   },
   {
     "nom": "Plates",
@@ -123,6 +133,7 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1350
   }
 ]

@@ -17,7 +17,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2010
   },
   {
     "nom": "Moto de livraison",
@@ -37,7 +38,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1920
   },
   {
     "nom": "Moto sportive",
@@ -55,7 +57,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1970
   },
   {
     "nom": "Moto lourde",
@@ -73,7 +76,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1930
   },
   {
     "nom": "Jet-ski",
@@ -91,7 +95,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1972
   },
   {
     "nom": "Citadine",
@@ -109,7 +114,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1920
   },
   {
     "nom": "Berline",
@@ -127,7 +133,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1910
   },
   {
     "nom": "Voiture de sport",
@@ -145,7 +152,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1920
   },
   {
     "nom": "Pick-up",
@@ -166,7 +174,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1925
   },
   {
     "nom": "Voiture de patrouille",
@@ -184,7 +193,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1920
   },
   {
     "nom": "Vedette",
@@ -202,7 +212,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1900
   },
   {
     "nom": "Taxi automatique",
@@ -223,7 +234,8 @@
     "electronique": true,
     "utilitaires": [
       "pilote automatique"
-    ]
+    ],
+    "apparition": 2035
   },
   {
     "nom": "Hovercar",
@@ -241,7 +253,8 @@
     "genres": [
       "futuriste"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2050
   },
   {
     "nom": "Fourgon de netrunner",
@@ -268,7 +281,8 @@
     },
     "utilitaires": [
       "poste de piratage embarqué (utilitaire)"
-    ]
+    ],
+    "apparition": 2040
   },
   {
     "nom": "Fourgon",
@@ -288,7 +302,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1910
   },
   {
     "nom": "Bus",
@@ -306,7 +321,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1905
   },
   {
     "nom": "Camion",
@@ -326,7 +342,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1900
   },
   {
     "nom": "Blindé de transport",
@@ -357,7 +374,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1960
   },
   {
     "nom": "Blindé de reconnaissance",
@@ -389,7 +407,8 @@
     "drones": {
       "nombre": 2,
       "modele": "Drone de reconnaissance"
-    }
+    },
+    "apparition": 1914
   },
   {
     "nom": "AV de corpo",
@@ -416,7 +435,8 @@
     "genres": [
       "Cyberpunk"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2050
   },
   {
     "nom": "AV d'assaut",
@@ -450,7 +470,8 @@
       "Militaire",
       "Cyberpunk"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2050
   },
   {
     "nom": "Char",
@@ -486,7 +507,8 @@
       "Militaire",
       "Cyberpunk"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1916
   },
   {
     "nom": "Cheval",
@@ -504,10 +526,11 @@
     "systemes": [],
     "categorie": "montures",
     "genres": [
-      "médiéval"
+      "tous"
     ],
     "electronique": false,
-    "monture": true
+    "monture": true,
+    "apparition": -3000
   },
   {
     "nom": "Drone de reconnaissance",
@@ -527,7 +550,8 @@
       "Militaire"
     ],
     "electronique": true,
-    "effet": "utilitaire : voir à distance, repérer les embuscades"
+    "effet": "utilitaire : voir à distance, repérer les embuscades",
+    "apparition": 2000
   },
   {
     "nom": "Drone de combat",
@@ -552,7 +576,8 @@
       "Militaire"
     ],
     "electronique": true,
-    "effet": "arme montée : pistolet-mitrailleur"
+    "effet": "arme montée : pistolet-mitrailleur",
+    "apparition": 2015
   },
   {
     "nom": "Drone kamikaze",
@@ -574,7 +599,8 @@
     "electronique": true,
     "effet": "il explose : 3d6 sur une petite zone, usage unique",
     "arme_integree": "Charge de drone kamikaze",
-    "kamikaze": true
+    "kamikaze": true,
+    "apparition": 2015
   },
   {
     "nom": "Drone brouilleur",
@@ -594,7 +620,8 @@
     ],
     "electronique": true,
     "effet": "une IEM sur une petite zone, une fois par scène",
-    "arme_integree": "Impulsion IEM de drone"
+    "arme_integree": "Impulsion IEM de drone",
+    "apparition": 2040
   },
   {
     "nom": "Drone de livraison",
@@ -614,6 +641,7 @@
       "Contemporain"
     ],
     "electronique": true,
-    "effet": "utilitaire : transporter un petit objet"
+    "effet": "utilitaire : transporter un petit objet",
+    "apparition": 2015
   }
 ]
