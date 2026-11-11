@@ -11,7 +11,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1860
   },
   {
     "nom": "Couteau",
@@ -25,7 +26,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Tantō",
@@ -39,7 +41,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 900
   },
   {
     "nom": "Matraque télescopique",
@@ -53,7 +56,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1975
   },
   {
     "nom": "Tonfa",
@@ -65,7 +69,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1972
   },
   {
     "nom": "Batte de baseball",
@@ -79,7 +84,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1860
   },
   {
     "nom": "Matraque électrique",
@@ -91,7 +97,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 1980
   },
   {
     "nom": "Hachette",
@@ -105,7 +112,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Machette",
@@ -117,7 +125,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1800
   },
   {
     "nom": "Wakizashi",
@@ -129,7 +138,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1400
   },
   {
     "nom": "Katana",
@@ -141,7 +151,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1300
   },
   {
     "nom": "Nodachi",
@@ -155,7 +166,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1300
   },
   {
     "nom": "Marteau lourd",
@@ -170,7 +182,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Naginata électrique",
@@ -184,7 +197,8 @@
     "genres": [
       "futuriste"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2040
   },
   {
     "nom": "Tronçonneuse",
@@ -200,7 +214,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1950
   },
   {
     "nom": "Shuriken",
@@ -215,7 +230,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1600
   },
   {
     "nom": "Couteaux de lancer",
@@ -230,7 +246,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1800
   },
   {
     "nom": "Kunai",
@@ -246,7 +263,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1600
   },
   {
     "nom": "Pistolet compact",
@@ -264,7 +282,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1906
   },
   {
     "nom": "Pistolet léger",
@@ -282,7 +301,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1900
   },
   {
     "nom": "Pistolet silencieux",
@@ -301,7 +321,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1910
   },
   {
     "nom": "Mitraillette compacte",
@@ -320,7 +341,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1954
   },
   {
     "nom": "Pistolet intelligent",
@@ -338,7 +360,8 @@
     "genres": [
       "futuriste"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2040
   },
   {
     "nom": "Pistolet-mitrailleur",
@@ -357,7 +380,8 @@
       "moderne",
       "futuriste"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1918
   },
   {
     "nom": "Arbalète à poulies",
@@ -376,7 +400,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1970
   },
   {
     "nom": "Pistolet lourd",
@@ -394,7 +419,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1911
   },
   {
     "nom": "Revolver lourd",
@@ -410,7 +436,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1850
   },
   {
     "nom": "Carabine",
@@ -428,7 +455,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1860
   },
   {
     "nom": "Fusil à pompe",
@@ -446,7 +474,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1893
   },
   {
     "nom": "Fusil à pompe automatique",
@@ -466,7 +495,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1905
   },
   {
     "nom": "Mitrailleuse légère",
@@ -486,7 +516,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1914
   },
   {
     "nom": "Fusil d'assaut",
@@ -505,7 +536,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1944
   },
   {
     "nom": "Fusil de précision",
@@ -525,7 +557,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1914
   },
   {
     "nom": "Fusil à rail",
@@ -545,7 +578,8 @@
     "genres": [
       "futuriste"
     ],
-    "electronique": true
+    "electronique": true,
+    "apparition": 2060
   },
   {
     "nom": "Grenade à fragmentation",
@@ -563,7 +597,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": false,
-    "categorie": "grenades"
+    "categorie": "grenades",
+    "apparition": 1915
   },
   {
     "nom": "Grenade incendiaire",
@@ -583,7 +618,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": false,
-    "categorie": "grenades"
+    "categorie": "grenades",
+    "apparition": 1915
   },
   {
     "nom": "Grenade fumigène",
@@ -603,7 +639,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": false,
-    "categorie": "grenades"
+    "categorie": "grenades",
+    "apparition": 1915
   },
   {
     "nom": "Grenade flash",
@@ -623,7 +660,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": false,
-    "categorie": "grenades"
+    "categorie": "grenades",
+    "apparition": 1975
   },
   {
     "nom": "Grenade IEM",
@@ -643,7 +681,8 @@
     "electronique": true,
     "usage_unique": true,
     "posee": false,
-    "categorie": "grenades"
+    "categorie": "grenades",
+    "apparition": 2040
   },
   {
     "nom": "Lance-grenades",
@@ -663,7 +702,8 @@
       "capacite": 6,
       "recharge": "simple"
     },
-    "categorie": "armes lourdes"
+    "categorie": "armes lourdes",
+    "apparition": 1960
   },
   {
     "nom": "Lance-flammes",
@@ -685,7 +725,8 @@
       "capacite": 3,
       "recharge": "simple"
     },
-    "categorie": "armes lourdes"
+    "categorie": "armes lourdes",
+    "apparition": 1915
   },
   {
     "nom": "Lance-roquettes",
@@ -707,7 +748,8 @@
       "capacite": 1,
       "recharge": "simple"
     },
-    "categorie": "armes lourdes"
+    "categorie": "armes lourdes",
+    "apparition": 1942
   },
   {
     "nom": "Charge d'explosif",
@@ -723,7 +765,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": true,
-    "categorie": "explosifs"
+    "categorie": "explosifs",
+    "apparition": 1867
   },
   {
     "nom": "Canon de char",
@@ -741,7 +784,8 @@
     ],
     "electronique": false,
     "montee": true,
-    "categorie": "armes lourdes"
+    "categorie": "armes lourdes",
+    "apparition": 1916
   },
   {
     "nom": "Mine IEM",
@@ -759,7 +803,8 @@
     "electronique": true,
     "usage_unique": true,
     "posee": true,
-    "categorie": "explosifs"
+    "categorie": "explosifs",
+    "apparition": 2040
   },
   {
     "nom": "Charge IEM lourde",
@@ -778,7 +823,8 @@
     "electronique": true,
     "usage_unique": true,
     "posee": true,
-    "categorie": "explosifs"
+    "categorie": "explosifs",
+    "apparition": 2040
   },
   {
     "nom": "Mitrailleuse lourde",
@@ -798,7 +844,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1884
   },
   {
     "nom": "Canon automatique",
@@ -817,7 +864,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1916
   },
   {
     "nom": "Minigun",
@@ -836,7 +884,8 @@
     "genres": [
       "moderne"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1963
   },
   {
     "nom": "Dague",
@@ -850,7 +899,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Bâton",
@@ -864,7 +914,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": -3000
   },
   {
     "nom": "Épée longue",
@@ -876,7 +927,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1300
   },
   {
     "nom": "Hache d'armes",
@@ -890,7 +942,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 800
   },
   {
     "nom": "Arc long",
@@ -909,7 +962,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1200
   },
   {
     "nom": "Arbalète",
@@ -927,7 +981,8 @@
     "genres": [
       "médiéval"
     ],
-    "electronique": false
+    "electronique": false,
+    "apparition": 1000
   },
   {
     "nom": "Charge de drone kamikaze",
@@ -944,7 +999,8 @@
     "electronique": false,
     "usage_unique": true,
     "posee": false,
-    "categorie": "drones"
+    "categorie": "drones",
+    "apparition": 2015
   },
   {
     "nom": "Impulsion IEM de drone",
@@ -962,6 +1018,7 @@
     "electronique": true,
     "usage_unique": true,
     "posee": false,
-    "categorie": "drones"
+    "categorie": "drones",
+    "apparition": 2040
   }
 ]

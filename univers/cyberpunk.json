@@ -657,7 +657,8 @@
         "dissimulable"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1860
     },
     {
       "nom": "Couteau",
@@ -668,7 +669,8 @@
         "dissimulable"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": -3000
     },
     {
       "nom": "Tantō",
@@ -679,7 +681,8 @@
         "dissimulable"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 900
     },
     {
       "nom": "Matraque télescopique",
@@ -690,7 +693,8 @@
         "dissimulable"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1975
     },
     {
       "nom": "Tonfa",
@@ -699,7 +703,8 @@
       "portee": "contact",
       "proprietes": [],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1972
     },
     {
       "nom": "Batte de baseball",
@@ -710,7 +715,8 @@
         "fragile"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1860
     },
     {
       "nom": "Matraque électrique",
@@ -719,7 +725,8 @@
       "portee": "contact",
       "proprietes": [],
       "categorie": "armes de mêlée",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1980
     },
     {
       "nom": "Hachette",
@@ -730,7 +737,8 @@
         "lancer"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": -3000
     },
     {
       "nom": "Machette",
@@ -739,7 +747,8 @@
       "portee": "contact",
       "proprietes": [],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1800
     },
     {
       "nom": "Wakizashi",
@@ -748,7 +757,8 @@
       "portee": "contact",
       "proprietes": [],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1400
     },
     {
       "nom": "Katana",
@@ -757,7 +767,8 @@
       "portee": "contact",
       "proprietes": [],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1300
     },
     {
       "nom": "Nodachi",
@@ -768,7 +779,8 @@
         "deux mains"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1300
     },
     {
       "nom": "Marteau lourd",
@@ -780,7 +792,8 @@
         "encombrante"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": -3000
     },
     {
       "nom": "Naginata électrique",
@@ -791,7 +804,8 @@
         "deux mains"
       ],
       "categorie": "armes de mêlée",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2040
     },
     {
       "nom": "Tronçonneuse",
@@ -804,7 +818,8 @@
         "fragile"
       ],
       "categorie": "armes de mêlée",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1950
     },
     {
       "nom": "Shuriken",
@@ -816,7 +831,8 @@
         "dissimulable"
       ],
       "categorie": "armes de lancer",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1600
     },
     {
       "nom": "Couteaux de lancer",
@@ -828,7 +844,8 @@
         "dissimulable"
       ],
       "categorie": "armes de lancer",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1800
     },
     {
       "nom": "Kunai",
@@ -841,7 +858,8 @@
         "silencieuse"
       ],
       "categorie": "armes de lancer",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1600
     },
     {
       "nom": "Pistolet compact",
@@ -856,7 +874,8 @@
         "dissimulable"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1906
     },
     {
       "nom": "Pistolet léger",
@@ -871,7 +890,8 @@
         "dissimulable"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1900
     },
     {
       "nom": "Pistolet silencieux",
@@ -887,7 +907,8 @@
         "silencieuse"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1910
     },
     {
       "nom": "Mitraillette compacte",
@@ -903,7 +924,8 @@
         "dissimulable"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1954
     },
     {
       "nom": "Pistolet intelligent",
@@ -918,7 +940,8 @@
         "dissimulable"
       ],
       "categorie": "armes intelligentes",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2040
     },
     {
       "nom": "Pistolet-mitrailleur",
@@ -933,7 +956,8 @@
         "rafale"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1918
     },
     {
       "nom": "Arbalète à poulies",
@@ -949,7 +973,8 @@
         "silencieuse"
       ],
       "categorie": "fusils",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1970
     },
     {
       "nom": "Pistolet lourd",
@@ -964,7 +989,8 @@
         "dissimulable"
       ],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1911
     },
     {
       "nom": "Revolver lourd",
@@ -977,7 +1003,8 @@
       },
       "proprietes": [],
       "categorie": "armes de poing",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1850
     },
     {
       "nom": "Carabine",
@@ -992,7 +1019,8 @@
         "deux mains"
       ],
       "categorie": "fusils",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1860
     },
     {
       "nom": "Fusil à pompe",
@@ -1007,7 +1035,8 @@
         "deux mains"
       ],
       "categorie": "fusils",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1893
     },
     {
       "nom": "Fusil à pompe automatique",
@@ -1024,7 +1053,8 @@
         "encombrante"
       ],
       "categorie": "fusils",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1905
     },
     {
       "nom": "Mitrailleuse légère",
@@ -1041,7 +1071,8 @@
         "encombrante"
       ],
       "categorie": "armes lourdes",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1914
     },
     {
       "nom": "Fusil d'assaut",
@@ -1057,7 +1088,8 @@
         "rafale"
       ],
       "categorie": "fusils",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1944
     },
     {
       "nom": "Fusil de précision",
@@ -1074,7 +1106,8 @@
         "encombrante"
       ],
       "categorie": "fusils de précision",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1914
     },
     {
       "nom": "Fusil à rail",
@@ -1091,7 +1124,8 @@
         "encombrante"
       ],
       "categorie": "fusils",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2060
     },
     {
       "nom": "Grenade à fragmentation",
@@ -1106,7 +1140,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": false,
-      "categorie": "grenades"
+      "categorie": "grenades",
+      "apparition": 1915
     },
     {
       "nom": "Grenade incendiaire",
@@ -1123,7 +1158,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": false,
-      "categorie": "grenades"
+      "categorie": "grenades",
+      "apparition": 1915
     },
     {
       "nom": "Grenade fumigène",
@@ -1140,7 +1176,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": false,
-      "categorie": "grenades"
+      "categorie": "grenades",
+      "apparition": 1915
     },
     {
       "nom": "Grenade flash",
@@ -1157,7 +1194,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": false,
-      "categorie": "grenades"
+      "categorie": "grenades",
+      "apparition": 1975
     },
     {
       "nom": "Grenade IEM",
@@ -1174,7 +1212,8 @@
       "electronique": true,
       "usage_unique": true,
       "posee": false,
-      "categorie": "grenades"
+      "categorie": "grenades",
+      "apparition": 2040
     },
     {
       "nom": "Lance-grenades",
@@ -1191,7 +1230,8 @@
         "capacite": 6,
         "recharge": "simple"
       },
-      "categorie": "armes lourdes"
+      "categorie": "armes lourdes",
+      "apparition": 1960
     },
     {
       "nom": "Lance-flammes",
@@ -1210,7 +1250,8 @@
         "capacite": 3,
         "recharge": "simple"
       },
-      "categorie": "armes lourdes"
+      "categorie": "armes lourdes",
+      "apparition": 1915
     },
     {
       "nom": "Lance-roquettes",
@@ -1229,7 +1270,8 @@
         "capacite": 1,
         "recharge": "simple"
       },
-      "categorie": "armes lourdes"
+      "categorie": "armes lourdes",
+      "apparition": 1942
     },
     {
       "nom": "Charge d'explosif",
@@ -1242,7 +1284,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": true,
-      "categorie": "explosifs"
+      "categorie": "explosifs",
+      "apparition": 1867
     },
     {
       "nom": "Canon de char",
@@ -1256,7 +1299,8 @@
       "portee": "longue",
       "electronique": false,
       "montee": true,
-      "categorie": "armes lourdes"
+      "categorie": "armes lourdes",
+      "apparition": 1916
     },
     {
       "nom": "Mine IEM",
@@ -1271,7 +1315,8 @@
       "electronique": true,
       "usage_unique": true,
       "posee": true,
-      "categorie": "explosifs"
+      "categorie": "explosifs",
+      "apparition": 2040
     },
     {
       "nom": "Charge IEM lourde",
@@ -1286,7 +1331,8 @@
       "electronique": true,
       "usage_unique": true,
       "posee": true,
-      "categorie": "explosifs"
+      "categorie": "explosifs",
+      "apparition": 2040
     },
     {
       "nom": "Mitrailleuse lourde",
@@ -1303,7 +1349,8 @@
       ],
       "montee": true,
       "categorie": "armes lourdes",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1884
     },
     {
       "nom": "Canon automatique",
@@ -1319,7 +1366,8 @@
       ],
       "montee": true,
       "categorie": "armes lourdes",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1916
     },
     {
       "nom": "Minigun",
@@ -1335,7 +1383,8 @@
       ],
       "montee": true,
       "categorie": "armes lourdes",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1963
     },
     {
       "nom": "Charge de drone kamikaze",
@@ -1348,7 +1397,8 @@
       "electronique": false,
       "usage_unique": true,
       "posee": false,
-      "categorie": "drones"
+      "categorie": "drones",
+      "apparition": 2015
     },
     {
       "nom": "Impulsion IEM de drone",
@@ -1363,7 +1413,8 @@
       "electronique": true,
       "usage_unique": true,
       "posee": false,
-      "categorie": "drones"
+      "categorie": "drones",
+      "apparition": 2040
     },
     {
       "nom": "Pistolet lourd Arasaka",
@@ -1379,6 +1430,7 @@
       ],
       "categorie": "armes de poing",
       "electronique": false,
+      "apparition": 1911,
       "qualite": "personnalisé",
       "fabricant": "Arasaka",
       "modifications": [
@@ -1411,6 +1463,7 @@
       ],
       "categorie": "fusils",
       "electronique": false,
+      "apparition": 1944,
       "qualite": "personnalisé",
       "fabricant": "Militech",
       "modifications": [
@@ -1438,6 +1491,7 @@
       ],
       "categorie": "armes de mêlée",
       "electronique": false,
+      "apparition": -3000,
       "qualite": "personnalisé",
       "fabricant": null,
       "modifications": [
@@ -1463,6 +1517,7 @@
       ],
       "categorie": "armes intelligentes",
       "electronique": true,
+      "apparition": 2040,
       "qualite": "personnalisé",
       "fabricant": "Kang Tao",
       "modifications": [
@@ -1488,6 +1543,7 @@
       "proprietes": [],
       "categorie": "armes de mêlée",
       "electronique": false,
+      "apparition": 1300,
       "qualite": "personnalisé",
       "fabricant": null,
       "modifications": [
@@ -1521,6 +1577,7 @@
       ],
       "categorie": "fusils",
       "electronique": true,
+      "apparition": 2060,
       "qualite": "unique",
       "fabricant": "Militech",
       "modifications": [
@@ -1560,6 +1617,7 @@
       ],
       "categorie": "fusils de précision",
       "electronique": false,
+      "apparition": 1914,
       "qualite": "unique",
       "fabricant": "Tsunami",
       "modifications": [
@@ -1590,28 +1648,32 @@
       "protection": 1,
       "malus": {},
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1900
     },
     {
       "nom": "Combinaison de motard",
       "protection": 1,
       "malus": {},
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1930
     },
     {
       "nom": "Gilet pare-balles léger",
       "protection": 2,
       "malus": {},
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1975
     },
     {
       "nom": "Manteau blindé",
       "protection": 2,
       "malus": {},
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 2000
     },
     {
       "nom": "Gilet balistique",
@@ -1620,7 +1682,8 @@
         "Discrétion": -10
       },
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1980
     },
     {
       "nom": "Armure de garde corpo",
@@ -1630,7 +1693,8 @@
         "Esquive": -10
       },
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 2010
     },
     {
       "nom": "Armure tactique",
@@ -1640,7 +1704,8 @@
         "Athlétisme": -10
       },
       "categorie": "armures",
-      "electronique": false
+      "electronique": false,
+      "apparition": 2000
     },
     {
       "nom": "Exosquelette léger",
@@ -1650,7 +1715,8 @@
         "Esquive": -10
       },
       "categorie": "armures",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2040
     },
     {
       "nom": "Gilet balistique Militech",
@@ -1660,6 +1726,7 @@
       },
       "categorie": "armures",
       "electronique": false,
+      "apparition": 1980,
       "qualite": "personnalisé",
       "fabricant": "Militech",
       "modifications": [
@@ -1686,6 +1753,7 @@
       },
       "categorie": "armures",
       "electronique": false,
+      "apparition": 2000,
       "qualite": "personnalisé",
       "fabricant": "Arasaka",
       "modifications": [
@@ -2369,7 +2437,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "motos",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2010
     },
     {
       "nom": "Moto de livraison",
@@ -2386,7 +2455,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "motos",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1920
     },
     {
       "nom": "Moto sportive",
@@ -2401,7 +2471,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "motos",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1970
     },
     {
       "nom": "Moto lourde",
@@ -2416,7 +2487,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "motos",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1930
     },
     {
       "nom": "Jet-ski",
@@ -2431,7 +2503,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "nautiques",
-      "electronique": false
+      "electronique": false,
+      "apparition": 1972
     },
     {
       "nom": "Citadine",
@@ -2446,7 +2519,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "voitures",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1920
     },
     {
       "nom": "Berline",
@@ -2461,7 +2535,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "voitures de luxe",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1910
     },
     {
       "nom": "Voiture de sport",
@@ -2476,7 +2551,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "voitures de sport",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1920
     },
     {
       "nom": "Pick-up",
@@ -2494,7 +2570,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "pick-ups",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1925
     },
     {
       "nom": "Voiture de patrouille",
@@ -2509,7 +2586,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "voitures",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1920
     },
     {
       "nom": "Vedette",
@@ -2524,7 +2602,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "nautiques",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1900
     },
     {
       "nom": "Taxi automatique",
@@ -2542,7 +2621,8 @@
       "electronique": true,
       "utilitaires": [
         "pilote automatique"
-      ]
+      ],
+      "apparition": 2035
     },
     {
       "nom": "Hovercar",
@@ -2557,7 +2637,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "AV",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2050
     },
     {
       "nom": "Fourgon de netrunner",
@@ -2581,7 +2662,8 @@
       },
       "utilitaires": [
         "poste de piratage embarqué (utilitaire)"
-      ]
+      ],
+      "apparition": 2040
     },
     {
       "nom": "Fourgon",
@@ -2598,7 +2680,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "utilitaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1910
     },
     {
       "nom": "Bus",
@@ -2613,7 +2696,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "utilitaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1905
     },
     {
       "nom": "Camion",
@@ -2630,7 +2714,8 @@
       "armes_montees": [],
       "systemes": [],
       "categorie": "utilitaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1900
     },
     {
       "nom": "Blindé de transport",
@@ -2658,7 +2743,8 @@
         "Lance-fumigènes"
       ],
       "categorie": "véhicules militaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1960
     },
     {
       "nom": "Blindé de reconnaissance",
@@ -2687,7 +2773,8 @@
       "drones": {
         "nombre": 2,
         "modele": "Drone de reconnaissance"
-      }
+      },
+      "apparition": 1914
     },
     {
       "nom": "AV de corpo",
@@ -2711,7 +2798,8 @@
       ],
       "systemes": [],
       "categorie": "AV",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2050
     },
     {
       "nom": "AV d'assaut",
@@ -2741,7 +2829,8 @@
         "Leurres"
       ],
       "categorie": "véhicules militaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 2050
     },
     {
       "nom": "Char",
@@ -2773,7 +2862,27 @@
         "Lance-fumigènes"
       ],
       "categorie": "véhicules militaires",
-      "electronique": true
+      "electronique": true,
+      "apparition": 1916
+    },
+    {
+      "nom": "Cheval",
+      "type": "terrestre",
+      "gabarit": "léger",
+      "vitesse": "rapide",
+      "maniabilite": 10,
+      "structure": 15,
+      "blindage": 0,
+      "places": 2,
+      "proprietes": [
+        "tout-terrain"
+      ],
+      "armes_montees": [],
+      "systemes": [],
+      "categorie": "montures",
+      "electronique": false,
+      "monture": true,
+      "apparition": -3000
     },
     {
       "nom": "Drone de reconnaissance",
@@ -2789,7 +2898,8 @@
       "systemes": [],
       "categorie": "drones",
       "electronique": true,
-      "effet": "utilitaire : voir à distance, repérer les embuscades"
+      "effet": "utilitaire : voir à distance, repérer les embuscades",
+      "apparition": 2000
     },
     {
       "nom": "Drone de combat",
@@ -2810,7 +2920,8 @@
       "systemes": [],
       "categorie": "drones",
       "electronique": true,
-      "effet": "arme montée : pistolet-mitrailleur"
+      "effet": "arme montée : pistolet-mitrailleur",
+      "apparition": 2015
     },
     {
       "nom": "Drone kamikaze",
@@ -2828,7 +2939,8 @@
       "electronique": true,
       "effet": "il explose : 3d6 sur une petite zone, usage unique",
       "arme_integree": "Charge de drone kamikaze",
-      "kamikaze": true
+      "kamikaze": true,
+      "apparition": 2015
     },
     {
       "nom": "Drone brouilleur",
@@ -2845,7 +2957,8 @@
       "categorie": "drones",
       "electronique": true,
       "effet": "une IEM sur une petite zone, une fois par scène",
-      "arme_integree": "Impulsion IEM de drone"
+      "arme_integree": "Impulsion IEM de drone",
+      "apparition": 2040
     },
     {
       "nom": "Drone de livraison",
@@ -2861,7 +2974,8 @@
       "systemes": [],
       "categorie": "drones",
       "electronique": true,
-      "effet": "utilitaire : transporter un petit objet"
+      "effet": "utilitaire : transporter un petit objet",
+      "apparition": 2015
     },
     {
       "nom": "Moto Yaiba « Kusanagi »",
@@ -2877,6 +2991,7 @@
       "systemes": [],
       "categorie": "motos",
       "electronique": false,
+      "apparition": 1930,
       "qualite": "personnalisé",
       "fabricant": "Yaiba",
       "modifications": [
@@ -2908,6 +3023,7 @@
       "systemes": [],
       "categorie": "voitures de sport",
       "electronique": true,
+      "apparition": 1920,
       "qualite": "personnalisé",
       "fabricant": "Quadra",
       "modifications": [
@@ -2939,6 +3055,7 @@
       "systemes": [],
       "categorie": "voitures de luxe",
       "electronique": true,
+      "apparition": 1910,
       "qualite": "personnalisé",
       "fabricant": "Rayfield",
       "modifications": [
@@ -2979,6 +3096,7 @@
       "systemes": [],
       "categorie": "AV",
       "electronique": true,
+      "apparition": 2050,
       "qualite": "unique",
       "fabricant": "Arasaka",
       "modifications": [

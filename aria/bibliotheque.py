@@ -217,7 +217,7 @@ class Bibliotheque:
         erreurs += self._verifier_armes() + self._verifier_armures()
         erreurs += self._verifier_modifications() + self._verifier_fabricants()
         erreurs += self._verifier_implants() + self._verifier_vehicules()
-        erreurs += self._verifier_modeles() + self._verifier_parcours()
+        erreurs += self._verifier_modeles() + self._verifier_parcours() + self._verifier_annees()
         if self.domaines:
             from aria.univers import _domaine_depuis_dict
             erreurs += verifier_domaines(tuple(_domaine_depuis_dict(d) for d in self.domaines))
@@ -243,6 +243,22 @@ class Bibliotheque:
             for thematique in fiche["competences_thematiques"]:
                 if not 0 <= thematique["base"] <= 10:
                     erreurs.append(f"{genre} : « {thematique['nom']} » a une base de 0 à 10.")
+        return erreurs
+
+    def _verifier_annees(self) -> list[str]:
+        """Chaque arme, armure et véhicule a son année d'apparition ; un véhicule n'est jamais plus ancien
+        que les armes qu'il porte (le filtre par époque les retire ensemble)."""
+        erreurs = []
+        for categorie in ("armes", "armures", "vehicules"):
+            for entree in getattr(self, categorie):
+                if not isinstance(entree.get("apparition"), int):
+                    erreurs.append(f"{entree['nom']} : il lui faut une année d'apparition.")
+        annees = {a["nom"]: a.get("apparition") for a in self.armes}
+        for v in self.vehicules:
+            portees = [m["arme"] for m in v["armes_montees"]] + ([v["arme_integree"]] if v.get("arme_integree") else [])
+            for arme in portees:
+                if isinstance(annees.get(arme), int) and isinstance(v.get("apparition"), int)                         and annees[arme] > v["apparition"]:
+                    erreurs.append(f"{v['nom']} ({v['apparition']}) porte « {arme} », plus récent ({annees[arme]}).")
         return erreurs
 
     def _verifier_armes(self) -> list[str]:

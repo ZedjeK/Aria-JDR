@@ -42,7 +42,8 @@ Aria-JDR est une **bibliothèque** : tout ce qui peut exister dans une partie y 
 
 - **ses genres**, un par un ou par raccourci : *médiéval* (Fantasy, Dark fantasy), *moderne* (Contemporain, Horreur, Militaire, Cyberpunk, Post-apo), *futuriste* (Cyberpunk, Science-fiction), *tous* ;
 - **sa condition de magie** : seulement avec magie (le Mage, les domaines), ou indifférent ;
-- **électronique** ou non : c'est ce qui grille sous une IEM (voir 7.10).
+- **électronique** ou non : c'est ce qui grille sous une IEM (voir 7.10) ;
+- **son année d'apparition** (armes, armures, véhicules) : une campagne n'a que ce qui existe à l'année de son cadre. Un véhicule n'est jamais plus ancien que les armes qu'il porte.
 
 Une campagne ne crée rien de zéro :
 

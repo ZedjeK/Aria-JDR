@@ -49,8 +49,8 @@ def outil(_nom, **arguments):
     return [{"name": _nom, "arguments": arguments}]
 
 
-def nommer(nom, cadre):
-    return outil("nommer_univers", nom=nom, cadre=cadre)
+def nommer(nom, cadre, annee=2088):
+    return outil("nommer_univers", nom=nom, cadre=cadre, annee=annee)
 
 
 def retirer(*noms):
@@ -156,6 +156,8 @@ def test_valider_les_retraits(cyberpunk):
     acceptes, refus = valider_retraits(toutes, "armures", cyberpunk)
     assert acceptes == [] and any("au moins 2" in r for r in refus)
     assert valider_retraits("non", "armes", cyberpunk) == ([], ["« retirer » doit être une liste."])
+    peu = dict(cyberpunk, armures=cyberpunk["armures"][:1])  # l'époque n'a laissé qu'une armure
+    assert valider_retraits([], "armures", peu) == ([], [])
 
 
 def test_valider_le_tri_des_parcours(cyberpunk):
@@ -193,7 +195,7 @@ def test_valider_un_parcours_ajoute(cyberpunk, changements, erreur):
 # --- L'adaptation complète, avec un faux LLM ---------------------------------------------------------
 
 def test_adapter_avec_relances(bibliotheque, cyberpunk):
-    choix = choix_par_defaut(bibliotheque, "Cyberpunk", "Osaka 2091", "Osaka sous la pluie.")
+    choix = choix_par_defaut(bibliotheque, "Cyberpunk", "Osaka 2091", "Osaka sous la pluie.", 2091)
     passeur = avec_equipement(DATA_COURSIER, implants=[])  # le neuroport est renommé dans ce scénario
     faux = dict(passeur, nom="Netrunner")
     serveur = ServeurScripte(
@@ -217,7 +219,7 @@ def test_adapter_avec_relances(bibliotheque, cyberpunk):
 
 
 def test_arkham_retire_puis_comble_les_parcours(bibliotheque, horreur):
-    choix = choix_par_defaut(bibliotheque, "Horreur", "Arkham 1925", "Arkham, 1925.")
+    choix = choix_par_defaut(bibliotheque, "Horreur", "Arkham 1925", "Arkham, 1925.", 1925)
     retires = list(horreur["parcours"])[:8]  # 20 - 8 = 12 : il en manque 3 pour atteindre 15
     medium = {"nom": "Spirite", "description": "Elle fait tourner les tables dans les salons. La bonne société "
               "s'en amuse et s'en méfie. Elle entend parfois de vraies voix, et ne s'en remet jamais tout à fait.",
@@ -230,14 +232,17 @@ def test_arkham_retire_puis_comble_les_parcours(bibliotheque, horreur):
     garde = dict(medium, nom="Garde du campus", competences=["Combat rapproché", "Perception", "Intimidation",
                                                             "Athlétisme", "Esquive", "Investigation", "Survie", "Meneur"])
     serveur = ServeurScripte(
-        retirer(), retirer("Lance-roquettes", "Minigun"), retirer(),  # véhicules, armes, armures
+        retirer(), retirer("Shuriken"), retirer(),  # l'époque a déjà fait le gros du travail
         renommer(("Pistolet lourd", "Colt .45")), renommer(), renommer(),
         trier(retires),
         ajouter(medium, bootlegger),  # 14 : il en manque encore un
         ajouter(garde),  # 15 : c'est assez
     )
     a = adapter(serveur, horreur, choix)
-    assert a.retraits.get("armes") == ["Lance-roquettes", "Minigun"] and not a.refus
+    assert a.annee == 1925 and a.retraits == {"armes": ["Shuriken"]} and not a.refus
+    epoque = a.retraits_epoque
+    assert {"Lance-roquettes", "Minigun", "Fusil d'assaut", "Grenade flash"} <= set(epoque["armes"])
+    assert "Jet-ski" in epoque["vehicules"] and "Blindé de reconnaissance" not in epoque["vehicules"]
     d = appliquer(horreur, a)
     assert len(d["parcours"]) == 15 and "Spirite" in d["parcours"]
     assert "Colt .45" in {x["nom"] for x in d["armes"]}
@@ -249,7 +254,8 @@ def test_le_llm_nomme_un_univers_sans_nom(bibliotheque, cyberpunk):
     choix = choix_par_defaut(bibliotheque, "Cyberpunk")  # nom = le genre, pas de cadre
     serveur = ServeurScripte(nommer("Neo-Kobe", "Kobe en 2088, sous la coupe des zaibatsus."), *rien())
     a = adapter(serveur, cyberpunk, choix)
-    assert (a.nom, a.cadre) == ("Neo-Kobe", "Kobe en 2088, sous la coupe des zaibatsus.") and not a.refus
+    assert (a.nom, a.cadre, a.annee) == ("Neo-Kobe", "Kobe en 2088, sous la coupe des zaibatsus.", 2088)
+    assert not a.refus and not a.retraits_epoque  # en 2088, tout existe déjà
 
 
 def test_surprends_moi_garder_ou_relancer(bibliotheque):
@@ -266,7 +272,7 @@ def test_surprends_moi_garder_ou_relancer(bibliotheque):
 
 def test_une_campagne_generee_et_adaptee(tmp_path, bibliotheque):
     campagne = Campagne(tmp_path)
-    choix = choix_par_defaut(bibliotheque, "Cyberpunk", "Osaka 2091", "Osaka sous la pluie acide.")
+    choix = choix_par_defaut(bibliotheque, "Cyberpunk", "Osaka 2091", "Osaka sous la pluie acide.", 2091)
     serveur = ServeurScripte(
         retirer(), retirer(), retirer(),
         renommer(("Pistolet silencieux", "Pistolet à silencieux")), renommer(("Veste renforcée", "Veston doublé")),
@@ -289,3 +295,22 @@ def test_une_campagne_generee_et_adaptee(tmp_path, bibliotheque):
     reprise = jeu.Jeu(ServeurScripte("Tu reprends."), budget=128, entree=lambda _: "quitter", sortie=lambda _: None,
                       campagne=campagne)
     assert reprise.session.univers.nom_local("Neuroport") == "Port neural"
+
+
+def test_l_epoque_retire_avant_le_llm(bibliotheque, horreur):
+    from aria.generateur import retraits_par_epoque
+    r = retraits_par_epoque(horreur, 1925)
+    assert "Grenade flash" in r["armes"] and "Pistolet lourd" not in r["armes"]
+    assert "Blindé de transport" in r["vehicules"] and "Char" not in r.get("vehicules", [])
+    assert retraits_par_epoque(horreur, 2100) == {}
+    d = appliquer(horreur, Adaptation("Arkham", "1925", 1925, retraits_epoque=r))
+    univers_depuis_dict(d)  # rien d'orphelin : les armes montées partent avec leur véhicule
+
+
+def test_sans_annee_le_llm_la_donne(bibliotheque, horreur):
+    choix = choix_par_defaut(bibliotheque, "Horreur", "Arkham", "Arkham, au temps de la Prohibition.")
+    serveur = ServeurScripte(nommer("Arkham", "Arkham, au temps de la Prohibition.", 1926), *rien(implants=False))
+    a = adapter(serveur, horreur, choix)
+    assert a.annee == 1926 and "Minigun" in a.retraits_epoque["armes"]
+    sans = adapter(ServeurScripte(nommer("Arkham", "Arkham.", "vers 1920"), *rien(implants=False)), horreur, choix)
+    assert sans.annee is None and not sans.retraits_epoque and any("pas d'année" in r for r in sans.refus)
