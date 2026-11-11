@@ -557,7 +557,7 @@ class Combat:
             raise ActionImpossible(f"{cible.nom} est déjà mort.")
         arme = attaquant.arme_en_main
         if arme.zone:
-            raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone.")
+            raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone (attaquer_zone).")
         self._verifier_arme_utilisable(attaquant, arme)
         self._verifier_tireur(arme, tireur)
         self._agir(attaquant, TypeAction.SIMPLE)

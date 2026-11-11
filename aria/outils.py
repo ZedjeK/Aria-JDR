@@ -710,6 +710,11 @@ def _tireur(s: Session) -> dict:
                             "D'un véhicule en mouvement : conducteur −20 (une main), passager −10.")}
 
 
+def _armes_de_zone(s: Session) -> list[str]:
+    """Les armes de zone qu'on porte à la main (les armes montées passent par tirer_arme_montee)."""
+    return [a.nom for a in s.univers.armes if a.zone and not a.montee]
+
+
 def _liste_ids(session: Session, description: str) -> dict:
     return {"type": "array", "items": _enum(session.ids()), "description": description}
 
@@ -754,6 +759,8 @@ def _rapport_zone(r: RapportZone) -> dict:
        "et les effets (brûlure, fumée, aveuglant, IEM).",
        lambda s: _objet({
            "attaquant": _ids(s, "Qui lance, tire ou fait sauter la charge."),
+           "arme": _enum(_armes_de_zone(s), "L'arme de zone, si elle n'est pas déjà en main : la prendre coûte "
+                                            "l'action mineure, comme dégainer."),
            "cibles": _liste_ids(s, "Tous ceux qui sont dans la zone, alliés compris."),
            "couvert_lourd": _liste_ids(s, "Ceux qui sont derrière un couvert lourd : les dégâts sont divisés par deux."),
            "sans_esquive": _liste_ids(s, "Ceux qui n'esquivent pas. Demande au joueur quand il est dans la zone."),
@@ -762,21 +769,24 @@ def _rapport_zone(r: RapportZone) -> dict:
            "difficulte": _difficulte(),
        } | ({"vehicules": _liste_ids(s, "Ceux dont le véhicule est dans la zone : sa structure encaisse aussi.")}
             if s.univers.vehicules else {}) | _tireur(s), ["attaquant", "cibles"]),
-       disponible=lambda s: s.combat is not None and any(c.arme and c.arme.zone for c in s.combat.ordre))
+       disponible=lambda s: s.combat is not None and bool(_armes_de_zone(s)))
 def attaquer_zone(session: Session, attaquant: str, cibles: list, couvert_lourd: list = (),
                   sans_esquive: list = (), voisins: list = (), difficulte: str = "normale",
-                  vehicules: list = (), tireur: str = "à pied") -> dict:
+                  vehicules: list = (), tireur: str = "à pied", arme: str | None = None) -> dict:
     qui = session.participant(attaquant)
+    c = session.combat_en_cours()
+    if arme and (qui.arme is None or qui.arme.nom != arme):
+        c.degainer(qui, session.arme_par_nom(arme) if qui is session.joueur else session.univers.arme(arme))
     engins = []
     for i in vehicules:
         engin = session.engin(i)
         if engin is None:
             raise ErreurOutil(f"{session.combattant(i).nom} n'a pas de véhicule.")
         engins.append(engin)
-    rapport = session.combat_en_cours().attaquer_zone(
-        qui, [session.participant(c) for c in cibles],
-        [session.participant(c) for c in couvert_lourd], [session.participant(c) for c in sans_esquive],
-        [session.participant(c) for c in voisins], DIFFICULTES[difficulte], engins, tireur)
+    rapport = c.attaquer_zone(
+        qui, [session.participant(x) for x in cibles],
+        [session.participant(x) for x in couvert_lourd], [session.participant(x) for x in sans_esquive],
+        [session.participant(x) for x in voisins], DIFFICULTES[difficulte], engins, tireur)
     if qui.drone and qui.drone.modele.kamikaze:
         qui.fiche.pv = qui.drone.structure = 0
         qui.fiche.etat = Etat.MORT

@@ -2,7 +2,7 @@
 
 import pytest
 
-from aria.combat import ActionImpossible, Combattant, IssueZone, subir_iem
+from aria.combat import ActionImpossible, Combattant, IssueZone, TypeAction, subir_iem
 from aria.compte_rendu import decrire
 from aria.des import DesTruques
 from aria.equipement import (
@@ -203,17 +203,17 @@ def test_le_blindage_iem_protege():
 
 # --- Par l'outil du MJ -----------------------------------------------------------------------
 
-def test_l_outil_n_apparait_qu_avec_une_arme_de_zone_en_main():
+def test_l_outil_prend_la_grenade_a_la_ceinture():
     # 1 : critique, 3d6 = 6, le ganger rate son esquive (90) puis tient sa Constitution (10).
     s = session(1, 2, 2, 2, 90, 10)
     ganger_de_session(s)
-    s.appeler("debut_combat", {"pnj": ["ganger"]})
     noms = lambda: {x["function"]["name"] for x in s.schemas()}  # noqa: E731
-    assert "attaquer_zone" not in noms()
-    s.joueur.arme = GRENADE
-    assert "attaquer_zone" in noms()
-    r = s.appeler("attaquer_zone", {"attaquant": "joueur", "cibles": ["ganger"]})
+    assert "attaquer_zone" not in noms()  # pas de combat
+    s.appeler("debut_combat", {"pnj": ["ganger"]})
+    assert "attaquer_zone" in noms()  # l'univers a des grenades : l'outil est là, même sans grenade en main
+    r = s.appeler("attaquer_zone", {"attaquant": "joueur", "arme": "Grenade à fragmentation", "cibles": ["ganger"]})
     assert r["issue"] == "réussite" and r["cibles"][0]["degats"] == 6 and r["cibles"][0]["pv"] == 4
+    assert s.joueur.budget.restants(TypeAction.MINEURE) == 0  # la prendre en main a coûté l'action mineure
+    assert s.joueur.arme is None  # la grenade est partie
     lignes = decrire("attaquer_zone", {}, r, s)
     assert lignes[0].startswith("💥 Kaito, Grenade à fragmentation") and "6 dégâts" in lignes[0]
-    assert "attaquer_zone" not in noms()  # la grenade est partie
