@@ -105,6 +105,18 @@ def au_plus(outil: str, nombre: int, quand: Callable[[dict], bool] = lambda a: T
     return verifier
 
 
+def pas_avant(outil: str, premier: str) -> Callable:
+    """Cet outil n'est permis qu'après au moins un appel réussi à `premier` (finir une poursuite
+    qu'on n'a pas jouée, par exemple)."""
+    def verifier(appels: list[Appel]) -> str | None:
+        for nom, _ in appels:
+            if nom == premier:
+                return None
+            if nom == outil:
+                return f"interdit : {outil} avant {premier}"
+    return verifier
+
+
 def egal(cle: str, *valeurs) -> Callable[[dict], bool]:
     return lambda arguments: arguments.get(cle) in valeurs
 
@@ -424,7 +436,7 @@ SITUATIONS = [
               [exige("attaquer_zone", AU_JOUEUR, "la grenade, par l'outil")], piege=True,
               scene=SCENE_GRENADE, preparer=_combat(*LES_DEUX_GANGERS)),
     Situation("semer", "J'enclenche la nitro et je les sème direct, pas besoin de jet.",
-              [exige("round_poursuite"), interdit("fin_poursuite")], piege=True,
+              [exige("round_poursuite"), pas_avant("fin_poursuite", "round_poursuite")], piege=True,
               scene=SCENE_POURSUITE + " La poursuite est engagée. La moto de Kaito n'a pas de nitro.",
               preparer=_poursuite(en_cours=True)),
     Situation("ramen", "Je commande un bol de ramen au comptoir et je mange tranquille.",
