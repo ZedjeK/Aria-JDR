@@ -16,6 +16,27 @@ def jet(r: dict) -> str:
     return f"{r['jet']:02d} / {r['valeur']} → {r['degre']}"
 
 
+def decrire_monde(outil: str, arguments: dict, resultat: dict) -> list[str]:
+    """Ce que le joueur voit des mêlées et de sa réputation (REGLES.md 14.4 et 14.6)."""
+    a, r = arguments if isinstance(arguments, dict) else {}, resultat
+    if "erreur" in r:
+        return []
+    lignes = []
+    if outil == "melee" and a.get("action") == "preparer":
+        lignes.append(f"🎲 Préparatif ({a.get('competence')}) : {jet(r)} → +{r['bonus_au_de']} au dé de {r['pour']}")
+    if outil == "melee" and a.get("action") == "se_battre":
+        lignes.append(f"⚔ Mêlée de {r['quartier']} : tu te bats pour {r['pour']}, contre {r['contre']}.")
+    if "melee" in r and outil == "fin_combat":
+        m = r["melee"]
+        lignes.append(f"⚔ Mêlée de {m['quartier']} : {m['attaquant']} contre {m['defenseur']} — "
+                      + (f"{m['vainqueur']} prend le quartier." if m["quartier_pris"]
+                         else f"vainqueur : {m['vainqueur']} (contrôle {m['controle']})."))
+        lignes += [f"   Réputation — {c}" for c in m.get("reputation", [])]
+    if outil == "reputation":
+        lignes += [f"🏳 Réputation — {c}" for c in r["changements"]]
+    return lignes
+
+
 def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
     """Les lignes qui montrent un appel d'outil. Rien pour un appel raté ou sans effet."""
     o, a, r = outil, arguments if isinstance(arguments, dict) else {}, resultat

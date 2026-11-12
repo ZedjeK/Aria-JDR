@@ -21,9 +21,9 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
-from aria import trame
+from aria import monde, trame
 from aria.campagne import Campagne
-from aria.compte_rendu import decrire
+from aria.compte_rendu import decrire, decrire_monde
 from aria.des import Des
 from aria.outils import Session
 from aria.personnage import Etat
@@ -38,6 +38,7 @@ QUITTER = ("quitter", "/quitter")
 PLANS_VUS = "plans_vus.json"  # les plans d'amorce déjà piochés
 ETAT = ("etat", "état", "/etat")
 INVENTAIRE = ("inventaire", "inv", "/inventaire")
+CARTE = ("carte", "/carte")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.
 # La ruelle de la démo v1 ouvre la campagne ; le quartier reste, d'une session à l'autre.
 EMBUSCADE = (
@@ -85,7 +86,7 @@ class Jeu:
             partie = charger(self.campagne.sauvegarde)
             self.session = Session(partie.univers, partie.personnage, des or Des(), partie.moment,
                                    arme=partie.arme_en_main, armure=partie.armure, vehicule=partie.vehicule,
-                                   campagne=self.campagne)
+                                   campagne=self.campagne, monde=partie.monde)
         else:
             if self.campagne.univers.is_file():
                 univers = charger_univers(self.campagne.univers)
@@ -99,9 +100,11 @@ class Jeu:
             if creer:
                 generation = budget if budget_generation is None else budget_generation
                 perso, depart = self.personnage_du_joueur(univers, predefini, serveur, generation)
-                self.session = Session(univers, perso, des or Des(), Moment(1, Periode.APRES_MIDI),
+                des = des or Des()
+                self.session = Session(univers, perso, des, Moment(1, Periode.APRES_MIDI),
                                        arme=depart.arme if depart else None, armure=depart.armure if depart else None,
-                                       vehicule=depart.vehicule if depart else None, campagne=self.campagne)
+                                       vehicule=depart.vehicule if depart else None, campagne=self.campagne,
+                                       monde=monde.creer(des, univers.genre))
                 self.table = Table(serveur, self.session, budget, self.amorcer(serveur, generation), contexte=contexte)
                 self.sauvegarder()  # le personnage et son amorce existent : une coupure ne les fait pas perdre
                 return
@@ -201,7 +204,9 @@ class Jeu:
         self.dire(f"\nTu es {k.nom}, {k.parcours.lower()}. {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, "
                   f"{k.points_destin} points de destin.")
         self.dire(f"Motivation : {k.motivation}. Lien : {k.lien}. Défaut : {k.defaut}.")
-        self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « inventaire » : ce que tu portes ; « quitter » : fin de la session.")
+        self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « inventaire » : ce que tu portes ; "
+                  + ("« carte » : qui tient quoi ; " if self.session.monde is not None else "")
+                  + "« quitter » : fin de la session.")
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
             phrase = self.entree("\n> ").strip()
@@ -214,6 +219,9 @@ class Jeu:
                 continue
             if phrase.lower() in INVENTAIRE:
                 self.afficher_inventaire()
+                continue
+            if phrase.lower() in CARTE:
+                self.afficher_carte()
                 continue
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
@@ -230,7 +238,8 @@ class Jeu:
             self.dire(f"Le MJ n'a pas répondu ({erreur}). Réessaie.")
             return
         for appel in tour.appels:
-            for ligne in decrire(appel.outil, appel.arguments, appel.resultat, self.session):
+            for ligne in (decrire(appel.outil, appel.arguments, appel.resultat, self.session)
+                          + decrire_monde(appel.outil, appel.arguments, appel.resultat)):
                 self.dire(ligne)
         if narrer:
             self.dire("\n" + (tour.narration.strip() or "(Le MJ reste muet… Reformule ton action.)"))
@@ -253,13 +262,20 @@ class Jeu:
         if i["vrac"]:
             self.dire("  En vrac : " + ", ".join(f"{n} × {calibre}" for calibre, n in i["vrac"].items()))
 
+    def afficher_carte(self):
+        if self.session.monde is None:
+            self.dire("Pas de carte dans cette campagne (elle date d'avant le monde vivant).")
+            return
+        self.dire("\n" + "\n".join(monde.carte(self.session.monde)))
+
     def sauvegarder(self):
         s = self.session
         s.noter_les_charges()
         arme = [s.joueur.arme.nom] if s.joueur.arme else []
         armure = s.joueur.armure.nom if s.joueur.armure else None
         sauvegarder(Partie(s.personnage, s.univers, s.moment, armes=arme, arme_en_main=arme[0] if arme else None,
-                           armure=armure, vehicule=s.vehicule.vers_dict() if s.vehicule else None),
+                           armure=armure, vehicule=s.vehicule.vers_dict() if s.vehicule else None,
+                           monde=s.monde),
                     self.campagne.sauvegarde)
 
     def afficher_etat(self):
