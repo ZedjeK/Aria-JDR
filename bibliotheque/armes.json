@@ -283,7 +283,17 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1906
+    "apparition": 1906,
+    "calibres": [
+      {
+        "nom": ".25 ACP",
+        "apparition": 1906
+      },
+      {
+        "nom": ".380 ACP",
+        "apparition": 1908
+      }
+    ]
   },
   {
     "nom": "Pistolet léger",
@@ -302,7 +312,17 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1900
+    "apparition": 1900,
+    "calibres": [
+      {
+        "nom": ".32 ACP",
+        "apparition": 1900
+      },
+      {
+        "nom": "9 mm Parabellum",
+        "apparition": 1902
+      }
+    ]
   },
   {
     "nom": "Pistolet silencieux",
@@ -322,7 +342,17 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1910
+    "apparition": 1910,
+    "calibres": [
+      {
+        "nom": ".22 LR",
+        "apparition": 1887
+      },
+      {
+        "nom": "9 mm Parabellum",
+        "apparition": 1902
+      }
+    ]
   },
   {
     "nom": "Mitraillette compacte",
@@ -342,7 +372,13 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1954
+    "apparition": 1954,
+    "calibres": [
+      {
+        "nom": "9 mm Parabellum",
+        "apparition": 1954
+      }
+    ]
   },
   {
     "nom": "Pistolet intelligent",
@@ -361,7 +397,13 @@
       "futuriste"
     ],
     "electronique": true,
-    "apparition": 2040
+    "apparition": 2040,
+    "calibres": [
+      {
+        "nom": "10 mm intelligent",
+        "apparition": 2040
+      }
+    ]
   },
   {
     "nom": "Pistolet-mitrailleur",
@@ -381,7 +423,21 @@
       "futuriste"
     ],
     "electronique": false,
-    "apparition": 1918
+    "apparition": 1918,
+    "calibres": [
+      {
+        "nom": "9 mm Parabellum",
+        "apparition": 1918
+      },
+      {
+        "nom": ".45 ACP",
+        "apparition": 1921
+      },
+      {
+        "nom": "4,6 mm",
+        "apparition": 2001
+      }
+    ]
   },
   {
     "nom": "Arbalète à poulies",
@@ -420,7 +476,25 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1911
+    "apparition": 1911,
+    "calibres": [
+      {
+        "nom": ".45 ACP",
+        "apparition": 1911
+      },
+      {
+        "nom": ".357 Magnum",
+        "apparition": 1935
+      },
+      {
+        "nom": ".44 Magnum",
+        "apparition": 1955
+      },
+      {
+        "nom": ".50 AE",
+        "apparition": 1991
+      }
+    ]
   },
   {
     "nom": "Revolver lourd",
@@ -437,7 +511,25 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1850
+    "apparition": 1850,
+    "calibres": [
+      {
+        "nom": ".44 à percussion",
+        "apparition": 1850
+      },
+      {
+        "nom": ".45 Colt",
+        "apparition": 1873
+      },
+      {
+        "nom": ".357 Magnum",
+        "apparition": 1935
+      },
+      {
+        "nom": ".44 Magnum",
+        "apparition": 1955
+      }
+    ]
   },
   {
     "nom": "Carabine",
@@ -456,7 +548,21 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1860
+    "apparition": 1860,
+    "calibres": [
+      {
+        "nom": ".44 Henry",
+        "apparition": 1860
+      },
+      {
+        "nom": ".30-30",
+        "apparition": 1895
+      },
+      {
+        "nom": ".30 Carbine",
+        "apparition": 1941
+      }
+    ]
   },
   {
     "nom": "Fusil à pompe",
@@ -475,7 +581,13 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1893
+    "apparition": 1893,
+    "calibres": [
+      {
+        "nom": "calibre 12",
+        "apparition": 1893
+      }
+    ]
   },
   {
     "nom": "Fusil à pompe automatique",
@@ -496,7 +608,13 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1905
+    "apparition": 1905,
+    "calibres": [
+      {
+        "nom": "calibre 12",
+        "apparition": 1905
+      }
+    ]
   },
   {
     "nom": "Mitrailleuse légère",
@@ -517,7 +635,21 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1914
+    "apparition": 1914,
+    "calibres": [
+      {
+        "nom": ".303 British",
+        "apparition": 1914
+      },
+      {
+        "nom": "7,62×51 mm",
+        "apparition": 1957
+      },
+      {
+        "nom": "5,56 mm",
+        "apparition": 1980
+      }
+    ]
   },
   {
     "nom": "Fusil d'assaut",
@@ -537,7 +669,25 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1944
+    "apparition": 1944,
+    "calibres": [
+      {
+        "nom": "7,92 mm Kurz",
+        "apparition": 1944
+      },
+      {
+        "nom": "7,62×39 mm",
+        "apparition": 1949
+      },
+      {
+        "nom": "5,56 mm",
+        "apparition": 1964
+      },
+      {
+        "nom": "6,8 mm",
+        "apparition": 2020
+      }
+    ]
   },
   {
     "nom": "Fusil de précision",
@@ -558,7 +708,21 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1914
+    "apparition": 1914,
+    "calibres": [
+      {
+        "nom": "7,92 mm Mauser",
+        "apparition": 1914
+      },
+      {
+        "nom": "7,62×51 mm",
+        "apparition": 1957
+      },
+      {
+        "nom": ".338 Lapua",
+        "apparition": 1989
+      }
+    ]
   },
   {
     "nom": "Fusil à rail",
@@ -845,7 +1009,17 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1884
+    "apparition": 1884,
+    "calibres": [
+      {
+        "nom": ".303 British",
+        "apparition": 1884
+      },
+      {
+        "nom": ".50 BMG",
+        "apparition": 1921
+      }
+    ]
   },
   {
     "nom": "Canon automatique",
@@ -865,7 +1039,17 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1916
+    "apparition": 1916,
+    "calibres": [
+      {
+        "nom": "20 mm",
+        "apparition": 1916
+      },
+      {
+        "nom": "30 mm",
+        "apparition": 1970
+      }
+    ]
   },
   {
     "nom": "Minigun",
@@ -885,7 +1069,13 @@
       "moderne"
     ],
     "electronique": false,
-    "apparition": 1963
+    "apparition": 1963,
+    "calibres": [
+      {
+        "nom": "7,62×51 mm",
+        "apparition": 1963
+      }
+    ]
   },
   {
     "nom": "Dague",

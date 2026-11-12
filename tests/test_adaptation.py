@@ -125,7 +125,8 @@ def test_un_renommage_ne_change_pas_les_regles(horreur):
     pistolet = next(a for a in horreur["armes"] if a["nom"] == "Pistolet lourd")
     d = appliquer(horreur, Adaptation("Arkham", "1925", renommages={"armes": {"Pistolet lourd": "Colt .45"}}))
     colt = next(a for a in d["armes"] if a["nom"] == "Colt .45")
-    assert {k: v for k, v in colt.items() if k != "nom"} == {k: v for k, v in pistolet.items() if k != "nom"}
+    etiquettes = ("nom", "calibre", "calibres")  # le nom et le calibre sont des étiquettes : ils peuvent changer
+    assert {k: v for k, v in colt.items() if k not in etiquettes} ==         {k: v for k, v in pistolet.items() if k not in etiquettes}
 
 
 # --- Les validations ---------------------------------------------------------------------------------

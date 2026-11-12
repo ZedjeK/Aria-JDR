@@ -253,6 +253,16 @@ class Bibliotheque:
             for entree in getattr(self, categorie):
                 if not isinstance(entree.get("apparition"), int):
                     erreurs.append(f"{entree['nom']} : il lui faut une année d'apparition.")
+        for a in self.armes:
+            calibres = a.get("calibres", [])
+            if any(not isinstance(c.get("apparition"), int) or not str(c.get("nom", "")).strip() for c in calibres):
+                erreurs.append(f"{a['nom']} : chaque calibre a un nom et une année.")
+                continue
+            dates = [c["apparition"] for c in calibres]
+            if dates != sorted(dates):
+                erreurs.append(f"{a['nom']} : les calibres se rangent du plus ancien au plus récent.")
+            if calibres and isinstance(a.get("apparition"), int) and dates[0] > a["apparition"]:
+                erreurs.append(f"{a['nom']} ({a['apparition']}) n'a aucun calibre à son apparition.")
         annees = {a["nom"]: a.get("apparition") for a in self.armes}
         for v in self.vehicules:
             portees = [m["arme"] for m in v["armes_montees"]] + ([v["arme_integree"]] if v.get("arme_integree") else [])

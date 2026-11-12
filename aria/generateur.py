@@ -100,7 +100,10 @@ def creer_campagne(campagne: Campagne, choix: Choix, bibliotheque: Bibliotheque 
         raise FileExistsError(f"La campagne a déjà son univers : {campagne.univers}")
     donnees = generer(bibliotheque or charger(), choix)
     adaptation = None
-    if serveur is not None:
+    if serveur is None:  # sans LLM : les noms de la bibliothèque, et les calibres de l'époque choisie
+        donnees = appliquer(donnees, Adaptation(choix.nom, choix.cadre, choix.annee,
+                                                calibres=calibres_par_epoque(donnees, choix.annee)))
+    else:
         adaptation = adapter(serveur, donnees, choix, budget, gardes)
         adapte = appliquer(donnees, adaptation)
         try:
@@ -152,6 +155,7 @@ class Adaptation:
     cadre: str
     annee: int | None = None
     retraits_epoque: dict[str, list[str]] = field(default_factory=dict)  # retirés par le code : apparus plus tard
+    calibres: dict[str, str] = field(default_factory=dict)  # arme (nom de la bibliothèque) → son calibre
     retraits: dict[str, list[str]] = field(default_factory=dict)  # catégorie → objets retirés par le LLM
     renommages: dict[str, dict[str, str]] = field(default_factory=dict)  # catégorie → {ancien : nouveau}
     parcours_retires: list[str] = field(default_factory=list)
@@ -518,6 +522,17 @@ def _ajouter_parcours(d: dict, p: dict):
     d.setdefault("equipements", {})[p["nom"]] = dict(p["equipement"])
 
 
+def calibres_par_epoque(donnees: dict, annee: int | None) -> dict[str, str]:
+    """Pour chaque arme à feu, le calibre le plus récent qui existe à l'année du cadre (le plus récent de
+    tous, sans année). Une arme n'existe jamais avant son premier calibre : elle en a toujours un."""
+    choisis = {}
+    for arme in donnees.get("armes", []):
+        possibles = [c for c in arme.get("calibres", []) if annee is None or c["apparition"] <= annee]
+        if possibles:
+            choisis[arme["nom"]] = possibles[-1]["nom"]
+    return choisis
+
+
 def retraits_par_epoque(donnees: dict, annee: int) -> dict[str, list[str]]:
     """Ce que le code retire tout seul : les objets apparus après l'année du cadre. La bibliothèque garantit
     qu'un véhicule n'est jamais plus ancien que ses armes : une arme retirée n'est jamais montée sur un
@@ -535,6 +550,10 @@ def appliquer(donnees: dict, adaptation: Adaptation) -> dict:
     des noms de la bibliothèque. Ne change aucune règle."""
     d = json.loads(json.dumps(donnees))  # une copie profonde
     d["nom"], d["cadre"] = adaptation.nom, adaptation.cadre
+    for arme in d.get("armes", []):  # le calibre de l'époque, avant les renommages
+        liste = arme.pop("calibres", None)
+        if liste is not None and arme["nom"] in adaptation.calibres:
+            arme["calibre"] = adaptation.calibres[arme["nom"]]
     for retraits in (adaptation.retraits_epoque, adaptation.retraits):
         for categorie in ORDRE_RETRAIT:
             _retirer_objets(d, categorie, retraits.get(categorie, []))
@@ -562,7 +581,7 @@ def adapter(serveur, donnees: dict, choix: Choix, budget: int | None = None, gar
         nom = nouveau_nom if nom == choix.genre and nouveau_nom else nom
         cadre = cadre or nouveau_cadre
         annee = annee if annee is not None else nouvelle_annee
-    a = Adaptation(nom, cadre, annee)
+    a = Adaptation(nom, cadre, annee, calibres=calibres_par_epoque(donnees, annee))
     if annee is None:
         a.refus.append("pas d'année pour le cadre : aucun objet n'est retiré par époque")
     else:
@@ -585,15 +604,18 @@ def adapter(serveur, donnees: dict, choix: Choix, budget: int | None = None, gar
             a.retraits[categorie] = retires
             _retirer_objets(d, categorie, retires)
 
-    # 2. Ce qui reste et jure avec le cadre
+    # 2. Ce qui reste et jure avec le cadre ; une arme se renomme d'après son calibre
     pris = set(tous_les_noms(d))
+    calibres = {arme["nom"]: arme["calibre"] for arme in d.get("armes", []) if arme.get("calibre")}
     for categorie, libelle in CATEGORIES.items():
         noms = noms_de(d, categorie)
         if not noms:
             continue
         acceptes, erreurs = _demander(
             serveur, consigne, f"Voici {libelle} de l'univers. Appelle renommer avec ceux dont le nom jure avec le "
-            "cadre (une liste vide si aucun) :\n" + "\n".join(f"- {n}" for n in noms), outil_renommer(noms),
+            "cadre (une liste vide si aucun). Un calibre entre parenthèses est celui de l'arme : son nouveau nom "
+            "doit lui correspondre.\n" + "\n".join(f"- {n}" + (f" ({calibres[n]})" if n in calibres else "")
+                                                     for n in noms), outil_renommer(noms),
             lambda arguments, n=noms: valider_renommages(arguments.get("renommages"), n, pris), budget)
         a.refus += [f"renommage, {libelle} : {e}" for e in erreurs]
         if acceptes:
