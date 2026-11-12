@@ -1,7 +1,8 @@
 """Le dossier d'une campagne : sa sauvegarde, ses souvenirs et la fiche du combat en cours.
 
-Chaque campagne a son propre dossier dans .Aria-JDR : deux campagnes ne partagent jamais
-leurs souvenirs. Le moteur écrit tout ; le MJ lit.
+Chaque campagne a son propre dossier dans .Aria-JDR\\campagnes : deux campagnes ne partagent jamais
+leurs souvenirs. Le moteur écrit tout ; le MJ lit. Une campagne supprimée part dans
+.Aria-JDR\\corbeille, d'où elle peut être restaurée.
 
 - souvenirs.md : le journal de la campagne. Chaque combat terminé y ajoute ses moments forts
   (racontés par le MJ) et son résultat (écrit par le moteur) ; chaque scène terminée, les siens.
@@ -11,12 +12,68 @@ leurs souvenirs. Le moteur écrit tout ; le MJ lit.
   quand le combat est versé dans les souvenirs.
 """
 
+import re
+import shutil
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
 from aria import chemins
 
-RACINE = chemins.DONNEES
+_NOM = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+
+
+def racine() -> Path:
+    """Le dossier des campagnes. Lu à chaque appel : les tests déplacent chemins.DONNEES."""
+    return chemins.DONNEES / "campagnes"
+
+
+def corbeille() -> Path:
+    return chemins.DONNEES / "corbeille"
+
+
+def nom_valide(texte: str) -> str | None:
+    """Le nom de dossier d'une campagne (minuscules, chiffres, tirets), ou None s'il ne convient pas."""
+    nom = re.sub(r"[\s_]+", "-", texte.strip().lower())
+    return nom if _NOM.match(nom) else None
+
+
+def noms() -> list[str]:
+    """Les campagnes existantes : les dossiers qui ont un univers ou une sauvegarde."""
+    if not racine().is_dir():
+        return []
+    return sorted(d.name for d in racine().iterdir()
+                  if d.is_dir() and ((d / "univers.json").is_file() or (d / "sauvegarde.json").is_file()))
+
+
+def supprimer(nom: str) -> Path:
+    """Déplace la campagne dans la corbeille (rien n'est effacé). Renvoie son nouveau dossier."""
+    corbeille().mkdir(parents=True, exist_ok=True)
+    cible = corbeille() / f"{nom}_{time.strftime('%Y%m%d-%H%M%S')}"
+    shutil.move(str(racine() / nom), str(cible))
+    return cible
+
+
+def jetees() -> list[str]:
+    """Les dossiers de la corbeille : « nom_date-heure »."""
+    return sorted(d.name for d in corbeille().iterdir() if d.is_dir()) if corbeille().is_dir() else []
+
+
+def restaurer(jetee: str) -> str | None:
+    """Remet une campagne de la corbeille à sa place. None si une campagne du même nom existe déjà."""
+    nom = jetee.rsplit("_", 1)[0]
+    if (racine() / nom).exists():
+        return None
+    racine().mkdir(parents=True, exist_ok=True)
+    shutil.move(str(corbeille() / jetee), str(racine() / nom))
+    return nom
+
+
+def vider_corbeille() -> int:
+    """Efface pour de bon ce que contient la corbeille. Renvoie le nombre de campagnes effacées."""
+    nombre = len(jetees())
+    shutil.rmtree(corbeille(), ignore_errors=True)
+    return nombre
 
 
 @dataclass
@@ -25,7 +82,7 @@ class Campagne:
 
     @classmethod
     def nommee(cls, nom: str) -> "Campagne":
-        return cls(RACINE / nom)
+        return cls(racine() / nom)
 
     @property
     def univers(self) -> Path:

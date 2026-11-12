@@ -16,9 +16,11 @@ Une autre campagne, dans un univers généré depuis la bibliothèque :
 
 import argparse
 import random
+from contextlib import contextmanager
 import sys
 
-from aria import amorce, banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils, progression
+from aria import (amorce, banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils,
+                  personnages, progression)
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -66,10 +68,11 @@ class Jeu:
     def __init__(self, serveur: llm.Serveur, budget: int | None, contexte: int = optimiseur.CONTEXTE_CIBLE,
                  des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
                  choix: "generateur.Choix | None" = None, budget_generation: int | None = None,
-                 creer: bool = False):
+                 creer: bool = False, predefini: "personnages.Predefini | None" = None):
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
         encore d'univers prend Néo-Tokyo, l'univers étalon du banc. `creer` : le joueur crée son personnage
-        (sinon, c'est Kaito, le Netrunner de la démo)."""
+        (sinon, c'est Kaito, le Netrunner de la démo) ; avec `predefini`, il prend ce personnage préparé à
+        l'avance, dont le métier est gardé dans l'univers."""
         self.entree, self.dire, self.hasard = entree, sortie, random.Random()
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
@@ -86,13 +89,13 @@ class Jeu:
             elif choix:
                 generation = budget if budget_generation is None else budget_generation
                 univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=generation,
-                                                                gardes=set() if creer else {NETRUNNER})
+                                                                gardes={predefini.parcours} if predefini else set() if creer else {NETRUNNER})
                 self.montrer_adaptation(univers, adaptation)
             else:
                 univers = charger_univers(banc.UNIVERS)
             if creer:
                 generation = budget if budget_generation is None else budget_generation
-                perso, depart = creation_texte.Guide(univers, entree, sortie, serveur, generation).creer()
+                perso, depart = self.personnage_du_joueur(univers, predefini, serveur, generation)
                 self.session = Session(univers, perso, des or Des(), Moment(1, Periode.APRES_MIDI),
                                        arme=depart.arme if depart else None, armure=depart.armure if depart else None,
                                        vehicule=depart.vehicule if depart else None, campagne=self.campagne)
@@ -112,6 +115,20 @@ class Jeu:
         # Le quartier de Kaito ne vaut que pour Néo-Tokyo ; ailleurs, la mémoire de la campagne dit où on en est
         quartier = "" if self.campagne.univers.is_file() else QUARTIER
         self.table = Table(serveur, self.session, budget, quartier if self.reprise else SCENE, contexte=contexte)
+
+    def personnage_du_joueur(self, univers, predefini, serveur, budget: int | None):
+        """Le personnage prédéfini s'il peut vivre dans cet univers ; sinon, la création guidée."""
+        if predefini is not None:
+            try:
+                brouillon, notes = personnages.brouillon_dans(univers, predefini, self.hasard)
+                self.dire("\n=== Ton personnage ===\n" + "\n".join(creation_texte.resume(brouillon)))
+                for note in notes:
+                    self.dire(f"  ({note})")
+                return brouillon.finaliser()
+            except creation_texte.EtapeInvalide as erreur:
+                self.dire(f"\n{predefini.nom} ne peut pas vivre dans cet univers ({' '.join(erreur.erreurs)}) : "
+                          "on crée un personnage sur place.")
+        return creation_texte.Guide(univers, self.entree, self.dire, serveur, budget).creer()
 
     def amorcer(self, serveur, budget: int | None) -> str:
         """L'amorce de la campagne, d'après l'idée du joueur ou un plan tiré dans la bibliothèque. Gardée, elle
@@ -295,38 +312,61 @@ def main(arguments: list[str] | None = None):
     if choix and campagne.univers.is_file():
         print(f"La campagne « {arguments.campagne} » a déjà son univers : elle reprend telle quelle (sans --genre).")
         return
-    # Un univers généré mais pas encore de sauvegarde : la création du personnage n'a pas été finie
-    a_creer = campagne.univers.is_file() and not campagne.sauvegarde.is_file()
+    lancer(campagne, choix, arguments.surprends_moi)
+
+
+@contextmanager
+def mj_charge():
+    """Le serveur du MJ, démarré puis arrêté : donne (serveur, profil, réglages), ou None s'il ne peut pas
+    tourner (la raison est affichée)."""
     profil = banc.profil_valide()
     if profil is None:
         print("Pas de MJ qualifié sur ce PC. Lance d'abord le banc : .venv\\Scripts\\python.exe -m aria.banc")
+        yield None
         return
     modele = optimiseur.decrire(llm.DOSSIER_MODELES / profil["fichier"], profil["modele"])
     if modele is None:
         print(f"Le modèle {profil['fichier']} est illisible. Relance le banc.")
+        yield None
         return
     reglages = optimiseur.Reglages(**profil["reglages"])
     print(f"Chargement du MJ : {modele.nom} ({reglages}), réflexion {profil['budget_reflexion']} jetons…")
     serveur = llm.Serveur(modele, reglages, journal=JOURNAL_SERVEUR)
     try:
-        if not serveur.demarrer():
+        if serveur.demarrer():
+            yield serveur, profil, reglages
+        else:
             print(f"Le serveur du MJ ne démarre pas (détails : {JOURNAL_SERVEUR}). "
                   "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
-            return
-        if choix and arguments.surprends_moi:
-            choix = surprendre(serveur, choix, banc_generateur.budget_generateur(profil))
-            if choix is None:
-                return
-        Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
-            budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None or a_creer).jouer()
-    except SansPersonnage as erreur:
-        print(erreur)
-    except creation_texte.Abandon:
-        print("\nCréation abandonnée. Relance la même campagne (sans --genre) pour créer ton personnage.")
-    except (KeyboardInterrupt, EOFError):
-        print("\nPartie interrompue.")
+            yield None
     finally:
         serveur.arreter()
+
+
+def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprends_moi: bool = False,
+           predefini: "personnages.Predefini | None" = None):
+    """Charge le MJ et joue la campagne : nouvelle si `choix` est donné, reprise sinon. Le menu et la ligne
+    de commande passent tous les deux par ici."""
+    # Un univers généré mais pas encore de sauvegarde : la création du personnage n'a pas été finie
+    a_creer = campagne.univers.is_file() and not campagne.sauvegarde.is_file()
+    with mj_charge() as mj:
+        if mj is None:
+            return
+        serveur, profil, reglages = mj
+        try:
+            if choix and surprends_moi:
+                choix = surprendre(serveur, choix, banc_generateur.budget_generateur(profil))
+                if choix is None:
+                    return
+            Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
+                budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None or a_creer,
+                predefini=predefini if choix is not None else None).jouer()
+        except SansPersonnage as erreur:
+            print(erreur)
+        except creation_texte.Abandon:
+            print("\nCréation abandonnée. Reprends cette campagne pour créer ton personnage.")
+        except (KeyboardInterrupt, EOFError):
+            print("\nPartie interrompue.")
 
 
 if __name__ == "__main__":

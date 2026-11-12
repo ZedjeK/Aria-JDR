@@ -6,7 +6,7 @@ Application de jeu de rôle solo : on choisit son univers (fantasy, cyberpunk, p
 
 Les règles du jeu sont dans [REGLES.md](REGLES.md).
 
-Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier `%USERPROFILE%\.Aria-JDR\`, que tu lances l'exe ou les sources.
+Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier `%USERPROFILE%\.Aria-JDR\`, que tu lances l'exe ou les sources. Ce dossier ne se change pas ; le menu Réglages a un raccourci pour l'ouvrir.
 
 ## Principe
 
@@ -68,7 +68,7 @@ Pour une autre campagne, dans un univers généré depuis la bibliothèque, donn
 
 Le MJ adapte l'univers au cadre : tout ce qui apparaît après l'année du cadre est retiré par le code (sans `--annee`, le MJ la déduit du cadre), puis il retire ce qui n'a pas sa place, renomme ce qui jure et ajoute des parcours propres au cadre. `--surprends-moi` lui laisse proposer le nom et le cadre.
 
-Chaque campagne a son dossier, ici `.Aria-JDR\neo-tokyo-kaito\`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
+Chaque campagne a son dossier, ici `.Aria-JDR\campagnes\neo-tokyo-kaito\`, avec sa sauvegarde, la fiche du combat en cours et sa mémoire, en trois fichiers Markdown que tu peux lire et retoucher :
 
 - `souvenirs.md` : le journal, avec les combats et les scènes terminés ;
 - `pnj.md` : les PNJ rencontrés, leur rôle, leur attitude envers Kaito et leur état (un mort reste mort) ;
@@ -78,7 +78,14 @@ Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque re
 
 ## L'exe portable
 
-`Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu : jouer avec le MJ, la démo sans MJ, ou qualifier le MJ. Pas besoin d'installer Python sur le PC qui le lance. Si aucun MJ n'est qualifié sur ce PC, l'exe propose de lancer le banc d'abord.
+`Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu :
+
+- **Nouvelle campagne** : son nom, son genre, son cadre (écrit par toi, ou proposé par le MJ) et son ton, puis l'univers, le personnage (créé sur place, ou pris parmi tes personnages prêts pour ce genre) et l'amorce ;
+- **Reprendre une campagne** : la liste de tes campagnes, avec leur univers, leurs réglages, le personnage et où il en est. Une campagne supprimée va dans `.Aria-JDR\corbeille\`, sans être effacée ;
+- **Personnages** : les personnages que tu prépares à l'avance, hors campagne, pour un genre. Ils sont rangés dans `.Aria-JDR\personnages\` ; Kaito, le Netrunner de la démo, est livré avec le jeu ;
+- **Réglages** : le MJ retenu sur ce PC et sa requalification, le dossier des données, la corbeille et la démo sans MJ.
+
+Les options de `aria.jeu` (`--campagne`, `--genre`…) restent là pour qui préfère la ligne de commande. Pas besoin d'installer Python sur le PC qui le lance. Si aucun MJ n'est qualifié sur ce PC, l'exe propose de lancer le banc d'abord.
 
 Le serveur llama et les modèles ne sont pas dans l'exe, car ils pèsent plusieurs Go. L'exe cherche le dossier `Aria-LLM` à côté de lui, puis dans le dossier de l'utilisateur. Les parties, elles, restent dans `.Aria-JDR` : tu peux remplacer l'exe par une nouvelle version sans y toucher.
 

@@ -137,6 +137,11 @@ class Guide:
         return str(valeur)
 
     def creer(self) -> tuple[Personnage, Depart | None]:
+        """Le personnage créé, et ce qu'il emporte en main."""
+        return self.composer().finaliser()
+
+    def composer(self) -> Brouillon:
+        """Tout le dialogue, jusqu'à un brouillon complet que le moteur accepte."""
         u = self.univers
         self.dire(f"\n=== Création de ton personnage — {u.nom} ===")
         if self.demander("« tout » pour tout proposer d'un coup, Entrée pour y aller pas à pas : ").lower() == "tout":
@@ -152,7 +157,8 @@ class Guide:
                 b = self.pas_a_pas(b.parcours)
                 continue
             try:
-                return b.finaliser()
+                b.finaliser()  # le moteur refait toutes les vérifications ; le personnage sera créé à partir du brouillon
+                return b
             except EtapeInvalide as erreur:
                 for e in erreur.erreurs:
                     self.dire(f"  ✗ {e}")
