@@ -19,7 +19,7 @@ from aria.creation import (
     proposer_points_personnels,
     tout_proposer,
 )
-from aria.personnage import Caracteristique, Personnage
+from aria.personnage import CRANS, DEBUTANT, Caracteristique, Personnage
 from aria.univers import Depart, Univers
 
 ABREVIATIONS = {"for": Caracteristique.FORCE, "con": Caracteristique.CONSTITUTION, "dex": Caracteristique.DEXTERITE,
@@ -80,6 +80,8 @@ def resume(b: Brouillon) -> list[str]:
     if e:
         objets = [str(e[c]) for c in ("arme", "armure", "implant", "vehicule") if e.get(c)] + list(e.get("objets", []))
         lignes.append("Équipement : " + (", ".join(objets) or "rien"))
+        if e.get("pieces"):
+            lignes.append(f"En plus ({b.cran}) : " + ", ".join(e["pieces"]))
     r = b.roleplay
     if r:
         lignes += [f"Nom : {r['nom']}" + (f" ({r['sexe']})" if r.get("sexe") else ""), f"Motivation : {r['motivation']}", f"Lien : {r['lien']}",
@@ -91,9 +93,9 @@ class Guide:
     """Le dialogue de création ; `entree` et `sortie` comme input et print, pour les tests."""
 
     def __init__(self, univers: Univers, entree=input, sortie=print, serveur=None, budget: int | None = None,
-                 hasard: random.Random | None = None):
+                 hasard: random.Random | None = None, cran: str = DEBUTANT):
         self.univers, self.entree, self.dire = univers, entree, sortie
-        self.serveur, self.budget = serveur, budget
+        self.serveur, self.budget, self.cran = serveur, budget, cran
         self.hasard = hasard or random.Random()
 
     def demander(self, question: str) -> str:
@@ -131,7 +133,8 @@ class Guide:
             return ", ".join(f"{u.nom_affiche(c)} +{v}" for c, v in valeur.items())
         if nom == "equipement":
             objets = [str(valeur[c]) for c in ("arme", "armure", "implant", "vehicule") if valeur.get(c)]
-            return ", ".join(objets + list(valeur.get("objets", []))) or "rien"
+            en_plus = [f"{p} (en plus)" for p in valeur.get("pieces", [])]
+            return ", ".join(objets + list(valeur.get("objets", [])) + en_plus) or "rien"
         if nom == "domaines":
             return ", ".join(valeur) or "aucun"
         return str(valeur)
@@ -144,8 +147,12 @@ class Guide:
         """Tout le dialogue, jusqu'à un brouillon complet que le moteur accepte."""
         u = self.univers
         self.dire(f"\n=== Création de ton personnage — {u.nom} ===")
+        if self.cran != DEBUTANT:
+            c = CRANS[self.cran]
+            self.dire(f"Un personnage {self.cran} : {c.points_personnels} points personnels, {c.plafond} au plus "
+                      f"dans une compétence, {c.pieces} pièce(s) d'équipement au-dessus du départ.")
         if self.demander("« tout » pour tout proposer d'un coup, Entrée pour y aller pas à pas : ").lower() == "tout":
-            b = tout_proposer(u, self.serveur, self.budget, self.hasard)
+            b = tout_proposer(u, self.serveur, self.budget, self.hasard, cran=self.cran)
         else:
             b = self.pas_a_pas()
         while True:
@@ -165,7 +172,7 @@ class Guide:
                 b = self.pas_a_pas(b.parcours)
 
     def pas_a_pas(self, parcours: str = "") -> Brouillon:
-        u, b = self.univers, Brouillon(self.univers)
+        u, b = self.univers, Brouillon(self.univers, cran=self.cran)
         noms = sorted(u.parcours)
         self.dire("\nLes parcours :")
         for i, nom in enumerate(noms, 1):
@@ -184,7 +191,8 @@ class Guide:
                    "écris « for 50, con 45, dex 60, int 65, vol 40, pré 40 »")
         self.etape(b, "points_parcours", "Points de parcours (300, sur ses 8 compétences)",
                    lambda: proposer_points_parcours(b), lambda t: lire_points(u, t), "écris « Piratage 70, … »")
-        self.etape(b, "points_personnels", "Points personnels (100, sur n'importe quelles compétences)",
+        self.etape(b, "points_personnels",
+                   f"Points personnels ({CRANS[self.cran].points_personnels}, sur n'importe quelles compétences)",
                    lambda: proposer_points_personnels(b), lambda t: lire_points(u, t), "écris « Esquive 20, … »")
         if u.magie_active and u.domaines:
             self.etape(b, "domaines", "Domaines de magie (2)", lambda: proposer_domaines(b, self.hasard),

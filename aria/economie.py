@@ -269,10 +269,11 @@ RANGS = {r.nom: r for r in (Rang("précaire", 500, NiveauDeVie.MODESTE, 350),
 RANG_PAR_DEFAUT = "établi"
 
 
-def installer(perso: Personnage, rang: str = RANG_PAR_DEFAUT):
-    """L'argent et le niveau de vie de départ ; la première semaine est payée (première échéance au jour 8)."""
+def installer(perso: Personnage, rang: str = RANG_PAR_DEFAUT, paliers: int = 0):
+    """L'argent et le niveau de vie de départ ; la première semaine est payée (première échéance au jour 8).
+    `paliers` : un personnage aguerri ou vétéran part avec un ou deux paliers d'argent en plus."""
     fiche = RANGS.get(rang, RANGS[RANG_PAR_DEFAUT])
-    perso.argent, perso.niveau_de_vie = fiche.argent_de_depart, fiche.niveau_de_vie.value
+    perso.argent, perso.niveau_de_vie = decaler(fiche.argent_de_depart, paliers), fiche.niveau_de_vie.value
     perso.semaine_payee, perso.echeance = True, 1 + SEMAINE
 
 

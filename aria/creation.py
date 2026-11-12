@@ -14,12 +14,11 @@ import random
 from dataclasses import dataclass, field
 
 from aria.personnage import (
+    CRANS,
+    DEBUTANT,
     MAGIE,
-    PLAFOND_CREATION,
-    PLAFOND_MAGIE_CREATION,
     POINTS_CARACTERISTIQUES,
     POINTS_PARCOURS,
-    POINTS_PERSONNELS,
     Caracteristique,
     CreationInvalide,
     Personnage,
@@ -69,6 +68,7 @@ class Brouillon:
     domaines: list[str] = field(default_factory=list)
     equipement: dict = field(default_factory=dict)  # arme, armure, implant, vehicule, objets
     roleplay: dict[str, str] = field(default_factory=dict)  # nom, motivation, lien, defaut, allure
+    cran: str = DEBUTANT  # l'expérience de départ : elle fixe les points personnels, les plafonds et les pièces
 
     # --- Ce que le brouillon sait déjà -------------------------------------------------------------
 
@@ -83,9 +83,9 @@ class Brouillon:
     def valeur(self, competence: str) -> int:
         return self.base(competence) + self.points_parcours.get(competence, 0) + self.points_personnels.get(competence, 0)
 
-    @staticmethod
-    def plafond(competence: str) -> int:
-        return PLAFOND_MAGIE_CREATION if competence == MAGIE else PLAFOND_CREATION
+    def plafond(self, competence: str) -> int:
+        depart = CRANS[self.cran]
+        return depart.plafond_magie if competence == MAGIE else depart.plafond
 
     def avertissements(self) -> list[str]:
         """Ce que la création signale sans l'interdire (REGLES.md 5)."""
@@ -133,7 +133,8 @@ class Brouillon:
                                      self.points_personnels, "parcours")
 
     def verifier_points_personnels(self, points: dict[str, int]) -> list[str]:
-        return self._verifier_points(points, POINTS_PERSONNELS, set(self.univers.competences_disponibles()),
+        return self._verifier_points(points, CRANS[self.cran].points_personnels,
+                                     set(self.univers.competences_disponibles()),
                                      self.points_parcours, "personnels")
 
     def verifier_domaines(self, domaines: list[str]) -> list[str]:
@@ -148,9 +149,12 @@ class Brouillon:
     def verifier_equipement(self, equipement: dict) -> list[str]:
         if not self.univers.equipements.get(self.parcours):
             return []  # ce parcours n'a pas encore de listes dans cet univers : rien à choisir
-        return self.univers.verifier_depart(self.parcours, equipement.get("arme"), equipement.get("armure"),
-                                            equipement.get("implant"), equipement.get("vehicule"),
-                                            equipement.get("objets", []))
+        erreurs = self.univers.verifier_depart(self.parcours, equipement.get("arme"), equipement.get("armure"),
+                                               equipement.get("implant"), equipement.get("vehicule"),
+                                               equipement.get("objets", []))
+        if equipement.get("pieces") or CRANS[self.cran].pieces:
+            erreurs += self.univers.verifier_pieces(equipement.get("pieces", []), self.cran, equipement.get("implant"))
+        return erreurs
 
     @staticmethod
     def verifier_roleplay(roleplay: dict) -> list[str]:
@@ -190,7 +194,8 @@ class Brouillon:
         r = self.roleplay
         try:
             perso = self.univers.creer_personnage(
-                self.parcours, self.domaines, nom=r["nom"], caracteristiques=dict(self.caracteristiques),
+                self.parcours, self.domaines, cran=self.cran, nom=r["nom"],
+                caracteristiques=dict(self.caracteristiques),
                 points_parcours=dict(self.points_parcours), points_personnels=dict(self.points_personnels),
                 motivation=r["motivation"], lien=r["lien"], defaut=r["defaut"])
         except (CreationInvalide, UniversInvalide, KeyError) as erreur:
@@ -200,7 +205,7 @@ class Brouillon:
         if self.univers.equipements.get(self.parcours):
             e = self.equipement
             depart = self.univers.equiper(perso, e.get("arme"), e.get("armure"), e.get("implant"), e.get("vehicule"),
-                                          e.get("objets", []))
+                                          e.get("objets", []), pieces=e.get("pieces", []))
         return perso, depart
 
 
@@ -246,7 +251,8 @@ def proposer_points_parcours(b: Brouillon) -> dict[str, int]:
 
 def proposer_points_personnels(b: Brouillon) -> dict[str, int]:
     """30 en Esquive sans défense, 30 dans une arme sans compétence de combat, 20 en Perception, et le reste
-    sur les meilleures compétences du parcours qui ont encore de la place."""
+    sur les meilleures compétences du parcours qui ont encore de la place, puis sur les autres (un personnage
+    aguerri ou vétéran a plus de points que son métier ne peut en recevoir)."""
     parcours = set(b.competences_parcours)
     voeux = []
     if "Esquive" not in parcours:
@@ -257,7 +263,9 @@ def proposer_points_personnels(b: Brouillon) -> dict[str, int]:
     deja = sum(m for _, m in voeux)
     meilleures = sorted(b.competences_parcours, key=lambda c: -b.valeur(c))
     competences = [c for c, _ in voeux] + [c for c in meilleures if c not in dict(voeux)]
-    montants = [m for _, m in voeux] + [POINTS_PERSONNELS - deja] + [0] * (len(competences) - len(voeux) - 1)
+    competences += sorted(c for c in b.univers.competences_disponibles() if c not in competences and c != MAGIE)
+    montants = ([m for _, m in voeux] + [CRANS[b.cran].points_personnels - deja]
+                + [0] * (len(competences) - len(voeux) - 1))
     return _repartir(b, competences, montants, b.points_parcours)
 
 
@@ -276,7 +284,22 @@ def proposer_equipement(b: Brouillon, hasard: random.Random) -> dict:
                                                                  ("implant", "implants"), ("vehicule", "vehicules"))
              if listes.get(cle)}
     choix["objets"] = hasard.sample(listes["objets"], 2)
+    if CRANS[b.cran].pieces:
+        choix["pieces"] = proposer_pieces(b, hasard, choix.get("implant"))
     return choix
+
+
+def proposer_pieces(b: Brouillon, hasard: random.Random, implant: str | None = None) -> list[str]:
+    """Les pièces au-dessus du départ, tirées parmi celles de l'univers : une par sorte, que le corps accepte."""
+    possibles = b.univers.pieces_possibles()
+    sortes = sorted(set(possibles.values()))
+    nombre = min(CRANS[b.cran].pieces, len(sortes))
+    for _ in range(50):
+        pieces = [hasard.choice(sorted(p for p, s in possibles.items() if s == sorte))
+                  for sorte in hasard.sample(sortes, nombre)]
+        if not b.univers.verifier_pieces(pieces, b.cran, implant):
+            return pieces
+    return []
 
 
 def proposer_chiffres(b: Brouillon, hasard: random.Random | None = None, parcours: str | None = None) -> Brouillon:
@@ -365,9 +388,9 @@ def proposer_personnalite(serveur, b: Brouillon, budget: int | None = None,
 
 
 def tout_proposer(univers: Univers, serveur=None, budget: int | None = None, hasard: random.Random | None = None,
-                  parcours: str | None = None) -> Brouillon:
+                  parcours: str | None = None, cran: str = DEBUTANT) -> Brouillon:
     """Un brouillon complet : les chiffres par le code, la personnalité par le LLM (si un serveur répond)."""
-    b = proposer_chiffres(Brouillon(univers), hasard, parcours)
+    b = proposer_chiffres(Brouillon(univers, cran=cran), hasard, parcours)
     if serveur is not None:
         roleplay = proposer_personnalite(serveur, b, budget, hasard)
         if roleplay:

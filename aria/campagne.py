@@ -90,6 +90,11 @@ class Campagne:
         return self.dossier / "univers.json"
 
     @property
+    def format(self) -> Path:
+        """Le type de la campagne et l'expérience de départ, choisis à sa création (voir aria.trame)."""
+        return self.dossier / "campagne.json"
+
+    @property
     def sauvegarde(self) -> Path:
         return self.dossier / "sauvegarde.json"
 

@@ -101,14 +101,14 @@ def test_un_personnage_qui_ne_convient_pas_est_recree(tmp_path):
 def test_le_menu_des_personnages(donnees):  # noqa: F811
     lignes = []
     # créer une Solo sans le MJ : genre 7, pas de MJ, « tout », femme, les quatre lignes, pas d'allure, valider
-    lanceur.menu(entrees("3", "n", "7", "n", "tout", "f", "Yuki Sato", "Sa dette", "Sa mère", "Curieuse", "", "",
+    lanceur.menu(entrees("3", "n", "7", "", "n", "tout", "f", "Yuki Sato", "Sa dette", "Sa mère", "Curieuse", "", "",
                          "x", "s 1", "s 2", "n", "", "5"), lignes.append)
     texte = "\n".join(lignes)
     assert "1. Kaito — homme, Netrunner (Cyberpunk) · livré avec le jeu" in texte and "2. Yuki Sato — femme" in texte
     assert "Yuki Sato est prêt" in texte and "il ne se supprime pas" in texte and "« n », « s »" in texte
     assert [p.nom for p in lister()] == ["Kaito", "Yuki Sato"]
     # la prendre pour une nouvelle campagne
-    lanceur.menu(entrees("1", "osaka", "7", "", "", "9", "2", "5"), lignes.append)
+    lanceur.menu(entrees("1", "osaka", "7", "", "", "", "9", "2", "5"), lignes.append)
     assert donnees[0][3].nom == "Yuki Sato" and donnees[0][1].genre == "Cyberpunk"
     lanceur.menu(entrees("3", "s 2", "o", "", "5"), lignes.append)
     assert lister() == [KAITO]
@@ -116,5 +116,5 @@ def test_le_menu_des_personnages(donnees):  # noqa: F811
 
 def test_abandonner_la_creation_d_un_personnage(donnees):  # noqa: F811
     lignes = []
-    lanceur.menu(entrees("3", "n", "7", "n", "q", "", "5"), lignes.append)
+    lanceur.menu(entrees("3", "n", "7", "", "n", "q", "", "5"), lignes.append)
     assert "Création abandonnée." in lignes and lister() == [KAITO]

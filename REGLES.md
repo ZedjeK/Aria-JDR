@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 1.0 — 12 novembre 2026. Règles validées par Jérémy.
+Version 1.1 — 12 novembre 2026. Règles validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -248,6 +248,21 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - L'argent de départ dépend du rang de revenu du métier, et vient en plus de l'équipement (voir 13.4). Ensuite, un objet s'achète, se trouve ou se gagne (voir 13).
 - Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
 
+### L'expérience de départ
+
+Le joueur choisit l'expérience de son personnage, selon le type de campagne (voir 14.1) :
+
+| Expérience | Points personnels | Plafond d'une compétence | Plafond en Magie | Pièces au-dessus | Argent de départ |
+|---|---|---|---|---|---|
+| Débutant | 100 | 75 | 50 | aucune | selon le rang (13.4) |
+| Aguerri | 200 | 85 | 60 | 1 | un palier au-dessus |
+| Vétéran | 300 | 90 | 65 | 2 | deux paliers au-dessus |
+
+- Les **300 points de parcours** ne changent pas : le métier reste le même.
+- **Une pièce au-dessus** : une arme personnalisée (de marque, le plus souvent), une armure de protection 4 ou un implant de gamme avancée, pris dans l'univers. Une seule de chaque sorte. L'arme ou l'armure remplace celle du métier ; l'implant s'ajoute, avec son prix en Santé mentale maximum.
+- Un personnage prêt (voir « Les personnages prédéfinis ») garde l'expérience qu'on lui a donnée.
+- L'antagoniste de la campagne suit l'expérience du personnage (voir 14.9).
+
 ### La création guidée
 
 À chaque étape, le code propose et le joueur garde, relance ou saisit lui-même. « Tout proposer » fait tout d'un coup :
@@ -312,7 +327,7 @@ Le joueur voit tout sauf le secret (le reste, son personnage le sait déjà), pu
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort reste à définir (voir 14) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
+- Apprendre un nouveau sort reste à définir (voir 15) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -1309,7 +1324,186 @@ Un test de Persuasion, une seule fois par transaction ; le personnage peut toujo
 
 ---
 
-## 14. À définir
+## 14. Le monde et la trame
+
+Le monde vit sans attendre le joueur, et la trame n'avance que quand il s'en occupe. Comme pour l'argent, le code tire et tient les comptes : le MJ raconte ce que le moteur lui donne, il ne décide ni d'un événement, ni d'une mêlée, ni d'une révélation.
+
+### 14.1 Les types de campagne
+
+Le joueur choisit le type avant l'amorce.
+
+| Type | Actes | Missions principales par acte | XP par mission principale | Départ conseillé | Ouverture |
+|---|---|---|---|---|---|
+| Contrat | 1 | 1 | 0 | aguerri ou vétéran | au cœur du problème |
+| Courte | 3 | 1 / 2 / 1 | 3 | aguerri | au cœur du problème |
+| Standard | 3 | 2 / 4 / 2 | 2 | débutant | la situation lance le plan |
+| Longue | 5 | 2 / 3 / 4 / 3 / 2 | 1 | débutant | le quotidien du personnage |
+| Sans fin | 3 par arc | 2 / 4 / 2, puis un nouvel arc | 1 | débutant | le quotidien du personnage |
+
+- Le départ conseillé n'est pas imposé (voir 5, « L'expérience de départ »).
+- Les montants d'XP seront revus avec la progression (voir 15) ; le principe est fixé : la vitesse dépend du type.
+- **Au cœur du problème** : le commanditaire ou la menace est déjà dans la première scène. **Le quotidien** : la campagne s'ouvre sur la vie ordinaire du personnage, et le problème n'arrive qu'à la fin du premier acte.
+
+### 14.2 Le temps du monde
+
+- **Tous les 7 jours** : les dépenses du joueur seulement (loyer, dettes, lien à charge, voir 13).
+- **Tout le reste est aléatoire.** Après chaque événement, le code tire la date du suivant et la garde cachée, avec le moment de la journée.
+- **La trame n'a pas d'horloge** : rien ne se dégrade pendant qu'une mission principale attend, et le MJ ne relance jamais la trame de lui-même.
+
+### 14.3 La carte
+
+| Cadre | Districts | Quartiers | Factions |
+|---|---|---|---|
+| Bourg, station, colonie | 1 | 3 à 4 | 3 |
+| Ville | 3 | 8 à 10 | 5 |
+| Mégapole | 6 | 18 à 20 | 8 |
+
+- Le **district** est une grande zone avec son ambiance ; le **quartier** est ce qu'on contrôle et ce qu'on attaque.
+- Chaque quartier a des **voisins**, et la carte tient d'un seul bloc.
+- Chaque **faction** a un type (gang, corporation, autorités, syndicat ou guilde, milice ou culte, selon le genre), un chef, une rivale désignée et les quartiers qu'elle tient. Les autorités sont une faction comme les autres.
+
+### 14.4 Le contrôle d'un quartier et les mêlées
+
+- Le contrôle va de **0 à 10**. Au début de la campagne, chaque quartier a **3 + 1d5** ; un quartier qui vient d'être pris a **5**.
+- Un quartier est **disputé** s'il touche un quartier tenu par une faction hostile à son maître. Seuls les quartiers disputés sont attaqués.
+- Un quartier disputé est attaqué tous les **1d3 jours**, par une faction hostile voisine tirée au hasard.
+- **La mêlée** : 1d10 pour l'attaquant, 1d10 pour le défenseur, chacun avec ses bonus, plafonnés à **+3 par camp**. Le plus haut gagne ; à égalité, rien ne bouge.
+
+| Bonus | Valeur |
+|---|---|
+| Le camp domine le district | +1 |
+| Un clan s'est préparé, sans le joueur | 1d6 : sur 5, +1 ; sur 6, +2 |
+| Le joueur a préparé le terrain (un seul préparatif par mêlée) | réussite +1, réussite majeure +2, critique +3 |
+| Le joueur s'est battu et a gagné | +2 |
+| Le joueur s'est battu et a perdu ou fui | −2 |
+
+- L'attaquant gagne : le quartier perd **1 point**, **2** si l'écart des dés est de 5 ou plus. Le défenseur gagne : il en reprend autant, jusqu'à 10.
+- **À 0**, le quartier passe à l'attaquant et repart à 5.
+- Le joueur est prévenu **la veille** s'il est membre d'un des deux camps, **le jour même** s'il y est ami ; sinon il l'apprend sur place ou par les nouvelles.
+- Préparer se fait des deux côtés : en défense (barricades, guetteurs, piège, brouillage), en attaque (repérage, complice, sabotage, armes fournies). Se battre est une vraie scène de combat.
+- Une **mission** du joueur pour ou contre le maître d'un quartier déplace **2 points** tout de suite.
+
+### 14.5 Tenir un quartier, dominer un district
+
+Qui tient un quartier en change la vie, selon le type de la faction :
+
+| Type | Commerce | Sécurité |
+|---|---|---|
+| Gang | marché noir ouvert | pas de police ; racket et bagarres |
+| Corporation | le matériel courant un palier plus cher | contrôles d'identité, armes visibles interdites |
+| Autorités | pas de marché noir ni de receleur | patrouilles ; une arme sortie attire la police |
+| Syndicat ou guilde | réparations et services un palier moins cher | calme tant qu'on paie sa part |
+| Milice ou culte | peu de boutiques, troc | étrangers surveillés, couvre-feu |
+
+Une faction **domine un district** quand elle tient plus de la moitié de ses quartiers :
+
+- **+1** à son dé dans toutes les mêlées du district ;
+- une **place forte**, lieu unique selon son type (clinique, armurerie, atelier, tripot, tribunal) ;
+- des **barrages** aux entrées et aux sorties ;
+- les missions les plus nombreuses et les mieux payées du district.
+
+**Sans majorité, le district est en guerre ouverte** : ni place forte ni barrages, et les événements de quartier y tombent deux fois plus souvent.
+
+### 14.6 La réputation
+
+Un cran par faction :
+
+| Cran | Dans les districts que la faction domine |
+|---|---|
+| Membre | logé sans payer (niveau de vie modeste), place forte ouverte, prévenu des attaques la veille |
+| Ami | place forte ouverte, ses vendeurs valent un contact, marchandage en « amical » |
+| Neutre | rien de particulier |
+| Hostile | un test ou un pot-de-vin aux barrages, vendeurs fermés, impossible d'y habiter |
+| Recherché | en plus, l'événement « ils te cherchent » peut tomber, joué en embuscade |
+
+- Elle **monte d'un cran** : une mission réussie pour la faction, une mêlée gagnée dans son camp.
+- Elle **baisse d'un cran** : une mission ratée pour elle, une mission réussie contre elle, une mêlée dans le camp d'en face, un de ses hommes tué devant témoin.
+- **Aider une faction baisse d'un cran sa rivale désignée.**
+- Au départ, tout le monde est **neutre**, sauf ce que le métier ou l'amorce impose.
+- **Devenir membre se demande** : il faut être ami, puis réussir une mission d'entrée.
+- Pas de rente : la récompense est le logement et la place forte.
+
+### 14.7 Les événements
+
+| Échelle | Prochain dans | Table par genre |
+|---|---|---|
+| Quartier (celui où se trouve le joueur) | 1d5 jours | 50 au moins |
+| Ville (à l'échelle d'un district) | 1d20 jours | 25 |
+| Mégapole ou monde | 2d20 jours | 15 |
+
+- Chaque événement porte **un effet que le moteur applique** (un palier de prix en plus ou en moins sur une catégorie, un vendeur fermé, des soins plus chers, un barrage, un bonus à une mêlée, une cache vidée) et **dure de 1 à 7 jours**.
+- **Une cache n'est vide que si un événement a touché son lieu** (voir 13.8).
+- Le MJ reçoit **les 3 nouvelles les plus importantes** depuis la dernière fois : la plus grande échelle d'abord, puis ce qui touche le joueur, son quartier ou ses contacts. Le reste va dans le **journal du monde**.
+- Le joueur lit le journal avec `monde`, et la carte (qui tient quoi, sa réputation) avec `carte`.
+
+### 14.8 Les missions
+
+Une mission vient d'une faction (selon la réputation), d'un contact, d'un événement, d'une mêlée ou de la trame. Le code en tire l'ossature, le MJ l'habille :
+
+- **le commanditaire** : une faction de la carte ;
+- **l'objectif**, parmi 12 : voler, livrer, protéger, escorter, éliminer, retrouver quelqu'un, extraire quelqu'un, saboter, infiltrer, enquêter, négocier, défendre un lieu ;
+- **le lieu** : un quartier de la carte ;
+- **la cible** : une faction adverse ;
+- **le danger**, sur le barème de 13.6, qui fixe la récompense : le plus souvent celui de l'expérience de départ, parfois un cran en dessous, rarement un cran au-dessus ;
+- **un retournement**, 1 fois sur 3, tiré dans une table d'une trentaine. Le MJ le connaît, jamais le joueur.
+
+**Les offres** : 1d3 offres ouvertes dans le district où se trouve le joueur, renouvelées tous les 1d5 jours. Une offre non prise disparaît. Le MJ peut toujours ouvrir une mission de lui-même.
+
+| À la fin | Réussie | Ratée |
+|---|---|---|
+| Argent | la récompense | rien ; l'avance reste acquise |
+| Réputation chez le commanditaire | +1 cran | −1 cran |
+| Réputation chez la cible | −1 cran | rien |
+| Contrôle du quartier, si la mission le vise | 2 points pour le commanditaire | rien |
+| XP, pour une mission principale | selon le type de campagne | la moitié |
+
+### 14.9 La trame
+
+À l'amorce, le code tire **l'antagoniste** (son type, ce qu'il veut) : c'est une faction de la carte, ou quelqu'un derrière elle. Le MJ l'habille et le relie au secret. Chaque acte a un enjeu et un tournant.
+
+- **Une mission principale** sort du générateur de 14.8 : sa cible est l'antagoniste ou ses alliés. Une seule à la fois, visible comme une piste dans les fils ; elle ne disparaît jamais.
+- **Le danger monte d'un cran par acte** : risquée, dangereuse, très dangereuse pour une campagne courte ou standard ; de simple à exceptionnelle pour une longue. Un cran de plus pour un personnage aguerri, deux pour un vétéran, sans dépasser « exceptionnelle ».
+- **Ratée**, elle ne bloque rien : la trame avance, et le code tire **une cicatrice** (un contact perdu, un quartier qui bascule, une dette, une blessure pour le lien). Elle compte pour la fin.
+- **Les missions secondaires** sont libres et sans limite. Une sur quatre **touche la trame** : elle croise un homme de l'antagoniste ou laisse un indice.
+- Après un tournant d'acte, la mission principale suivante arrive **1d5 jours** plus tard.
+
+### 14.10 Les révélations
+
+Le secret de l'amorce s'écrit en **trois couches** : quelque chose cloche ; qui ; pourquoi (la vérité entière). Le code ne donne au MJ que les couches ouvertes et la suivante.
+
+- Une couche s'ouvre avec **2 indices** (campagne courte), **3** (standard) ou **4** (longue).
+- **Un indice** : une mission principale réussie ; une mission secondaire qui touche la trame, réussie ; ou un test d'enquête réussi dans une scène liée à l'antagoniste, une fois par scène. Le code l'accorde, le MJ le décrit.
+- Quand une couche s'ouvre, le MJ joue **une scène de révélation**.
+- **La troisième couche ne s'ouvre qu'au dernier acte.** Les indices en trop servent dans la mission finale.
+- **Deviner n'est pas prouver** : tant que la couche n'est pas ouverte, les PNJ nient, et une accusation sans preuve se joue comme un bluff.
+- Le joueur relit ses indices avec `pistes`, sans le nombre de ceux qui manquent.
+
+### 14.11 La fin
+
+La mission finale est la dernière mission principale du dernier acte. Le code accorde **3 atouts au plus** :
+
+| D'où il vient | Ce qu'il donne |
+|---|---|
+| Un indice en trop | le bras armé de l'antagoniste perd un cran de menace |
+| Une faction dont le joueur est ami ou membre | un allié se bat à ses côtés |
+| Le quartier de la finale tenu par une faction amie | une entrée sûre, et le premier round au joueur |
+
+| Fin | Finale | Missions principales réussies |
+|---|---|---|
+| Triomphe | réussie | les trois quarts ou plus |
+| Victoire amère | réussie | moins des trois quarts |
+| Défaite honorable | ratée | la moitié ou plus |
+| Chute | ratée | moins de la moitié |
+
+- **La mort** du personnage, une fois les points de destin joués (7.7), est une cinquième fin.
+- Victoire : la faction de l'antagoniste perd **3 points** dans tous ses quartiers. Défaite : elle en gagne **2**, et le joueur y devient recherché.
+- **L'épilogue** : le MJ écrit, d'après les faits que le code lui donne, ce que deviennent le lien, les contacts, le quartier, la carte, et le secret entier.
+- Ensuite, le joueur **arrête** (la campagne est archivée ; le personnage est gardé parmi les personnages prêts et peut repartir aguerri ou vétéran) ou **continue** : même monde, un nouvel antagoniste parmi les factions encore debout, une nouvelle trame 1d20 + 10 jours plus tard.
+- Un **contrat** n'a ni atouts ni quatre fins : réussi ou raté, et un épilogue court.
+
+---
+
+## 15. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
