@@ -114,7 +114,7 @@ class Table:
         s = self.session
         fil = "\n".join((["- (…)"] if self._fil_coupe else []) + self.fil)
         memoire = "\n".join(bloc for bloc in (s.memoire.bloc(), trame.bloc(s.monde)) if bloc)
-        return mj.prompt_systeme(s.univers, s.personnage, self.scene, memoire, fil)
+        return mj.prompt_systeme(s.univers, s.personnage, self.scene, memoire, fil, monde=s.monde is not None)
 
     def _rafraichir_systeme(self):
         """Le MJ a pu écrire dans la mémoire pendant le tour : il voit toujours sa dernière version."""
