@@ -30,6 +30,7 @@ class Partie:
     arme_en_main: str | None = None
     armure: str | None = None
     vehicule: dict | None = None  # le véhicule du perso, avec sa structure du moment (voir Engin.vers_dict)
+    monde: dict | None = None  # la carte, les factions, la réputation (voir aria.monde) ; None : campagne d'avant
 
 
 # --- Le personnage -------------------------------------------------------------------------
@@ -86,7 +87,8 @@ def partie_vers_dict(partie: Partie) -> dict:
         "armes": list(partie.armes),
         "arme_en_main": partie.arme_en_main,
         "armure": partie.armure,
-    } | ({"vehicule": partie.vehicule} if partie.vehicule else {})
+    } | ({"vehicule": partie.vehicule} if partie.vehicule else {}) | (
+        {"monde": partie.monde} if partie.monde is not None else {})
 
 
 def partie_depuis_dict(donnees: dict) -> Partie:
@@ -101,6 +103,7 @@ def partie_depuis_dict(donnees: dict) -> Partie:
             arme_en_main=donnees.get("arme_en_main"),
             armure=donnees.get("armure"),
             vehicule=donnees.get("vehicule"),
+            monde=donnees.get("monde"),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise SauvegardeInvalide(f"Sauvegarde illisible : {erreur}") from erreur

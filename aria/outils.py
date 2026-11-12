@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, vehicules as vehicules_
+from aria import combat as combat_, monde as monde_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -43,7 +43,7 @@ from aria.inventaire import Inventaire, ReservePnj
 from aria.memoire import LONGUEURS, MORT, VIVANT, Memoire
 from aria.personnage import Caracteristique, Etat, Personnage
 from aria.reglages import Jalon
-from aria.resolution import Difficulte, Resultat, forcer, tester
+from aria.resolution import Degre, Difficulte, Resultat, forcer, tester
 from aria.temps import Moment, Periode
 from aria.univers import Univers
 
@@ -144,6 +144,8 @@ class Session:
     trouvailles: dict[str, list[dict]] = field(default_factory=dict)  # ce que les fouilles ont trouvé, pas encore pris
     fouilles: set[str] = field(default_factory=set)  # les PNJ déjà fouillés
     debut_round: int = 0  # l'indice, dans le journal, du premier appel du round en cours
+    monde: dict | None = None  # la carte et les factions (voir aria.monde) ; None : une campagne d'avant
+    melee: dict | None = None  # la mêlée où le joueur se bat en ce moment : quartier, camp, adversaires
 
     def __post_init__(self):
         u = self.univers
@@ -173,6 +175,7 @@ class Session:
         # Le LLM parle avec les noms de l'univers (« Piratage ») ; le moteur, avec ceux du socle.
         self.noms_competences = {u.nom_affiche(nom): nom for nom in self.personnage.competences}
         self.memoire = Memoire(self.campagne)
+        self.jour_du_monde = self.moment.jour  # le dernier jour jusqu'où le monde a vécu
 
     # --- Outils : catalogue et appel ---
 
@@ -198,7 +201,9 @@ class Session:
             arguments = self._normaliser(arguments)
             _verifier_objet(arguments, outil.parametres(self))
             resultat = outil.fonction(self, **arguments)
-        except (ErreurOutil, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
+            if self.monde is not None and self.moment.jour != self.jour_du_monde:
+                resultat = resultat | self.vivre()  # le temps a passé : le monde a bougé
+        except (ErreurOutil, monde_.MondeImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
                 ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
@@ -324,6 +329,13 @@ class Session:
         else:
             sorts = [self.univers.sort(nom) for nom in getattr(combattant.fiche, "sorts", ())]
         return {s.nom: s for s in sorts}
+
+    def vivre(self) -> dict:
+        """Fait vivre le monde jusqu'au jour courant, et renvoie ce que le MJ doit en raconter."""
+        monde_.avancer(self.monde, self.des, self.moment.jour)
+        self.jour_du_monde = self.moment.jour
+        fraiches = monde_.nouvelles(self.monde)
+        return {"nouvelles_du_monde": fraiches} if fraiches else {}
 
     def oublier_les_effets(self):
         """Les effets des sorts ne survivent ni à la fin d'un combat, ni à la fin de la demi-journée."""
@@ -1648,6 +1660,118 @@ def emprunter(session: Session, creancier: str, somme: int) -> dict:
             "monnaie": session.univers.monnaie}
 
 
+# --- Le monde : la carte, les mêlées, la réputation (REGLES.md 14.3 à 14.6) ------------------------------
+
+def _avec_monde(session: Session) -> bool:
+    return session.monde is not None and session.combat is None
+
+
+MENACES_DE_FACTION = {  # ce que valent les hommes d'une faction dans une mêlée : combat, PV
+    monde_.GANG: (50, 12), monde_.CORPORATION: (65, 14), monde_.AUTORITES: (60, 14), monde_.SYNDICAT: (50, 12),
+    monde_.MILICE: (55, 12)}
+ADVERSAIRES_DE_MELEE = 2
+BONUS_PREPARATIF = {Degre.COMPLICATION: 1, Degre.REUSSITE: 1, Degre.MAJEURE: 2, Degre.CRITIQUE: 3}
+ACTES = {"un de ses hommes tué devant témoin": -1, "une trahison": -1, "un service rendu": 1}
+DELAI_ENTRE_SERVICES = 7  # jours : un seul service rendu compte par faction et par semaine
+
+
+@outil("Lire l'état du monde autour du joueur : le quartier où il se trouve (qui le tient, son contrôle, qui "
+       "domine le district), ce que les factions pensent de lui, la mêlée annoncée s'il y en a une, et les "
+       "nouvelles qu'il n'a pas encore apprises. Donne « ici » quand il a changé de quartier. Tu ne décides "
+       "d'aucun de ces faits : tu les racontes.",
+       lambda s: _objet({"ici": _enum(sorted(s.monde["quartiers"]), "Le quartier où le joueur se trouve maintenant.")}),
+       disponible=_avec_monde)
+def monde(session: Session, ici: str | None = None) -> dict:
+    etat = session.monde
+    if ici:
+        etat["ici"] = ici
+    monde_.avancer(etat, session.des, session.moment.jour)  # une mêlée peut être annoncée là où il arrive
+    resultat = monde_.situation(etat)
+    fraiches = monde_.nouvelles(etat)
+    return resultat | ({"nouvelles_du_monde": fraiches} if fraiches else {})
+
+
+def _arme_de_faction(session: Session):
+    """Une arme de poing de l'univers ; à défaut, la première arme qui se porte."""
+    armes = [a for a in session.univers.armes if not a.montee and not a.usage_unique]
+    return next((a for a in armes if a.categorie == "armes de poing"), armes[0] if armes else None)
+
+
+@outil("Faire participer le joueur à une mêlée annoncée. « preparer » : un seul préparatif par mêlée, un test "
+       "de la compétence qui convient (barricades, guetteurs, piège, brouillage, repérage, complice, sabotage) ; "
+       "réussite +1, réussite majeure +2, critique +3 au dé de son camp. « se_battre » : le moteur crée ses "
+       "adversaires, joue ensuite le combat (debut_combat) ; à fin_combat, sa victoire donne +2 à son camp, sa "
+       "défaite ou sa fuite −2, et la mêlée est jouée. S'il ne fait rien, les dés décident sans lui.",
+       lambda s: _objet({
+           "quartier": _enum(monde_.melees_annoncees(s.monde) or ["aucune"]),
+           "camp": _enum([monde_.ATTAQUE, monde_.DEFENSE], "Le camp qu'il aide : l'attaquant, ou le défenseur."),
+           "action": _enum(["preparer", "se_battre"]),
+           "competence": _enum(sorted(s.noms_competences), "Pour preparer : la compétence testée."),
+       }, ["quartier", "camp", "action"]),
+       disponible=lambda s: _avec_monde(s) and bool(monde_.melees_annoncees(s.monde)))
+def melee(session: Session, quartier: str, camp: str, action: str, competence: str | None = None) -> dict:
+    etat = session.monde
+    if session.melee:
+        raise ErreurOutil("Il se bat déjà dans une mêlée : joue le combat, puis fin_combat.")
+    factions = monde_.camps(etat, quartier) if quartier in etat["quartiers"] else {}
+    if action == "preparer":
+        if competence is None:
+            raise ErreurOutil("Pour preparer, précise la compétence testée.")
+        socle = session.noms_competences[competence]
+        monde_._melee_du_joueur(etat, quartier, camp)  # refuse avant le test un camp déjà choisi autrement
+        if "preparatif" in etat["quartiers"][quartier]["joueur"]:
+            raise ErreurOutil("Un seul préparatif par mêlée : il a déjà préparé celle-ci.")
+        test = tester(session.des, session.joueur.valeur(socle))
+        progression.cocher(session.personnage, socle, test)
+        bonus = BONUS_PREPARATIF.get(test.degre, 0)
+        monde_.preparer(etat, quartier, camp, bonus)
+        return {"quartier": quartier, "camp": camp, "pour": factions[camp], **_test(test), "bonus_au_de": bonus}
+    monde_._melee_du_joueur(etat, quartier, camp)
+    autre = factions[monde_.DEFENSE if camp == monde_.ATTAQUE else monde_.ATTAQUE]
+    combat, pv = MENACES_DE_FACTION[etat["factions"][autre]["type"]]
+    arme = _arme_de_faction(session)
+    adversaires = []
+    for _ in range(ADVERSAIRES_DE_MELEE):
+        identifiant = next(f"melee_{n}" for n in range(1, 1000) if f"melee_{n}" not in session.pnj)
+        fiche = FichePnj(f"Un homme de {autre}", combat=combat, pv_max_base=pv)
+        session.pnj[identifiant] = Combattant(fiche, "ennemis", arme, None)
+        if session.inventaire:
+            session.pnj[identifiant].reserve = ReservePnj(arme)
+        adversaires.append(identifiant)
+    session.melee = {"quartier": quartier, "camp": camp, "adversaires": adversaires}
+    return {"quartier": quartier, "camp": camp, "pour": factions[camp], "contre": autre, "adversaires": adversaires,
+            "consigne": "Lance debut_combat avec ces adversaires. La mêlée sera jouée à fin_combat."}
+
+
+def _fin_de_melee(session: Session) -> dict:
+    """Le joueur vient de se battre dans une mêlée : victoire s'il est debout et qu'il a mis hors de combat
+    au moins la moitié de ses adversaires. La mêlée est jouée dans la foulée."""
+    m, session.melee = session.melee, None
+    hors_de_combat = sum(session.pnj[i].fiche.etat is not Etat.ACTIF for i in m["adversaires"] if i in session.pnj)
+    victoire = session.personnage.etat is Etat.ACTIF and hors_de_combat * 2 >= len(m["adversaires"])
+    monde_.se_battre(session.monde, m["quartier"], m["camp"], victoire)
+    r = monde_.resoudre(session.monde, session.des, m["quartier"], session.moment.jour)
+    return {"melee": {"quartier": r.quartier, "le_joueur_a_gagne_son_combat": victoire, "attaquant": r.attaquant,
+                      "defenseur": r.defenseur, "vainqueur": r.vainqueur or "personne", "quartier_pris": r.pris,
+                      "controle": r.controle, **({"reputation": r.reputation} if r.reputation else {})}}
+
+
+@outil("Signaler un acte du joueur, hors mission, qui change ce qu'une faction pense de lui. Les missions et les "
+       "mêlées changent déjà la réputation toutes seules : ne les signale pas ici.",
+       lambda s: _objet({"faction": _enum(sorted(s.monde["factions"])), "acte": _enum(ACTES)}, ["faction", "acte"]),
+       disponible=_avec_monde)
+def reputation(session: Session, faction: str, acte: str) -> dict:
+    etat, sens = session.monde, ACTES[acte]
+    if sens > 0:
+        services = etat.setdefault("services", {})
+        if session.moment.jour - services.get(faction, -DELAI_ENTRE_SERVICES) < DELAI_ENTRE_SERVICES:
+            raise ErreurOutil(f"Un service rendu à {faction} a déjà compté cette semaine.")
+        services[faction] = session.moment.jour
+    changements = monde_.bouger_reputation(etat, faction, sens)
+    return {"faction": faction, "acte": acte, "reputation": monde_.reputation(etat, faction),
+            "changements": changements or ["rien ne change"]}
+
+
 # --- Le tour de parole et la fiche du combat ---------------------------------------------------
 
 def _qui_joue(session: Session) -> str | None:
@@ -1771,7 +1895,10 @@ def fin_combat(session: Session, moments_forts: str) -> dict:
         combattant.surpris = combattant.vise = combattant.a_vise = combattant.sursis = False
         combattant.budget = BudgetRound()
         combattant.defenses_ce_round = 0
-    return {"etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}, "souvenir": souvenir}
+    resultat = {"etats": {i: session.combattant(i).fiche.etat.value for i in session.ids()}, "souvenir": souvenir}
+    if session.melee and session.monde is not None:
+        resultat |= _fin_de_melee(session)
+    return resultat
 
 
 # --- Mémoire de la campagne -------------------------------------------------------------------

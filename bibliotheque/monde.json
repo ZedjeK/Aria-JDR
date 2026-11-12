@@ -1,0 +1,124 @@
+{
+  "generique": {
+    "taille": "ville",
+    "districts": [
+      "le Centre",
+      "le Port",
+      "la Vieille Ville",
+      "les Faubourgs",
+      "le Marché",
+      "les Hauteurs",
+      "la Rive basse",
+      "les Remparts"
+    ],
+    "quartiers": [
+      "la Grand-Place",
+      "le Quai aux grains",
+      "la Halle",
+      "le Vieux Pont",
+      "la Porte Nord",
+      "la Porte Sud",
+      "les Entrepôts",
+      "le Champ des morts",
+      "la Fontaine",
+      "les Ateliers",
+      "la Colline",
+      "le Fossé",
+      "la Tour ronde",
+      "les Jardins",
+      "le Carrefour",
+      "la Ruelle des tanneurs",
+      "le Lavoir",
+      "la Butte",
+      "le Chantier",
+      "les Écuries",
+      "la Cour des miracles",
+      "le Gué",
+      "le Clos",
+      "la Rue haute"
+    ],
+    "factions": {
+      "gang": ["les Corbeaux", "les Poings", "la Bande du Fossé", "les Sans-Nom"],
+      "corporation": ["la Compagnie marchande", "la Maison Verel", "le Comptoir du Levant"],
+      "autorités": ["la Garde"],
+      "syndicat ou guilde": ["la Guilde des artisans", "la Confrérie des passeurs"],
+      "milice ou culte": ["la Milice des Portes", "les Fidèles de l'Aube"]
+    },
+    "chefs": [
+      "Aldric Morne",
+      "Dame Ysolde",
+      "le Borgne",
+      "Maître Corvin",
+      "Hester Vane",
+      "Rolan Brisefer",
+      "Mathilde Arcy",
+      "Odon le Roux",
+      "Livia Serr",
+      "le Vieux Tam"
+    ]
+  },
+  "genres": {
+    "Cyberpunk": {
+      "taille": "mégapole",
+      "districts": [
+        "le Centre d'affaires",
+        "les Docks",
+        "la Vieille Ville",
+        "la Zone industrielle",
+        "les Hauteurs",
+        "la Ceinture",
+        "le Marché flottant",
+        "les Tours-dortoirs"
+      ],
+      "quartiers": [
+        "la Rue des Néons",
+        "le Marché de nuit",
+        "les Capsules",
+        "le Terminal 9",
+        "la Fonderie",
+        "les Quais Nord",
+        "le Pont aux Câbles",
+        "la Galerie souterraine",
+        "le Parc des Antennes",
+        "l'Arcade",
+        "le Dépôt 12",
+        "la Tour Hélix",
+        "les Jardins suspendus",
+        "le Carrefour des Drones",
+        "la Ruche",
+        "le Canal noir",
+        "les Serres",
+        "la Gare fantôme",
+        "le Bazar aux puces",
+        "le Quartier des Cliniques",
+        "la Promenade des Enseignes",
+        "le Bloc 7",
+        "les Silos",
+        "le Belvédère",
+        "la Friche",
+        "le Passage des Lanternes"
+      ],
+      "factions": {
+        "gang": ["les Lames de néon", "les Chromés", "les Enfants du Câble", "les Rats du canal", "la Meute de minuit"],
+        "corporation": ["Helix Biotech", "Kuroda Sécurité", "Orbital Fret", "Sanwa Énergie"],
+        "autorités": ["la Police métropolitaine"],
+        "syndicat ou guilde": ["le Syndicat des dockers", "la Guilde des charcudocs"],
+        "milice ou culte": ["les Veilleurs du Bloc", "l'Église du Signal"]
+      },
+      "chefs": [
+        "Rin Okabe",
+        "Dmitri Vasko",
+        "Mama Ito",
+        "Midori Hara",
+        "Selim Ortega",
+        "Nour Haddad",
+        "Jun-ho Baek",
+        "Vera Lindqvist",
+        "Oncle Tran",
+        "Aiko Mori",
+        "le Chirurgien",
+        "Emeka Okonkwo"
+      ]
+    }
+  }
+}
