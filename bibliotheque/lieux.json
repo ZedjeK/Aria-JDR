@@ -1,0 +1,76 @@
+{
+  "types": {
+    "generique": [
+      {"nom": "taverne", "vend": ["boire"], "role": "marchand"},
+      {"nom": "auberge", "vend": ["boire"], "role": "marchand"},
+      {"nom": "marché", "vend": ["materiel"], "role": "marchand"},
+      {"nom": "armurerie", "vend": ["armes"], "role": "artisan"},
+      {"nom": "dispensaire", "vend": ["soins"], "role": "guérisseur"},
+      {"nom": "échoppe d'apothicaire", "vend": ["soins"], "role": "guérisseur"},
+      {"nom": "relais", "vend": ["vehicules"], "role": "artisan"},
+      {"nom": "atelier", "vend": ["materiel"], "role": "artisan"},
+      {"nom": "entrepôt", "vend": [], "role": "garde"},
+      {"nom": "tripot", "vend": ["boire"], "role": "intermédiaire"},
+      {"nom": "poste de garde", "vend": [], "role": "homme de loi"},
+      {"nom": "comptoir", "vend": [], "role": "notable"},
+      {"nom": "temple", "vend": [], "role": "notable"},
+      {"nom": "taudis", "vend": [], "role": "voyou"},
+      {"nom": "halle", "vend": ["materiel"], "role": "marchand"},
+      {"nom": "bains", "vend": [], "role": "marchand"}
+    ],
+    "Cyberpunk": [
+      {"nom": "bar", "vend": ["boire"], "role": "commerçant"},
+      {"nom": "club", "vend": ["boire"], "role": "commerçant"},
+      {"nom": "marché", "vend": ["materiel"], "role": "commerçant"},
+      {"nom": "armurerie", "vend": ["armes"], "role": "commerçant"},
+      {"nom": "clinique", "vend": ["soins"], "role": "médecin de rue"},
+      {"nom": "charcudoc", "vend": ["soins", "implants"], "role": "médecin de rue"},
+      {"nom": "garage", "vend": ["vehicules"], "role": "technicien"},
+      {"nom": "atelier", "vend": ["materiel"], "role": "technicien"},
+      {"nom": "entrepôt", "vend": [], "role": "garde"},
+      {"nom": "hôtel", "vend": [], "role": "commerçant"},
+      {"nom": "tripot", "vend": ["boire"], "role": "fixer"},
+      {"nom": "commissariat", "vend": [], "role": "policier"},
+      {"nom": "bureau de corpo", "vend": [], "role": "cadre"},
+      {"nom": "temple", "vend": [], "role": "passant"},
+      {"nom": "squat", "vend": [], "role": "voyou"},
+      {"nom": "station", "vend": [], "role": "passant"}
+    ]
+  },
+  "caches": {
+    "generique": [
+      {"nom": "planque", "vend": [], "role": "voyou"},
+      {"nom": "tripot clandestin", "vend": ["boire"], "role": "intermédiaire"},
+      {"nom": "guérisseur sans patente", "vend": ["soins"], "role": "guérisseur"}
+    ],
+    "Cyberpunk": [
+      {"nom": "planque", "vend": [], "role": "voyou"},
+      {"nom": "tripot clandestin", "vend": ["boire"], "role": "fixer"},
+      {"nom": "clinique sans licence", "vend": ["soins", "implants"], "role": "médecin de rue"}
+    ]
+  },
+  "enseignes": {
+    "generique": [
+      "Cheval blanc", "Trois Clefs", "Lanterne", "Vieux Pont", "Coq hardi", "Chêne creux", "Roue brisée",
+      "Lion d'or", "Dernier Sou", "Bon Accueil", "Croix du Sud", "Puits sans fond", "Corbeau", "Deux Rives",
+      "Écu fendu", "Grand Cerf", "Tonneau percé", "Étoile du matin", "Pied de vigne", "Fer à cheval",
+      "Soleil levant", "Marteau et Clou", "Ancre", "Trois Frères", "Poule noire", "Clef d'argent", "Chat qui dort",
+      "Vieille Tour", "Bout du monde", "Moulin", "Cloche fêlée", "Croissant", "Sanglier", "Rose des vents",
+      "Sablier", "Quatre Chemins", "Lune rousse", "Haut Fourneau", "Pierre levée", "Fontaine", "Cygne",
+      "Main ouverte", "Bonne Mesure", "Pont neuf", "Vigie", "Dernier Feu", "Trèfle", "Graine", "Balance", "Hibou",
+      "Charrue", "Grand Large", "Petit Jour", "Vieille Garde", "Halte", "Braise", "Passage", "Rempart", "Gué",
+      "Source"
+    ],
+    "Cyberpunk": [
+      "Lotus blanc", "Dernier Signal", "Zéro Absolu", "Néon bleu", "Chat de fer", "Neuvième Vague", "Pluie d'or",
+      "Silicium", "Kabuki", "Dragon pâle", "Onde courte", "Fil rouge", "Minuit Cobalt", "Orchidée noire",
+      "Sept Lunes", "Cuivre et Verre", "Écran mort", "Bonsaï d'acier", "Dernière Dose", "Vapeur", "Carpe koï",
+      "Tension nominale", "Ombre portée", "Circuit fermé", "Lanterne rouge", "Phare éteint", "Fumée bleue",
+      "Dixième Étage", "Hirondelle", "Câble nu", "Jade", "Rémanence", "Grue de papier", "Statique", "Bout du quai",
+      "Mille Soleils", "Verre pilé", "Aube chimique", "Signal faible", "Renard à neuf queues", "Chrome et Soie",
+      "Angle mort", "Basse Fréquence", "Typhon", "Ruche", "Sous-sol 3", "Encre noire", "Mante", "Zone grise",
+      "Haute Tension", "Quai 14", "Miroir sans tain", "Sakura", "Nuit blanche", "Court-Circuit", "Marée basse",
+      "Terminus", "Grand Bleu", "Fleur de sel", "Point mort"
+    ]
+  }
+}
