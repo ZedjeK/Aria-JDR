@@ -46,6 +46,7 @@ PAS = 5
 MODELE_PARCOURS = (60, 50, 45, 40, 35, 30, 25, 15)  # le cœur du métier d'abord
 DEFENSES = ("Esquive", "Corps à corps", "Armes à distance", MAGIE)
 ROLEPLAY_MAX = {"nom": 40, "motivation": 200, "lien": 200, "defaut": 200, "allure": 300}
+SEXES = ("femme", "homme")  # tiré par le code s'il n'est pas choisi : laissé au LLM, c'est presque toujours un homme
 
 
 class EtapeInvalide(ValueError):
@@ -160,6 +161,8 @@ class Brouillon:
                 erreurs.append(f"« {cle} » : de 1 à {ROLEPLAY_MAX[cle]} caractères.")
         if len(str(roleplay.get("allure", ""))) > ROLEPLAY_MAX["allure"]:
             erreurs.append(f"« allure » : {ROLEPLAY_MAX['allure']} caractères au plus.")
+        if roleplay.get("sexe", "") not in ("", *SEXES):
+            erreurs.append(f"« sexe » : {' ou '.join(SEXES)}.")
         return erreurs
 
     # --- Fixer une étape : vérifiée d'abord -----------------------------------------------------------
@@ -192,7 +195,7 @@ class Brouillon:
                 motivation=r["motivation"], lien=r["lien"], defaut=r["defaut"])
         except (CreationInvalide, UniversInvalide, KeyError) as erreur:
             raise EtapeInvalide(getattr(erreur, "erreurs", [str(erreur)])) from erreur
-        perso.allure = r.get("allure", "")
+        perso.allure, perso.sexe = r.get("allure", ""), r.get("sexe", "")
         depart = None
         if self.univers.equipements.get(self.parcours):
             e = self.equipement
@@ -302,7 +305,6 @@ OUTIL_PERSONNAGE = {"type": "function", "function": {
         "allure": {"type": "string", "description": "Son apparence et son allure, en deux phrases."},
     }}}}
 ESSAIS = 2
-SEXES = ("une femme", "un homme")  # tiré par le code : laissé au LLM, le personnage est presque toujours un homme
 
 
 INITIALES = "ABCDEFGHIJKLMNOPRSTVY"  # trois sont tirées : sans elles, les mêmes prénoms reviennent
@@ -313,7 +315,7 @@ def _demande_personnalite(b: Brouillon, erreurs: list[str], sexe: str, initiales
     objets = ", ".join(e.get("objets", [])) or "aucun"
     equipement = ", ".join(str(e[c]) for c in ("arme", "armure", "implant", "vehicule") if e.get(c)) or "rien"
     texte = (f"Univers : {u.nom} ({u.genre}). Cadre : {u.cadre}\n"
-             f"Le personnage du joueur est {sexe}, {b.parcours} : {u.descriptions.get(b.parcours, '')}\n"
+             f"Le personnage du joueur est {'une femme' if sexe == 'femme' else 'un homme'}, {b.parcours} : {u.descriptions.get(b.parcours, '')}\n"
              f"Équipement de départ : {equipement} ; objets : {objets}.\n"
              "Appelle proposer_personnage avec son nom, sa motivation, son lien, son défaut et son allure. "
              "Une phrase chacun (deux pour l'allure), en français, sans chiffres de jeu. "
@@ -326,12 +328,12 @@ def _demande_personnalite(b: Brouillon, erreurs: list[str], sexe: str, initiales
 
 
 def proposer_personnalite(serveur, b: Brouillon, budget: int | None = None,
-                          hasard: random.Random | None = None) -> dict | None:
+                          hasard: random.Random | None = None, sexe: str = "") -> dict | None:
     """Le nom et la personnalité, par le LLM ; vérifiés par le code. None si le LLM n'y arrive pas :
-    le joueur les écrit lui-même. Le code tire au sort si c'est une femme ou un homme."""
+    le joueur les écrit lui-même. Sans `sexe` choisi, le code tire au sort une femme ou un homme."""
     erreurs = []
     hasard = hasard or random.Random()
-    sexe, initiales = hasard.choice(SEXES), sorted(hasard.sample(INITIALES, 3))
+    sexe, initiales = sexe or hasard.choice(SEXES), sorted(hasard.sample(INITIALES, 3))
     for _ in range(ESSAIS):
         reponse = serveur.discuter(_demande_personnalite(b, erreurs, sexe, initiales), [OUTIL_PERSONNAGE], budget)
         message = reponse["choices"][0]["message"]
@@ -346,7 +348,7 @@ def proposer_personnalite(serveur, b: Brouillon, budget: int | None = None,
         except (ValueError, TypeError):
             erreurs = ["arguments illisibles"]
             continue
-        roleplay = {k: " ".join(str(roleplay.get(k, "")).split()) for k in ROLEPLAY_MAX}
+        roleplay = {k: " ".join(str(roleplay.get(k, "")).split()) for k in ROLEPLAY_MAX} | {"sexe": sexe}
         erreurs = Brouillon.verifier_roleplay(roleplay)
         if not erreurs:
             return roleplay

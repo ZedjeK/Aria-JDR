@@ -15,9 +15,10 @@ Une autre campagne, dans un univers généré depuis la bibliothèque :
 """
 
 import argparse
+import random
 import sys
 
-from aria import banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils, progression
+from aria import amorce, banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils, progression
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -31,6 +32,7 @@ from aria.univers import charger_univers
 CAMPAGNE = "neo-tokyo-kaito"
 JOURNAL_SERVEUR = chemins.DONNEES / "serveur_jeu.log"
 QUITTER = ("quitter", "/quitter")
+PLANS_VUS = "plans_vus.json"  # les plans d'amorce déjà piochés
 ETAT = ("etat", "état", "/etat")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.
 # La ruelle de la démo v1 ouvre la campagne ; le quartier reste, d'une session à l'autre.
@@ -68,7 +70,7 @@ class Jeu:
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
         encore d'univers prend Néo-Tokyo, l'univers étalon du banc. `creer` : le joueur crée son personnage
         (sinon, c'est Kaito, le Netrunner de la démo)."""
-        self.entree, self.dire = entree, sortie
+        self.entree, self.dire, self.hasard = entree, sortie, random.Random()
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
         self.reprise = self.campagne.sauvegarde.is_file()
@@ -94,8 +96,8 @@ class Jeu:
                 self.session = Session(univers, perso, des or Des(), Moment(1, Periode.APRES_MIDI),
                                        arme=depart.arme if depart else None, armure=depart.armure if depart else None,
                                        vehicule=depart.vehicule if depart else None, campagne=self.campagne)
-                # L'amorce de la campagne arrive au lot suivant : en attendant, le MJ ouvre la première scène
-                self.table = Table(serveur, self.session, budget, "", contexte=contexte)
+                self.table = Table(serveur, self.session, budget, self.amorcer(serveur, generation), contexte=contexte)
+                self.sauvegarder()  # le personnage et son amorce existent : une coupure ne les fait pas perdre
                 return
             local = univers.nom_local  # le parcours et l'équipement de Kaito, sous les noms de cet univers
             if local(NETRUNNER) not in univers.parcours:
@@ -107,7 +109,35 @@ class Jeu:
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
                                    arme=local("Pistolet lourd Arasaka"), armure=local("Veste renforcée"),
                                    campagne=self.campagne)
-        self.table = Table(serveur, self.session, budget, QUARTIER if self.reprise else SCENE, contexte=contexte)
+        # Le quartier de Kaito ne vaut que pour Néo-Tokyo ; ailleurs, la mémoire de la campagne dit où on en est
+        quartier = "" if self.campagne.univers.is_file() else QUARTIER
+        self.table = Table(serveur, self.session, budget, quartier if self.reprise else SCENE, contexte=contexte)
+
+    def amorcer(self, serveur, budget: int | None) -> str:
+        """L'amorce de la campagne, d'après l'idée du joueur ou un plan tiré dans la bibliothèque. Gardée, elle
+        est rangée dans la mémoire. Renvoie la scène d'ouverture pour le MJ (vide s'il doit l'inventer seul)."""
+        s = self.session
+        vus = self.campagne.dossier.parent / PLANS_VUS  # à côté des campagnes : il vaut pour toutes
+        self.dire("\n=== Le début de ta campagne ===")
+        idee = self.entree("Ton idée de départ en une phrase, ou Entrée pour que je pioche un plan : ").strip()
+        while True:
+            plan = idee[:amorce.PLAN_MAX] or (f"{amorce.tirer_plan(s.univers.genre, self.hasard, vus)} "
+                                              f"Complication : {amorce.tirer_complication(self.hasard)}")
+            self.dire(f"\nPlan : {plan}\n… le MJ prépare le début de la campagne")
+            try:
+                proposee = amorce.proposer_amorce(serveur, s.univers, s.personnage, plan, budget)
+            except llm.ErreurLLM:
+                proposee = None
+            if proposee is None:
+                self.dire("Le MJ n'a rien proposé de valide : il ouvrira la campagne lui-même.")
+                return ""
+            self.dire("\n" + "\n".join(proposee.lignes()))
+            reponse = self.entree("Entrée pour garder, « r » pour une autre, ou écris une autre idée : ").strip()
+            if reponse == "":
+                proposee.ranger(s.memoire, s.moment)
+                return proposee.scene
+            if reponse.lower() != "r":
+                idee = reponse
 
     def montrer_adaptation(self, univers, adaptation: "generateur.Adaptation | None"):
         """Ce que le MJ a adapté au cadre, avant la première scène."""
@@ -140,8 +170,9 @@ class Jeu:
 
     def jouer(self):
         k, u = self.session.personnage, self.session.univers
+        mort = "morte" if k.sexe == "femme" else "mort"
         if self.mort():
-            self.dire(f"{k.nom} est mort. Pour une nouvelle campagne, supprime le dossier {self.campagne.dossier}.")
+            self.dire(f"{k.nom} est {mort}. Pour une nouvelle campagne, supprime le dossier {self.campagne.dossier}.")
             return
         self.dire(f"=== {u.nom} ===\n{u.cadre}")
         if self.reprise:
@@ -163,7 +194,7 @@ class Jeu:
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
             if self.mort():
-                self.dire(f"\n{k.nom} est mort. Fin de la partie.")
+                self.dire(f"\n{k.nom} est {mort}. Fin de la partie.")
                 return
         self.fin_de_session()
 
@@ -215,7 +246,7 @@ class Jeu:
                       + (f"+{a.gain}, passe à {a.apres} !" if a.gain else "pas de progrès."))
         self.sauvegarder()
         self.dire(f"\nPartie sauvegardée : {self.campagne.sauvegarde}")
-        self.dire(f"Kaito : {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, {k.points_destin} points de destin.")
+        self.dire(f"{k.nom} : {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, {k.points_destin} points de destin.")
 
 
 def lire_arguments(arguments: list[str] | None = None):
@@ -264,6 +295,8 @@ def main(arguments: list[str] | None = None):
     if choix and campagne.univers.is_file():
         print(f"La campagne « {arguments.campagne} » a déjà son univers : elle reprend telle quelle (sans --genre).")
         return
+    # Un univers généré mais pas encore de sauvegarde : la création du personnage n'a pas été finie
+    a_creer = campagne.univers.is_file() and not campagne.sauvegarde.is_file()
     profil = banc.profil_valide()
     if profil is None:
         print("Pas de MJ qualifié sur ce PC. Lance d'abord le banc : .venv\\Scripts\\python.exe -m aria.banc")
@@ -285,9 +318,11 @@ def main(arguments: list[str] | None = None):
             if choix is None:
                 return
         Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
-            budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None).jouer()
+            budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None or a_creer).jouer()
     except SansPersonnage as erreur:
         print(erreur)
+    except creation_texte.Abandon:
+        print("\nCréation abandonnée. Relance la même campagne (sans --genre) pour créer ton personnage.")
     except (KeyboardInterrupt, EOFError):
         print("\nPartie interrompue.")
     finally:

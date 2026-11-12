@@ -129,6 +129,7 @@ class Personnage:
     implants: list[dict] = field(default_factory=list)  # les implants posés (REGLES.md 11, voir aria.implants)
     objets: list[str] = field(default_factory=list)  # les objets racontés : sans bonus, mais ils ouvrent des actions
     allure: str = ""  # deux lignes sur son apparence, pour le MJ (et plus tard les images)
+    sexe: str = ""  # « femme » ou « homme » ; vide s'il n'a pas été précisé
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit

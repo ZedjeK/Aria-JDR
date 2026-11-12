@@ -248,6 +248,30 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - L'argent, les prix et l'encombrement restent à définir (voir 13) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
 - Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
 
+### La création guidée
+
+À chaque étape, le code propose et le joueur garde, relance ou saisit lui-même. « Tout proposer » fait tout d'un coup :
+
+- **Le code propose les chiffres** : des caractéristiques orientées par le parcours, les points sous les plafonds, une défense et une compétence de combat grâce aux points personnels, l'équipement tiré dans les listes.
+- **Le LLM propose le nom et la personnalité** (motivation, lien, défaut, allure en deux phrases). Le code vérifie ; si rien de valide ne sort, le joueur les écrit.
+- Pour varier les propositions, le code tire si le personnage est **une femme ou un homme** (le joueur peut le choisir) et trois initiales possibles pour son prénom.
+
+### L'amorce de la campagne
+
+Après la création, l'amorce pose ce qui existe avant la première scène. Elle part d'un **plan** en une phrase :
+
+- **l'idée du joueur**, telle quelle ;
+- ou, s'il n'est pas inspiré, **un plan tiré dans la bibliothèque** : 50 plans valables dans tous les genres, plus ceux du genre de l'univers (15 par genre, écrits avec chaque genre), corsé par **une complication** tirée à part parmi 20. Un plan déjà pioché ne revient pas, d'une campagne à l'autre, tant qu'il en reste des neufs.
+
+Le LLM adapte le plan au cadre et au personnage, et le code vérifie :
+
+- **son passé**, en deux ou trois phrases ;
+- **le lieu** où tout commence et **la situation** d'ouverture, qui lance le plan sans décider à la place du joueur ;
+- **de 2 à 4 PNJ** vivants qu'il connaît déjà, dont celui de son lien si c'est une personne vivante ;
+- **de 1 à 3 fils** ouverts, dont un tiré de sa motivation.
+
+Le joueur voit tout (son personnage le sait déjà), puis garde l'amorce, en demande une autre ou donne une autre idée. Gardée, elle est rangée dans la mémoire de la campagne (souvenirs, PNJ, fils). Si le LLM ne propose rien de valide, le MJ ouvre la campagne seul.
+
 ### Exemple : un Netrunner en Cyberpunk
 
 - **Caractéristiques** : Force 35, Constitution 45, Dextérité 60, Intelligence 75, Volonté 50, Présence 35 (total 300). PV 23 en Standard (8 + 15), SM 50 avant les implants.
