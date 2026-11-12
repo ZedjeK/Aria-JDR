@@ -141,10 +141,15 @@ def prix_de_vente(a: Article, etat: str = NEUF) -> int:
     return decaler(a.prix, {NEUF: 0, OCCASION: -1, MARQUE: 0, MARCHE_NOIR: 1}[etat])
 
 
+CATEGORIES_DE_PRIX = {"arme": "armes", "armure": "armures", "munitions": "munitions", "chargeur": "munitions"}
+SOINS = ("une consultation ou un soin", "une séance de thérapie", "soigner une blessure grave")
+
+
 def acheter(perso: Personnage, inventaire: Inventaire, univers, nom: str, etat: str = NEUF,
-            marchandage: Marchandage | None = None) -> Achat:
+            marchandage: Marchandage | None = None, decalage: int = 0) -> Achat:
     """Achète un article et le range dans l'inventaire. Le matériel restreint ne s'achète qu'au marché noir
-    (dans le stock d'un contact, ou sur commande) ; le matériel militaire, jamais."""
+    (dans le stock d'un contact, ou sur commande) ; le matériel militaire, jamais. `decalage` : les paliers
+    que le lieu ou un événement ajoutent ou retirent au prix."""
     a = article(univers, nom)
     if a.famille in ("implant", "véhicule"):
         raise CommerceImpossible("Un implant s'achète avec sa pose (poser_implant) ; un véhicule ne s'achète pas "
@@ -157,7 +162,7 @@ def acheter(perso: Personnage, inventaire: Inventaire, univers, nom: str, etat: 
                                  "au marché noir, ou commander).")
     if marchandage and marchandage.refus:
         return Achat(a, etat, 0, perso.argent, refuse=True)
-    cout = prix_de_vente(a, etat)
+    cout = decaler(prix_de_vente(a, etat), decalage)
     if marchandage and marchandage.critique:
         cout = decaler(cout, -1)
     if perso.argent < cout:
