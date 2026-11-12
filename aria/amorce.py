@@ -24,6 +24,7 @@ from aria.univers import Univers
 PLANS = chemins.RESSOURCES / "bibliotheque" / "amorces.json"
 PLAN_MAX = 300  # caractères de l'idée du joueur
 TEXTES = {"passe": 500, "lieu": 400, "situation": 400, "secret": 160}
+COUCHES = {"soupcon": 160, "coupable": 160}  # avec une trame : les deux premières couches du secret
 FIL_SECRET = "secret_de_depart"  # le secret est un fil, que le MJ clôt quand le personnage le découvre
 NB_PNJ, NB_FILS = (2, 4), (1, 3)
 ESSAIS = 2
@@ -94,10 +95,20 @@ class Amorce:
     secret: str  # ce que le personnage ignore : pour le MJ seulement, jamais montré au joueur
     pnj: list[dict] = field(default_factory=list)  # identifiant, nom, role, attitude
     fils: list[dict] = field(default_factory=list)  # identifiant, texte
+    soupcon: str = ""  # avec une trame, la première couche du secret : ce qui cloche
+    coupable: str = ""  # la deuxième : qui est derrière. La troisième est le secret entier
+
+    @property
+    def couches(self) -> list[str]:
+        """Les trois couches du secret (REGLES.md 14.10) ; vide pour une amorce sans trame."""
+        return [self.soupcon, self.coupable, self.secret] if self.soupcon and self.coupable else []
 
     @property
     def scene(self) -> str:
-        """Ce que le MJ sait de la première scène."""
+        """Ce que le MJ sait de la première scène. Avec une trame, il ne reçoit que la première couche du
+        secret : la suite lui viendra quand le joueur aura réuni ses indices."""
+        if self.couches:
+            return f"{self.lieu}\n\n{self.situation}"
         return f"{self.lieu}\n\n{self.situation}\n\nCe que le personnage ignore encore : {self.secret}"
 
     def lignes(self) -> list[str]:
@@ -112,7 +123,10 @@ class Amorce:
             memoire.noter_pnj(p["identifiant"], p["nom"], p["role"], p["attitude"])
         for f in self.fils:
             memoire.ouvrir_fil(f["identifiant"], f["texte"])
-        memoire.ouvrir_fil(FIL_SECRET, f"Secret, ignoré du personnage : {self.secret}")
+        if self.couches:  # la trame tient le secret, couche par couche : le fil ne garde que la première
+            memoire.ouvrir_fil(FIL_SECRET, f"Quelque chose cloche, que le personnage peut remarquer : {self.soupcon}")
+        else:
+            memoire.ouvrir_fil(FIL_SECRET, f"Secret, ignoré du personnage : {self.secret}")
         memoire.ajouter_souvenir(f"## {TITRE}\n\n{self.passe}\n\nLa campagne commence ici, {moment} : {self.lieu}\n")
 
 
@@ -120,11 +134,13 @@ def _texte(valeur) -> str:
     return " ".join(str(valeur or "").split())
 
 
-def verifier(donnees: dict, plan: str = "") -> tuple[Amorce | None, list[str]]:
-    """L'amorce proposée par le LLM, nettoyée, ou la liste de ses erreurs."""
+def verifier(donnees: dict, plan: str = "", couches: bool = False) -> tuple[Amorce | None, list[str]]:
+    """L'amorce proposée par le LLM, nettoyée, ou la liste de ses erreurs. `couches` : la campagne a une
+    trame, le secret s'écrit en trois couches."""
     erreurs = []
-    textes = {cle: _texte(donnees.get(cle)) for cle in TEXTES}
-    for cle, maximum in TEXTES.items():
+    limites = TEXTES | (COUCHES if couches else {})
+    textes = {cle: _texte(donnees.get(cle)) for cle in limites}
+    for cle, maximum in limites.items():
         if not 0 < len(textes[cle]) <= maximum:
             erreurs.append(f"« {cle} » : de 1 à {maximum} caractères ({len(textes[cle])} ici).")
     listes = {}
@@ -156,7 +172,7 @@ def verifier(donnees: dict, plan: str = "") -> tuple[Amorce | None, list[str]]:
     if erreurs:
         return None, erreurs
     return Amorce(plan, textes["passe"], textes["lieu"], textes["situation"], textes["secret"], listes["pnj"],
-                  listes["fils"]), []
+                  listes["fils"], textes.get("soupcon", ""), textes.get("coupable", "")), []
 
 
 def _chaine(description: str, maximum: int) -> dict:
@@ -197,7 +213,27 @@ OUTIL_AMORCE = {"type": "function", "function": {
     }}}}
 
 
-def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str], ouverture: str = "") -> list[dict]:
+def outil_amorce(couches: bool = False) -> dict:
+    """L'outil de l'amorce. Avec une trame, le secret s'écrit en trois couches : deux champs de plus."""
+    if not couches:
+        return OUTIL_AMORCE
+    fonction = dict(OUTIL_AMORCE["function"])
+    parametres = dict(fonction["parameters"])
+    parametres["required"] = [*parametres["required"], *COUCHES]
+    parametres["properties"] = dict(parametres["properties"]) | {
+        "soupcon": _chaine("La première couche du secret : ce qui cloche, que le personnage pourrait remarquer "
+                           "sans comprendre. Une phrase courte, sans nommer le coupable.", COUCHES["soupcon"]),
+        "coupable": _chaine("La deuxième couche : qui est derrière, sans dire pourquoi. Une phrase courte.",
+                            COUCHES["coupable"]),
+        "secret": _chaine("La troisième couche : toute la vérité, le pourquoi, et ce qu'elle change pour le "
+                          "personnage. Une phrase courte. Le joueur ne le lira pas.", TEXTES["secret"]),
+    }
+    fonction["parameters"] = parametres
+    return {"type": "function", "function": fonction}
+
+
+def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str], ouverture: str = "",
+             antagoniste: str = "") -> list[dict]:
     p = perso
     qui = "une femme" if p.sexe == "femme" else "un homme" if p.sexe == "homme" else "un personnage"
     texte = (f"Univers : {univers.nom} ({univers.genre}). Cadre : {univers.cadre}\n"
@@ -208,7 +244,10 @@ def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str],
              + (f"Objets : {', '.join(p.objets)}\n" if p.objets else "")
              + f"Métiers de cet univers : {', '.join(sorted(univers.parcours))}.\n\n"
              f"Le plan de départ de la campagne : {plan}\n"
-             + (f"{ouverture}\n" if ouverture else "") + "\n"
+             + (f"{ouverture}\n" if ouverture else "")
+             + (f"{antagoniste} Le secret le concerne, et s'écrit en trois couches : soupcon (ce qui cloche), "
+                "coupable (qui), secret (toute la vérité). Chacune en dit plus que la précédente.\n"
+                if antagoniste else "") + "\n"
              "Appelle amorcer_campagne pour adapter ce plan au cadre et au personnage. Les PNJ sont des gens "
              "vivants, qu'il peut croiser ; si son lien est une personne vivante, elle en fait partie. Un fil vient "
              "de sa motivation. La situation se passe dans le lieu, lance le plan et laisse la décision au joueur, "
@@ -225,12 +264,15 @@ def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str],
 
 
 def proposer_amorce(serveur, univers: Univers, perso: Personnage, plan: str, budget: int | None = None,
-                    ouverture: str = "") -> Amorce | None:
+                    ouverture: str = "", antagoniste: str = "") -> Amorce | None:
     """L'amorce, par le LLM, vérifiée par le code. None s'il n'y arrive pas : le MJ ouvrira seul la campagne.
-    `ouverture` : la consigne du type de campagne (au cœur du problème, ou sur le quotidien)."""
+    `ouverture` : la consigne du type de campagne (au cœur du problème, ou sur le quotidien).
+    `antagoniste` : avec une trame, la phrase qui le présente ; le secret s'écrit alors en trois couches."""
+    couches = bool(antagoniste)
     erreurs = []
     for _ in range(ESSAIS):
-        reponse = serveur.discuter(_demande(univers, perso, plan, erreurs, ouverture), [OUTIL_AMORCE], budget)
+        reponse = serveur.discuter(_demande(univers, perso, plan, erreurs, ouverture, antagoniste),
+                                   [outil_amorce(couches)], budget)
         message = reponse["choices"][0]["message"]
         appel = next((a for a in message.get("tool_calls") or []
                       if a["function"]["name"] == "amorcer_campagne"), None)
@@ -243,7 +285,7 @@ def proposer_amorce(serveur, univers: Univers, perso: Personnage, plan: str, bud
         except (ValueError, TypeError):
             erreurs = ["arguments illisibles"]
             continue
-        amorce, erreurs = verifier(donnees, plan)
+        amorce, erreurs = verifier(donnees, plan, couches)
         if amorce:
             return amorce
     return None

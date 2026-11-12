@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, missions, monde as monde_, vehicules as vehicules_
+from aria import combat as combat_, missions, monde as monde_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -203,7 +203,7 @@ class Session:
             resultat = outil.fonction(self, **arguments)
             if self.monde is not None and self.moment.jour != self.jour_du_monde:
                 resultat = resultat | self.vivre()  # le temps a passé : le monde a bougé
-        except (ErreurOutil, monde_.MondeImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
+        except (ErreurOutil, monde_.MondeImpossible, trame_.TrameImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
                 ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
@@ -1759,6 +1759,11 @@ def accepter_mission(session: Session, offre: str, marchander: str = "non", atti
                 "argent": session.personnage.argent, "monnaie": session.univers.monnaie, **_rapport_marchandage(m)}
     if o.get("retournement"):
         resultat["retournement_pour_toi_seul"] = o["retournement"]
+    if o.get("principale"):
+        resultat["mission_principale"] = "la mission finale de la campagne" if o.get("finale") else f"acte {o['acte']}"
+    if o.get("touche_la_trame"):
+        resultat["touche_la_trame"] = (f"Un homme {monde_.de(etat['trame']['antagoniste'])} s'en mêle, ou un indice "
+                                       "traîne sur les lieux. Réussie, elle donnera un indice au joueur.")
     if o.get("camp"):
         resultat["rappel"] = f"C'est une mêlée : fais-le se battre avec l'outil melee, camp « {o['camp']} »."
     return resultat
@@ -1843,6 +1848,50 @@ def reputation(session: Session, faction: str, acte: str) -> dict:
     changements = monde_.bouger_reputation(etat, faction, sens)
     return {"faction": faction, "acte": acte, "reputation": monde_.reputation(etat, faction),
             "changements": changements or ["rien ne change"]}
+
+
+# --- La trame : les indices et les révélations (REGLES.md 14.10) -----------------------------------------
+
+def _avec_trame(session: Session) -> bool:
+    t = trame_.trame_de(session.monde)
+    return t is not None and not trame_.finie(t) and session.combat is None
+
+
+@outil("Donner au joueur un indice sur le secret de la campagne. Deux cas. Le moteur vient d'en accorder un "
+       "(une mission réussie) : décris-le. Ou le joueur fouille, interroge ou pirate dans une scène liée à "
+       "l'antagoniste : donne la compétence, le moteur teste, une seule fois par scène. L'indice est un fait "
+       "précis (un nom sur un reçu, un visage sur une vidéo) tiré de ce qu'il doit encore découvrir, sans le dire "
+       "en entier. Quand le moteur renvoie une révélation, joue la scène où le personnage comprend.",
+       lambda s: _objet({
+           "description": {"type": "string", "description": f"L'indice, en une phrase. {trame_.INDICE_MAX} caractères "
+                                                            "au plus."},
+           "competence": _enum(sorted(s.noms_competences), "Pour une enquête seulement : la compétence testée."),
+       }, ["description"]),
+       disponible=_avec_trame)
+def indice(session: Session, description: str, competence: str | None = None) -> dict:
+    t = session.monde["trame"]
+    trame_.texte_d_indice(description)  # refusé avant tout test : une enquête ne se perd pas sur une faute de forme
+    resultat = {}
+    if t["dus"] > 0:
+        t["dus"] -= 1
+    elif competence is None:
+        raise ErreurOutil("Aucun indice n'est dû au joueur. S'il enquête dans une scène liée à l'antagoniste, donne "
+                          "la compétence : le moteur teste.")
+    elif t["enquete"]:
+        raise ErreurOutil("Une seule enquête par scène : celle de cette scène a déjà été jouée.")
+    else:
+        t["enquete"] = True
+        socle = session.noms_competences[competence]
+        test = tester(session.des, session.joueur.valeur(socle))
+        progression.cocher(session.personnage, socle, test)
+        resultat = _test(test)
+        if not test.reussi:
+            return {"indice": None, **resultat, "consigne": "L'enquête ne donne rien : aucun indice."}
+    revelations = trame_.noter_un_indice(t, session.moment.jour, description)
+    resultat |= {"indice": t["indices"][-1]["texte"], "indices_trouves": len(t["indices"])}
+    if revelations:
+        resultat["revelation"] = revelations
+    return resultat
 
 
 # --- Le tour de parole et la fiche du combat ---------------------------------------------------
@@ -2006,6 +2055,9 @@ def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
     session.poursuite = None
     for engin in session.tous_les_engins():
         engin.nouvelle_scene()  # la nitro, les fumigènes et les leurres reviennent
+    t = trame_.trame_de(session.monde)
+    if t:
+        t["enquete"] = False  # une enquête par scène
     return {"souvenir": souvenir}
 
 
@@ -2053,4 +2105,8 @@ def clore_fil(session: Session, identifiant: str, issue: str, reussie: bool | No
                                             session.moment.jour)
             if changements:
                 resultat["monde"] = changements
+            suite = trame_.apres_mission(session.monde, session.des, mission["offre"], reussie, session.moment.jour,
+                                         session.personnage)
+            if suite:
+                resultat["trame"] = suite
     return resultat

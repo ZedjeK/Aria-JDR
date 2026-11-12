@@ -23,6 +23,8 @@ AMORCE = {
     "lieu": "Un comptoir à nouilles sous la voie rapide, à la tombée de la nuit.",
     "situation": "Un homme en costume pose une enveloppe devant elle : la dette est due ce soir.",
     "secret": "Tanaka travaille en réalité pour la corpo qui a rendu sa mère malade.",
+    "soupcon": "La dette de sa mère a été rachetée trois fois en un an.",  # les deux premières couches du secret,
+    "coupable": "Tanaka ne travaille pas pour l'usurier qu'il dit servir.",  # lues seulement s'il y a une trame
     "pnj": [{"identifiant": "mere_sato", "nom": "Emi Sato", "role": "Sa mère, malade", "attitude": "L'aime, s'inquiète."},
             {"identifiant": "tanaka", "nom": "Tanaka", "role": "Recouvreur de dettes", "attitude": "Poli, sans pitié."}],
     "fils": [{"identifiant": "dette_mere", "texte": "Racheter la dette de sa mère avant la fin du mois."}],
