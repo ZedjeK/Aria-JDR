@@ -6,9 +6,10 @@ le plus proche. La bibliothèque peut imposer un prix ou une disponibilité pour
 (bibliotheque/prix.json).
 """
 
+import functools
 import json
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 from aria import chemins
@@ -56,6 +57,7 @@ _CATEGORIES_MILITAIRES = ("armes lourdes", "explosifs", "drones")
 _CATEGORIES_RESTREINTES = ("grenades", "fusils de précision", "armes intelligentes")
 
 
+@functools.lru_cache(maxsize=1)
 def _exceptions() -> dict:
     """Les prix et les disponibilités imposés par la bibliothèque, par nom d'objet."""
     try:
@@ -204,6 +206,12 @@ class Echeance:
     cout: int
     payee: bool
     argent: int
+    dettes_payees: list = field(default_factory=list)  # (créancier, somme, reste dû)
+    dettes_manquees: list = field(default_factory=list)  # (créancier, somme, échéances manquées)
+    lien: bool | None = None  # None : pas de lien à charge ; sinon, sa semaine a-t-elle été payée
+
+
+COUT_DU_LIEN = 200  # par semaine, pour un lien à charge (13.7)
 
 
 def payer_la_semaine(perso: Personnage) -> bool:
@@ -220,9 +228,27 @@ def passer_les_echeances(perso: Personnage, jour: int) -> list[Echeance]:
     jusqu'à ce qu'une semaine soit de nouveau payée."""
     passees = []
     while jour >= perso.echeance:
+        # Dans l'ordre : les dettes passent avant tout, puis le lien à charge, puis le loyer
+        payees, manquees = [], []
+        for dette in list(perso.dettes):
+            somme = min(dette["echeance"], dette["reste"])
+            if perso.argent >= somme:
+                perso.argent -= somme
+                dette["reste"] -= somme
+                payees.append((dette["creancier"], somme, dette["reste"]))
+                if dette["reste"] <= 0:
+                    perso.dettes.remove(dette)
+            else:
+                dette["manquees"] += 1
+                manquees.append((dette["creancier"], somme, dette["manquees"]))
+        lien = None
+        if perso.lien_a_charge:
+            lien = perso.charge_payee = perso.argent >= COUT_DU_LIEN
+            if lien:
+                perso.argent -= COUT_DU_LIEN
         cout = COUT_DE_LA_VIE[NiveauDeVie(perso.niveau_de_vie)]
         payee = payer_la_semaine(perso)
-        passees.append(Echeance(perso.echeance, perso.niveau_de_vie, cout, payee, perso.argent))
+        passees.append(Echeance(perso.echeance, perso.niveau_de_vie, cout, payee, perso.argent, payees, manquees, lien))
         perso.echeance += SEMAINE
     return passees
 

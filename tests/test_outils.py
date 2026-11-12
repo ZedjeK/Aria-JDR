@@ -35,6 +35,7 @@ def test_schemas_au_format_openai():
         "lancer_sort", "attaquer_zone", "piloter", "reparer", "round_poursuite", "fin_poursuite",
         "tirer_sur_vehicule", "eperonner", "tirer_arme_montee", "lance_fumigenes", "inventaire",
         "voir_boutique", "acheter", "vendre", "payer", "commander", "niveau_de_vie",
+        "ouvrir_mission", "fouiller", "prendre", "semaine_de_travail", "emprunter",
     }  # ni magie, ni grenade en main, ni véhicule à Kaito, ni combat, ni poursuite, ni inventaire, ni économie ici
     for schema in schemas:
         assert schema["type"] == "function"

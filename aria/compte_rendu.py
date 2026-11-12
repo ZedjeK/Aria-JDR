@@ -65,6 +65,25 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         elif r["action"] == "recharger" and "munitions" in r:
             arme = f" ({r['munitions']} dans l'arme)"
         return [f"⚔️ {session.combattant(r['qui']).nom} {VERBES[r['action']]}{arme}"]
+    if o == "ouvrir_mission":
+        avance = f", {montant(r['avance'], r['monnaie'])} d'avance" if r["avance"] else ""
+        return [f"📜 Mission : {r['texte']} — {montant(r['recompense'], r['monnaie'])} à la clé{avance}"]
+    if o == "clore_fil" and "mission_reussie" in r:
+        return [f"📜 Mission {'réussie' if r['mission_reussie'] else 'manquée'} : "
+                + (f"+{montant(r['recompense_versee'], r['monnaie'])} (tu as {montant(r['argent'], r['monnaie'])})"
+                   if r["recompense_versee"] else "rien n'est versé")]
+    if o == "fouiller":
+        trouve = ", ".join(r["objets"]) or "rien d'autre"
+        return [f"🔎 Fouille : {montant(r['argent_trouve'], r['monnaie'])} ; à prendre : {trouve}"]
+    if o == "prendre":
+        return [f"🎒 Pris : {r['pris']} ({r['emplacements']} emplacements)"]
+    if o == "semaine_de_travail":
+        return [f"🕐 Une semaine de travail ({r['competence']} : {jet(r)}) : "
+                + (f"+{montant(r['revenu'], r['monnaie'])}" if r["revenu"] else "rien gagné")
+                + f" — {r['moment']}, tu as {montant(r['argent'], r['monnaie'])}"]
+    if o == "emprunter":
+        return [f"💰 Emprunt : +{montant(r['somme'], r['monnaie'])}, à rembourser {montant(r['echeance_par_semaine'], r['monnaie'])} "
+                f"par semaine ({montant(r['total_a_rembourser'], r['monnaie'])} en tout)"]
     if o == "acheter":
         if not r["achete"]:
             return [f"💰 {a['objet']} : {r['raison']}"]

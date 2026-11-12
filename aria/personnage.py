@@ -140,6 +140,10 @@ class Personnage:
     inventaire: dict | None = None
     commandes: list[dict] = field(default_factory=list)  # les objets restreints commandés, payés, pas encore arrivés
     derniere_detente: int = 0  # le jour de sa dernière soirée de détente (une par semaine)
+    missions: dict = field(default_factory=dict)  # identifiant du fil → sa récompense et l'avance déjà touchée
+    dettes: list[dict] = field(default_factory=list)  # créancier, échéance par semaine, reste dû, échéances manquées
+    lien_a_charge: bool = False  # son lien dépend de lui : 200 par semaine (REGLES.md 13.7)
+    charge_payee: bool = True  # faux : la semaine de son lien n'a pas été payée
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit

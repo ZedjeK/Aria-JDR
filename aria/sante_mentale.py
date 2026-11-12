@@ -260,13 +260,17 @@ def therapie(des: Des, soignant, patient: Personnage, moment: Moment,
     return _recuperer(patient, gain_selon_degre(des, test.degre), test)
 
 
-def discussion(des: Des, perso: Personnage, moment: Moment) -> RapportRecuperation:
-    """Du temps avec son lien, ou une longue discussion avec quelqu'un : +1d3, une fois par jour."""
+def discussion(des: Des, perso: Personnage, moment: Moment, avec_son_lien: bool = False) -> RapportRecuperation:
+    """Du temps avec son lien, ou une longue discussion avec quelqu'un : +1d3, une fois par jour. Un lien à
+    charge (REGLES.md 13.7) rend 1d6 ; si sa semaine n'a pas été payée, le temps passé avec lui ne rend rien."""
     _verifier_pas_fou(perso)
+    if avec_son_lien and perso.lien_a_charge and not perso.charge_payee:
+        raise SoinImpossible(f"{perso.nom} n'a pas pu subvenir aux besoins de son lien cette semaine : le temps "
+                             "passé avec lui ne le réconforte pas.")
     if perso.derniere_discussion == moment.jour:
         raise SoinImpossible(f"{perso.nom} a déjà eu sa discussion aujourd'hui.")
     perso.derniere_discussion = moment.jour
-    return _recuperer(perso, des.jet("1d3"))
+    return _recuperer(perso, des.jet("1d6" if avec_son_lien and perso.lien_a_charge else "1d3"))
 
 
 GAINS_JALONS = {Jalon.OBJECTIF: "1d6", Jalon.ARC: "1d10", Jalon.MOTIVATION: "1d10"}
