@@ -272,6 +272,7 @@ def apres_mission(etat: dict, des: Des, mission: dict, reussie: bool, jour: int,
         if mission.get("finale"):
             t["fin"] = {"finale_reussie": reussie, "jour": jour}
             resultat["finale"] = "réussie" if reussie else "ratée"
+            resultat["fin_de_la_campagne"] = finir(etat, des, jour)
         elif t["faites"] >= TYPES[t["type"]].actes[t["acte"] - 1]:
             t["acte"], t["faites"] = t["acte"] + 1, 0
             t["prochaine"] = jour + des.lancer(PAUSE_APRES_UN_TOURNANT)
@@ -336,3 +337,158 @@ def pistes(etat: dict | None) -> list[str]:
         lignes.append("Tes indices :")
         lignes += [f"  Jour {i['jour']} — {i['texte']}" for i in t["indices"]]
     return lignes or ["Aucune piste pour l'instant."]
+
+
+# --- La fin (REGLES.md 14.11) ---------------------------------------------------------------------------
+
+TRIOMPHE, VICTOIRE_AMERE, DEFAITE_HONORABLE, CHUTE, MORT = ("triomphe", "victoire amère", "défaite honorable",
+                                                           "chute", "mort")
+REUSSI, RATE = "contrat réussi", "contrat raté"
+ATOUTS_MAX = 3
+FAIBLESSE, RENFORTS, ENTREE_SURE = "une faiblesse de l'antagoniste", "des renforts", "une entrée sûre"
+PERTE_DE_L_ANTAGONISTE, GAIN_DE_L_ANTAGONISTE = 3, 2  # points de contrôle, dans tous ses quartiers
+PAUSE_ENTRE_DEUX_ARCS = (20, 10)  # 1d20 + 10 jours
+ARRET, SUITE = "arrêtée", "continuée"
+# Ce que valent les hommes de l'antagoniste dans la finale, selon l'expérience de départ du personnage
+MENACES = (("faible", 40), ("moyenne", 55), ("forte", 70), ("élite", 80))
+MENACE_FINALE = {DEBUTANT: 1, AGUERRI: 2, VETERAN: 3}
+CRAN_SUIVANT = {DEBUTANT: AGUERRI, AGUERRI: VETERAN, VETERAN: VETERAN}
+
+
+def atouts(etat: dict, lieu: str) -> list[dict]:
+    """Ce que le joueur a accumulé et qui sert dans la mission finale, trois atouts au plus : un indice en
+    trop (le bras armé de l'antagoniste perd un cran de menace), une faction amie ou dont il est membre (un
+    allié se bat à ses côtés), le quartier de la finale tenu par une faction amie (une entrée sûre)."""
+    t = etat["trame"]
+    trouves = []
+    if indices_en_trop(t):
+        trouves.append({"atout": FAIBLESSE, "effet": "Ses hommes valent un cran de menace de moins."})
+    amies = sorted(f for f in etat["factions"]
+                   if f != t["antagoniste"] and monde.reputation(etat, f) in (monde.AMI, monde.MEMBRE))
+    if amies:
+        trouves.append({"atout": RENFORTS, "faction": amies[0],
+                        "effet": f"Un allié {monde.de(amies[0])} se bat à ses côtés : il est déjà créé."})
+    maitre = etat["quartiers"][lieu]["maitre"] if lieu in etat["quartiers"] else None
+    if maitre and maitre != t["antagoniste"] and monde.reputation(etat, maitre) in (monde.AMI, monde.MEMBRE):
+        trouves.append({"atout": ENTREE_SURE, "effet": "Pas de barrage sur son chemin ; au premier combat de la "
+                                                       "finale, les ennemis sont surpris (debut_combat, surpris)."})
+    return trouves[:ATOUTS_MAX]
+
+
+def menace_finale(t: dict, affaiblie: bool = False) -> tuple[str, int]:
+    """La menace des hommes de l'antagoniste dans la finale : son nom, et leur pourcentage de combat."""
+    rang = MENACE_FINALE.get(t["cran"], 1) - (1 if affaiblie else 0)
+    return MENACES[max(0, rang)]
+
+
+def nom_de_la_fin(t: dict) -> str:
+    """La fin que le code donne à la campagne : la finale, et la part de missions principales réussies."""
+    fin = t["fin"]
+    if fin.get("mort"):
+        return MORT
+    if nombre_d_actes(t) == 1:
+        return REUSSI if fin["finale_reussie"] else RATE
+    part = t["reussies"] / TYPES[t["type"]].principales
+    if fin["finale_reussie"]:
+        return TRIOMPHE if part >= 0.75 else VICTOIRE_AMERE
+    return DEFAITE_HONORABLE if part >= 0.5 else CHUTE
+
+
+def _fin_sur_la_carte(etat: dict, des: Des, jour: int) -> list[str]:
+    """Ce que la fin change sur la carte : battu, l'antagoniste perd 3 points dans tous ses quartiers (ceux qui
+    tombent à 0 passent à un voisin hostile) ; vainqueur, il en gagne 2, et le joueur devient recherché chez lui."""
+    t = etat["trame"]
+    antagoniste, changements = t["antagoniste"], []
+    siens = sorted(q for q, f in etat["quartiers"].items() if f["maitre"] == antagoniste)
+    if t["fin"]["finale_reussie"]:
+        for nom in siens:
+            q = etat["quartiers"][nom]
+            q["controle"] -= PERTE_DE_L_ANTAGONISTE
+            if q["controle"] <= 0:
+                voisins = monde.attaquants(etat, nom)
+                if voisins:
+                    q["maitre"], q["controle"] = monde._choisir(des, voisins), monde.CONTROLE_PRISE
+                    q["attaque"], q["attaquant"] = None, None
+                    q.pop("annoncee", None)
+                    changements.append(f"{nom} passe {monde.a(q['maitre'])}")
+                else:
+                    q["controle"] = 1
+        monde.planifier(etat, des, jour)
+        monde.noter(etat, jour, monde.VILLE, etat["quartiers"][etat["ici"]]["district"],
+                    f"Coup dur pour {antagoniste} : ses positions cèdent dans toute la ville.", [antagoniste], "fin")
+    else:
+        for nom in siens:
+            q = etat["quartiers"][nom]
+            q["controle"] = min(monde.CONTROLE_MAX, q["controle"] + GAIN_DE_L_ANTAGONISTE)
+        etat["reputation"][antagoniste] = monde.RECHERCHE
+        changements.append(f"{antagoniste} : il y est maintenant recherché")
+        monde.noter(etat, jour, monde.VILLE, etat["quartiers"][etat["ici"]]["district"],
+                    f"Victoire {monde.de(antagoniste)} : son emprise se resserre sur toute la ville.", [antagoniste],
+                    "fin")
+    return changements
+
+
+def faits_de_fin(etat: dict) -> dict:
+    """Les faits que le code donne au MJ pour écrire l'épilogue : la fin, le secret entier cette fois, les
+    cicatrices, la réputation, et qui domine quoi."""
+    t = etat["trame"]
+    fin = nom_de_la_fin(t)
+    court = nombre_d_actes(t) == 1
+    return {
+        "fin": fin,
+        "antagoniste": f"{t['antagoniste']} ; derrière, {t['visage']}, qui voulait {t['but']}",
+        "missions_principales": f"{t['reussies']} réussies sur {t['reussies'] + t['ratees']}",
+        "secret_entier": list(t["secret"]),
+        "cicatrices": [c["nature"] for c in t["cicatrices"]],
+        "reputation": {f: r for f, r in etat["reputation"].items() if r != monde.NEUTRE},
+        "districts": {d: monde.domine(etat, d) or "guerre ouverte" for d in etat["districts"]},
+        "consigne": ("Écris l'épilogue en quelques lignes : ce que ce contrat laisse au personnage." if court else
+                     f"La campagne se termine : {fin}. Écris l'épilogue d'après ces faits, sans en changer aucun : ce "
+                     "que deviennent son lien, ses contacts et son quartier, et le secret, entier cette fois, même "
+                     "s'il n'avait pas tout trouvé. Puis rends la main au joueur."),
+    }
+
+
+def finir(etat: dict, des: Des, jour: int) -> dict:
+    """La mission finale vient d'être jouée : le code fixe la fin, l'applique à la carte, et donne au MJ les
+    faits de l'épilogue."""
+    changements = _fin_sur_la_carte(etat, des, jour)
+    faits = faits_de_fin(etat)
+    etat["trame"]["fin"]["nom"] = faits["fin"]
+    return faits | ({"carte": changements} if changements else {})
+
+
+def mourir(etat: dict, jour: int) -> dict:
+    """Le personnage est mort avant la fin de la trame : c'est la cinquième fin. Renvoie les faits de l'épilogue."""
+    t = etat["trame"]
+    t["fin"] = {"finale_reussie": False, "jour": jour, "mort": True, "nom": MORT}
+    return faits_de_fin(etat)
+
+
+def decider_la_suite(etat: dict, des: Des, jour: int, continuer: bool) -> str:
+    """Après la fin : arrêter, ou continuer dans le même monde. Une nouvelle trame commence alors 1d20 + 10
+    jours plus tard, avec un autre antagoniste, pris parmi les factions qui tiennent encore un quartier."""
+    t = etat["trame"]
+    if not continuer:
+        t["apres"] = ARRET
+        return ARRET
+    debout = sorted({q["maitre"] for q in etat["quartiers"].values()} - {t["antagoniste"]})
+    if not debout:  # il a tout pris : c'est encore lui
+        debout = sorted({q["maitre"] for q in etat["quartiers"].values()})
+    t["apres"] = SUITE
+    etat.setdefault("trames_passees", []).append(t)
+    nouvelle = creer(etat, des, t["type"], t["cran"], jour)
+    nouvelle["antagoniste"] = monde._choisir(des, debout)
+    faces, plus = PAUSE_ENTRE_DEUX_ARCS
+    nouvelle["prochaine"] = jour + des.lancer(faces) + plus
+    return SUITE
+
+
+def suite_decidee(t: dict) -> bool:
+    return "apres" in t
+
+
+def arretee(etat: dict | None) -> bool:
+    """La campagne a-t-elle été arrêtée après sa fin ?"""
+    t = trame_de(etat)
+    return bool(t) and t.get("apres") == ARRET

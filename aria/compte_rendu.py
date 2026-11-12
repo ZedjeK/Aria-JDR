@@ -34,6 +34,8 @@ def decrire_monde(outil: str, arguments: dict, resultat: dict) -> list[str]:
         lignes += [f"   Réputation — {c}" for c in m.get("reputation", [])]
     if outil == "reputation":
         lignes += [f"🏳 Réputation — {c}" for c in r["changements"]]
+    if outil == "accepter_mission" and isinstance(r.get("atouts"), list):
+        lignes += [f"🃏 Atout : {a['atout']}." for a in r["atouts"]]
     if outil == "accepter_mission":
         lignes.append(f"📜 Mission acceptée : {r['texte']} Récompense : {r['recompense']} {r['monnaie']}"
                       + (f", dont {r['avance']} d'avance." if r["avance"] else "."))
@@ -45,6 +47,8 @@ def decrire_monde(outil: str, arguments: dict, resultat: dict) -> list[str]:
             lignes.append(f"⭐ Mission principale : +{t['xp_gagnee']} XP")
         if t.get("cicatrice"):
             lignes.append(f"🩸 {t['cicatrice'].split(' : ')[0].capitalize()}.")
+        if t.get("fin_de_la_campagne"):
+            lignes.append(f"🏁 Fin de la campagne : {t['fin_de_la_campagne']['fin']}.")
     if outil == "indice" and r.get("indice"):
         lignes.append(f"🧩 Indice : {r['indice']}")
     if outil == "indice" and "jet" in r:

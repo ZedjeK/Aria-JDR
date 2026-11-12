@@ -1761,6 +1761,8 @@ def accepter_mission(session: Session, offre: str, marchander: str = "non", atti
         resultat["retournement_pour_toi_seul"] = o["retournement"]
     if o.get("principale"):
         resultat["mission_principale"] = "la mission finale de la campagne" if o.get("finale") else f"acte {o['acte']}"
+    if o.get("finale"):
+        resultat |= _preparer_la_finale(session, o)
     if o.get("touche_la_trame"):
         resultat["touche_la_trame"] = (f"Un homme {monde_.de(etat['trame']['antagoniste'])} s'en mêle, ou un indice "
                                        "traîne sur les lieux. Réussie, elle donnera un indice au joueur.")
@@ -1819,6 +1821,27 @@ def melee(session: Session, quartier: str, camp: str, action: str, competence: s
     session.melee = {"quartier": quartier, "camp": camp, "adversaires": adversaires}
     return {"quartier": quartier, "camp": camp, "pour": factions[camp], "contre": autre, "adversaires": adversaires,
             "consigne": "Lance debut_combat avec ces adversaires. La mêlée sera jouée à fin_combat."}
+
+
+def _preparer_la_finale(session: Session, offre: dict) -> dict:
+    """Les atouts que le joueur a gagnés pour la mission finale (REGLES.md 14.11), et ce que valent les hommes
+    de l'antagoniste. L'allié des renforts est créé tout de suite."""
+    etat = session.monde
+    t = etat["trame"]
+    gagnes = trame_.atouts(etat, offre["lieu"])
+    for atout in gagnes:
+        if atout["atout"] == trame_.RENFORTS and "allie_finale" not in session.pnj:
+            combat, pv = MENACES_DE_FACTION[etat["factions"][atout["faction"]]["type"]]
+            arme = _arme_de_faction(session)
+            fiche = FichePnj(f"Un allié {monde_.de(atout['faction'])}", combat=combat, pv_max_base=pv)
+            session.pnj["allie_finale"] = Combattant(fiche, "allies", arme, None)
+            if session.inventaire:
+                session.pnj["allie_finale"].reserve = ReservePnj(arme)
+            atout["pnj"] = "allie_finale"
+    menace, combat = trame_.menace_finale(t, any(a["atout"] == trame_.FAIBLESSE for a in gagnes))
+    session.personnage.missions[offre["id"]]["offre"]["atouts"] = [a["atout"] for a in gagnes]
+    return {"atouts": gagnes or "aucun : il y va sans rien",
+            "hommes_de_l_antagoniste": f"menace {menace} : combat {combat} (creer_pnj)"}
 
 
 def _fin_de_melee(session: Session) -> dict:

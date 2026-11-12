@@ -24,6 +24,7 @@ from aria import (amorce, banc, banc_generateur, chemins, creation_texte, econom
 from aria import monde, trame
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire, decrire_monde
+from aria.personnage import CRANS
 from aria.des import Des
 from aria.outils import Session
 from aria.personnage import Etat
@@ -61,6 +62,9 @@ FIN_DE_SESSION = ("[Fin de session] Le joueur s'arrête là. Si un combat est en
                   "Sinon, si la scène en cours a compté, appelle fin_scene. Mets à jour les PNJ et les fils "
                   "si besoin. Ne raconte rien.")
 
+
+EPILOGUE_DE_MORT = ("[Épilogue] Le personnage est mort : la campagne se termine ici. Écris l'épilogue en quelques "
+                    "lignes, d'après ces faits, sans en changer aucun et sans appeler d'outil : {faits}")
 
 NETRUNNER = "Netrunner"  # le parcours de Kaito, gardé dans tout univers généré tant que la création de perso n'existe pas
 
@@ -207,6 +211,10 @@ class Jeu:
         if self.mort():
             self.dire(f"{k.nom} est {mort}. Pour une nouvelle campagne, supprime le dossier {self.campagne.dossier}.")
             return
+        if trame.arretee(self.session.monde):
+            fin = self.session.monde["trame"]["fin"].get("nom", "terminée")
+            self.dire(f"Cette campagne est terminée ({fin}). {k.nom} attend dans le menu Personnages.")
+            return
         self.dire(f"=== {u.nom} ===\n{u.cadre}")
         if self.reprise:
             self.dire(f"\nReprise de la campagne : {self.session.moment}.")
@@ -242,7 +250,10 @@ class Jeu:
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
             if self.mort():
+                self.epilogue_de_mort()
                 self.dire(f"\n{k.nom} est {mort}. Fin de la partie.")
+                return
+            if self.apres_la_fin():
                 return
         self.fin_de_session()
 
@@ -277,6 +288,44 @@ class Jeu:
             self.dire(f"  Chargeur — {chargeur}")
         if i["vrac"]:
             self.dire("  En vrac : " + ", ".join(f"{n} × {calibre}" for calibre, n in i["vrac"].items()))
+
+    def epilogue_de_mort(self):
+        """La mort est la cinquième fin (REGLES.md 14.11) : le MJ écrit l'épilogue d'après les faits du code."""
+        s = self.session
+        t = trame.trame_de(s.monde)
+        if t is None or trame.finie(t):
+            return
+        faits = trame.mourir(s.monde, s.moment.jour)
+        self.raconter(lambda: self.table.tour(EPILOGUE_DE_MORT.format(faits=faits)), "… le MJ écrit l'épilogue")
+        self.sauvegarder()
+
+    def apres_la_fin(self) -> bool:
+        """La trame vient de se terminer : le joueur arrête ou continue dans le même monde (une campagne sans
+        fin continue d'office). Renvoie vrai s'il arrête : la partie se ferme, son personnage est gardé."""
+        s = self.session
+        t = trame.trame_de(s.monde)
+        if t is None or not trame.finie(t) or trame.suite_decidee(t):
+            return False
+        continuer = trame.TYPES[t["type"]].sans_fin
+        if not continuer:
+            self.dire(f"\n=== Fin de la campagne : {t['fin'].get('nom', '')} ===")
+            reponse = self.entree("Continuer dans ce monde, avec un nouvel adversaire ? (o : continuer, n : arrêter) ")
+            continuer = reponse.strip().lower() in ("o", "oui")
+        if trame.decider_la_suite(s.monde, s.des, s.moment.jour, continuer) == trame.SUITE:
+            self.dire("Le monde continue : un nouvel adversaire se prépare, quelque part.")
+            self.sauvegarder()
+            return False
+        cran = trame.CRAN_SUIVANT[s.personnage.cran]
+        garde = personnages.garder(s.personnage, s.univers, cran, self.hasard)
+        self.sauvegarder()
+        if garde:
+            c = CRANS[cran]
+            self.dire(f"La campagne est archivée. {s.personnage.nom} est gardé dans le menu Personnages : il repartira "
+                      f"{cran} ({c.points_personnels} points personnels, {c.pieces} pièce(s) en plus).")
+        else:
+            self.dire("La campagne est archivée. Son métier n'existe que dans ce cadre : il n'a pas pu être gardé "
+                      "parmi les personnages prêts.")
+        return True
 
     def afficher_carte(self):
         if self.session.monde is None:
