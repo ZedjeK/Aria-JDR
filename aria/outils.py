@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
+from aria import economie, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
 from aria import combat as combat_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
@@ -373,6 +373,8 @@ def etat(session: Session) -> dict:
         "moment": str(session.moment),
         "joueur": _etat_combattant(session.joueur) | {
             "sante_mentale": p.sm, "sm_max": p.sm_max, "points_destin": p.points_destin, "xp": p.xp,
+            "argent": p.argent, "monnaie": session.univers.monnaie,
+            "niveau_de_vie": economie.niveau_effectif(p).value, "prochaine_echeance": f"jour {p.echeance}",
             "troubles": [t.type.value for t in p.troubles], "folie": p.folie,
         } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {})
           | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
@@ -398,7 +400,15 @@ def etat(session: Session) -> dict:
 def avancer_temps(session: Session) -> dict:
     session.moment = session.moment.suivant()
     session.oublier_les_effets()
-    return {"moment": str(session.moment)}
+    resultat = {"moment": str(session.moment)}
+    # Le coût de la vie tombe tout seul, tous les 7 jours (REGLES.md 13.2) : au MJ de le raconter
+    echeances = economie.passer_les_echeances(session.personnage, session.moment.jour)
+    if echeances:
+        resultat["echeances"] = [
+            {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "argent": e.argent} if e.payee else
+            {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "impayee": True,
+             "consequence": "il vit à la rue jusqu'à ce qu'une semaine soit payée"} for e in echeances]
+    return resultat
 
 
 # --- Tests hors combat ------------------------------------------------------------------------
@@ -487,7 +497,8 @@ def soigner(session: Session, soigneur: str) -> dict:
        "long la nuit.",
        lambda s: _objet({"type": _enum(REPOS), "interrompu": {"type": "boolean"}}, ["type"]))
 def repos(session: Session, type: str, interrompu: bool = False) -> dict:
-    r = soins.reposer(session.personnage, REPOS[type], session.moment, session.univers.curseur, interrompu)
+    r = soins.reposer(session.personnage, REPOS[type], session.moment, session.univers.curseur, interrompu,
+                      sans_abri=economie.a_la_rue(session.personnage))
     resultat = {"repos": type, "pv_gagnes": r.gain, "pv": r.pv_apres, "blessure_grave_guerie": r.blessure_grave_guerie}
     if session.a_la_magie:
         resultat.update(pm_gagnes=r.pm_gagnes, pm=r.pm_apres)
@@ -506,8 +517,13 @@ def recuperer_sante_mentale(session: Session, source: str, soignant: str = JOUEU
     if source == "discussion":
         r = sante_mentale.discussion(session.des, session.personnage, session.moment)
     else:
+        niveau = economie.niveau_effectif(session.personnage)
+        if niveau is economie.NiveauDeVie.A_LA_RUE:
+            raise ErreurOutil(f"{session.personnage.nom} vit à la rue : pas de récupération de Santé mentale la nuit, "
+                              "faute d'un endroit sûr.")
+        bonus = economie.BONUS_THERAPIE_CONFORTABLE if niveau is economie.NiveauDeVie.CONFORTABLE else 0
         r = sante_mentale.therapie(session.des, session.combattant(soignant).fiche, session.personnage,
-                                   session.moment, competence)
+                                   session.moment, competence, modificateur=bonus)
     resultat = {"sm_gagnee": r.gain, "sante_mentale": r.sm_apres}
     if r.test:
         resultat.update(_resume(r.test))

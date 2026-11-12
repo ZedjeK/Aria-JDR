@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 0.9 — 1er novembre 2026. Règles de l'étape 1, validées par Jérémy.
+Version 1.0 — 12 novembre 2026. Règles validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -245,7 +245,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - L'**esthétique** (tatouages lumineux, cheveux de fibre optique…) est offerte à la création, en plus du reste ; ensuite, elle s'achète (voir 13).
 - Un objet raconté peut être une **relation** (des fans fidèles, des faveurs qu'on lui doit, une source anonyme) : le MJ la fait jouer dans l'histoire, et elle pourra devenir un compagnon.
 - L'équipement de départ dépend de l'**armurerie de chaque univers** : le générateur écrit les listes de chaque parcours dans celle qu'il vient de créer, et le code vérifie que tout existe, que tout est d'origine, que la protection ne dépasse pas 3 et que l'implant est de gamme standard.
-- L'argent, les prix et l'encombrement restent à définir (voir 13) : en attendant, un objet s'obtient en jeu (butin, récompense, faveur d'un PNJ), et le MJ le raconte.
+- L'argent de départ dépend du rang de revenu du métier, et vient en plus de l'équipement (voir 13.4). Ensuite, un objet s'achète, se trouve ou se gagne (voir 13).
 - Un univers a **de 15 à 30 parcours** : un maximum, pour le choix du joueur et pour peupler le monde. Le générateur part de ceux du genre (annexe D), les adapte au cadre et à l'époque, retire ceux qui n'y ont pas leur place (les parcours de magie si elle est désactivée) et en ajoute de propres au cadre.
 
 ### La création guidée
@@ -312,7 +312,7 @@ Le joueur voit tout sauf le secret (le reste, son personnage le sait déjà), pu
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort reste à définir (voir 13) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
+- Apprendre un nouveau sort reste à définir (voir 14) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -338,7 +338,8 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 | **Mineure** | Viser, dégainer, recharger, se relever, ouvrir une porte, crier un ordre |
 
 - **Viser** donne +20 au tir du même round, à condition de **ne pas se déplacer de tout le round**. La visée se perd en fin de round.
-- **Recharger** coûte une action mineure ou simple, selon l'arme.
+- **Recharger** coûte une action mineure ou simple, selon l'arme. Les munitions sont comptées : voir 13.5 pour les chargeurs et le garnissage à la main.
+- Un round dure **environ 6 secondes**.
 - Se mettre à couvert et fuir s'appuient sur les déplacements.
 
 ### 7.3 L'attaque
@@ -1087,7 +1088,228 @@ Une **tourelle légère** porte une arme à distance ordinaire ; une **tourelle 
 
 ---
 
-## 13. À définir
+## 13. Économie et inventaire
+
+Le code tient tous les comptes : le MJ ne manie jamais un nombre. Il dit ce qui se passe par un outil, et le moteur vérifie, débite, crédite ou refuse. Rien ne s'obtient sans outil : un objet n'existe que si le moteur l'a enregistré.
+
+### 13.1 L'argent
+
+- L'argent est **compté à l'unité** : un seul nombre sur la fiche, qui ne passe jamais sous zéro.
+- **Une seule échelle pour tous les univers** : 1 unité vaut à peu près 1 euro d'aujourd'hui en pouvoir d'achat. Seul le nom de la monnaie change selon l'univers (crédits, couronnes, dollars…). Dans un univers de troc, l'unité reste la même et se paie en objets (cartouches, rations).
+- Tous les prix sont pris dans une liste fermée, **les paliers** : 10 · 20 · 50 · 100 · 200 · 500 · 1 000 · 2 000 · 5 000 · 10 000, et ainsi de suite. Chaque palier vaut à peu près le double du précédent. Pour un service imprévu, le MJ choisit un palier.
+
+### 13.2 Le niveau de vie
+
+Le joueur choisit un niveau de vie, que le code débite **tous les 7 jours de jeu**. La première semaine est payée : la première échéance tombe au jour 8.
+
+| Niveau de vie | Par semaine | Effet |
+|---|---|---|
+| **À la rue** | 0 | Pas d'endroit sûr : le repos long ne rend que ce que rend un repos moyen, et pas de jet de récupération de Santé mentale la nuit. Rien à laisser chez soi |
+| **Modeste** | 350 | Aucun : les règles telles quelles |
+| **Confortable** | 1 000 | +10 au jet de récupération de Santé mentale de la nuit |
+
+- Si le personnage ne peut pas payer, il tombe « à la rue » jusqu'à ce qu'il repaie une semaine.
+- Il change de niveau quand il veut ; le nouveau tarif vaut à l'échéance suivante.
+- Chaque genre donne un visage aux trois niveaux : une capsule, un studio, un appartement en Cyberpunk ; une paillasse en salle commune, une chambre à l'auberge, une maison en Fantasy.
+
+### 13.3 Les prix et la disponibilité
+
+Le code calcule le prix d'un objet à partir de ce qu'il est, puis l'arrondit au palier le plus proche. La bibliothèque peut imposer un prix pour une exception.
+
+- **Une arme** : ses dégâts, sa catégorie (une arme de mêlée vaut le quart d'une arme à feu, une arme lourde quatre fois plus) et ses propriétés (silencieuse, perforante, rafale).
+- **Une armure** : sa protection, un peu moins chère si elle gêne beaucoup.
+- **Un véhicule** : son gabarit, sa vitesse, son blindage et ses armes montées.
+- **Un implant** : sa gamme. 2 000 en standard, 10 000 en avancée, 50 000 en militaire ; 500 pour l'esthétique et le médical.
+
+La qualité et la marque (voir 7.5) se comptent en paliers :
+
+| Objet | Prix |
+|---|---|
+| Usé | Un palier en dessous |
+| D'origine | Le prix calculé |
+| Personnalisé | Le prix, plus celui de chaque modification posée (de 200 à 2 000) |
+| Unique | Deux paliers au-dessus ; jamais en boutique |
+| De marque | Un palier au-dessus, modification d'usine comprise |
+
+Trois niveaux de **disponibilité**, que le code déduit de l'objet :
+
+| Niveau | Quoi | Comment l'obtenir |
+|---|---|---|
+| **Courant** | Armes de mêlée, armes de poing, fusils simples, armures de protection 1 et 2, implants standard, véhicules civils | En boutique, au prix |
+| **Restreint** | Tir en rafale, silencieux, fusils de précision, grenades, armures de protection 3 et 4, implants avancés | Par un contact : un test de Réseau ou de Persuasion, un délai de 1 à 3 jours, un palier au-dessus |
+| **Militaire** | Armes lourdes, explosifs, implants militaires, véhicules armés | Jamais en vente : butin, ou récompense de mission |
+
+Le lieu règle la difficulté du test : normale dans une grande ville, difficile dans une petite, impossible dans un village ou en pleine nature.
+
+### 13.4 L'argent de départ
+
+Chaque métier a un **rang de revenu**. Il fixe l'argent de départ, et ce que rapporte une semaine de travail (voir 13.6).
+
+| Rang | Argent de départ | Niveau de vie au départ | Revenu d'une semaine de travail |
+|---|---|---|---|
+| **Précaire** | 500 | Modeste | 350 |
+| **Établi** | 2 000 | Modeste | 700 |
+| **Aisé** | 5 000 | Confortable | 2 000 |
+
+L'équipement de départ reste celui des listes du métier (voir 5) : l'argent vient en plus. Une arme à feu de départ vient avec deux chargeurs garnis (ou deux chargeurs rapides pour un revolver) et une boîte de 20 cartouches ; une arme sans chargeur, chargée, avec sa boîte.
+
+### 13.5 Les munitions
+
+Les munitions sont comptées à l'unité, dans deux réserves :
+
+- **les cartouches en vrac**, par calibre : deux armes du même calibre se les partagent ;
+- **les chargeurs**, comptés un par un, chacun avec son contenu. Un chargeur entamé reste entamé. Un chargeur va avec une arme précise, pas seulement avec un calibre.
+
+En combat :
+
+- **Changer de chargeur** : l'action de rechargement de l'arme (voir 7.2), avec un chargeur garni sous la main. Le chargeur retiré est gardé.
+- **Garnir à la main**, un chargeur ou une arme sans chargeur : une action simple, pour un nombre de cartouches qui dépend de la compétence Armes à distance. L'action mineure du même round, si elle y est consacrée, ajoute 2 cartouches.
+
+| Armes à distance | À la main | Avec un garnisseur | Avec une lame-chargeur |
+|---|---|---|---|
+| Moins de 50 | 3 | 6 | 10 |
+| De 50 à 74 | 5 | 10 | 10 |
+| 75 et plus | 7 | 14 | 15 |
+
+- Le **garnisseur** sert aux pistolets et aux fusils, et se réutilise. La **lame-chargeur** ne sert qu'aux fusils et se consomme. Le **chargeur rapide** d'un revolver, garni à l'avance, recharge le barillet entier en une action mineure.
+- Hors combat, regarnir ses chargeurs ne demande aucun jet, tant qu'il reste du vrac.
+- La règle vaut pour les PNJ.
+
+Les cartouches se vendent par boîte de 20 : 20 pour une arme de poing, 50 pour un fusil, 100 pour un fusil de précision, 200 pour une arme lourde ; les flèches et les carreaux, 20 les 20. Un chargeur vide coûte 50 ; une arme est vendue avec un chargeur. Les grenades et les explosifs s'achètent à l'unité.
+
+### 13.6 Gagner de l'argent
+
+**Les missions.** Le MJ choisit la récompense dans une liste fermée. Elle est fixée à l'ouverture de la mission, enregistrée avec son fil (voir la mémoire de campagne), et versée par le code quand le fil est clos sur une réussite.
+
+| Mission | Récompense |
+|---|---|
+| Un service | 200 |
+| Simple | 500 |
+| Risquée | 2 000 |
+| Dangereuse | 5 000 |
+| Très dangereuse | 10 000 |
+| Exceptionnelle | 20 000 et plus |
+
+Une récompense peut aussi être un objet, une faveur ou un contact : c'est la seule porte d'entrée du matériel militaire, avec le butin.
+
+**Exercer son métier.** Une semaine entière sans aventure : un test de la compétence principale du métier. Maladresse : rien, et un ennui que le MJ raconte. Échec : rien. Réussite : le revenu du rang (voir 13.4). Réussite majeure : une fois et demie. Critique : le double. La semaine passe pour de bon : le coût de la vie est débité, le personnage se repose.
+
+**La revente.** Le butin se vend chez un receleur, à **deux paliers sous sa valeur**. Le matériel militaire, ou marqué par une police ou une corporation, ne se vend que par un contact.
+
+### 13.7 Dépenser
+
+**Les boutiques.** Dans une grande ville, le matériel courant se trouve toujours, au prix. Chaque boutique a en plus 3 occasions tirées par le code (usées ou de marque), et chaque contact du marché noir 4 objets restreints tirés. Les stocks se renouvellent tous les 7 jours.
+
+**Les services.**
+
+| Service | Prix |
+|---|---|
+| Un trajet en taxi, un repas correct | 20 |
+| Une consultation, un soin par un médecin | 100 |
+| Une séance de thérapie | 200 |
+| Soigner une blessure grave | 500 |
+| Faire poser une modification | 100, en plus de son prix |
+| Réparer un objet ou un véhicule | Deux paliers sous sa valeur |
+| Une information, un pot-de-vin | Un palier choisi par le MJ, de 50 à 2 000 |
+
+Le soigneur payé fait son jet comme n'importe quel soigneur : on paie l'acte, pas le résultat.
+
+**La pose d'un implant** coûte 500 en standard, 2 000 en avancée, 5 000 en militaire, en plus de l'implant. Le charcudoc fait un jet de Médecine : sur un échec, l'implant est mal calibré et coûte 2 points de Santé mentale maximum en plus (voir 11.4) ; sur une maladresse, s'y ajoute une blessure grave. Une clinique clandestine coûte un palier de moins, avec un charcudoc moins bon.
+
+**Se détendre.** Une soirée, un plaisir, une offrande : 200, pour 1d6 de Santé mentale, une fois par semaine, en plus des récupérations de 9.5.
+
+**Les personnes à charge.** Si le lien du personnage dépend de lui, il coûte 200 par semaine, débités avec le coût de la vie. Le temps passé avec lui rend alors 1d6 au lieu de 1d3. Une semaine impayée : cette récupération est perdue jusqu'au prochain paiement, et le MJ ouvre un fil.
+
+**Les dettes.** Une dette a un créancier, un montant et une échéance par semaine. On emprunte jusqu'à 5 000, remboursés par dixièmes pendant 12 semaines. Le code débite l'échéance avant le loyer. Une échéance manquée : le MJ fait monter la menace d'un cran.
+
+### 13.8 Le butin
+
+On trouve ce que l'adversaire avait vraiment. Le code déduit la **menace** d'un PNJ de son pourcentage de combat.
+
+| Menace | Combat | Argent | Chance d'un objet en plus |
+|---|---|---|---|
+| Faible | 40 ou moins | 10 à 60 | 1 sur 6 |
+| Moyenne | 41 à 60 | 20 à 120 | 2 sur 6 |
+| Forte | 61 à 75 | 50 à 300 | 3 sur 6 |
+| Élite | 76 et plus | 100 à 600 | 4 sur 6 |
+
+- **Son arme** : usée 6 fois sur 10, d'origine sinon, avec le chargeur engagé au nombre de cartouches qu'il lui restait, et de 0 à 2 chargeurs de rechange.
+- **Son armure** : toujours usée s'il a été abattu.
+- **L'objet en plus** est tiré dans une table du genre.
+- **Un implant** se récupère sur un mort par un charcudoc (test de Médecine) : il est usé, et coûte 2 points de Santé mentale maximum de plus à la pose.
+- Fouiller un corps prend quelques minutes, hors combat. En combat, ramasser une arme au sol coûte une action mineure.
+
+**Les caches.** Le MJ choisit la taille ; le code tire la valeur dans la fourchette, deux fois, et garde le plus petit résultat. Le contenu est à peu près pour moitié de l'argent, pour moitié des objets.
+
+| Cache | Minimum | Maximum |
+|---|---|---|
+| Petite (un tiroir, un sac) | 50 | 500 |
+| Moyenne (une planque, un coffre) | 500 | 2 000 |
+| Grosse (une réserve de gang) | 2 000 | 10 000 |
+| Un trésor (le coffre d'une corporation) | 10 000 | 50 000 |
+
+Une cache n'est jamais vide par hasard : elle ne l'est que si un événement précis a touché le lieu (une attaque, un pillage récent).
+
+### 13.9 L'inventaire
+
+- **Ce que le corps supporte** : 4 + Force ÷ 10 emplacements.
+- **Ce qu'on a sous la main** : les emplacements **prêts**, 3 sans équipement. On y prend un objet en une action mineure. Le reste est **rangé** : en sortir un objet coûte une action simple en combat.
+
+| Objet | Emplacements |
+|---|---|
+| Arme à une main | 1 |
+| Arme à deux mains | 2 |
+| Arme encombrante | 3 |
+| Petits objets : chargeurs, boîtes de cartouches, grenades, garnisseur | 1 pour deux |
+| Un objet courant : deck, trousse de soins, outils | 1 |
+| Une armure transportée, pas portée | 2 |
+| L'armure portée, les implants, l'argent | 0 |
+
+Au-delà de ses emplacements, le personnage est **surchargé** : −20 en Athlétisme, en Esquive et en Discrétion. Il ne porte jamais plus du double. Chez soi, la place n'est pas comptée, à partir du niveau de vie modeste. Un véhicule emporte 4 emplacements (léger), 20 (moyen) ou 60 (lourd).
+
+**L'équipement de portage** ajoute des emplacements prêts : il met des objets sous la main, sans rien ajouter à ce que le corps supporte. On en porte un seul de chaque sorte, et il se voit, sauf mention contraire.
+
+| Portage | Prêts en plus | Remarque | Prix |
+|---|---|---|---|
+| Holster | +1, une arme à une main | | 50 |
+| Holster dissimulé | +1, une arme dissimulable | L'arme reste cachée | 100 |
+| Sangle d'arme | +1, une arme à deux mains | | 50 |
+| Sangles de cuisse | +2, petits objets | | 100 |
+| Ceinture renforcée | +1 | Passe pour une ceinture ordinaire | 50 |
+| Ceinture tactique | +2 | | 100 |
+| Ceinture de combat | +3 | | 200 |
+| Gilet tactique léger | +2, petits objets | Se cache sous une veste | 100 |
+| Gilet tactique moyen | +4, petits objets | | 200 |
+| Gilet tactique lourd | +6, petits objets | −10 en Discrétion | 500 |
+
+**Les sacs**, eux, ajoutent des emplacements à ce que le corps supporte. On porte un seul sac à dos, plus une sacoche. Poser son sac coûte une action mineure.
+
+| Sac | Rangés en plus | Poches latérales (prêts) | Remarque | Prix |
+|---|---|---|---|---|
+| Sacoche | +2 | 0 | Passe partout | 50 |
+| Sac à dos de ville | +4 | 0 | Passe partout | 100 |
+| Sac à dos tactique | +6 | 2 | | 200 |
+| Sac de sport | +8 | 0 | Occupe une main | 100 |
+| Sac de randonnée | +10 | 2 | −10 en Athlétisme et en Esquive tant qu'il est sur le dos | 200 |
+
+### 13.10 Le marchandage
+
+Un test de Persuasion, une seule fois par transaction ; le personnage peut toujours payer sans marchander. La difficulté vient de l'attitude du PNJ : facile s'il est amical, normale s'il est neutre, difficile s'il est hostile.
+
+| Résultat | À l'achat | À la revente | Pour une mission |
+|---|---|---|---|
+| Critique | Un palier en dessous | Un palier sous la valeur, plus un geste | Un palier au-dessus |
+| Réussite | Un geste du vendeur | Un palier sous la valeur au lieu de deux | Une avance |
+| Échec | Le prix affiché | Le prix du receleur | La récompense prévue |
+| Maladresse | Il refuse de vendre aujourd'hui | Il refuse d'acheter aujourd'hui | Un palier de moins, ou l'offre retirée |
+
+- **Un geste du vendeur** : un chargeur ou une boîte de cartouches en plus, une pose offerte, ou un jour de délai en moins.
+- **Une avance** : deux paliers sous la récompense, versée tout de suite et déduite à la fin.
+- Par l'**Intimidation**, les effets sont les mêmes, mais l'attitude du PNJ baisse d'un cran, réussite ou non.
+
+---
+
+## 14. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).
@@ -1095,9 +1317,7 @@ Une **tourelle légère** porte une arme à distance ordinaire ; une **tourelle 
 - L'apprentissage de nouveaux sorts avec l'XP, et le fichier `sorts.md`.
 - Les effets de magie hors V1 : invocation, transformation, téléportation… (voir 10.9).
 - Les tables de crises passagères et de troubles durables.
-- L'inventaire : encombrement et prix.
 - Les règles de pouvoirs pour le genre Super-héros (hors V1).
-- Les implants : la pose (jet du charcudoc et conséquences d'un échec).
 - Les vaisseaux spatiaux, pour la science-fiction : à voir avec ce genre (gabarits spatiaux, zones spatiales, postes d'équipage). En Cyberpunk, l'espace reste raconté.
 
 ---
@@ -1962,3 +2182,186 @@ Une vue de la bibliothèque (voir 1.3). *Moderne* : Contemporain, Horreur, Milit
 | Voiture de sport Quadra « Turbo-R » | personnalisé | turbo (très rapide), suspensions sport |
 | Berline Rayfield blindée | personnalisé | vitrage pare-balles, plaques de blindage |
 | AV Arasaka « Aquila » | unique | plaques de blindage, direction assistée IA, tourelle télécommandée |
+
+---
+
+## Annexe H — Prix du Cyberpunk
+
+Une vue générée par le moteur (`python -m aria.economie`) : les prix sont calculés depuis la bibliothèque (voir 13.3), jamais écrits ici à la main. Un objet « militaire » ne se vend pas : on le gagne ou on le trouve.
+
+**Armes**
+
+| Objet | Prix | Disponibilité |
+|---|---|---|
+| Couteaux de lancer | 20 | courant |
+| Grenade IEM | 20 | restreint |
+| Grenade flash | 20 | restreint |
+| Grenade fumigène | 20 | restreint |
+| Kunai | 20 | courant |
+| Shuriken | 20 | courant |
+| Charge IEM lourde | 50 | militaire |
+| Couteau | 50 | courant |
+| Impulsion IEM de drone | 50 | militaire |
+| Mine IEM | 50 | militaire |
+| Poing américain | 50 | courant |
+| Batte de baseball | 100 | courant |
+| Grenade incendiaire | 100 | restreint |
+| Hachette | 100 | courant |
+| Matraque télescopique | 100 | courant |
+| Matraque électrique | 100 | courant |
+| Tantō | 100 | courant |
+| Tonfa | 100 | courant |
+| Grenade à fragmentation | 200 | restreint |
+| Katana | 200 | courant |
+| Machette | 200 | courant |
+| Marteau lourd | 200 | courant |
+| Naginata électrique | 200 | courant |
+| Nodachi | 200 | courant |
+| Pistolet compact | 200 | courant |
+| Tronçonneuse | 200 | courant |
+| Wakizashi | 200 | courant |
+| Charge de drone kamikaze | 500 | militaire |
+| Couteau en céramique | 500 | courant |
+| Mitraillette compacte | 500 | restreint |
+| Pistolet léger | 500 | courant |
+| Pistolet silencieux | 500 | restreint |
+| Arbalète à poulies | 1 000 | courant |
+| Carabine | 1 000 | courant |
+| Charge d'explosif | 1 000 | militaire |
+| Fusil à pompe | 1 000 | courant |
+| Fusil à pompe automatique | 1 000 | restreint |
+| Katana monomoléculaire | 1 000 | courant |
+| Pistolet lourd | 1 000 | courant |
+| Pistolet-mitrailleur | 1 000 | restreint |
+| Revolver lourd | 1 000 | courant |
+| Fusil d'assaut | 2 000 | restreint |
+| Pistolet intelligent | 2 000 | restreint |
+| Pistolet lourd Arasaka | 2 000 | courant |
+| Fusil d'assaut Militech « Ronin » | 5 000 | restreint |
+| Fusil de précision | 5 000 | restreint |
+| Fusil à rail | 5 000 | restreint |
+| Lance-flammes | 5 000 | militaire |
+| Mitrailleuse légère | 5 000 | militaire |
+| Pistolet intelligent Kang Tao « Kenshin » | 5 000 | restreint |
+| Lance-grenades | 10 000 | militaire |
+| Minigun | 10 000 | militaire |
+| Canon automatique | 20 000 | militaire |
+| Canon de char | 20 000 | militaire |
+| Fusil à rail Militech « Breakthrough » | 20 000 | militaire |
+| Lance-roquettes | 20 000 | militaire |
+| Mitrailleuse lourde | 20 000 | militaire |
+| Fusil de précision Tsunami « Nekomata » | 50 000 | militaire |
+
+**Armures**
+
+| Objet | Prix | Disponibilité |
+|---|---|---|
+| Combinaison de motard | 200 | courant |
+| Veste renforcée | 200 | courant |
+| Gilet pare-balles léger | 1 000 | courant |
+| Manteau blindé | 1 000 | courant |
+| Armure de garde corpo | 2 000 | restreint |
+| Gilet balistique | 2 000 | restreint |
+| Armure tactique | 5 000 | restreint |
+| Exosquelette léger | 5 000 | restreint |
+| Gilet balistique Militech | 5 000 | restreint |
+| Armure tactique Arasaka | 10 000 | restreint |
+
+**Implants**
+
+| Objet | Prix | Disponibilité |
+|---|---|---|
+| Cheveux de fibre optique | 500 | courant |
+| Peau chromée | 500 | courant |
+| Prothèse médicale | 500 | courant |
+| Tatouages lumineux | 500 | courant |
+| Biomoniteur | 2 000 | courant |
+| Bras cybernétique | 2 000 | courant |
+| Bras-marteau | 2 000 | courant |
+| Caméra oculaire | 2 000 | courant |
+| Compartiment caché | 2 000 | courant |
+| Compartiment de jambe | 2 000 | courant |
+| Deck neural | 2 000 | courant |
+| Filtre respiratoire | 2 000 | courant |
+| Filtre toxique | 2 000 | courant |
+| Fouet monofilament | 2 000 | courant |
+| Griffes-rasoirs | 2 000 | courant |
+| Inhibiteur de douleur | 2 000 | courant |
+| Jambes cybernétiques | 2 000 | courant |
+| Lames-mantis | 2 000 | courant |
+| Lance-grappin | 2 000 | courant |
+| Neuroport | 2 000 | courant |
+| Ossature blindée | 2 000 | courant |
+| Paume d'interface | 2 000 | courant |
+| Peau dermique | 2 000 | courant |
+| Pistolet intégré | 2 000 | courant |
+| Poigne magnétique | 2 000 | courant |
+| Poumons renforcés | 2 000 | courant |
+| Puce de langue | 2 000 | courant |
+| Suite cyberaudio | 2 000 | courant |
+| Vision nocturne | 2 000 | courant |
+| Vision thermique | 2 000 | courant |
+| Yeux cybernétiques | 2 000 | courant |
+| Amortisseurs silencieux | 10 000 | restreint |
+| Analyseur de stress vocal | 10 000 | restreint |
+| Audio amplifié | 10 000 | restreint |
+| Coprocesseur tactique | 10 000 | restreint |
+| Doigts de crochetage | 10 000 | restreint |
+| Doigts de pickpocket | 10 000 | restreint |
+| Doigts-outils | 10 000 | restreint |
+| Détecteur de micros | 10 000 | restreint |
+| Extension de mémoire vive | 10 000 | restreint |
+| Glandes à phéromones | 10 000 | restreint |
+| Modulateur vocal | 10 000 | restreint |
+| Mémoire eidétique | 10 000 | restreint |
+| Os en titane | 10 000 | restreint |
+| Puce de compétence | 10 000 | restreint |
+| Réflexes câblés Kerenzikov | 10 000 | restreint |
+| Scanner d'implants | 10 000 | restreint |
+| Servomoteurs | 10 000 | restreint |
+| Synapses accélérées | 10 000 | restreint |
+| Viseur balistique | 10 000 | restreint |
+| Berserk | 50 000 | militaire |
+| Chevilles à ressorts | 50 000 | militaire |
+| Deck militaire | 50 000 | militaire |
+| Optiques Kiroshi | 50 000 | militaire |
+| Peau caméléon | 50 000 | militaire |
+| Sandevistan | 50 000 | militaire |
+| Visage malléable | 50 000 | militaire |
+
+**Véhicules**
+
+| Objet | Prix | Disponibilité |
+|---|---|---|
+| Cheval | 2 000 | courant |
+| Drone brouilleur | 2 000 | courant |
+| Drone de livraison | 2 000 | courant |
+| Drone de combat | 5 000 | militaire |
+| Drone de reconnaissance | 5 000 | courant |
+| Drone kamikaze | 5 000 | courant |
+| Moto de livraison | 5 000 | courant |
+| Scooter électrique | 5 000 | courant |
+| Jet-ski | 10 000 | courant |
+| Moto lourde | 10 000 | courant |
+| Moto sportive | 10 000 | courant |
+| Citadine | 20 000 | courant |
+| Fourgon de netrunner | 20 000 | courant |
+| Moto Yaiba « Kusanagi » | 20 000 | courant |
+| Taxi automatique | 20 000 | courant |
+| Berline | 50 000 | courant |
+| Bus | 50 000 | courant |
+| Camion | 50 000 | courant |
+| Fourgon | 50 000 | courant |
+| Pick-up | 50 000 | courant |
+| Quadra « Turbo-R » | 50 000 | courant |
+| Vedette | 50 000 | courant |
+| Voiture de patrouille | 50 000 | courant |
+| Berline Rayfield blindée | 100 000 | courant |
+| Blindé de reconnaissance | 100 000 | militaire |
+| Blindé de transport | 100 000 | militaire |
+| Voiture de sport | 100 000 | courant |
+| AV de corpo | 200 000 | militaire |
+| Hovercar | 200 000 | courant |
+| Char | 1 000 000 | militaire |
+| AV Arasaka « Aquila » | 2 000 000 | militaire |
+| AV d'assaut | 2 000 000 | militaire |

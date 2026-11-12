@@ -130,6 +130,11 @@ class Personnage:
     objets: list[str] = field(default_factory=list)  # les objets racontés : sans bonus, mais ils ouvrent des actions
     allure: str = ""  # deux lignes sur son apparence, pour le MJ (et plus tard les images)
     sexe: str = ""  # « femme » ou « homme » ; vide s'il n'a pas été précisé
+    # L'argent (REGLES.md 13, voir aria.economie)
+    argent: int = 0
+    niveau_de_vie: str = "modeste"  # celui qu'il a choisi : « à la rue », « modeste » ou « confortable »
+    semaine_payee: bool = True  # faux : il n'a pas pu payer, et vit à la rue en attendant
+    echeance: int = 8  # le jour de la prochaine échéance du coût de la vie
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit

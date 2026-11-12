@@ -105,10 +105,11 @@ class RapportRepos:
 
 
 def reposer(perso: Personnage, repos: Repos, moment: Moment, curseur: Curseur = Curseur.STANDARD,
-            interrompu: bool = False) -> RapportRepos:
+            interrompu: bool = False, sans_abri: bool = False) -> RapportRepos:
     """Un repos : court ou moyen une fois par demi-journée, long la nuit (REGLES.md 8.2).
 
     Un repos interrompu ne rapporte rien, mais le temps est passé : il compte comme pris.
+    `sans_abri` : le personnage vit à la rue, et son repos long ne vaut qu'un repos moyen (REGLES.md 13.2).
     """
     if perso.etat in (Etat.MORT, Etat.MOURANT):
         raise SoinImpossible(f"{perso.nom} ne peut pas se reposer : il est {perso.etat.value}.")
@@ -123,10 +124,10 @@ def reposer(perso: Personnage, repos: Repos, moment: Moment, curseur: Curseur = 
         return RapportRepos(perso.nom, repos, 0, perso.pv, pm_apres=perso.pm)
 
     guerie = False
-    if repos is Repos.LONG and perso.blessure_grave:
+    if repos is Repos.LONG and perso.blessure_grave and not sans_abri:
         guerie = _guerir_pendant_la_nuit(perso, curseur)
 
-    fraction = FRACTIONS_REPOS[curseur][repos]
+    fraction = FRACTIONS_REPOS[curseur][Repos.MOYEN if repos is Repos.LONG and sans_abri else repos]
     gain = max(1, int(perso.pv_max * fraction)) if fraction else 0
     avant = perso.pv
     _modifier_pv(perso, gain)

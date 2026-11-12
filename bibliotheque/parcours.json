@@ -36,7 +36,8 @@
         "trousse de premiers soins",
         "un charcudoc qui lui doit un service"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Ganger",
@@ -75,7 +76,8 @@
         "bombe de peinture",
         "dose de stim"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Kobun yakuza",
@@ -113,7 +115,8 @@
         "téléphone du clan",
         "étui à cigares"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Agent d'infiltration",
@@ -151,7 +154,8 @@
         "grappin",
         "faux badge corpo"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Flic de la NeoPol",
@@ -188,7 +192,8 @@
         "radio de service",
         "lampe tactique"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Agent de sécurité corpo",
@@ -226,7 +231,8 @@
         "menottes",
         "radio cryptée"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Cadre corpo",
@@ -264,7 +270,8 @@
         "costume sur mesure",
         "carnet de contacts"
       ]
-    }
+    },
+    "rang": "aisé"
   },
   {
     "nom": "Salaryman",
@@ -300,7 +307,8 @@
         "téléphone",
         "abonnement de métro"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Netrunner",
@@ -338,7 +346,8 @@
         "lunettes AR",
         "fausse identité numérique"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Techie",
@@ -376,7 +385,8 @@
         "petit drone de réparation (raconté)",
         "stock de pièces détachées"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Charcudoc",
@@ -413,7 +423,8 @@
         "stock d'anesthésiants",
         "table d'opération pliante"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Ferrailleur",
@@ -451,7 +462,8 @@
         "sac de récupération",
         "masque à gaz"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Fixer",
@@ -488,7 +500,8 @@
         "faux papiers",
         "faveurs qu'on lui doit"
       ]
-    }
+    },
+    "rang": "aisé"
   },
   {
     "nom": "Informateur",
@@ -524,7 +537,8 @@
         "carnet de notes",
         "appareil photo discret"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Journaliste",
@@ -561,7 +575,8 @@
         "carte de presse",
         "source anonyme"
       ]
-    }
+    },
+    "rang": "établi"
   },
   {
     "nom": "Rockerboy",
@@ -598,7 +613,8 @@
         "fans fidèles",
         "vieux contrat de disque"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Idol",
@@ -634,7 +650,8 @@
         "lunettes de star",
         "numéro privé d'un producteur"
       ]
-    }
+    },
+    "rang": "aisé"
   },
   {
     "nom": "Nomade",
@@ -676,7 +693,8 @@
         "Pick-up",
         "Moto lourde"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Coursier",
@@ -717,7 +735,8 @@
         "Moto de livraison",
         "Scooter électrique"
       ]
-    }
+    },
+    "rang": "précaire"
   },
   {
     "nom": "Homme d'armes",
