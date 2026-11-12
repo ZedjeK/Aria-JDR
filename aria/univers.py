@@ -156,9 +156,23 @@ class Univers:
                 cote: str = "droit") -> "Depart":
         """L'équipement de départ, choisi dans les listes du parcours (REGLES.md 5) : une option par case,
         et 2 objets racontés. L'implant est posé tout de suite, et coûte sa Santé mentale maximum."""
-        listes = self.equipements.get(perso.parcours)
+        erreurs = self.verifier_depart(perso.parcours, arme, armure, implant, vehicule, objets)
+        if erreurs:
+            raise UniversInvalide(erreurs)
+        if implant:
+            fiche = self.implant(implant)
+            systeme = next((s for s in self.systemes if s.nom == fiche.systeme), None)
+            perso.implants.append(pose(fiche, cote=cote if systeme and systeme.par else None))
+            perso.sm = min(perso.sm, perso.sm_max)
+        perso.objets = list(objets)
+        return Depart(arme, armure, vehicule)
+
+    def verifier_depart(self, parcours: str, arme: str | None = None, armure: str | None = None,
+                        implant: str | None = None, vehicule: str | None = None, objets: list[str] = ()) -> list[str]:
+        """Les choix de départ sont-ils dans les listes du parcours ? (vide s'ils le sont)"""
+        listes = self.equipements.get(parcours)
         if listes is None:
-            raise UniversInvalide([f"Le parcours « {perso.parcours} » n'a pas de listes d'équipement."])
+            return [f"Le parcours « {parcours} » n'a pas de listes d'équipement."]
         erreurs = []
         choix = {"armes": arme, "armures": armure, "implants": implant, "vehicules": vehicule}
         for case, valeur in choix.items():
@@ -173,15 +187,7 @@ class Univers:
         if len(objets) != OBJETS_GARDES or len(set(objets)) != len(objets) \
                 or any(o not in listes.get("objets", []) for o in objets):
             erreurs.append(f"{OBJETS_GARDES} objets différents, parmi : {', '.join(listes.get('objets', []))}.")
-        if erreurs:
-            raise UniversInvalide(erreurs)
-        if implant:
-            fiche = self.implant(implant)
-            systeme = next((s for s in self.systemes if s.nom == fiche.systeme), None)
-            perso.implants.append(pose(fiche, cote=cote if systeme and systeme.par else None))
-            perso.sm = min(perso.sm, perso.sm_max)
-        perso.objets = objets
-        return Depart(arme, armure, vehicule)
+        return erreurs
 
     def _verifier_equipements(self) -> list[str]:
         """Les listes de départ (REGLES.md 5) : tout existe dans l'univers, tout est d'origine et générique,
