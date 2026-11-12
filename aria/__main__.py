@@ -69,7 +69,10 @@ def resumer(nom: str) -> str:
         if c.sauvegarde.is_file():
             partie = charger(c.sauvegarde)
             u, p = partie.univers, partie.personnage
-            suite = f"{p.nom}, {p.parcours} · " + ("mort" if p.etat is Etat.MORT else str(partie.moment))
+            fin = (partie.monde or {}).get("trame", {}).get("fin", {}).get("nom")
+            suite = f"{p.nom}, {p.parcours} · " + ("mort" if p.etat is Etat.MORT else
+                                                   f"terminée ({fin})" if trame.arretee(partie.monde) else
+                                                   str(partie.moment))
         else:
             u, suite = charger_univers(c.univers), "création du personnage à finir"
     except Exception as erreur:  # une campagne abîmée ne doit pas empêcher de voir les autres

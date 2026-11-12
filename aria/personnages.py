@@ -14,7 +14,7 @@ from pathlib import Path
 from aria import banc, chemins
 from aria.bibliotheque import charger
 from aria.campagne import nom_valide
-from aria.creation import Brouillon, EtapeInvalide, proposer_domaines, proposer_equipement
+from aria.creation import Brouillon, EtapeInvalide, proposer_chiffres, proposer_domaines, proposer_equipement
 from aria.generateur import choix_par_defaut, generer
 from aria.personnage import DEBUTANT, Caracteristique
 from aria.univers import Univers, univers_depuis_dict
@@ -83,6 +83,21 @@ def enregistrer(brouillon: Brouillon, genre: str) -> Predefini:
                                  indent=2), encoding="utf-8")
     predefini.fichier = chemin
     return predefini
+
+
+def garder(perso, univers: Univers, cran: str, hasard: random.Random | None = None) -> Predefini | None:
+    """Range parmi les personnages prêts celui d'une campagne terminée, à l'expérience donnée (REGLES.md 14.11) :
+    le même métier, le même nom, la même personnalité, refait avec les chiffres de ce cran. None si son métier
+    n'existe pas dans l'univers de base du genre (un métier propre au cadre)."""
+    base = univers_de_base(univers.genre)
+    parcours = univers.origines.get(perso.parcours, perso.parcours)
+    if parcours not in base.parcours:
+        return None
+    b = proposer_chiffres(Brouillon(base, cran=cran), hasard or random.Random(), parcours)
+    roleplay = {"nom": perso.nom, "motivation": perso.motivation, "lien": perso.lien, "defaut": perso.defaut}
+    b.fixer("roleplay", roleplay | ({"allure": perso.allure} if perso.allure else {})
+            | ({"sexe": perso.sexe} if perso.sexe else {}))
+    return enregistrer(b, univers.genre)
 
 
 def lister(genre: str | None = None) -> list[Predefini]:

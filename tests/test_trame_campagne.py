@@ -147,7 +147,7 @@ def test_une_principale_ratee_laisse_une_cicatrice(u):
     assert trame.dernier_acte(e["trame"])
     suite = joue(e, s.personnage, reussie=False, jour=20, des=Imposes(4))
     assert "Son lien paie pour lui" in suite["cicatrice"] and suite["finale"] == "ratée"
-    assert e["trame"]["fin"] == {"finale_reussie": False, "jour": 20}
+    assert e["trame"]["fin"] == {"finale_reussie": False, "jour": 20, "nom": "chute"}
 
 
 def test_une_secondaire_qui_touche_la_trame_donne_un_indice(u):
