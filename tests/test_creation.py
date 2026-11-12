@@ -9,6 +9,7 @@ from aria import jeu
 from aria.bibliotheque import charger
 from aria.campagne import Campagne
 from aria.creation import (
+    LIENS,
     Brouillon,
     EtapeInvalide,
     proposer_caracteristiques,
@@ -125,7 +126,7 @@ def test_le_llm_propose_la_personnalite(neo_tokyo):
 
 def test_le_code_tire_une_femme_ou_un_homme(neo_tokyo):
     b = proposer_chiffres(Brouillon(neo_tokyo), random.Random(2), "Netrunner")
-    hasard, vus, initiales = random.Random(0), set(), set()
+    hasard, vus, initiales, liens = random.Random(0), set(), set(), set()
     for _ in range(20):
         serveur = ServeurScripte(personnalite(nom=""), personnalite())
         proposer_personnalite(serveur, b, hasard=hasard)
@@ -136,7 +137,11 @@ def test_le_code_tire_une_femme_ou_un_homme(neo_tokyo):
         lettres = premiere.split("au cadre : ")[1].split(".")[0]
         assert len(lettres.split(", ")) == 3 and f"au cadre : {lettres}." in relance
         initiales.add(lettres)
+        lien = premiere.split("Son lien : ")[1].split(". Surprends")[0]
+        assert lien in LIENS and f"Son lien : {lien}. " in relance
+        liens.add(lien)
     assert vus == {"une femme", "un homme"} and len(initiales) > 10  # les initiales changent d'un tirage à l'autre
+    assert len(liens) > 5  # le type de lien aussi
 
 
 def test_tout_proposer_avec_et_sans_llm(neo_tokyo):

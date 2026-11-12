@@ -23,7 +23,8 @@ from aria.univers import Univers
 
 PLANS = chemins.RESSOURCES / "bibliotheque" / "amorces.json"
 PLAN_MAX = 300  # caractères de l'idée du joueur
-TEXTES = {"passe": 500, "lieu": 300, "situation": 300}
+TEXTES = {"passe": 500, "lieu": 400, "situation": 400, "secret": 160}
+FIL_SECRET = "secret_de_depart"  # le secret est un fil, que le MJ clôt quand le personnage le découvre
 NB_PNJ, NB_FILS = (2, 4), (1, 3)
 ESSAIS = 2
 TITRE = "Avant la campagne"
@@ -90,16 +91,17 @@ class Amorce:
     passe: str
     lieu: str
     situation: str
+    secret: str  # ce que le personnage ignore : pour le MJ seulement, jamais montré au joueur
     pnj: list[dict] = field(default_factory=list)  # identifiant, nom, role, attitude
     fils: list[dict] = field(default_factory=list)  # identifiant, texte
 
     @property
     def scene(self) -> str:
         """Ce que le MJ sait de la première scène."""
-        return f"{self.lieu}\n\n{self.situation}"
+        return f"{self.lieu}\n\n{self.situation}\n\nCe que le personnage ignore encore : {self.secret}"
 
     def lignes(self) -> list[str]:
-        """L'amorce, montrée au joueur : tout ce que son personnage sait déjà."""
+        """L'amorce, montrée au joueur : tout ce que son personnage sait déjà (le secret n'en fait pas partie)."""
         return ([f"Son passé : {self.passe}", f"Où tout commence : {self.lieu}", "Les gens de sa vie :"]
                 + [f"  - {p['nom']}, {p['role'].rstrip('.')} — {p['attitude']}" for p in self.pnj]
                 + ["Ce qui l'occupe :"] + [f"  - {f['texte']}" for f in self.fils])
@@ -110,6 +112,7 @@ class Amorce:
             memoire.noter_pnj(p["identifiant"], p["nom"], p["role"], p["attitude"])
         for f in self.fils:
             memoire.ouvrir_fil(f["identifiant"], f["texte"])
+        memoire.ouvrir_fil(FIL_SECRET, f"Secret, ignoré du personnage : {self.secret}")
         memoire.ajouter_souvenir(f"## {TITRE}\n\n{self.passe}\n\nLa campagne commence ici, {moment} : {self.lieu}\n")
 
 
@@ -136,7 +139,7 @@ def verifier(donnees: dict, plan: str = "") -> tuple[Amorce | None, list[str]]:
             identifiant = _texte(entree.get("identifiant"))
             try:
                 verifier_identifiant(identifiant)
-                if identifiant in vus:
+                if identifiant in vus or identifiant == FIL_SECRET:
                     raise MemoireRefusee(f"L'identifiant « {identifiant} » est en double dans « {cle} ».")
                 propre = {"identifiant": identifiant}
                 for champ, libelle in champs.items():
@@ -152,11 +155,13 @@ def verifier(donnees: dict, plan: str = "") -> tuple[Amorce | None, list[str]]:
         listes[cle] = propres
     if erreurs:
         return None, erreurs
-    return Amorce(plan, textes["passe"], textes["lieu"], textes["situation"], listes["pnj"], listes["fils"]), []
+    return Amorce(plan, textes["passe"], textes["lieu"], textes["situation"], textes["secret"], listes["pnj"],
+                  listes["fils"]), []
 
 
-def _chaine(description: str) -> dict:
-    return {"type": "string", "description": description}
+def _chaine(description: str, maximum: int) -> dict:
+    """Un texte de l'outil. Sa limite est écrite dans la description : sans elle, le LLM la dépasse une fois sur deux."""
+    return {"type": "string", "description": f"{description} {maximum} caractères au plus."}
 
 
 OUTIL_AMORCE = {"type": "function", "function": {
@@ -164,26 +169,31 @@ OUTIL_AMORCE = {"type": "function", "function": {
     "description": "Poser ce qui existe avant la première scène : le passé du personnage, le lieu, la situation, "
                    "les gens qu'il connaît et ce qui l'occupe.",
     "parameters": {"type": "object", "additionalProperties": False,
-                   "required": ["passe", "lieu", "situation", "pnj", "fils"], "properties": {
-        "passe": _chaine("Le passé du personnage, en deux ou trois phrases : d'où il vient, ce qui l'a mené là."),
-        "lieu": _chaine("Le lieu où la campagne commence, en une ou deux phrases concrètes."),
+                   "required": ["passe", "lieu", "situation", "secret", "pnj", "fils"], "properties": {
+        "passe": _chaine("Le passé du personnage, en deux ou trois phrases : d'où il vient, ce qui l'a mené là.",
+                         TEXTES["passe"]),
+        "lieu": _chaine("Le lieu où la campagne commence, en une ou deux phrases concrètes.", TEXTES["lieu"]),
         "situation": _chaine("Ce qui se passe à l'instant où la campagne commence, en une ou deux phrases : un "
-                             "problème qui demande une décision, sans la prendre à la place du joueur."),
+                             "problème qui demande une décision, sans la prendre à la place du joueur.",
+                             TEXTES["situation"]),
+        "secret": _chaine("Ce que le personnage ignore et que seul le MJ sait, en une phrase courte : qui ment, qui "
+                          "tire les ficelles, ce qui se cache derrière. Le joueur ne le lira pas.", TEXTES["secret"]),
         "pnj": {"type": "array", "minItems": NB_PNJ[0], "maxItems": NB_PNJ[1],
                 "description": "Les gens vivants que le personnage connaît déjà.",
                 "items": {"type": "object", "additionalProperties": False,
                           "required": ["identifiant", "nom", "role", "attitude"], "properties": {
-                              "identifiant": _chaine("Minuscules, chiffres et _ : par exemple doc_mori."),
-                              "nom": _chaine("Son nom."),
-                              "role": _chaine("Qui il est et ce qu'il fait, en quelques mots."),
-                              "attitude": _chaine("Ce qu'il pense du personnage, et pourquoi.")}}},
+                              "identifiant": _chaine("Minuscules, chiffres et _ : par exemple doc_mori.", 40),
+                              "nom": _chaine("Son nom.", LONGUEURS["nom"]),
+                              "role": _chaine("Qui il est et ce qu'il fait, en quelques mots.", LONGUEURS["rôle"]),
+                              "attitude": _chaine("Ce qu'il pense du personnage, et pourquoi, en une phrase.",
+                                                  LONGUEURS["attitude"])}}},
         "fils": {"type": "array", "minItems": NB_FILS[0], "maxItems": NB_FILS[1],
                  "description": "Les fils de l'histoire déjà ouverts (quête, promesse, dette, menace), dont un tiré "
                                 "de la motivation du personnage.",
                  "items": {"type": "object", "additionalProperties": False, "required": ["identifiant", "texte"],
                            "properties": {"identifiant": _chaine("Minuscules, chiffres et _ : par exemple "
-                                                                 "dette_arasaka."),
-                                          "texte": _chaine("Le fil, en une phrase.")}}},
+                                                                 "dette_arasaka.", 40),
+                                          "texte": _chaine("Le fil, en une phrase.", LONGUEURS["fil"])}}},
     }}}}
 
 
@@ -200,8 +210,13 @@ def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str])
              f"Le plan de départ de la campagne : {plan}\n\n"
              "Appelle amorcer_campagne pour adapter ce plan au cadre et au personnage. Les PNJ sont des gens "
              "vivants, qu'il peut croiser ; si son lien est une personne vivante, elle en fait partie. Un fil vient "
-             "de sa motivation. La situation se passe dans le lieu, lance le plan et laisse la décision au joueur. "
-             "En français, sans chiffres de jeu, sans rien décider à la place du joueur.")
+             "de sa motivation. La situation se passe dans le lieu, lance le plan et laisse la décision au joueur, "
+             "sans lui poser de question. Ne recopie pas la complication : incarne-la dans un PNJ ou dans un fait "
+             "précis. Le passé, le lieu, la situation, les PNJ et les fils ne disent que ce que le personnage "
+             "sait ; ce qu'il ignore (un mensonge, un commanditaire caché) va dans le secret, et nulle part ailleurs. "
+             "En français, à la troisième personne (jamais « tu »), sans chiffres de jeu, sans rien décider à la "
+             "place du joueur. Des phrases courtes : "
+             "chaque champ a une longueur maximum, respecte-la.")
     if erreurs:
         texte += "\nTa proposition précédente a des erreurs : " + " ; ".join(erreurs)
     return [{"role": "system", "content": "Tu prépares le début d'une campagne de jeu de rôle en solo."},

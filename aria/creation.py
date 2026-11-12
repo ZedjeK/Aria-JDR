@@ -307,10 +307,17 @@ OUTIL_PERSONNAGE = {"type": "function", "function": {
 ESSAIS = 2
 
 
+LIENS = (  # le type de lien est tiré : laissé au LLM, c'est presque toujours une petite sœur
+    "son père ou sa mère", "un frère ou une sœur plus âgé", "un enfant dont le personnage a la charge",
+    "une amitié d'enfance", "la personne qui lui a appris son métier", "un amour, présent ou perdu",
+    "quelqu'un avec qui le personnage a longtemps travaillé", "une personne à qui le personnage doit la vie",
+    "une personne que le personnage protège sans qu'elle le sache", "un rival que le personnage respecte",
+    "un groupe : une bande, une famille choisie, une communauté", "un animal", "un lieu",
+    "un objet qui lui vient de quelqu'un", "une promesse faite à quelqu'un")
 INITIALES = "ABCDEFGHIJKLMNOPRSTVY"  # trois sont tirées : sans elles, les mêmes prénoms reviennent
 
 
-def _demande_personnalite(b: Brouillon, erreurs: list[str], sexe: str, initiales: list[str]) -> list[dict]:
+def _demande_personnalite(b: Brouillon, erreurs: list[str], sexe: str, initiales: list[str], lien: str) -> list[dict]:
     u, e = b.univers, b.equipement
     objets = ", ".join(e.get("objets", [])) or "aucun"
     equipement = ", ".join(str(e[c]) for c in ("arme", "armure", "implant", "vehicule") if e.get(c)) or "rien"
@@ -319,7 +326,8 @@ def _demande_personnalite(b: Brouillon, erreurs: list[str], sexe: str, initiales
              f"Équipement de départ : {equipement} ; objets : {objets}.\n"
              "Appelle proposer_personnage avec son nom, sa motivation, son lien, son défaut et son allure. "
              "Une phrase chacun (deux pour l'allure), en français, sans chiffres de jeu. "
-             "Surprends : évite le premier lien et la première silhouette qui te viennent pour ce métier. "
+             f"Son lien : {lien}. "
+             "Surprends : évite la première silhouette qui te vient pour ce métier. "
              f"Son prénom commence par l'une de ces lettres, celle qui va le mieux au cadre : {', '.join(initiales)}.")
     if erreurs:
         texte += "\nTa proposition précédente a des erreurs : " + " ; ".join(erreurs)
@@ -334,8 +342,9 @@ def proposer_personnalite(serveur, b: Brouillon, budget: int | None = None,
     erreurs = []
     hasard = hasard or random.Random()
     sexe, initiales = sexe or hasard.choice(SEXES), sorted(hasard.sample(INITIALES, 3))
+    lien = hasard.choice(LIENS)
     for _ in range(ESSAIS):
-        reponse = serveur.discuter(_demande_personnalite(b, erreurs, sexe, initiales), [OUTIL_PERSONNAGE], budget)
+        reponse = serveur.discuter(_demande_personnalite(b, erreurs, sexe, initiales, lien), [OUTIL_PERSONNAGE], budget)
         message = reponse["choices"][0]["message"]
         appel = next((a for a in message.get("tool_calls") or []
                       if a["function"]["name"] == "proposer_personnage"), None)

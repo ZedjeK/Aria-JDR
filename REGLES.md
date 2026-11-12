@@ -254,7 +254,7 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 
 - **Le code propose les chiffres** : des caractéristiques orientées par le parcours, les points sous les plafonds, une défense et une compétence de combat grâce aux points personnels, l'équipement tiré dans les listes.
 - **Le LLM propose le nom et la personnalité** (motivation, lien, défaut, allure en deux phrases). Le code vérifie ; si rien de valide ne sort, le joueur les écrit.
-- Pour varier les propositions, le code tire si le personnage est **une femme ou un homme** (le joueur peut le choisir) et trois initiales possibles pour son prénom.
+- Pour varier les propositions, le code tire si le personnage est **une femme ou un homme** (le joueur peut le choisir), trois initiales possibles pour son prénom et le genre de son lien (un parent, un mentor, un lieu, une promesse…).
 
 ### L'amorce de la campagne
 
@@ -268,9 +268,10 @@ Le LLM adapte le plan au cadre et au personnage, et le code vérifie :
 - **son passé**, en deux ou trois phrases ;
 - **le lieu** où tout commence et **la situation** d'ouverture, qui lance le plan sans décider à la place du joueur ;
 - **de 2 à 4 PNJ** vivants qu'il connaît déjà, dont celui de son lien si c'est une personne vivante ;
-- **de 1 à 3 fils** ouverts, dont un tiré de sa motivation.
+- **de 1 à 3 fils** ouverts, dont un tiré de sa motivation ;
+- **un secret** : ce que le personnage ignore (qui ment, qui tire les ficelles). Il n'est jamais montré au joueur ; le MJ le garde comme un fil, qu'il clôt quand le personnage le découvre.
 
-Le joueur voit tout (son personnage le sait déjà), puis garde l'amorce, en demande une autre ou donne une autre idée. Gardée, elle est rangée dans la mémoire de la campagne (souvenirs, PNJ, fils). Si le LLM ne propose rien de valide, le MJ ouvre la campagne seul.
+Le joueur voit tout sauf le secret (le reste, son personnage le sait déjà), puis garde l'amorce, en demande une autre ou donne une autre idée. Gardée, elle est rangée dans la mémoire de la campagne (souvenirs, PNJ, fils). Si le LLM ne propose rien de valide, le MJ ouvre la campagne seul.
 
 ### Exemple : un Netrunner en Cyberpunk
 
