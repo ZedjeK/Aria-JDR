@@ -34,6 +34,11 @@ def decrire_monde(outil: str, arguments: dict, resultat: dict) -> list[str]:
         lignes += [f"   Réputation — {c}" for c in m.get("reputation", [])]
     if outil == "reputation":
         lignes += [f"🏳 Réputation — {c}" for c in r["changements"]]
+    if outil == "accepter_mission":
+        lignes.append(f"📜 Mission acceptée : {r['texte']} Récompense : {r['recompense']} {r['monnaie']}"
+                      + (f", dont {r['avance']} d'avance." if r["avance"] else "."))
+    if outil == "clore_fil" and r.get("monde"):
+        lignes += [f"🏳 {c}" for c in r["monde"]]
     return lignes
 
 

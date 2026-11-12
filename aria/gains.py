@@ -32,11 +32,11 @@ class Mission:
 
 
 def ouvrir_mission(perso: Personnage, identifiant: str, danger: str,
-                   marchandage: Marchandage | None = None) -> Mission:
+                   marchandage: Marchandage | None = None, paliers: int = 0) -> Mission:
     """Fixe la récompense d'une mission à son ouverture. Marchandée : un critique la monte d'un palier, une
     réussite obtient une avance (deux paliers sous la récompense, versée tout de suite et déduite à la fin),
-    une maladresse la baisse d'un palier."""
-    recompense = RECOMPENSES[danger]
+    une maladresse la baisse d'un palier. `paliers` : ce que le commanditaire paie au-dessus du barème."""
+    recompense = decaler(RECOMPENSES[danger], paliers)
     avance = 0
     if marchandage:
         if marchandage.critique:

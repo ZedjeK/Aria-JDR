@@ -41,7 +41,8 @@ def petit() -> dict:
                          "Helix": {"type": "corporation", "chef": "Vera", "rivale": ""}},
             "reputation": {"Lames": NEUTRE, "Rats": NEUTRE, "Helix": NEUTRE}, "ici": "D", "journal": [], "lu": 0,
             "genre": "Cyberpunk", "en_cours": [], "vus": {},
-            "evenements": {"quartier": 999, "ville": 999, "monde": 999}}  # pas d'événement, sauf si le test en veut
+            "evenements": {"quartier": 999, "ville": 999, "monde": 999},  # pas d'événement, sauf si le test en veut
+            "offres": [], "prochaines_offres": 999}  # ni d'offre de mission
 
 
 def attaque(etat, quartier="B", jour=1):
@@ -257,6 +258,7 @@ def test_sans_monde_pas_d_outils_du_monde():
 
 def test_l_outil_monde_suit_le_joueur_et_annonce_la_melee():
     s = session(monde=attaque(petit()))
+    s.des = Imposes()
     assert "melee" not in {o["function"]["name"] for o in s.schemas()}  # rien d'annoncé : pas d'outil
     r = s.appeler("monde", {"ici": "B"})
     assert r["quartier"] == "B" and r["maitre"] == "Rats" and r["melee"] == {"attaquant": "Lames", "defenseur": "Rats"}
@@ -266,8 +268,10 @@ def test_l_outil_monde_suit_le_joueur_et_annonce_la_melee():
 
 
 def test_l_outil_melee_prepare_puis_fait_se_battre():
-    s = session(30, monde=attaque(petit()))
+    s = session(monde=attaque(petit()))
+    s.des = Imposes()
     s.appeler("monde", {"ici": "B"})
+    s.des = Imposes(30)
     r = s.appeler("melee", {"quartier": "B", "camp": DEFENSE, "action": "preparer", "competence": "Piratage"})
     assert r["pour"] == "Rats" and r["reussi"] and r["bonus_au_de"] == s.monde["quartiers"]["B"]["joueur"]["preparatif"]
     assert "Un seul préparatif" in s.appeler("melee", {"quartier": "B", "camp": DEFENSE, "action": "preparer",
@@ -289,6 +293,7 @@ def test_l_outil_melee_prepare_puis_fait_se_battre():
 
 def test_un_combat_de_melee_perdu():
     s = session(monde=attaque(petit()))
+    s.des = Imposes()
     s.appeler("monde", {"ici": "B"})
     s.appeler("melee", {"quartier": "B", "camp": ATTAQUE, "action": "se_battre"})
     s.des = Imposes(1, 1, 5, 5)  # ses adversaires sont debout : 5 − 2 contre 5 + 1
