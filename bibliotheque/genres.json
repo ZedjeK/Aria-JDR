@@ -39,6 +39,12 @@
         "PHENOMENE_ETRANGE",
         "SURNATUREL_INDENIABLE"
       ]
+    },
+    "monnaie": "couronnes",
+    "niveaux_de_vie": {
+      "à la rue": "à la belle étoile",
+      "modeste": "une chambre à l'auberge",
+      "confortable": "une maison en ville"
     }
   },
   "Dark fantasy": {
@@ -83,6 +89,12 @@
         "VIOLENCE_BRUTALE",
         "CADAVRE_INCONNU"
       ]
+    },
+    "monnaie": "deniers",
+    "niveaux_de_vie": {
+      "à la rue": "à la belle étoile",
+      "modeste": "une paillasse en salle commune",
+      "confortable": "une chambre à soi, verrou compris"
     }
   },
   "Horreur": {
@@ -114,6 +126,12 @@
       "curseur": "réaliste",
       "monde_impitoyable": false,
       "chocs_banals": []
+    },
+    "monnaie": "dollars",
+    "niveaux_de_vie": {
+      "à la rue": "à la rue",
+      "modeste": "une pension de famille",
+      "confortable": "un appartement avec une domestique"
     }
   },
   "Contemporain": {
@@ -150,6 +168,12 @@
       "curseur": "standard",
       "monde_impitoyable": false,
       "chocs_banals": []
+    },
+    "monnaie": "euros",
+    "niveaux_de_vie": {
+      "à la rue": "à la rue",
+      "modeste": "un studio",
+      "confortable": "un bel appartement"
     }
   },
   "Militaire": {
@@ -188,6 +212,12 @@
         "VIOLENCE_BRUTALE",
         "CADAVRE_INCONNU"
       ]
+    },
+    "monnaie": "dollars",
+    "niveaux_de_vie": {
+      "à la rue": "sans cantonnement",
+      "modeste": "le cantonnement",
+      "confortable": "un logement en ville"
     }
   },
   "Science-fiction": {
@@ -225,6 +255,12 @@
       "chocs_banals": [
         "PHENOMENE_ETRANGE"
       ]
+    },
+    "monnaie": "crédits",
+    "niveaux_de_vie": {
+      "à la rue": "dans les coursives",
+      "modeste": "une cabine partagée",
+      "confortable": "des quartiers privés"
     }
   },
   "Cyberpunk": {
@@ -269,6 +305,12 @@
       "chocs_banals": [
         "VIOLENCE_BRUTALE"
       ]
+    },
+    "monnaie": "crédits",
+    "niveaux_de_vie": {
+      "à la rue": "à la rue",
+      "modeste": "une capsule et des plats préparés",
+      "confortable": "un appartement et des produits frais"
     }
   },
   "Post-apo": {
@@ -313,6 +355,12 @@
         "VIOLENCE_BRUTALE",
         "CADAVRE_INCONNU"
       ]
+    },
+    "monnaie": "cartouches",
+    "niveaux_de_vie": {
+      "à la rue": "dehors",
+      "modeste": "un abri dans la colonie",
+      "confortable": "une maison fortifiée"
     }
   }
 }

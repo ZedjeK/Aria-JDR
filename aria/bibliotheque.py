@@ -12,7 +12,7 @@ import json
 from dataclasses import dataclass, field, fields, replace
 from pathlib import Path
 
-from aria import chemins
+from aria import chemins, economie
 from aria.equipement import verifier_arme, verifier_armure
 from aria.magie import verifier_domaines
 from aria.personnage import COMPETENCES_SOCLE, MAGIE, NB_COMPETENCES_PARCOURS
@@ -181,6 +181,9 @@ class Bibliotheque:
             "parcours": {p["nom"]: list(p["competences"]) for p in f.parcours},
             "descriptions": {p["nom"]: p["description"] for p in f.parcours},
             "equipements": {p["nom"]: p["equipement"] for p in f.parcours if p.get("equipement")},
+            "rangs": {p["nom"]: p["rang"] for p in f.parcours if p.get("rang")},
+            "monnaie": fiche.get("monnaie", "crédits"),
+            "niveaux_de_vie": dict(fiche.get("niveaux_de_vie", {})),
             "armes": [sans(a) for a in f.armes] + listes["arme"],
             "armures": [sans(a) for a in f.armures] + listes["armure"],
             "chocs_banals": list(chocs_banals),
@@ -218,6 +221,8 @@ class Bibliotheque:
         erreurs += self._verifier_modifications() + self._verifier_fabricants()
         erreurs += self._verifier_implants() + self._verifier_vehicules()
         erreurs += self._verifier_modeles() + self._verifier_parcours() + self._verifier_annees()
+        erreurs += economie.verifier_exceptions({e["nom"] for liste in (self.armes, self.armures, self.implants,
+                                                                         self.vehicules) for e in liste})
         if self.domaines:
             from aria.univers import _domaine_depuis_dict
             erreurs += verifier_domaines(tuple(_domaine_depuis_dict(d) for d in self.domaines))
@@ -418,6 +423,8 @@ class Bibliotheque:
             if p["genre"] not in GENRES:
                 erreurs.append(f"{nom} : genre inconnu.")
                 continue
+            if p.get("rang", economie.RANG_PAR_DEFAUT) not in economie.RANGS:
+                erreurs.append(f"{nom} : rang de revenu inconnu « {p['rang']} » ({', '.join(economie.RANGS)}).")
             competences = p["competences"]
             if len(competences) != NB_COMPETENCES_PARCOURS or len(set(competences)) != len(competences):
                 erreurs.append(f"{nom} : {NB_COMPETENCES_PARCOURS} compétences distinctes attendues.")

@@ -498,12 +498,12 @@ def _renommer_objets(d: dict, tout: dict[str, str]):
 
 def _retirer_parcours(d: dict, noms: list[str]):
     for nom in noms:
-        for cle in ("parcours", "descriptions", "equipements"):
+        for cle in ("parcours", "descriptions", "equipements", "rangs"):
             d.get(cle, {}).pop(nom, None)
 
 
 def _renommer_parcours(d: dict, renommes: dict[str, str]):
-    for cle in ("parcours", "descriptions", "equipements"):
+    for cle in ("parcours", "descriptions", "equipements", "rangs"):
         if cle in d:
             d[cle] = {renommes.get(nom, nom): valeur for nom, valeur in d[cle].items()}
     for ancien, nouveau in renommes.items():

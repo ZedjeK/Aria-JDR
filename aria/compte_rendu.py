@@ -4,6 +4,7 @@ Les mêmes lignes servent à l'écran du joueur, avant la narration du MJ, et à
 combat en cours (combat.md) : le joueur et le MJ voient exactement la même vérité.
 """
 
+from aria.economie import montant
 from aria.personnage import Etat
 
 VERBES = {"deplacer": "se déplace", "viser": "vise", "recharger": "recharge", "degainer": "dégaine"}
@@ -116,7 +117,12 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
     if o == "clore_fil":
         return [f"🧵 Fil clos : {r['texte']} → {r['issue']}"]
     if o == "avancer_temps":
-        return [f"🕐 {r['moment']}"]
+        monnaie = session.univers.monnaie
+        return [f"🕐 {r['moment']}"] + [
+            f"💰 Jour {e['jour']}, le coût de la vie ({e['niveau_de_vie']}) : "
+            + (f"{montant(e['cout'], monnaie)} impayés, te voilà à la rue" if e.get("impayee")
+               else f"−{montant(e['cout'], monnaie)}, il te reste {montant(e['argent'], monnaie)}")
+            for e in r.get("echeances", [])]
     return []  # etat : le MJ se renseigne, rien ne change
 
 

@@ -1,0 +1,12 @@
+{
+  "prix": {
+    "Voiture de sport": 100000,
+    "Hovercar": 200000,
+    "Fourgon": 50000,
+    "Fusil à rail": 5000,
+    "Cheval": 2000
+  },
+  "disponibilites": {
+    "Fusil à rail": "restreint"
+  }
+}

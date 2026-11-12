@@ -9,6 +9,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from aria import economie
 from aria.equipement import (
     Arme,
     Armure,
@@ -86,6 +87,9 @@ class Univers:
     descriptions: dict[str, str] = field(default_factory=dict)  # nom du parcours → ses 3 phrases
     equipements: dict[str, dict] = field(default_factory=dict)  # nom du parcours → ses listes de départ (REGLES.md 5)
     origines: dict[str, str] = field(default_factory=dict)  # nom adapté au cadre → nom dans la bibliothèque
+    rangs: dict[str, str] = field(default_factory=dict)  # nom du parcours → son rang de revenu (REGLES.md 13.4)
+    monnaie: str = "crédits"  # le nom de l'unité dans cet univers ; l'échelle est la même partout
+    niveaux_de_vie: dict[str, str] = field(default_factory=dict)  # « modeste » → le visage que le genre lui donne
 
     def nom_affiche(self, competence: str) -> str:
         """Le nom qu'une compétence de socle porte dans cet univers (« Technologie » → « Piratage »)."""
@@ -149,6 +153,7 @@ class Univers:
         )
         perso.points_destin = self.curseur.points_destin
         perso.domaines = domaines
+        economie.installer(perso, self.rangs.get(parcours, economie.RANG_PAR_DEFAUT))
         return perso
 
     def equiper(self, perso: Personnage, arme: str | None = None, armure: str | None = None,
@@ -319,6 +324,9 @@ def univers_depuis_dict(donnees: dict, genere: bool = False) -> Univers:
             descriptions=dict(donnees.get("descriptions", {})),
             equipements={nom: dict(listes) for nom, listes in donnees.get("equipements", {}).items()},
             origines=dict(donnees.get("origines", {})),
+            rangs=dict(donnees.get("rangs", {})),
+            monnaie=donnees.get("monnaie", "crédits"),
+            niveaux_de_vie=dict(donnees.get("niveaux_de_vie", {})),
         )
     except (KeyError, ValueError, TypeError) as erreur:
         raise UniversInvalide([f"Fichier d'univers mal formé : {erreur}"]) from erreur
@@ -417,7 +425,10 @@ def univers_vers_dict(univers: Univers) -> dict:
       | ({"vehicules": [vehicule_vers_dict(v) for v in univers.vehicules]} if univers.vehicules else {}) \
       | ({"descriptions": dict(univers.descriptions)} if univers.descriptions else {}) \
       | ({"equipements": dict(univers.equipements)} if univers.equipements else {}) \
-      | ({"origines": dict(univers.origines)} if univers.origines else {})
+      | ({"origines": dict(univers.origines)} if univers.origines else {}) \
+      | ({"rangs": dict(univers.rangs)} if univers.rangs else {}) \
+      | {"monnaie": univers.monnaie} \
+      | ({"niveaux_de_vie": dict(univers.niveaux_de_vie)} if univers.niveaux_de_vie else {})
 
 
 def _systeme_vers_dict(s: Systeme) -> dict:

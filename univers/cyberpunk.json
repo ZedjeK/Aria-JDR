@@ -647,6 +647,33 @@
       ]
     }
   },
+  "rangs": {
+    "Solo": "établi",
+    "Ganger": "précaire",
+    "Kobun yakuza": "établi",
+    "Agent d'infiltration": "établi",
+    "Flic de la NeoPol": "établi",
+    "Agent de sécurité corpo": "établi",
+    "Cadre corpo": "aisé",
+    "Salaryman": "établi",
+    "Netrunner": "établi",
+    "Techie": "établi",
+    "Charcudoc": "établi",
+    "Ferrailleur": "précaire",
+    "Fixer": "aisé",
+    "Informateur": "précaire",
+    "Journaliste": "établi",
+    "Rockerboy": "précaire",
+    "Idol": "aisé",
+    "Nomade": "précaire",
+    "Coursier": "précaire"
+  },
+  "monnaie": "crédits",
+  "niveaux_de_vie": {
+    "à la rue": "à la rue",
+    "modeste": "une capsule et des plats préparés",
+    "confortable": "un appartement et des produits frais"
+  },
   "armes": [
     {
       "nom": "Poing américain",

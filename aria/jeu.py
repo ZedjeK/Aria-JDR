@@ -19,7 +19,7 @@ import random
 from contextlib import contextmanager
 import sys
 
-from aria import (amorce, banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils,
+from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
@@ -243,6 +243,8 @@ class Jeu:
         self.dire(f"  {j['pv']}/{j['pv_max']} PV ({j['etat']}" + (", blessure grave" if j["blessure_grave"] else "")
                   + f"), Santé mentale {j['sante_mentale']}/{j['sm_max']}, {j['points_destin']} points de destin, "
                   f"{j['xp']} XP")
+        self.dire(f"  {economie.montant(j['argent'], j['monnaie'])}, niveau de vie {j['niveau_de_vie']} "
+                  f"(prochaine échéance : {j['prochaine_echeance']})")
         arme = j["arme"] or "aucune arme"
         self.dire(f"  {arme}" + (f" ({j['munitions']} balles)" if "munitions" in j else "")
                   + f", {j['armure'] or 'sans armure'}")
