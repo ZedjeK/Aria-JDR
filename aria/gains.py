@@ -45,7 +45,7 @@ def ouvrir_mission(perso: Personnage, identifiant: str, danger: str,
             recompense = decaler(recompense, -1)
         elif marchandage.geste:
             avance = decaler(recompense, -2)
-    perso.missions[identifiant] = {"recompense": recompense, "avance": avance}
+    perso.missions[identifiant] = {"recompense": recompense, "avance": avance, "danger": danger}
     perso.argent += avance
     return Mission(recompense, avance)
 
