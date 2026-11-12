@@ -8,6 +8,7 @@ relit le récapitulatif.
 import random
 
 from aria.creation import (
+    SEXES,
     Brouillon,
     EtapeInvalide,
     proposer_caracteristiques,
@@ -81,7 +82,7 @@ def resume(b: Brouillon) -> list[str]:
         lignes.append("Équipement : " + (", ".join(objets) or "rien"))
     r = b.roleplay
     if r:
-        lignes += [f"Nom : {r['nom']}", f"Motivation : {r['motivation']}", f"Lien : {r['lien']}",
+        lignes += [f"Nom : {r['nom']}" + (f" ({r['sexe']})" if r.get("sexe") else ""), f"Motivation : {r['motivation']}", f"Lien : {r['lien']}",
                    f"Défaut : {r['defaut']}"] + ([f"Allure : {r['allure']}"] if r.get("allure") else [])
     return lignes + [f"⚠ {a}" for a in b.avertissements()]
 
@@ -188,22 +189,26 @@ class Guide:
 
     def roleplay(self, b: Brouillon):
         """La personnalité : proposée par le LLM s'il répond, sinon écrite par le joueur."""
-        propose = proposer_personnalite(self.serveur, b, self.budget, self.hasard) if self.serveur is not None else None
+        reponse = self.demander("Une femme ou un homme ? (f / h, Entrée pour laisser le hasard) : ").lower()[:1]
+        sexe = {"f": SEXES[0], "h": SEXES[1]}.get(reponse) or self.hasard.choice(SEXES)
+        propose = proposer_personnalite(self.serveur, b, self.budget, self.hasard, sexe) \
+            if self.serveur is not None else None
         while True:
             if propose:
-                self.dire("\nPersonnalité proposée :\n" + "\n".join(f"  {k} : {v}" for k, v in propose.items()))
+                self.dire(f"\nPersonnalité proposée ({sexe}) :\n"
+                          + "\n".join(f"  {k} : {v}" for k, v in propose.items() if k != "sexe"))
                 reponse = self.demander("Entrée pour garder, « r » pour une autre, « m » pour l'écrire toi-même : ")
                 if reponse == "":
                     b.fixer("roleplay", propose)
                     return
                 if reponse.lower() == "r":
-                    propose = proposer_personnalite(self.serveur, b, self.budget, self.hasard)
+                    propose = proposer_personnalite(self.serveur, b, self.budget, self.hasard, sexe)
                     continue
             roleplay = {cle: self.demander(f"{question} : ") for cle, question in (
                 ("nom", "Son nom"), ("motivation", "Ce qu'il cherche"), ("lien", "Qui ou quoi compte pour lui"),
                 ("defaut", "Son défaut"), ("allure", "Son allure (facultatif)"))}
             try:
-                b.fixer("roleplay", roleplay)
+                b.fixer("roleplay", roleplay | {"sexe": sexe})
                 return
             except EtapeInvalide as erreur:
                 for e in erreur.erreurs:

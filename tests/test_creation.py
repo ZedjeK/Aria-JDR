@@ -116,7 +116,7 @@ def test_l_avertissement_sans_defense(neo_tokyo):
 def test_le_llm_propose_la_personnalite(neo_tokyo):
     b = proposer_chiffres(Brouillon(neo_tokyo), random.Random(2), "Netrunner")
     serveur = ServeurScripte(personnalite(nom=""), personnalite())  # une relance : le nom manquait
-    assert proposer_personnalite(serveur, b) == ROLEPLAY
+    assert proposer_personnalite(serveur, b, sexe="femme") == ROLEPLAY | {"sexe": "femme"}
     demande = serveur.recus[0][0][-1]["content"]
     assert "Netrunner" in demande and neo_tokyo.nom in demande
     assert "nom" in serveur.recus[1][0][-1]["content"]  # la relance cite l'erreur
@@ -175,12 +175,12 @@ def test_pas_a_pas_avec_une_saisie_fausse_puis_juste(neo_tokyo):
         "",  # points de parcours proposés
         "r", "",  # points personnels : relancés puis gardés
         "",  # équipement
-        "Yuki", "Payer sa dette", "Sa mère", "Trop curieuse", "",  # le roleplay, sans LLM
+        "f", "Yuki", "Payer sa dette", "Sa mère", "Trop curieuse", "",  # le roleplay, sans LLM
         "",  # valider
     ])
     sortie = []
     perso, _ = Guide(neo_tokyo, lambda _: next(reponses), sortie.append, hasard=random.Random(1)).creer()
-    assert perso.caracteristiques[C.INTELLIGENCE] == 75 and perso.nom == "Yuki"
+    assert perso.caracteristiques[C.INTELLIGENCE] == 75 and perso.nom == "Yuki" and perso.sexe == "femme"
     assert any("de 20 à 80" in ligne for ligne in sortie)
 
 

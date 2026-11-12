@@ -11,8 +11,8 @@ INTERDITS = chemins.PROMPTS / "magie_interdite.md"
 
 def presenter(personnage: Personnage) -> str:
     p = personnage
-    return (f"{p.nom}, {p.parcours}. Motivation : {p.motivation}. Lien : {p.lien}. "
-            f"Défaut : {p.defaut}.")
+    return (f"{p.nom}, {p.sexe + ', ' if p.sexe else ''}{p.parcours}. Motivation : {p.motivation}. "
+            f"Lien : {p.lien}. Défaut : {p.defaut}." + (f" Allure : {p.allure}" if p.allure else ""))
 
 
 def _sort(sort) -> str:
