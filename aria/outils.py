@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import commerce, economie, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
+from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
 from aria import combat as combat_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
@@ -141,6 +141,8 @@ class Session:
     journal: list[dict] = field(default_factory=list)
     campagne: Campagne | None = None  # None : rien n'est écrit sur le disque (le banc d'essai)
     rounds: list[tuple[int, list[str]]] = field(default_factory=list)  # le combat en cours, round par round
+    trouvailles: dict[str, list[dict]] = field(default_factory=dict)  # ce que les fouilles ont trouvé, pas encore pris
+    fouilles: set[str] = field(default_factory=set)  # les PNJ déjà fouillés
     debut_round: int = 0  # l'indice, dans le journal, du premier appel du round en cours
 
     def __post_init__(self):
@@ -410,6 +412,9 @@ def etat(session: Session) -> dict:
             "sante_mentale": p.sm, "sm_max": p.sm_max, "points_destin": p.points_destin, "xp": p.xp,
             "argent": p.argent, "monnaie": session.univers.monnaie,
             "niveau_de_vie": economie.niveau_effectif(p).value, "prochaine_echeance": f"jour {p.echeance}",
+            **({"dettes": [{"creancier": d["creancier"], "reste_du": d["reste"], "par_semaine": d["echeance"]}
+                           for d in p.dettes]} if p.dettes else {}),
+            **({"missions": {i: m["recompense"] for i, m in p.missions.items()}} if p.missions else {}),
             "troubles": [t.type.value for t in p.troubles], "folie": p.folie,
         } | ({"pm": p.pm, "pm_max": p.pm_max, "domaines": p.domaines} if session.a_la_magie else {})
           | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
@@ -446,11 +451,28 @@ def avancer_temps(session: Session) -> dict:
             session.charger_les_armes()
             resultat["commandes_arrivees"] = arrivees
     if echeances:
-        resultat["echeances"] = [
-            {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "argent": e.argent} if e.payee else
-            {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "impayee": True,
-             "consequence": "il vit à la rue jusqu'à ce qu'une semaine soit payée"} for e in echeances]
+        resultat["echeances"] = _echeances(echeances)
     return resultat
+
+
+def _echeances(echeances) -> list[dict]:
+    """Les échéances de la semaine, pour le MJ : le loyer, les dettes, le lien à charge."""
+    lignes = []
+    for e in echeances:
+        ligne = {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "argent": e.argent} if e.payee else {
+            "jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "impayee": True,
+            "consequence": "il vit à la rue jusqu'à ce qu'une semaine soit payée"}
+        if e.dettes_payees:
+            ligne["dettes_payees"] = [{"creancier": c, "somme": s, "reste_du": r} for c, s, r in e.dettes_payees]
+        if e.dettes_manquees:
+            ligne["dettes_manquees"] = [
+                {"creancier": c, "somme": s, "echeances_manquees": n,
+                 "consequence": "le créancier fait monter la menace d'un cran : raconte-le"} for c, s, n in e.dettes_manquees]
+        if e.lien is not None:
+            ligne["lien_a_charge"] = "payé" if e.lien else (
+                "impayé : le temps passé avec son lien ne le réconforte plus, ouvre un fil")
+        lignes.append(ligne)
+    return lignes
 
 
 # --- Tests hors combat ------------------------------------------------------------------------
@@ -551,13 +573,14 @@ def repos(session: Session, type: str, interrompu: bool = False) -> dict:
        "quelqu'un, une fois par jour) ou une thérapie pendant le repos long (une fois par nuit).",
        lambda s: _objet({
            "source": _enum(["discussion", "thérapie"]),
+           "avec_son_lien": {"type": "boolean", "description": "Pour une discussion : il passe ce temps avec son lien."},
            "soignant": _ids(s, "Pour une thérapie : qui l'accompagne (le joueur seul, ou un PNJ)."),
            "competence": _enum(["Perspicacité", "Médecine"], "Pour une thérapie."),
        }, ["source"]))
 def recuperer_sante_mentale(session: Session, source: str, soignant: str = JOUEUR,
-                            competence: str = "Perspicacité") -> dict:
+                            competence: str = "Perspicacité", avec_son_lien: bool = False) -> dict:
     if source == "discussion":
-        r = sante_mentale.discussion(session.des, session.personnage, session.moment)
+        r = sante_mentale.discussion(session.des, session.personnage, session.moment, avec_son_lien)
     else:
         niveau = economie.niveau_effectif(session.personnage)
         if niveau is economie.NiveauDeVie.A_LA_RUE:
@@ -1465,16 +1488,157 @@ def commander(session: Session, objet: str, lieu: str) -> dict:
        lambda s: _objet({
            "niveau": _enum([n.value for n in economie.NiveauDeVie]),
            "payer_maintenant": {"type": "boolean"},
+           "lien_a_charge": {"type": "boolean", "description": "Son lien dépend de lui : 200 par semaine, et le "
+                                                               "temps passé avec lui rend 1d6 au lieu de 1d3."},
        }, ["niveau"]),
        disponible=_avec_economie)
-def niveau_de_vie(session: Session, niveau: str, payer_maintenant: bool = False) -> dict:
+def niveau_de_vie(session: Session, niveau: str, payer_maintenant: bool = False,
+                  lien_a_charge: bool | None = None) -> dict:
     p = session.personnage
+    if lien_a_charge is not None:
+        p.lien_a_charge, p.charge_payee = lien_a_charge, True
     economie.changer_niveau_de_vie(p, economie.NiveauDeVie(niveau))
     if payer_maintenant and not economie.payer_la_semaine(p):
         raise ErreurOutil(f"Pas assez d'argent pour une semaine en « {niveau} ».")
     return {"niveau_de_vie": economie.niveau_effectif(p).value, "choisi": niveau, "argent": p.argent,
-            "prochaine_echeance": f"jour {p.echeance}",
+            "prochaine_echeance": f"jour {p.echeance}", "lien_a_charge": p.lien_a_charge,
             "visage": session.univers.niveaux_de_vie.get(niveau, niveau)}
+
+
+# --- Gagner : les missions, le métier, les dettes, le butin (REGLES.md 13.6 et 13.8) ---------------------
+
+@outil("Ouvrir une mission payée : un fil de l'histoire avec sa récompense, que le moteur fixe d'après le danger "
+       "et versera à la clôture du fil si la mission est réussie. Le joueur peut marchander : un seul test.",
+       lambda s: _objet({
+           "identifiant": {"type": "string", "description": "Court et unique, par exemple extraction_tanaka."},
+           "fil": {"type": "string", "description": "La mission en une phrase : qui la donne, ce qu'il faut faire."},
+           "danger": _enum(gains.RECOMPENSES),
+           "marchander": _MARCHANDER, "attitude": _ATTITUDE,
+       }, ["identifiant", "fil", "danger"]),
+       disponible=_avec_economie)
+def ouvrir_mission(session: Session, identifiant: str, fil: str, danger: str, marchander: str = "non",
+                   attitude: str = "neutre") -> dict:
+    texte = session.memoire.ouvrir_fil(identifiant, fil).texte  # refuse un identifiant déjà pris, avant tout test
+    m = _marchandage(session, marchander, attitude)
+    mission = gains.ouvrir_mission(session.personnage, identifiant, danger, m)
+    return {"mission": identifiant, "texte": texte, "recompense": mission.recompense, "avance": mission.avance,
+            "argent": session.personnage.argent, "monnaie": session.univers.monnaie, **_rapport_marchandage(m),
+            "rappel": "La récompense sera versée par clore_fil, avec reussie à vrai."}
+
+
+@outil("Fouiller un adversaire vaincu ou une cache. Le moteur tire ce qu'on y trouve : l'argent va tout de suite "
+       "dans la poche du joueur, les objets attendent qu'il les prenne (prendre). Un corps ne se fouille qu'une "
+       "fois. En combat, on ne fouille pas : on ramasse seulement l'arme d'un adversaire à terre (action mineure).",
+       lambda s: _objet({
+           "cible": _enum(sorted(s.pnj) + ["cache"], "Un PNJ vaincu, ou « cache »."),
+           "taille": _enum(gains.CACHES, "Pour une cache : sa taille."),
+           "materiel_marque": {"type": "boolean", "description": "Vrai pour du matériel de police ou de corporation : "
+                                                                 "traçable, il ne se revend que par un contact."},
+       }, ["cible"]),
+       disponible=_avec_economie)
+def fouiller(session: Session, cible: str, taille: str | None = None, materiel_marque: bool = False) -> dict:
+    p, u = session.personnage, session.univers
+    if cible == "cache":
+        if session.combat:
+            raise ErreurOutil("On ne fouille pas une cache en plein combat.")
+        if taille is None:
+            raise ErreurOutil(f"Pour une cache, précise sa taille : {list(gains.CACHES)}.")
+        butin = gains.fouiller_une_cache(session.des, u, taille)
+        origine = f"cache_{len(session.trouvailles) + 1}"
+    else:
+        pnj = session.combattant(cible)
+        if pnj.fiche.etat in (Etat.ACTIF,) and not pnj.surpris:
+            raise ErreurOutil(f"{pnj.nom} est debout et conscient : on ne le fouille pas.")
+        if cible in session.fouilles:
+            raise ErreurOutil(f"{pnj.nom} a déjà été fouillé.")
+        restants = len(pnj.reserve.chargeurs_restants) if isinstance(pnj.reserve, ReservePnj) else None
+        butin = gains.fouiller_un_corps(session.des, u, pnj.fiche.combat, pnj.arme, pnj.armure,
+                                        pnj.munitions_restantes() or 0, restants, materiel_marque)
+        origine = cible
+        if session.combat:  # sous le feu : son arme seulement, et rien d'autre
+            session.combat._agir(session.joueur, TypeAction.MINEURE)
+            butin = gains.Butin(0, [o for o in butin.objets if o["famille"] == inventaire_.ARME][:1], butin.menace)
+            pnj.arme = None  # son arme est ramassée : on ne la retrouvera pas en le fouillant après le combat
+        else:
+            session.fouilles.add(cible)
+    p.argent += butin.argent
+    session.trouvailles[origine] = butin.objets
+    return {"cible": cible, "argent_trouve": butin.argent, "argent": p.argent, "monnaie": u.monnaie,
+            "objets": [_trouvaille(o) for o in butin.objets], "origine": origine,
+            **({"menace": butin.menace} if butin.menace else {}),
+            "rappel": "Le joueur choisit ce qu'il emporte : prendre, avec cette origine."}
+
+
+def _trouvaille(o: dict) -> str:
+    details = [o["qualite"]] if o.get("qualite") else []
+    if "charge" in o:
+        details.append(f"{o['charge']} cartouches dans l'arme")
+    if o.get("chargeurs"):
+        details.append(f"{o['chargeurs']} chargeur(s) de rechange")
+    if o.get("marque"):
+        details.append("marqué")
+    return o["nom"] + (f" ({', '.join(details)})" if details else "")
+
+
+@outil("Prendre un objet trouvé en fouillant : il entre dans l'inventaire du joueur, s'il a la place.",
+       lambda s: _objet({
+           "origine": _enum(sorted(s.trouvailles) or ["aucune"], "La fouille d'où il vient."),
+           "objet": _enum(sorted({o["nom"] for objets in s.trouvailles.values() for o in objets}) or ["aucun"]),
+       }, ["origine", "objet"]),
+       disponible=lambda s: _avec_economie(s) and any(s.trouvailles.values()))
+def prendre(session: Session, origine: str, objet: str) -> dict:
+    trouves = session.trouvailles.get(origine, [])
+    choisi = next((o for o in trouves if o["nom"] == objet), None)
+    if choisi is None:
+        raise ErreurOutil(f"« {objet} » n'est pas dans « {origine} » : {[o['nom'] for o in trouves]}.")
+    gains.prendre(session.inventaire, session.univers, choisi)
+    trouves.remove(choisi)
+    session.charger_les_armes()
+    return {"pris": _trouvaille(choisi), **session.inventaire.resume()}
+
+
+@outil("Faire passer au joueur une semaine entière à exercer son métier, sans aventure : un test de sa "
+       "compétence de métier donne le revenu de la semaine (parfois rien). La semaine passe pour de bon : le "
+       "coût de la vie est débité, il se repose.",
+       lambda s: _objet({}),
+       disponible=_avec_economie)
+def semaine_de_travail(session: Session) -> dict:
+    if session.combat or session.poursuite:
+        raise ErreurOutil("Pas en plein combat ni en pleine poursuite.")
+    p, u = session.personnage, session.univers
+    competence = u.parcours[p.parcours][0]
+    r = gains.travailler(session.des, p, competence, u.rangs.get(p.parcours, economie.RANG_PAR_DEFAUT))
+    progression.cocher(p, competence, r.test)
+    session.moment = Moment(session.moment.jour + economie.SEMAINE, session.moment.periode)
+    session.oublier_les_effets()
+    echeances = economie.passer_les_echeances(p, session.moment.jour)
+    if p.etat is Etat.ACTIF and not economie.a_la_rue(p):
+        p.pv = p.pv_max if not p.blessure_grave else p.pv
+    resultat = {"competence": u.nom_affiche(competence), **_resume(r.test), "revenu": r.revenu, "argent": p.argent,
+                "monnaie": u.monnaie, "moment": str(session.moment), "echeances": _echeances(echeances)}
+    if r.ennui:
+        resultat["ennui"] = "une maladresse : raconte l'ennui que ce travail lui vaut (un client mécontent, une dette)"
+    if session.personnage.commandes:
+        arrivees = commerce.livrer_les_commandes(p, session.inventaire, u, session.moment.jour)
+        if arrivees:
+            session.charger_les_armes()
+            resultat["commandes_arrivees"] = arrivees
+    return resultat
+
+
+@outil("Faire emprunter de l'argent au joueur auprès d'un usurier ou d'un fixer : un palier, jusqu'à 5 000. Il "
+       "rembourse un dixième de la somme par semaine pendant 12 semaines ; le moteur débite l'échéance avant le "
+       "loyer et te prévient quand une échéance est manquée.",
+       lambda s: _objet({
+           "creancier": {"type": "string", "description": "Son identifiant de PNJ, par exemple usurier_tanaka."},
+           "somme": {"type": "integer", "enum": list(gains.SOMMES_EMPRUNTABLES)},
+       }, ["creancier", "somme"]),
+       disponible=_avec_economie)
+def emprunter(session: Session, creancier: str, somme: int) -> dict:
+    dette = gains.emprunter(session.personnage, creancier, somme)
+    return {"creancier": creancier, "somme": somme, "echeance_par_semaine": dette["echeance"],
+            "total_a_rembourser": dette["reste"], "argent": session.personnage.argent,
+            "monnaie": session.univers.monnaie}
 
 
 # --- Le tour de parole et la fiche du combat ---------------------------------------------------
@@ -1664,7 +1828,17 @@ def ouvrir_fil(session: Session, identifiant: str, fil: str) -> dict:
        lambda s: _objet({
            "identifiant": _enum(sorted(i for i, f in s.memoire.fils.items() if f.ouvert) or ["aucun"]),
            "issue": {"type": "string", "description": "Comment il s'est réglé, en une phrase."},
+           "reussie": {"type": "boolean", "description": "Pour une mission payée : est-elle réussie ? Le moteur "
+                                                         "verse alors la récompense."},
        }, ["identifiant", "issue"]))
-def clore_fil(session: Session, identifiant: str, issue: str) -> dict:
+def clore_fil(session: Session, identifiant: str, issue: str, reussie: bool | None = None) -> dict:
+    mission = session.personnage.missions.get(identifiant)
+    if mission is not None and reussie is None:
+        raise ErreurOutil(f"« {identifiant} » est une mission payée : précise « reussie » (vrai ou faux).")
     fil = session.memoire.clore_fil(identifiant, issue)
-    return {"fil": identifiant, "texte": fil.texte, "issue": fil.issue}
+    resultat = {"fil": identifiant, "texte": fil.texte, "issue": fil.issue}
+    if mission is not None:
+        verse = gains.clore_mission(session.personnage, identifiant, reussie)
+        resultat |= {"mission_reussie": reussie, "recompense_versee": verse, "argent": session.personnage.argent,
+                     "monnaie": session.univers.monnaie}
+    return resultat

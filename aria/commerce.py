@@ -213,6 +213,12 @@ def vendre(perso: Personnage, inventaire: Inventaire, univers, nom: str, par_un_
     """Vend un objet de l'inventaire à un receleur, deux paliers sous sa valeur. Le matériel militaire, ou
     marqué, ne se vend que par un contact."""
     objet = inventaire.trouver(nom)
+    if objet.get("valeur"):  # un objet de valeur trouvé en butin : il se revend à sa valeur
+        if marchandage and marchandage.refus:
+            return Vente(nom, 0, perso.argent, refuse=True)
+        inventaire.retirer(nom)
+        perso.argent += objet["valeur"]
+        return Vente(nom, objet["valeur"], perso.argent)
     if objet["famille"] == inv.OBJET:
         raise CommerceImpossible(f"« {nom} » n'a pas de valeur marchande.")
     if objet.get("portee"):
