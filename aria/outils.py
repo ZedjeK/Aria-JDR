@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Callable
 
-from aria import economie, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
+from aria import commerce, economie, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
 from aria import combat as combat_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
@@ -198,7 +198,7 @@ class Session:
             resultat = outil.fonction(self, **arguments)
         except (ErreurOutil, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
-                ValueError, KeyError) as erreur:
+                ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
         self.journal.append({"outil": nom, "arguments": arguments, "resultat": resultat})
         return resultat
@@ -439,6 +439,12 @@ def avancer_temps(session: Session) -> dict:
     resultat = {"moment": str(session.moment)}
     # Le coût de la vie tombe tout seul, tous les 7 jours (REGLES.md 13.2) : au MJ de le raconter
     echeances = economie.passer_les_echeances(session.personnage, session.moment.jour)
+    if session.inventaire and session.personnage.commandes:
+        arrivees = commerce.livrer_les_commandes(session.personnage, session.inventaire, session.univers,
+                                                 session.moment.jour)
+        if arrivees:
+            session.charger_les_armes()
+            resultat["commandes_arrivees"] = arrivees
     if echeances:
         resultat["echeances"] = [
             {"jour": e.jour, "niveau_de_vie": e.niveau, "cout": e.cout, "argent": e.argent} if e.payee else
@@ -1279,17 +1285,32 @@ def lancer_sort(session: Session, lanceur: str, sort: str, cible: str | None = N
            "charcudoc": _ids(s, "Qui pose l'implant."),
            "cote": _enum(implants_.COTES, "Pour un bras ou une main : quel côté."),
            "qualite": _enum(["d'origine", "usé"], "Usé : d'occasion ou du marché noir, il coûte 2 points de plus."),
+           "clandestine": {"type": "boolean", "description": "Une clinique clandestine : la pose coûte un palier de moins."},
+           "offert": {"type": "boolean", "description": "Vrai si l'implant et la pose sont une récompense : rien à payer."},
        }, ["implant", "charcudoc"]),
        disponible=lambda s: bool(s.univers.implants))
 def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | None = None,
-                  qualite: str = "d'origine") -> dict:
+                  qualite: str = "d'origine", clandestine: bool = False, offert: bool = False) -> dict:
     if session.combat:
         raise ErreurOutil("On ne pose pas d'implant en plein combat.")
+    fiche, paye = session.univers.implant(implant), {}
+    if session.inventaire and not offert:
+        # L'implant et sa pose se paient avant le jet (REGLES.md 13.7) : on paie l'acte, pas le résultat
+        if economie.disponibilite(fiche, session.univers) == economie.MILITAIRE:
+            raise ErreurOutil(f"« {implant} » est un implant militaire : il ne s'achète pas. On le gagne ou on le trouve.")
+        prix_implant = economie.decaler(economie.prix(fiche, session.univers), -1 if qualite == "usé" else 0)
+        somme = prix_implant + commerce.prix_de_pose(fiche, clandestine)
+        if session.personnage.argent < somme:
+            raise ErreurOutil(f"Pas assez d'argent : l'implant et sa pose coûtent "
+                              f"{economie.montant(somme, session.univers.monnaie)}.")
     r = implants_.poser(session.des, session.combattant(charcudoc).fiche, session.personnage, session.corps(),
-                        session.univers.implant(implant), qualite, cote)
+                        fiche, qualite, cote)
+    if session.inventaire and not offert:
+        session.personnage.argent -= somme
+        paye = {"prix": somme, "argent": session.personnage.argent, "monnaie": session.univers.monnaie}
     session.equiper_implants()
     return {"implant": implant, **_resume(r.test), "pose": r.pose, "sm_max_perdue": r.sm_max_perdue,
-            "sm_max": session.personnage.sm_max, "sante_mentale": session.personnage.sm}
+            "sm_max": session.personnage.sm_max, "sante_mentale": session.personnage.sm, **paye}
 
 
 @outil("Stabiliser un combattant mourant avec un jet de Médecine (action simple).",
@@ -1298,6 +1319,162 @@ def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | No
 def stabiliser(session: Session, soigneur: str, mourant: str) -> dict:
     r = session.combat_en_cours().stabiliser(session.participant(soigneur), session.participant(mourant))
     return {**_resume(r), "etat": session.combattant(mourant).fiche.etat.value}
+
+
+# --- L'argent : acheter, vendre, payer (REGLES.md 13) ----------------------------------------------------
+
+def _avec_economie(session: Session) -> bool:
+    return session.inventaire is not None
+
+
+def _marchandage(session: Session, marchander: str, attitude: str):
+    """Le test de marchandage demandé, ou None. « menace » : par l'Intimidation."""
+    if marchander == "non":
+        return None
+    competence = commerce.INTIMIDATION if marchander == "menace" else commerce.PERSUASION
+    m = commerce.marchander(session.des, session.joueur.valeur(competence), attitude, competence)
+    progression.cocher(session.personnage, competence, m.test)
+    return m
+
+
+def _rapport_marchandage(m) -> dict:
+    if m is None:
+        return {}
+    return {"marchandage": _resume(m.test)} | (
+        {"attitude": "le vendeur lui en veut : baisse son attitude d'un cran (noter_pnj)"} if m.attitude_baisse else {})
+
+
+_MARCHANDER = {"type": "string", "enum": ["non", "persuasion", "menace"],
+               "description": "Marchander : un seul test par transaction. Par la menace, le PNJ lui en voudra."}
+_ATTITUDE = {"type": "string", "enum": list(commerce.ATTITUDES), "description": "L'attitude du vendeur envers lui."}
+
+
+@outil("Montrer ce qu'un vendeur propose cette semaine, en plus du matériel courant (toujours disponible en "
+       "ville, au prix) : ses occasions, ou, pour un contact du marché noir, ses objets restreints. Le moteur "
+       "tire le stock ; il se renouvelle tous les 7 jours.",
+       lambda s: _objet({
+           "vendeur": {"type": "string", "description": "Son identifiant (le même d'une visite à l'autre)."},
+           "marche_noir": {"type": "boolean", "description": "Vrai pour un contact du marché noir."},
+       }, ["vendeur"]),
+       disponible=_avec_economie)
+def voir_boutique(session: Session, vendeur: str, marche_noir: bool = False) -> dict:
+    lignes = commerce.stock(session.univers, vendeur, session.moment.jour, marche_noir)
+    return {"vendeur": vendeur, "stock": lignes, "argent": session.personnage.argent,
+            "rappel": "Le matériel restreint hors de ce stock se commande (commander)." if marche_noir else
+                      "Tout le matériel courant de l'univers se vend aussi ici, au prix (acheter, état « neuf »)."}
+
+
+@outil("Acheter un objet pour le joueur : le moteur vérifie qu'il se vend, que l'argent et la place suffisent, "
+       "débite et range l'objet. État « neuf » pour le matériel courant ; « occasion », « marque » ou « marché "
+       "noir » pour un objet du stock d'un vendeur (voir_boutique). Le matériel militaire ne se vend pas.",
+       lambda s: _objet({
+           "objet": _enum(commerce.catalogue(s.univers, s.inventaire)),
+           "etat": _enum([commerce.NEUF, commerce.OCCASION, commerce.MARQUE, commerce.MARCHE_NOIR]),
+           "vendeur": {"type": "string", "description": "Pour un objet de stock : l'identifiant du vendeur."},
+           "marchander": _MARCHANDER, "attitude": _ATTITUDE,
+       }, ["objet"]),
+       disponible=_avec_economie)
+def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: str = "", marchander: str = "non",
+            attitude: str = "neutre") -> dict:
+    if session.combat:
+        raise ErreurOutil("On n'achète rien en plein combat.")
+    if etat != commerce.NEUF:
+        en_stock = commerce.stock(session.univers, vendeur, session.moment.jour, etat == commerce.MARCHE_NOIR)
+        if not any(ligne["objet"] == objet and ligne["etat"] == etat for ligne in en_stock):
+            raise ErreurOutil(f"« {objet} » ({etat}) n'est pas dans le stock de « {vendeur} » cette semaine : "
+                              f"{[ligne['objet'] for ligne in en_stock]}.")
+    m = _marchandage(session, marchander, attitude)
+    a = commerce.acheter(session.personnage, session.inventaire, session.univers, objet, etat, m)
+    session.charger_les_armes()
+    if a.refuse:
+        return {"objet": objet, "achete": False, "raison": "le vendeur se braque : il ne vendra rien aujourd'hui",
+                **_rapport_marchandage(m)}
+    return {"objet": objet, "achete": True, "prix": a.prix, "argent": a.argent, "monnaie": session.univers.monnaie,
+            **({"geste": a.geste} if a.geste else {}), **_rapport_marchandage(m),
+            "emplacements": session.inventaire.resume()["emplacements"]}
+
+
+@outil("Vendre un objet du joueur à un receleur, deux paliers sous sa valeur. Le matériel militaire, ou marqué "
+       "par une police ou une corporation, ne se vend que par un contact.",
+       lambda s: _objet({
+           "objet": _enum(s.inventaire.noms()),
+           "par_un_contact": {"type": "boolean"},
+           "marchander": _MARCHANDER, "attitude": _ATTITUDE,
+       }, ["objet"]),
+       disponible=_avec_economie)
+def vendre(session: Session, objet: str, par_un_contact: bool = False, marchander: str = "non",
+           attitude: str = "neutre") -> dict:
+    if session.combat:
+        raise ErreurOutil("On ne vend rien en plein combat.")
+    if session.joueur.arme is not None and session.joueur.arme.nom == objet:
+        session.joueur.arme = None
+    m = _marchandage(session, marchander, attitude)
+    v = commerce.vendre(session.personnage, session.inventaire, session.univers, objet, par_un_contact, m)
+    if v.refuse:
+        return {"objet": objet, "vendu": False, "raison": "le receleur se braque : il n'achètera rien aujourd'hui",
+                **_rapport_marchandage(m)}
+    return {"objet": objet, "vendu": True, "prix": v.prix, "argent": v.argent, "monnaie": session.univers.monnaie,
+            **_rapport_marchandage(m)}
+
+
+@outil("Faire payer un service au joueur : un service de la liste, ou, pour une information ou un pot-de-vin, "
+       "un palier de prix. Une soirée de détente rend aussi de la Santé mentale (une fois par semaine). On paie "
+       "l'acte, pas le résultat : le soin ou la thérapie se jouent ensuite avec leurs outils.",
+       lambda s: _objet({
+           "service": _enum([*commerce.SERVICES, "une information", "un pot-de-vin"]),
+           "palier": {"type": "integer", "enum": list(commerce.PALIERS_LIBRES),
+                      "description": "Pour une information ou un pot-de-vin seulement."},
+       }, ["service"]),
+       disponible=_avec_economie)
+def payer(session: Session, service: str, palier: int | None = None) -> dict:
+    p, monnaie = session.personnage, session.univers.monnaie
+    if service == commerce.DETENTE:
+        gain = commerce.se_detendre(session.des, p, session.moment.jour)
+        return {"service": service, "prix": commerce.SERVICES[service], "argent": p.argent, "monnaie": monnaie,
+                "sm_gagnee": gain, "sante_mentale": p.sm}
+    if service in commerce.SERVICES:
+        somme = commerce.SERVICES[service]
+    elif palier is None:
+        raise ErreurOutil(f"Pour {service}, choisis un palier : {list(commerce.PALIERS_LIBRES)}.")
+    else:
+        somme = palier
+    commerce.payer(p, somme, monnaie)
+    return {"service": service, "prix": somme, "argent": p.argent, "monnaie": monnaie}
+
+
+@outil("Commander un objet restreint par un contact : un test de Persuasion (difficulté selon le lieu), un délai "
+       "de 1 à 3 jours, un palier au-dessus du prix. La somme est payée à la commande, et l'objet arrive tout "
+       "seul le jour dit.",
+       lambda s: _objet({
+           "objet": _enum(commerce.catalogue(s.univers, s.inventaire)),
+           "lieu": _enum(commerce.LIEUX),
+       }, ["objet", "lieu"]),
+       disponible=_avec_economie)
+def commander(session: Session, objet: str, lieu: str) -> dict:
+    c = commerce.commander(session.des, session.personnage, session.univers, objet,
+                           session.joueur.valeur(commerce.PERSUASION), lieu, session.moment.jour)
+    progression.cocher(session.personnage, commerce.PERSUASION, c.test)
+    if not c.passee:
+        return {"objet": objet, "commande": False, **_test(c.test), "raison": "le contact ne peut pas l'obtenir"}
+    return {"objet": objet, "commande": True, **_test(c.test), "prix": c.prix, "arrive": f"jour {c.jour}",
+            "argent": session.personnage.argent, "monnaie": session.univers.monnaie}
+
+
+@outil("Changer le niveau de vie du joueur (à la rue, modeste, confortable). Le nouveau tarif vaut à "
+       "l'échéance suivante ; « payer_maintenant » règle tout de suite une semaine, pour quitter la rue.",
+       lambda s: _objet({
+           "niveau": _enum([n.value for n in economie.NiveauDeVie]),
+           "payer_maintenant": {"type": "boolean"},
+       }, ["niveau"]),
+       disponible=_avec_economie)
+def niveau_de_vie(session: Session, niveau: str, payer_maintenant: bool = False) -> dict:
+    p = session.personnage
+    economie.changer_niveau_de_vie(p, economie.NiveauDeVie(niveau))
+    if payer_maintenant and not economie.payer_la_semaine(p):
+        raise ErreurOutil(f"Pas assez d'argent pour une semaine en « {niveau} ».")
+    return {"niveau_de_vie": economie.niveau_effectif(p).value, "choisi": niveau, "argent": p.argent,
+            "prochaine_echeance": f"jour {p.echeance}",
+            "visage": session.univers.niveaux_de_vie.get(niveau, niveau)}
 
 
 # --- Le tour de parole et la fiche du combat ---------------------------------------------------

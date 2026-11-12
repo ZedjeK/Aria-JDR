@@ -138,6 +138,8 @@ class Personnage:
     # Ce qu'il porte et ses munitions (REGLES.md 13.5 et 13.9, voir aria.inventaire). None : un personnage
     # d'avant l'économie, qui dégaine toute l'armurerie et recharge sans compter.
     inventaire: dict | None = None
+    commandes: list[dict] = field(default_factory=list)  # les objets restreints commandés, payés, pas encore arrivés
+    derniere_detente: int = 0  # le jour de sa dernière soirée de détente (une par semaine)
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit

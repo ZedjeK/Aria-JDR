@@ -65,6 +65,24 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         elif r["action"] == "recharger" and "munitions" in r:
             arme = f" ({r['munitions']} dans l'arme)"
         return [f"⚔️ {session.combattant(r['qui']).nom} {VERBES[r['action']]}{arme}"]
+    if o == "acheter":
+        if not r["achete"]:
+            return [f"💰 {a['objet']} : {r['raison']}"]
+        return [f"💰 Acheté : {a['objet']} pour {montant(r['prix'], r['monnaie'])} (reste {montant(r['argent'], r['monnaie'])})"
+                + (f" — {r['geste']}" if r.get("geste") else "")]
+    if o == "vendre":
+        if not r["vendu"]:
+            return [f"💰 {a['objet']} : {r['raison']}"]
+        return [f"💰 Vendu : {a['objet']} pour {montant(r['prix'], r['monnaie'])} (tu as {montant(r['argent'], r['monnaie'])})"]
+    if o == "payer":
+        return [f"💰 {a['service'].capitalize()} : −{montant(r['prix'], r['monnaie'])} (reste {montant(r['argent'], r['monnaie'])})"
+                + (f", Santé mentale +{r['sm_gagnee']}" if "sm_gagnee" in r else "")]
+    if o == "commander":
+        if not r["commande"]:
+            return [f"💰 Commande de {a['objet']} : {r['raison']}"]
+        return [f"💰 Commandé : {a['objet']} pour {montant(r['prix'], r['monnaie'])}, livré {r['arrive']}"]
+    if o == "niveau_de_vie":
+        return [f"💰 Niveau de vie : {r['visage']} ({r['choisi']}), prochaine échéance {r['prochaine_echeance']}"]
     if o == "inventaire":
         if r["action"] == "regarnir":
             garnies = sum(r["cartouches_garnies"].values())
@@ -133,7 +151,7 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
             f"💰 Jour {e['jour']}, le coût de la vie ({e['niveau_de_vie']}) : "
             + (f"{montant(e['cout'], monnaie)} impayés, te voilà à la rue" if e.get("impayee")
                else f"−{montant(e['cout'], monnaie)}, il te reste {montant(e['argent'], monnaie)}")
-            for e in r.get("echeances", [])]
+            for e in r.get("echeances", [])] + [f"📦 Ta commande est arrivée : {nom}" for nom in r.get("commandes_arrivees", [])]
     return []  # etat : le MJ se renseigne, rien ne change
 
 

@@ -34,7 +34,8 @@ def test_schemas_au_format_openai():
     assert {s["function"]["name"] for s in schemas} == set(OUTILS) - {
         "lancer_sort", "attaquer_zone", "piloter", "reparer", "round_poursuite", "fin_poursuite",
         "tirer_sur_vehicule", "eperonner", "tirer_arme_montee", "lance_fumigenes", "inventaire",
-    }  # ni magie, ni grenade en main, ni véhicule à Kaito, ni combat, ni poursuite, ni inventaire ici
+        "voir_boutique", "acheter", "vendre", "payer", "commander", "niveau_de_vie",
+    }  # ni magie, ni grenade en main, ni véhicule à Kaito, ni combat, ni poursuite, ni inventaire, ni économie ici
     for schema in schemas:
         assert schema["type"] == "function"
         assert schema["function"]["parameters"]["type"] == "object"
