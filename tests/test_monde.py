@@ -39,7 +39,9 @@ def petit() -> dict:
             "factions": {"Lames": {"type": "gang", "chef": "Rin", "rivale": "Rats"},
                          "Rats": {"type": "gang", "chef": "Nour", "rivale": "Lames"},
                          "Helix": {"type": "corporation", "chef": "Vera", "rivale": ""}},
-            "reputation": {"Lames": NEUTRE, "Rats": NEUTRE, "Helix": NEUTRE}, "ici": "D", "journal": [], "lu": 0}
+            "reputation": {"Lames": NEUTRE, "Rats": NEUTRE, "Helix": NEUTRE}, "ici": "D", "journal": [], "lu": 0,
+            "genre": "Cyberpunk", "en_cours": [], "vus": {},
+            "evenements": {"quartier": 999, "ville": 999, "monde": 999}}  # pas d'événement, sauf si le test en veut
 
 
 def attaque(etat, quartier="B", jour=1):
@@ -108,7 +110,7 @@ def test_l_attaquant_gagne_deux_points_sur_un_ecart_de_cinq():
     assert (m.bonus_attaque, m.bonus_defense, m.points, m.pris, m.controle) == (0, 1, -2, False, 1)
     assert m.vainqueur == "Lames" and e["quartiers"]["B"]["maitre"] == "Rats"
     assert e["quartiers"]["B"]["attaque"] == 2  # la prochaine attaque est déjà tirée : 1d3 jours plus tard
-    assert "gagne du terrain" in e["journal"][-1]["texte"]
+    assert "avantage à Lames" in e["journal"][-1]["texte"]
 
 
 def test_a_zero_le_quartier_change_de_mains():
@@ -117,7 +119,7 @@ def test_a_zero_le_quartier_change_de_mains():
     m = monde.resoudre(e, Imposes(6, 1, 1, 6, 5), "B")  # un clan préparé (+2) : 6 + 2 contre 5 + 1
     assert m.pris and m.bonus_attaque == 2 and m.raisons == ["attaque : un repérage des lieux"]
     assert (e["quartiers"]["B"]["maitre"], e["quartiers"]["B"]["controle"]) == ("Lames", 5)
-    assert monde.domine(e, "Nord") == "Lames" and "prend B" in e["journal"][-1]["texte"]
+    assert monde.domine(e, "Nord") == "Lames" and "change de mains, victoire de Lames" in e["journal"][-1]["texte"]
     assert not monde.dispute(e, "A") and monde.dispute(e, "C")  # le front s'est déplacé
 
 
@@ -258,7 +260,7 @@ def test_l_outil_monde_suit_le_joueur_et_annonce_la_melee():
     assert "melee" not in {o["function"]["name"] for o in s.schemas()}  # rien d'annoncé : pas d'outil
     r = s.appeler("monde", {"ici": "B"})
     assert r["quartier"] == "B" and r["maitre"] == "Rats" and r["melee"] == {"attaquant": "Lames", "defenseur": "Rats"}
-    assert "s'apprête à attaquer B" in r["nouvelles_du_monde"][0]
+    assert "se prépare contre B" in r["nouvelles_du_monde"][0]
     assert "melee" in {o["function"]["name"] for o in s.schemas()}
     assert "erreur" in s.appeler("monde", {"ici": "Z"})
 
@@ -312,7 +314,7 @@ def test_le_monde_vit_quand_le_temps_passe():
     s.appeler("avancer_temps")
     r = s.appeler("avancer_temps")  # le matin du jour 2 : la mêlée d'hier a été jouée
     assert s.moment.jour == 2 and 0 < len(r["nouvelles_du_monde"]) <= 3
-    assert "gagne du terrain à B" in s.monde["journal"][0]["texte"] and s.jour_du_monde == 2
+    assert "Mêlée à B : avantage à Lames" in s.monde["journal"][0]["texte"] and s.jour_du_monde == 2
     assert all(q["attaque"] is None or q["attaque"] > 2 for q in s.monde["quartiers"].values())
 
 

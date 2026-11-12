@@ -214,18 +214,25 @@ class Echeance:
 COUT_DU_LIEN = 200  # par semaine, pour un lien à charge (13.7)
 
 
-def payer_la_semaine(perso: Personnage) -> bool:
-    """Paie une semaine du niveau de vie choisi, si l'argent suffit."""
+def cout_de_la_semaine(perso: Personnage, loge: bool = False) -> int:
+    """Ce que coûte sa semaine. Logé par son clan (REGLES.md 14.6), le niveau modeste ne coûte rien, et un
+    niveau au-dessus ne coûte que la différence."""
     cout = COUT_DE_LA_VIE[NiveauDeVie(perso.niveau_de_vie)]
+    return max(0, cout - COUT_DE_LA_VIE[NiveauDeVie.MODESTE]) if loge else cout
+
+
+def payer_la_semaine(perso: Personnage, loge: bool = False) -> bool:
+    """Paie une semaine du niveau de vie choisi, si l'argent suffit."""
+    cout = cout_de_la_semaine(perso, loge)
     perso.semaine_payee = perso.argent >= cout
     if perso.semaine_payee:
         perso.argent -= cout
     return perso.semaine_payee
 
 
-def passer_les_echeances(perso: Personnage, jour: int) -> list[Echeance]:
+def passer_les_echeances(perso: Personnage, jour: int, loge: bool = False) -> list[Echeance]:
     """Débite chaque échéance arrivée (une tous les 7 jours). Sans l'argent, le personnage tombe à la rue
-    jusqu'à ce qu'une semaine soit de nouveau payée."""
+    jusqu'à ce qu'une semaine soit de nouveau payée. `loge` : son clan le loge sans payer."""
     passees = []
     while jour >= perso.echeance:
         # Dans l'ordre : les dettes passent avant tout, puis le lien à charge, puis le loyer
@@ -246,8 +253,8 @@ def passer_les_echeances(perso: Personnage, jour: int) -> list[Echeance]:
             lien = perso.charge_payee = perso.argent >= COUT_DU_LIEN
             if lien:
                 perso.argent -= COUT_DU_LIEN
-        cout = COUT_DE_LA_VIE[NiveauDeVie(perso.niveau_de_vie)]
-        payee = payer_la_semaine(perso)
+        cout = cout_de_la_semaine(perso, loge)
+        payee = payer_la_semaine(perso, loge)
         passees.append(Echeance(perso.echeance, perso.niveau_de_vie, cout, payee, perso.argent, payees, manquees, lien))
         perso.echeance += SEMAINE
     return passees

@@ -39,6 +39,7 @@ PLANS_VUS = "plans_vus.json"  # les plans d'amorce déjà piochés
 ETAT = ("etat", "état", "/etat")
 INVENTAIRE = ("inventaire", "inv", "/inventaire")
 CARTE = ("carte", "/carte")
+MONDE = ("monde", "/monde", "nouvelles")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.
 # La ruelle de la démo v1 ouvre la campagne ; le quartier reste, d'une session à l'autre.
 EMBUSCADE = (
@@ -205,7 +206,8 @@ class Jeu:
                   f"{k.points_destin} points de destin.")
         self.dire(f"Motivation : {k.motivation}. Lien : {k.lien}. Défaut : {k.defaut}.")
         self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « inventaire » : ce que tu portes ; "
-                  + ("« carte » : qui tient quoi ; " if self.session.monde is not None else "")
+                  + ("« carte » : qui tient quoi ; « monde » : les nouvelles ; " if self.session.monde is not None
+                     else "")
                   + "« quitter » : fin de la session.")
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
@@ -222,6 +224,9 @@ class Jeu:
                 continue
             if phrase.lower() in CARTE:
                 self.afficher_carte()
+                continue
+            if phrase.lower() in MONDE:
+                self.afficher_monde()
                 continue
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
@@ -267,6 +272,12 @@ class Jeu:
             self.dire("Pas de carte dans cette campagne (elle date d'avant le monde vivant).")
             return
         self.dire("\n" + "\n".join(monde.carte(self.session.monde)))
+
+    def afficher_monde(self):
+        if self.session.monde is None:
+            self.dire("Pas de journal du monde dans cette campagne (elle date d'avant le monde vivant).")
+            return
+        self.dire("\n" + "\n".join(monde.journal(self.session.monde)))
 
     def sauvegarder(self):
         s = self.session

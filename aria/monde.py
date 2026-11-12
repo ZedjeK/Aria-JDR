@@ -9,6 +9,7 @@ Une campagne d'avant ce module n'a pas de monde (None) : elle se joue comme avan
 """
 
 import json
+import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 
@@ -16,6 +17,7 @@ from aria import chemins
 from aria.des import Des
 
 BIBLIOTHEQUE = chemins.RESSOURCES / "bibliotheque" / "monde.json"
+EVENEMENTS = chemins.RESSOURCES / "bibliotheque" / "evenements.json"
 
 # La taille de la carte selon le cadre : districts, quartiers (de… à…), factions
 TAILLES = {"bourg": (1, (3, 4), 3), "ville": (3, (8, 10), 5), "mégapole": (6, (18, 20), 8)}
@@ -46,6 +48,31 @@ PREPARATIFS = {ATTAQUE: ("un repérage des lieux", "un complice à l'intérieur"
                          "un brouillage des communications")}
 
 
+# Les effets d'un événement : une liste fermée, que le moteur sait appliquer (REGLES.md 14.7)
+PRIX_PLUS, PRIX_MOINS, FERME, CACHES_VIDEES = "prix+", "prix-", "boutiques fermées", "caches vidées"
+BARRAGE, PATROUILLES, PANNE, TRAQUE = "barrage", "patrouilles", "panne", "ils te cherchent"
+CONTROLE_PLUS, CONTROLE_MOINS = "contrôle+", "contrôle-"
+MELEE_ATTAQUE, MELEE_DEFENSE = "mêlée attaque+", "mêlée défense+"
+EFFETS = ("", PRIX_PLUS, PRIX_MOINS, FERME, CACHES_VIDEES, BARRAGE, PATROUILLES, PANNE, CONTROLE_PLUS,
+          CONTROLE_MOINS, MELEE_ATTAQUE, MELEE_DEFENSE)
+CATEGORIES = ("armes", "armures", "munitions", "soins", "services", "tout")
+DUREE_MAX = 7
+DECALAGE_MAX = 2  # paliers, dans un sens ou dans l'autre, quand plusieurs événements s'ajoutent
+CHANCE_TRAQUE = 3  # 1 chance sur 3, dans un quartier dont le maître recherche le joueur
+PERIODES = ("le matin", "l'après-midi", "la nuit")
+JOURNAL_DU_JOUEUR = 15  # les dernières nouvelles montrées par la commande « monde »
+
+# Ce que le type du maître change dans son quartier (REGLES.md 14.5), et la place forte du district qu'il domine
+COULEURS = {
+    GANG: ("marché noir ouvert", "pas de police ; racket et bagarres", "un tripot"),
+    CORPORATION: ("le matériel courant un palier plus cher", "contrôles d'identité, armes visibles interdites",
+                  "une clinique privée"),
+    AUTORITES: ("pas de marché noir ni de receleur", "patrouilles ; une arme sortie attire la police", "un tribunal"),
+    SYNDICAT: ("réparations et services un palier moins cher", "calme tant qu'on paie sa part", "un atelier"),
+    MILICE: ("peu de boutiques, troc", "étrangers surveillés, couvre-feu", "une armurerie"),
+}
+
+
 class MondeImpossible(ValueError):
     """Ce que les règles du monde ne permettent pas : le message est renvoyé tel quel au MJ."""
 
@@ -61,6 +88,28 @@ def noms_du_genre(genre: str) -> dict:
     """Les noms de districts, de quartiers, de factions et de chefs du genre ; ceux du jeu générique sinon."""
     b = _bibliotheque()
     return b["genres"].get(genre, b["generique"])
+
+
+_CONTRACTIONS = ((re.compile(r"\bà le "), "au "), (re.compile(r"\bà les "), "aux "),
+                 (re.compile(r"\bde le "), "du "), (re.compile(r"\bde les "), "des "),
+                 (re.compile(r"\bÀ le "), "Au "), (re.compile(r"\bÀ les "), "Aux "),
+                 (re.compile(r"\bDe le "), "Du "), (re.compile(r"\bDe les "), "Des "))
+
+
+def contracter(texte: str) -> str:
+    """« à le Canal noir » → « au Canal noir », « de les Chromés » → « des Chromés » : les noms de la carte
+    portent leur article."""
+    for motif, remplacement in _CONTRACTIONS:
+        texte = motif.sub(remplacement, texte)
+    return texte
+
+
+def a(nom: str) -> str:
+    return contracter(f"à {nom}")
+
+
+def de(nom: str) -> str:
+    return contracter(f"de {nom}")
 
 
 def _choisir(des: Des, liste):
@@ -145,8 +194,12 @@ def creer(des: Des, genre: str, taille: str | None = None) -> dict:
         "ici": _choisir(des, quartiers),
         "journal": [],
         "lu": 0,
+        "genre": genre,
+        "en_cours": [],
+        "vus": {},
     }
     planifier(etat, des, 1)
+    etat["evenements"] = {echelle: 1 + delai(etat, des, echelle) for echelle in (QUARTIER, VILLE, MONDE)}
     return etat
 
 
@@ -302,6 +355,10 @@ def resoudre(etat: dict, des: Des, quartier: str, jour: int | None = None) -> Me
     raisons, joueur = [], q.pop("joueur", None)
     bonus = {ATTAQUE: (1 if domine(etat, q["district"]) == attaquant else 0) + _bonus_du_clan(des, ATTAQUE, raisons),
              DEFENSE: (1 if domine(etat, q["district"]) == defenseur else 0) + _bonus_du_clan(des, DEFENSE, raisons)}
+    for effet, camp in ((MELEE_ATTAQUE, ATTAQUE), (MELEE_DEFENSE, DEFENSE)):
+        for e in en_cours(etat, quartier, effet):
+            bonus[camp] += 1
+            raisons.append(f"{camp} : {e['texte']}")
     if joueur:
         bonus[joueur["camp"]] += joueur.get("preparatif", 0) + joueur.get("combat", 0)
     bonus = {camp: min(valeur, BONUS_MAX) for camp, valeur in bonus.items()}
@@ -313,14 +370,14 @@ def resoudre(etat: dict, des: Des, quartier: str, jour: int | None = None) -> Me
         q["controle"] += points
         if q["controle"] <= 0:
             q["maitre"], q["controle"], pris = attaquant, CONTROLE_PRISE, True
-            texte = f"{attaquant} prend {quartier} à {defenseur}."
+            texte = f"Mêlée {a(quartier)} : le quartier change de mains, victoire {de(attaquant)} sur {defenseur}."
         else:
-            texte = f"{attaquant} gagne du terrain à {quartier}, que tient encore {defenseur}."
+            texte = f"Mêlée {a(quartier)} : avantage {a(attaquant)} ; le quartier reste {a(defenseur)}."
     elif points > 0:
         q["controle"] = min(CONTROLE_MAX, q["controle"] + points)
-        texte = f"{defenseur} repousse {attaquant} à {quartier}."
+        texte = f"Mêlée {a(quartier)} : l'attaque {de(attaquant)} est repoussée par {defenseur}."
     else:
-        texte = f"{attaquant} et {defenseur} s'affrontent à {quartier}, sans vainqueur."
+        texte = f"Mêlée {a(quartier)} entre {attaquant} et {defenseur} : sans vainqueur."
     melee = Melee(quartier, attaquant, defenseur, de_attaque, de_defense, bonus[ATTAQUE], bonus[DEFENSE], points,
                   pris, q["controle"], raisons)
     if joueur:  # s'en mêler se paie : le camp d'en face s'en souvient, le sien aussi s'il a gagné
@@ -353,7 +410,7 @@ def avancer(etat: dict, des: Des, jour: int) -> list[Melee]:
     """Fait vivre la carte jusqu'à ce jour : les attaques dont la date est passée sont jouées, dans l'ordre.
     Une mêlée dont le joueur est prévenu est d'abord annoncée, et attend la fin de sa journée : il peut s'y
     préparer ou s'y battre. Renvoie les mêlées jouées."""
-    jouees = []
+    jouees, debut = [], len(etat["journal"])
     for _ in range(2000):  # borne de sûreté : chaque mêlée repousse la suivante d'un jour au moins
         dues = sorted((q["attaque"], nom) for nom, q in etat["quartiers"].items()
                       if q["attaque"] is not None and q["attaque"] < jour
@@ -366,9 +423,173 @@ def avancer(etat: dict, des: Des, jour: int) -> list[Melee]:
         if q["attaque"] is not None and not q.get("annoncee") and _prevenu(etat, nom, jour):
             q["annoncee"] = True
             quand = "aujourd'hui" if q["attaque"] <= jour else "demain"
-            noter(etat, jour, QUARTIER, nom, f"{q['attaquant']} s'apprête à attaquer {nom}, tenu par {q['maitre']} : "
-                                             f"c'est pour {quand}.", [q["attaquant"], q["maitre"]], "annonce")
+            noter(etat, jour, QUARTIER, nom, f"Une attaque {de(q['attaquant'])} se prépare contre {nom}, quartier "
+                                             f"{de(q['maitre'])} : c'est pour {quand}.",
+                  [q["attaquant"], q["maitre"]], "annonce")
+    vivre_les_evenements(etat, des, jour)
+    debut = min(debut, len(etat["journal"]))  # le journal a pu être raccourci entre-temps
+    etat["journal"][debut:] = sorted(etat["journal"][debut:], key=lambda e: e["jour"])
     return jouees
+
+
+# --- Les événements (REGLES.md 14.7) --------------------------------------------------------------------
+
+@lru_cache(maxsize=1)
+def _evenements() -> dict:
+    return json.loads(EVENEMENTS.read_text(encoding="utf-8"))
+
+
+def table(genre: str, echelle: str) -> list[dict]:
+    """Les événements du genre à cette échelle ; ceux du jeu générique si le genre n'a pas encore les siens."""
+    b = _evenements()
+    return b["genres"].get(genre, b["generique"])[echelle]
+
+
+def verifier_tables() -> list[str]:
+    """Les tables d'événements sont-elles jouables ? (vide si oui)"""
+    b, erreurs = _evenements(), []
+    for nom, tables in [("générique", b["generique"]), *b["genres"].items()]:
+        for echelle in (QUARTIER, VILLE, MONDE):
+            for i, e in enumerate(tables.get(echelle, []), 1):
+                ou = f"{nom}, {echelle} n° {i}"
+                if e.get("e") not in EFFETS:
+                    erreurs.append(f"{ou} : effet inconnu « {e.get('e')} ».")
+                if e.get("e") in (PRIX_PLUS, PRIX_MOINS) and e.get("c") not in CATEGORIES:
+                    erreurs.append(f"{ou} : un effet de prix porte sur une catégorie de {CATEGORIES}.")
+                if not 1 <= e.get("d", 0) <= DUREE_MAX:
+                    erreurs.append(f"{ou} : une durée de 1 à {DUREE_MAX} jours.")
+                if echelle == MONDE and ("{lieu}" in e["t"] or "{maitre}" in e["t"]):
+                    erreurs.append(f"{ou} : un événement du monde n'a ni lieu ni maître.")
+    return erreurs
+
+
+def delai(etat: dict, des: Des, echelle: str) -> int:
+    """Dans combien de jours tombera le prochain événement : 1d5 pour le quartier (deux fois plus vite si
+    son district est en guerre ouverte), 1d20 pour la ville, 2d20 pour le monde."""
+    if echelle == QUARTIER:
+        jours = des.lancer(5)
+        guerre = domine(etat, etat["quartiers"][etat["ici"]]["district"]) is None
+        return (jours + 1) // 2 if guerre else jours
+    return des.lancer(20) if echelle == VILLE else des.lancer(20) + des.lancer(20)
+
+
+def _quartiers_de(etat: dict, echelle: str, lieu: str) -> list[str]:
+    if echelle == QUARTIER:
+        return [lieu]
+    return list(etat["districts"][lieu]) if echelle == VILLE else sorted(etat["quartiers"])
+
+
+def tirer_evenement(etat: dict, des: Des, echelle: str, jour: int) -> dict:
+    """Tire un événement qui n'est pas encore tombé à cette échelle, l'applique, et le note au journal. Dans
+    un quartier dont le maître recherche le joueur, une fois sur trois, ce sont ses hommes qui arrivent."""
+    ici = etat["ici"]
+    lieu = ici if echelle == QUARTIER else _choisir(des, sorted(etat["districts"])) if echelle == VILLE else ""
+    maitre = etat["quartiers"][ici]["maitre"] if echelle == QUARTIER else domine(etat, lieu) if echelle == VILLE else None
+    periode = _choisir(des, PERIODES)
+    if echelle == QUARTIER and reputation(etat, maitre) == RECHERCHE and des.lancer(CHANCE_TRAQUE) == 1:
+        modele = {"t": "Les hommes de {maitre} ont retrouvé sa trace : ils le cherchent à {lieu}.", "e": TRAQUE,
+                  "d": 1}
+    else:
+        lignes = table(etat.get("genre", ""), echelle)
+        vus = etat.setdefault("vus", {}).setdefault(echelle, [])
+        restants = [i for i in range(len(lignes)) if i not in vus]
+        if not restants:  # toute la table est tombée : on la reprend
+            vus.clear()
+            restants = list(range(len(lignes)))
+        numero = _choisir(des, restants)
+        vus.append(numero)
+        modele = lignes[numero]
+    texte = contracter(modele["t"].format(lieu=lieu, maitre=maitre or "ceux qui tiennent la rue"))
+    effet = modele["e"]
+    if effet in (CONTROLE_PLUS, CONTROLE_MOINS):  # un coup porté au maître, sans jamais lui prendre le quartier
+        for nom in _quartiers_de(etat, echelle, lieu):
+            q = etat["quartiers"][nom]
+            q["controle"] = max(1, min(CONTROLE_MAX, q["controle"] + (1 if effet == CONTROLE_PLUS else -1)))
+    elif effet:
+        etat.setdefault("en_cours", []).append({"texte": texte, "effet": effet, "categorie": modele.get("c", ""),
+                                                "echelle": echelle, "lieu": lieu, "fin": jour + modele["d"]})
+    elif modele["d"] > 1:  # sans effet chiffré, mais il dure : le MJ doit savoir qu'il est encore là
+        etat.setdefault("en_cours", []).append({"texte": texte, "effet": "", "categorie": "", "echelle": echelle,
+                                                "lieu": lieu, "fin": jour + modele["d"]})
+    return noter(etat, jour, echelle, lieu, f"{periode.capitalize()}, {texte[0].lower() + texte[1:]}",
+                 [maitre] if maitre else [], effet or "événement")
+
+
+def vivre_les_evenements(etat: dict, des: Des, jour: int):
+    """Fait tomber les événements dont la date est arrivée, tire la date des suivants, et oublie ceux qui
+    sont finis."""
+    prochains = etat.setdefault("evenements", {})
+    for echelle in (QUARTIER, VILLE, MONDE):
+        if echelle not in prochains:
+            prochains[echelle] = jour + delai(etat, des, echelle)
+        while prochains[echelle] <= jour:
+            tirer_evenement(etat, des, echelle, prochains[echelle])
+            prochains[echelle] += delai(etat, des, echelle)
+    etat["en_cours"] = [e for e in etat.get("en_cours", []) if e["fin"] > jour]
+
+
+def en_cours(etat: dict, quartier: str | None = None, effet: str | None = None) -> list[dict]:
+    """Les événements qui pèsent en ce moment sur un quartier (celui du joueur par défaut) : les siens, ceux
+    de son district, ceux du monde."""
+    nom = quartier or etat["ici"]
+    district = etat["quartiers"][nom]["district"]
+    return [e for e in etat.get("en_cours", [])
+            if (e["echelle"] == MONDE or e["lieu"] in (nom, district)) and (effet is None or e["effet"] == effet)]
+
+
+def decalage(etat: dict, categorie: str) -> int:
+    """De combien de paliers les événements en cours déplacent les prix de cette catégorie, là où est le joueur."""
+    total = sum(1 if e["effet"] == PRIX_PLUS else -1 for e in en_cours(etat)
+                if e["effet"] in (PRIX_PLUS, PRIX_MOINS) and e["categorie"] in (categorie, "tout"))
+    return max(-DECALAGE_MAX, min(DECALAGE_MAX, total))
+
+
+def raison(etat: dict, effet: str) -> str | None:
+    """Le premier événement en cours qui a cet effet là où est le joueur : son texte, ou None."""
+    return next((e["texte"] for e in en_cours(etat, effet=effet)), None)
+
+
+# --- Ce que le maître du quartier change (REGLES.md 14.5 et 14.6) ----------------------------------------
+
+def commerce(etat: dict) -> dict:
+    """Les règles du commerce là où est le joueur : un refus (boutiques fermées, vendeurs hostiles), pas de
+    receleur chez les autorités, le neuf plus cher chez une corporation, les services moins chers chez un
+    syndicat, et un marchandage en « amical » chez une faction amie."""
+    maitre = etat["quartiers"][etat["ici"]]["maitre"]
+    type_, cran = etat["factions"][maitre]["type"], reputation(etat, maitre)
+    refus = raison(etat, FERME)
+    if refus is None and cran in (HOSTILE, RECHERCHE):
+        refus = f"Le quartier est {a(maitre)}, où il passe pour un ennemi : les vendeurs ne le servent pas."
+    return {"refus": refus, "sans_receleur": type_ == AUTORITES, "neuf": 1 if type_ == CORPORATION else 0,
+            "services": -1 if type_ == SYNDICAT else 0, "amical": cran in (AMI, MEMBRE)}
+
+
+def loge(etat: dict) -> bool:
+    """Le joueur est-il logé sans payer ? Oui s'il est membre de la faction qui domine le district où il vit."""
+    dominant = domine(etat, etat["quartiers"][etat["ici"]]["district"])
+    return dominant is not None and reputation(etat, dominant) == MEMBRE
+
+
+def barrage(etat: dict) -> str | None:
+    """Ce qui barre le passage au joueur là où il est : un événement, ou la faction dominante qui lui est
+    hostile. None : il circule librement."""
+    evenement = raison(etat, BARRAGE)
+    if evenement:
+        return evenement
+    dominant = domine(etat, etat["quartiers"][etat["ici"]]["district"])
+    if dominant and reputation(etat, dominant) in (HOSTILE, RECHERCHE):
+        return f"Les barrages du district sont {a(dominant)}, où il passe pour un ennemi : un test ou un pot-de-vin."
+    return None
+
+
+def journal(etat: dict, maximum: int = JOURNAL_DU_JOUEUR) -> list[str]:
+    """Les dernières nouvelles, pour le joueur, et ce qui dure encore là où il est."""
+    lignes = [f"Jour {e['jour']} — {e['texte']}" for e in etat["journal"][-maximum:]] or ["Rien à signaler."]
+    actuels = en_cours(etat)
+    if actuels:
+        lignes.append(f"En ce moment {a(etat['ici'])} :")
+        lignes += [f"  {e['texte']}" for e in actuels]
+    return lignes
 
 
 # --- Le joueur dans une mêlée ---------------------------------------------------------------------------
@@ -417,6 +638,21 @@ def situation(etat: dict, quartier: str | None = None) -> dict:
                 "reputation": {f: r for f, r in etat["reputation"].items() if r != NEUTRE}}
     if q.get("annoncee"):
         resultat["melee"] = {"attaquant": q["attaquant"], "defenseur": maitre}
+    couleur_commerce, securite, place_forte = COULEURS[etat["factions"][maitre]["type"]]
+    resultat |= {"commerce": couleur_commerce, "securite": securite}
+    if dominant:
+        ouverte = reputation(etat, dominant) in (AMI, MEMBRE)
+        resultat["place_forte"] = (f"{COULEURS[etat['factions'][dominant]['type']][2]} {de(dominant)}, "
+                                   + ("où le joueur est reçu" if ouverte else "où le joueur n'entre pas"))
+    actuels = en_cours(etat, nom)
+    if actuels:
+        resultat["en_ce_moment"] = [e["texte"] for e in actuels]
+    if nom == etat["ici"]:
+        obstacle = barrage(etat)
+        if obstacle:
+            resultat["barrage"] = obstacle
+        if raison(etat, TRAQUE):
+            resultat["traque"] = "Ses hommes le cherchent ici : joue une embuscade (embuscade)."
     return resultat
 
 

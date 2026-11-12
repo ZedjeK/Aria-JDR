@@ -455,7 +455,7 @@ def avancer_temps(session: Session) -> dict:
     session.oublier_les_effets()
     resultat = {"moment": str(session.moment)}
     # Le coût de la vie tombe tout seul, tous les 7 jours (REGLES.md 13.2) : au MJ de le raconter
-    echeances = economie.passer_les_echeances(session.personnage, session.moment.jour)
+    echeances = _echeances_du_joueur(session)
     if session.inventaire and session.personnage.commandes:
         arrivees = commerce.livrer_les_commandes(session.personnage, session.inventaire, session.univers,
                                                  session.moment.jour)
@@ -1362,6 +1362,25 @@ def _avec_economie(session: Session) -> bool:
     return session.inventaire is not None
 
 
+def _regles_du_lieu(session: Session) -> dict:
+    """Ce que le quartier où se trouve le joueur change au commerce (REGLES.md 14.5 à 14.7). Sans monde : rien."""
+    if session.monde is None:
+        return {"refus": None, "sans_receleur": False, "neuf": 0, "services": 0, "amical": False}
+    regles = monde_.commerce(session.monde)
+    if regles["refus"]:
+        raise ErreurOutil(regles["refus"])
+    return regles
+
+
+def _decalage(session: Session, categorie: str) -> int:
+    return monde_.decalage(session.monde, categorie) if session.monde is not None else 0
+
+
+def _echeances_du_joueur(session: Session):
+    loge = session.monde is not None and monde_.loge(session.monde)
+    return economie.passer_les_echeances(session.personnage, session.moment.jour, loge)
+
+
 def _au_calme(session: Session) -> bool:
     """Hors combat et hors poursuite : le MJ ne voit les outils du commerce que là où ils servent (en combat,
     il lui reste l'inventaire, la fouille et la prise)."""
@@ -1400,6 +1419,8 @@ _ATTITUDE = {"type": "string", "enum": list(commerce.ATTITUDES), "description": 
        }, ["vendeur"]),
        disponible=_au_calme)
 def voir_boutique(session: Session, vendeur: str, marche_noir: bool = False) -> dict:
+    if _regles_du_lieu(session)["sans_receleur"] and marche_noir:
+        raise ErreurOutil("Les autorités tiennent ce quartier : pas de marché noir ici.")
     lignes = commerce.stock(session.univers, vendeur, session.moment.jour, marche_noir)
     return {"vendeur": vendeur, "stock": lignes, "argent": session.personnage.argent,
             "rappel": "Le matériel restreint hors de ce stock se commande (commander)." if marche_noir else
@@ -1420,13 +1441,19 @@ def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: st
             attitude: str = "neutre") -> dict:
     if session.combat:
         raise ErreurOutil("On n'achète rien en plein combat.")
+    lieu = _regles_du_lieu(session)
+    if etat == commerce.MARCHE_NOIR and lieu["sans_receleur"]:
+        raise ErreurOutil("Les autorités tiennent ce quartier : pas de marché noir ici.")
     if etat != commerce.NEUF:
         en_stock = commerce.stock(session.univers, vendeur, session.moment.jour, etat == commerce.MARCHE_NOIR)
         if not any(ligne["objet"] == objet and ligne["etat"] == etat for ligne in en_stock):
             raise ErreurOutil(f"« {objet} » ({etat}) n'est pas dans le stock de « {vendeur} » cette semaine : "
                               f"{[ligne['objet'] for ligne in en_stock]}.")
-    m = _marchandage(session, marchander, attitude)
-    a = commerce.acheter(session.personnage, session.inventaire, session.univers, objet, etat, m)
+    famille = commerce.article(session.univers, objet).famille
+    decalage = (lieu["neuf"] if etat == commerce.NEUF else 0) + _decalage(
+        session, commerce.CATEGORIES_DE_PRIX.get(famille, "tout"))
+    m = _marchandage(session, marchander, "amical" if lieu["amical"] else attitude)
+    a = commerce.acheter(session.personnage, session.inventaire, session.univers, objet, etat, m, decalage)
     session.charger_les_armes()
     if a.refuse:
         return {"objet": objet, "achete": False, "raison": "le vendeur se braque : il ne vendra rien aujourd'hui",
@@ -1448,9 +1475,13 @@ def vendre(session: Session, objet: str, par_un_contact: bool = False, marchande
            attitude: str = "neutre") -> dict:
     if session.combat:
         raise ErreurOutil("On ne vend rien en plein combat.")
+    lieu = _regles_du_lieu(session)
+    if lieu["sans_receleur"] and not par_un_contact:
+        raise ErreurOutil("Les autorités tiennent ce quartier : pas de receleur ici. Il lui faut un contact, ou "
+                          "un autre quartier.")
     if session.joueur.arme is not None and session.joueur.arme.nom == objet:
         session.joueur.arme = None
-    m = _marchandage(session, marchander, attitude)
+    m = _marchandage(session, marchander, "amical" if lieu["amical"] else attitude)
     v = commerce.vendre(session.personnage, session.inventaire, session.univers, objet, par_un_contact, m)
     if v.refuse:
         return {"objet": objet, "vendu": False, "raison": "le receleur se braque : il n'achètera rien aujourd'hui",
@@ -1475,7 +1506,10 @@ def payer(session: Session, service: str, palier: int | None = None) -> dict:
         return {"service": service, "prix": commerce.SERVICES[service], "argent": p.argent, "monnaie": monnaie,
                 "sm_gagnee": gain, "sante_mentale": p.sm}
     if service in commerce.SERVICES:
-        somme = commerce.SERVICES[service]
+        # Le lieu et les événements déplacent le prix d'un service ; pas celui d'un pot-de-vin, que le MJ choisit
+        lieu = _regles_du_lieu(session)
+        categorie = "soins" if service in commerce.SOINS else "services"
+        somme = economie.decaler(commerce.SERVICES[service], lieu["services"] + _decalage(session, categorie))
     elif palier is None:
         raise ErreurOutil(f"Pour {service}, choisis un palier : {list(commerce.PALIERS_LIBRES)}.")
     else:
@@ -1562,6 +1596,9 @@ def fouiller(session: Session, cible: str, taille: str | None = None, materiel_m
             raise ErreurOutil("On ne fouille pas une cache en plein combat.")
         if taille is None:
             raise ErreurOutil(f"Pour une cache, précise sa taille : {list(gains.CACHES)}.")
+        videe = monde_.raison(session.monde, monde_.CACHES_VIDEES) if session.monde is not None else None
+        if videe:  # une cache n'est vide que si un événement a touché son lieu (REGLES.md 13.8)
+            return {"cible": "cache", "vide": True, "raison": videe, "argent_trouve": 0, "objets": []}
         butin = gains.fouiller_une_cache(session.des, u, taille)
         origine = f"cache_{len(session.trouvailles) + 1}"
     else:
@@ -1630,7 +1667,7 @@ def semaine_de_travail(session: Session) -> dict:
     progression.cocher(p, competence, r.test)
     session.moment = Moment(session.moment.jour + economie.SEMAINE, session.moment.periode)
     session.oublier_les_effets()
-    echeances = economie.passer_les_echeances(p, session.moment.jour)
+    echeances = _echeances_du_joueur(session)
     if p.etat is Etat.ACTIF and not economie.a_la_rue(p):
         p.pv = p.pv_max if not p.blessure_grave else p.pv
     resultat = {"competence": u.nom_affiche(competence), **_resume(r.test), "revenu": r.revenu, "argent": p.argent,
@@ -1733,7 +1770,7 @@ def melee(session: Session, quartier: str, camp: str, action: str, competence: s
     adversaires = []
     for _ in range(ADVERSAIRES_DE_MELEE):
         identifiant = next(f"melee_{n}" for n in range(1, 1000) if f"melee_{n}" not in session.pnj)
-        fiche = FichePnj(f"Un homme de {autre}", combat=combat, pv_max_base=pv)
+        fiche = FichePnj(f"Un homme {monde_.de(autre)}", combat=combat, pv_max_base=pv)
         session.pnj[identifiant] = Combattant(fiche, "ennemis", arme, None)
         if session.inventaire:
             session.pnj[identifiant].reserve = ReservePnj(arme)
@@ -1765,7 +1802,7 @@ def reputation(session: Session, faction: str, acte: str) -> dict:
     if sens > 0:
         services = etat.setdefault("services", {})
         if session.moment.jour - services.get(faction, -DELAI_ENTRE_SERVICES) < DELAI_ENTRE_SERVICES:
-            raise ErreurOutil(f"Un service rendu à {faction} a déjà compté cette semaine.")
+            raise ErreurOutil(f"Un service rendu {monde_.a(faction)} a déjà compté cette semaine.")
         services[faction] = session.moment.jour
     changements = monde_.bouger_reputation(etat, faction, sens)
     return {"faction": faction, "acte": acte, "reputation": monde_.reputation(etat, faction),
