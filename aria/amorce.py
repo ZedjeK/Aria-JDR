@@ -197,7 +197,7 @@ OUTIL_AMORCE = {"type": "function", "function": {
     }}}}
 
 
-def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str]) -> list[dict]:
+def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str], ouverture: str = "") -> list[dict]:
     p = perso
     qui = "une femme" if p.sexe == "femme" else "un homme" if p.sexe == "homme" else "un personnage"
     texte = (f"Univers : {univers.nom} ({univers.genre}). Cadre : {univers.cadre}\n"
@@ -207,7 +207,8 @@ def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str])
              + (f"Allure : {p.allure}\n" if p.allure else "")
              + (f"Objets : {', '.join(p.objets)}\n" if p.objets else "")
              + f"Métiers de cet univers : {', '.join(sorted(univers.parcours))}.\n\n"
-             f"Le plan de départ de la campagne : {plan}\n\n"
+             f"Le plan de départ de la campagne : {plan}\n"
+             + (f"{ouverture}\n" if ouverture else "") + "\n"
              "Appelle amorcer_campagne pour adapter ce plan au cadre et au personnage. Les PNJ sont des gens "
              "vivants, qu'il peut croiser ; si son lien est une personne vivante, elle en fait partie. Un fil vient "
              "de sa motivation. La situation se passe dans le lieu, lance le plan et laisse la décision au joueur, "
@@ -223,11 +224,13 @@ def _demande(univers: Univers, perso: Personnage, plan: str, erreurs: list[str])
             {"role": "user", "content": texte}]
 
 
-def proposer_amorce(serveur, univers: Univers, perso: Personnage, plan: str, budget: int | None = None) -> Amorce | None:
-    """L'amorce, par le LLM, vérifiée par le code. None s'il n'y arrive pas : le MJ ouvrira seul la campagne."""
+def proposer_amorce(serveur, univers: Univers, perso: Personnage, plan: str, budget: int | None = None,
+                    ouverture: str = "") -> Amorce | None:
+    """L'amorce, par le LLM, vérifiée par le code. None s'il n'y arrive pas : le MJ ouvrira seul la campagne.
+    `ouverture` : la consigne du type de campagne (au cœur du problème, ou sur le quotidien)."""
     erreurs = []
     for _ in range(ESSAIS):
-        reponse = serveur.discuter(_demande(univers, perso, plan, erreurs), [OUTIL_AMORCE], budget)
+        reponse = serveur.discuter(_demande(univers, perso, plan, erreurs, ouverture), [OUTIL_AMORCE], budget)
         message = reponse["choices"][0]["message"]
         appel = next((a for a in message.get("tool_calls") or []
                       if a["function"]["name"] == "amorcer_campagne"), None)

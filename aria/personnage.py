@@ -47,6 +47,24 @@ PLAFOND_COMPETENCE = 95
 MAGIE = "Magie"
 
 
+@dataclass(frozen=True)
+class Cran:
+    """L'expérience de départ (REGLES.md 5) : ce qu'un personnage sait et possède en commençant."""
+
+    nom: str
+    points_personnels: int
+    plafond: int  # d'une compétence à la création
+    plafond_magie: int
+    pieces: int  # les pièces d'équipement au-dessus du départ ordinaire
+    paliers: int  # les paliers d'argent en plus
+
+
+DEBUTANT, AGUERRI, VETERAN = "débutant", "aguerri", "vétéran"
+CRANS = {c.nom: c for c in (Cran(DEBUTANT, POINTS_PERSONNELS, PLAFOND_CREATION, PLAFOND_MAGIE_CREATION, 0, 0),
+                            Cran(AGUERRI, 200, 85, 60, 1, 1),
+                            Cran(VETERAN, 300, 90, 65, 2, 2))}
+
+
 class Etat(Enum):
     """L'état physique d'un personnage (REGLES.md 7.6)."""
 
@@ -130,6 +148,7 @@ class Personnage:
     objets: list[str] = field(default_factory=list)  # les objets racontés : sans bonus, mais ils ouvrent des actions
     allure: str = ""  # deux lignes sur son apparence, pour le MJ (et plus tard les images)
     sexe: str = ""  # « femme » ou « homme » ; vide s'il n'a pas été précisé
+    cran: str = "débutant"  # son expérience de départ : débutant, aguerri ou vétéran (REGLES.md 5)
     # L'argent (REGLES.md 13, voir aria.economie)
     argent: int = 0
     niveau_de_vie: str = "modeste"  # celui qu'il a choisi : « à la rue », « modeste » ou « confortable »
@@ -240,6 +259,7 @@ def creer_personnage(
     magie_active: bool = True,
     competences_thematiques: tuple[DefCompetence, ...] = (),
     bonus_pv: int = 0,
+    cran: str = "débutant",
 ) -> Personnage:
     """Crée un personnage en vérifiant toutes les règles de REGLES.md 5.
 
@@ -247,6 +267,7 @@ def creer_personnage(
     toutes les corriger d'un coup.
     """
     erreurs: list[str] = []
+    depart = CRANS[cran]
 
     for texte, libelle in ((nom, "nom"), (parcours, "parcours"), (motivation, "motivation"), (lien, "lien"), (defaut, "défaut")):
         if not texte.strip():
@@ -271,7 +292,7 @@ def creer_personnage(
     for nom_competence in points_parcours:
         if nom_competence not in competences_parcours:
             erreurs.append(f"« {nom_competence} » n'est pas une compétence du parcours : impossible d'y mettre des points de parcours.")
-    erreurs += _verifier_points(points_personnels, POINTS_PERSONNELS, "personnels", disponibles)
+    erreurs += _verifier_points(points_personnels, depart.points_personnels, "personnels", disponibles)
 
     if erreurs:
         raise CreationInvalide(erreurs)
@@ -284,7 +305,7 @@ def creer_personnage(
             + points_parcours.get(nom_competence, 0)
             + points_personnels.get(nom_competence, 0)
         )
-        plafond = PLAFOND_MAGIE_CREATION if nom_competence == MAGIE else PLAFOND_CREATION
+        plafond = depart.plafond_magie if nom_competence == MAGIE else depart.plafond
         if valeur > plafond:
             erreurs.append(f"« {nom_competence} » atteint {valeur}, au-dessus du plafond de création ({plafond}).")
         competences[nom_competence] = valeur
@@ -302,6 +323,7 @@ def creer_personnage(
         defaut=defaut.strip(),
         magie_active=magie_active,
         bonus_pv=bonus_pv,
+        cran=cran,
     )
 
 

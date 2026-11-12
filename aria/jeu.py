@@ -21,6 +21,7 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
+from aria import trame
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -77,6 +78,7 @@ class Jeu:
         self.entree, self.dire, self.hasard = entree, sortie, random.Random()
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
+        self.format = trame.lire_format(self.campagne)
         self.reprise = self.campagne.sauvegarde.is_file()
         if self.reprise:
             # La campagne continue : Kaito tel qu'on l'a laissé, et le quartier sans l'embuscade
@@ -129,7 +131,7 @@ class Jeu:
             except creation_texte.EtapeInvalide as erreur:
                 self.dire(f"\n{predefini.nom} ne peut pas vivre dans cet univers ({' '.join(erreur.erreurs)}) : "
                           "on crée un personnage sur place.")
-        return creation_texte.Guide(univers, self.entree, self.dire, serveur, budget).creer()
+        return creation_texte.Guide(univers, self.entree, self.dire, serveur, budget, cran=self.format.cran).creer()
 
     def amorcer(self, serveur, budget: int | None) -> str:
         """L'amorce de la campagne, d'après l'idée du joueur ou un plan tiré dans la bibliothèque. Gardée, elle
@@ -143,7 +145,8 @@ class Jeu:
                                               f"Complication : {amorce.tirer_complication(self.hasard)}")
             self.dire(f"\nPlan : {plan}\n… le MJ prépare le début de la campagne")
             try:
-                proposee = amorce.proposer_amorce(serveur, s.univers, s.personnage, plan, budget)
+                proposee = amorce.proposer_amorce(serveur, s.univers, s.personnage, plan, budget,
+                                                  trame.TYPES[self.format.type].consigne)
             except llm.ErreurLLM:
                 proposee = None
             if proposee is None:
@@ -299,6 +302,10 @@ def lire_arguments(arguments: list[str] | None = None):
     parser.add_argument("--cadre", default="", help="le cadre, en une phrase")
     parser.add_argument("--annee", type=int, help="l'année du cadre (sinon, le MJ la déduit du cadre)")
     parser.add_argument("--surprends-moi", action="store_true", help="le MJ propose le nom et le cadre")
+    parser.add_argument("--type", choices=list(trame.TYPES), default=trame.STANDARD,
+                        help="pour une nouvelle campagne : son type (par défaut %(default)s)")
+    parser.add_argument("--cran", choices=list(trame.CRANS),
+                        help="l'expérience de départ du personnage (par défaut, celle que le type conseille)")
     return parser.parse_args(arguments)
 
 
@@ -337,6 +344,8 @@ def main(arguments: list[str] | None = None):
     if choix and campagne.univers.is_file():
         print(f"La campagne « {arguments.campagne} » a déjà son univers : elle reprend telle quelle (sans --genre).")
         return
+    if choix:
+        trame.ecrire_format(campagne, trame.Format(arguments.type, arguments.cran or trame.TYPES[arguments.type].depart))
     lancer(campagne, choix, arguments.surprends_moi)
 
 

@@ -16,7 +16,7 @@ from aria.bibliotheque import charger
 from aria.campagne import nom_valide
 from aria.creation import Brouillon, EtapeInvalide, proposer_domaines, proposer_equipement
 from aria.generateur import choix_par_defaut, generer
-from aria.personnage import Caracteristique
+from aria.personnage import DEBUTANT, Caracteristique
 from aria.univers import Univers, univers_depuis_dict
 
 CASES = ("arme", "armure", "implant", "vehicule")
@@ -38,9 +38,14 @@ class Predefini:
     def nom(self) -> str:
         return self.fiche["roleplay"]["nom"]
 
+    @property
+    def cran(self) -> str:
+        return self.fiche.get("cran", DEBUTANT)
+
     def titre(self) -> str:
         sexe = self.fiche["roleplay"].get("sexe")
         return (f"{self.nom} — {sexe + ', ' if sexe else ''}{self.parcours} ({self.genre})"
+                + ("" if self.cran == DEBUTANT else f", {self.cran}")
                 + ("" if self.fichier else " · livré avec le jeu"))
 
 
@@ -66,7 +71,8 @@ def enregistrer(brouillon: Brouillon, genre: str) -> Predefini:
     predefini = Predefini(genre, b.parcours, {
         "caracteristiques": {c.value: v for c, v in b.caracteristiques.items()},
         "points_parcours": dict(b.points_parcours), "points_personnels": dict(b.points_personnels),
-        "domaines": list(b.domaines), "equipement": dict(b.equipement), "roleplay": dict(b.roleplay)})
+        "domaines": list(b.domaines), "equipement": dict(b.equipement), "roleplay": dict(b.roleplay),
+        "cran": b.cran})
     dossier().mkdir(parents=True, exist_ok=True)
     base = nom_valide(b.roleplay["nom"]) or "personnage"
     numero, chemin = 1, dossier() / f"{base}.json"
@@ -103,7 +109,7 @@ def brouillon_dans(univers: Univers, predefini: Predefini,
     noms que le cadre leur a donnés ; ce que le cadre a retiré est reproposé, et les notes le disent.
     Lève EtapeInvalide s'il ne peut pas y vivre (métier absent, magie sans magie…)."""
     f, local, notes, hasard = predefini.fiche, univers.nom_local, [], hasard or random.Random()
-    b = Brouillon(univers)
+    b = Brouillon(univers, cran=predefini.cran)
     b.fixer("parcours", local(predefini.parcours))
     b.fixer("caracteristiques", {Caracteristique(c): v for c, v in f["caracteristiques"].items()})
     b.fixer("points_parcours", dict(f["points_parcours"]))
@@ -117,6 +123,8 @@ def brouillon_dans(univers: Univers, predefini: Predefini,
     for case in CASES:
         if equipement.get(case):
             equipement[case] = local(equipement[case])
+    if equipement.get("pieces"):
+        equipement["pieces"] = [local(p) for p in equipement["pieces"]]
     try:
         b.fixer("equipement", equipement)
     except EtapeInvalide:

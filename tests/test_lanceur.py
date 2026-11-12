@@ -89,7 +89,7 @@ def une_campagne(nom, avec_personnage=True, mort=False):
 def test_une_nouvelle_campagne_par_le_menu(donnees):
     lignes = []
     lanceur.menu(entrees("1", "Ça !", "Osaka 2091", "99", "7", "Osaka 2091", "Osaka sous la pluie.", "an", "2091",
-                         "réaliste", "", "5"), lignes.append)
+                         "réaliste", "", "", "", "5"), lignes.append)
     (c, choix, surprends_moi, predefini), = donnees
     assert predefini is None  # Entrée : le personnage sera créé pour cette campagne
     assert c.dossier == chemins.DONNEES / "campagnes" / "osaka-2091" and not surprends_moi
@@ -100,7 +100,7 @@ def test_une_nouvelle_campagne_par_le_menu(donnees):
 
 
 def test_surprends_moi_et_les_valeurs_du_genre(donnees):
-    lanceur.menu(entrees("1", "essai", "7", "s", "", "", "1", "essai2", "1", "", "", "5"), lambda _: None)
+    lanceur.menu(entrees("1", "essai", "7", "s", "", "", "", "", "1", "essai2", "1", "", "", "", "", "5"), lambda _: None)
     (_, choix, surprends_moi, _), (_, fantasy, sans_surprise, _) = donnees
     assert surprends_moi and choix.curseur == "standard" and not sans_surprise
     assert fantasy.genre == "Fantasy" and fantasy.nom == "Fantasy" and fantasy.magie

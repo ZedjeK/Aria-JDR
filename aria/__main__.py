@@ -9,7 +9,8 @@ import traceback
 from dataclasses import replace
 from pathlib import Path
 
-from aria import banc, banc_generateur, campagne, chemins, creation_texte, demo, generateur, jeu, llm, personnages
+from aria import (banc, banc_generateur, campagne, chemins, creation_texte, demo, generateur, jeu, llm, personnages,
+                  trame)
 from aria.bibliotheque import GENRES
 from aria.campagne import Campagne
 from aria.personnage import Etat
@@ -116,9 +117,43 @@ def nouvelle_campagne(entree=input, sortie=print):
             sortie(f"  ✗ {erreur}")
         sortie("Campagne non créée : recommence.")
         return
+    type_campagne = choisir_type(entree, sortie)
     predefini = choisir_personnage(genre, entree, sortie)
+    if predefini is not None:
+        cran = predefini.cran  # un personnage prêt garde l'expérience qu'on lui a donnée
+    else:
+        cran = choisir_cran(trame.TYPES[type_campagne].depart, entree, sortie)
     if mj_disponible(entree, sortie):
+        trame.ecrire_format(Campagne.nommee(nom), trame.Format(type_campagne, cran))
         jeu.lancer(Campagne.nommee(nom), choix, surprends_moi, predefini=predefini)
+
+
+def choisir_type(entree=input, sortie=print) -> str:
+    """Le type de campagne (REGLES.md 14.1) : il fixe la longueur de la trame et la façon d'ouvrir."""
+    types = list(trame.TYPES.values())
+    sortie("\nLes types de campagne :")
+    for i, t in enumerate(types, 1):
+        sortie(f"  {i}. {t.nom.capitalize()} — {t.description}")
+    while True:
+        reponse = entree(f"Ton type (numéro ; Entrée : {trame.STANDARD}) : ").strip()
+        if not reponse:
+            return trame.STANDARD
+        if reponse.isdigit() and 0 < int(reponse) <= len(types):
+            return types[int(reponse) - 1].nom
+        sortie(f"  ✗ Un numéro de 1 à {len(types)}, ou Entrée.")
+
+
+def choisir_cran(conseille: str = trame.DEBUTANT, entree=input, sortie=print) -> str:
+    """L'expérience de départ du personnage (REGLES.md 5)."""
+    crans = list(trame.CRANS)
+    while True:
+        reponse = entree(f"Son expérience de départ ({' / '.join(crans)} ; Entrée : {conseille}) : ").strip().lower()
+        if not reponse:
+            return conseille
+        trouve = [c for c in crans if c.startswith(reponse) or c.replace("é", "e").startswith(reponse)]
+        if len(trouve) == 1:
+            return trouve[0]
+        sortie(f"  ✗ {', '.join(crans)}, ou Entrée.")
 
 
 def choisir_genre(entree=input, sortie=print) -> str:
@@ -209,6 +244,7 @@ def nouveau_personnage(entree=input, sortie=print):
     si le joueur le veut : c'est lui qui propose le nom et la personnalité."""
     genre = choisir_genre(entree, sortie)
     univers = personnages.univers_de_base(genre)
+    cran = choisir_cran(trame.DEBUTANT, entree, sortie)
     avec_mj = entree("Charger le MJ pour qu'il propose le nom et la personnalité ? (o/n) ").strip().lower() in OUI
     try:
         if avec_mj and mj_disponible(entree, sortie):
@@ -217,9 +253,9 @@ def nouveau_personnage(entree=input, sortie=print):
                     return
                 serveur, profil, _ = mj
                 brouillon = creation_texte.Guide(univers, entree, sortie, serveur,
-                                                 banc_generateur.budget_generateur(profil)).composer()
+                                                 banc_generateur.budget_generateur(profil), cran=cran).composer()
         else:
-            brouillon = creation_texte.Guide(univers, entree, sortie).composer()
+            brouillon = creation_texte.Guide(univers, entree, sortie, cran=cran).composer()
     except creation_texte.Abandon:
         sortie("Création abandonnée.")
         return

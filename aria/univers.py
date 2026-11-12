@@ -24,7 +24,8 @@ from aria.equipement import (
     verifier_arme,
     verifier_armure,
 )
-from aria.implants import Implant, Systeme, implant_depuis_dict, pose, systeme_depuis_dict, verifier_catalogue
+from aria.implants import (Corps, Implant, Systeme, implant_depuis_dict, pose, systeme_depuis_dict,
+                           verifier_catalogue)
 from aria.magie import (
     DOMAINES_PAR_PERSO,
     Domaine,
@@ -36,6 +37,8 @@ from aria.magie import (
 )
 from aria.personnage import (
     COMPETENCES_SOCLE,
+    CRANS,
+    DEBUTANT,
     MAGIE,
     NB_COMPETENCES_PARCOURS,
     DefCompetence,
@@ -56,6 +59,8 @@ OPTIONS_MAX = 3
 OBJETS_PROPOSES = (3, 4)
 OBJETS_GARDES = 2
 PROTECTION_DEPART = 3
+PIECE_ARME, PIECE_ARMURE, PIECE_IMPLANT = "arme", "armure", "implant"  # les sortes de pièces au-dessus du départ
+GAMME_AU_DESSUS = "avancée"
 
 
 class UniversInvalide(ValueError):
@@ -131,9 +136,9 @@ class Univers:
         """Tous les sorts appris et toutes les improvisations de ces domaines (REGLES.md 10.5)."""
         return [s for nom in domaines for s in self.domaine(nom).tous]
 
-    def creer_personnage(self, parcours: str, domaines: list[str] = (), **fiche) -> Personnage:
+    def creer_personnage(self, parcours: str, domaines: list[str] = (), cran: str = DEBUTANT, **fiche) -> Personnage:
         """Crée un perso dans cet univers : parcours, magie, compétences thématiques, PV et points de destin.
-        `domaines` : ses deux domaines de magie, si l'univers en a."""
+        `domaines` : ses deux domaines de magie, si l'univers en a. `cran` : son expérience de départ."""
         if parcours not in self.parcours:
             raise UniversInvalide([f"Parcours inconnu dans {self.nom} : « {parcours} »."])
         domaines = list(domaines)
@@ -150,25 +155,75 @@ class Univers:
             magie_active=self.magie_active,
             competences_thematiques=self.competences_thematiques,
             bonus_pv=self.curseur.bonus_pv,
+            cran=cran,
             **fiche,
         )
         perso.points_destin = self.curseur.points_destin
         perso.domaines = domaines
-        economie.installer(perso, self.rangs.get(parcours, economie.RANG_PAR_DEFAUT))
+        economie.installer(perso, self.rangs.get(parcours, economie.RANG_PAR_DEFAUT), CRANS[cran].paliers)
         return perso
+
+    def pieces_possibles(self) -> dict[str, str]:
+        """Ce qu'un personnage aguerri ou vétéran peut avoir en plus au départ (REGLES.md 5), avec sa sorte :
+        une arme personnalisée (de marque, le plus souvent), une armure de protection 4, un implant avancé."""
+        pieces = {}
+        for arme in self.armes:
+            if arme.qualite is Qualite.PERSONNALISE and not arme.montee \
+                    and economie.disponibilite(arme, self) != economie.MILITAIRE:
+                pieces[arme.nom] = PIECE_ARME
+        for armure in self.armures:
+            if armure.protection == PROTECTION_DEPART + 1 and armure.qualite in (Qualite.ORIGINE, Qualite.PERSONNALISE):
+                pieces[armure.nom] = PIECE_ARMURE
+        for implant in self.implants:
+            if implant.gamme == GAMME_AU_DESSUS:
+                pieces[implant.nom] = PIECE_IMPLANT
+        return pieces
+
+    def verifier_pieces(self, pieces: list[str], cran: str = DEBUTANT, implant: str | None = None,
+                        cote: str = "droit") -> list[str]:
+        """Les pièces au-dessus du départ : le bon nombre, une seule de chaque sorte, et un implant que le corps
+        peut recevoir après celui du métier (vide si tout va)."""
+        possibles = self.pieces_possibles()
+        attendu = min(CRANS[cran].pieces, len(set(possibles.values())))
+        erreurs = [f"« {p} » n'est pas une pièce de départ possible." for p in pieces if p not in possibles]
+        sortes = [possibles[p] for p in pieces if p in possibles]
+        if len(set(sortes)) != len(sortes):
+            erreurs.append("Une seule pièce de chaque sorte : une arme, une armure, un implant.")
+        if len(pieces) != attendu:
+            erreurs.append(f"{attendu} pièce(s) au-dessus de l'équipement de départ, pas {len(pieces)}.")
+        if erreurs:
+            return erreurs
+        poses = [self._pose(implant, cote)] if implant else []
+        for piece in pieces:
+            if possibles[piece] == PIECE_IMPLANT:
+                corps = Corps({i.nom: i for i in self.implants}, {s.nom: s for s in self.systemes}, poses)
+                erreurs += corps.verifier_pose(self.implant(piece), cote)
+        return erreurs
+
+    def _pose(self, implant: str, cote: str) -> dict:
+        fiche = self.implant(implant)
+        systeme = next((s for s in self.systemes if s.nom == fiche.systeme), None)
+        return pose(fiche, cote=cote if systeme and systeme.par else None)
 
     def equiper(self, perso: Personnage, arme: str | None = None, armure: str | None = None,
                 implant: str | None = None, vehicule: str | None = None, objets: list[str] = (),
-                cote: str = "droit") -> "Depart":
+                cote: str = "droit", pieces: list[str] = ()) -> "Depart":
         """L'équipement de départ, choisi dans les listes du parcours (REGLES.md 5) : une option par case,
-        et 2 objets racontés. L'implant est posé tout de suite, et coûte sa Santé mentale maximum."""
+        et 2 objets racontés. L'implant est posé tout de suite, et coûte sa Santé mentale maximum.
+        `pieces` : pour un personnage aguerri ou vétéran, ce qu'il a au-dessus ; une arme ou une armure
+        remplace celle du métier, un implant s'ajoute."""
+        pieces = list(pieces)
         erreurs = self.verifier_depart(perso.parcours, arme, armure, implant, vehicule, objets)
+        if pieces or CRANS[perso.cran].pieces:
+            erreurs += self.verifier_pieces(pieces, perso.cran, implant, cote)
         if erreurs:
             raise UniversInvalide(erreurs)
-        if implant:
-            fiche = self.implant(implant)
-            systeme = next((s for s in self.systemes if s.nom == fiche.systeme), None)
-            perso.implants.append(pose(fiche, cote=cote if systeme and systeme.par else None))
+        sortes = self.pieces_possibles()
+        en_plus = [p for p in pieces if sortes[p] == PIECE_IMPLANT]
+        arme = next((p for p in pieces if sortes[p] == PIECE_ARME), arme)
+        armure = next((p for p in pieces if sortes[p] == PIECE_ARMURE), armure)
+        for nom in ([implant] if implant else []) + en_plus:
+            perso.implants.append(self._pose(nom, cote))
             perso.sm = min(perso.sm, perso.sm_max)
         perso.objets = list(objets)
         equipement_de_depart(perso, self, arme, armure, list(objets))
