@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, monde as monde_, vehicules as vehicules_
+from aria import combat as combat_, missions, monde as monde_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -334,8 +334,14 @@ class Session:
         """Fait vivre le monde jusqu'au jour courant, et renvoie ce que le MJ doit en raconter."""
         monde_.avancer(self.monde, self.des, self.moment.jour)
         self.jour_du_monde = self.moment.jour
+        self.offres()
         fraiches = monde_.nouvelles(self.monde)
         return {"nouvelles_du_monde": fraiches} if fraiches else {}
+
+    def offres(self) -> list[dict]:
+        """Les offres de mission ouvertes là où est le joueur, tenues à jour (REGLES.md 14.8)."""
+        contacts = [p.nom for i, p in self.memoire.pnj.items() if not self.memoire.est_mort(i)]
+        return missions.renouveler(self.monde, self.des, self.moment.jour, self.personnage.cran, contacts)
 
     def oublier_les_effets(self):
         """Les effets des sorts ne survivent ni à la fin d'un combat, ni à la fin de la demi-journée."""
@@ -1724,8 +1730,38 @@ def monde(session: Session, ici: str | None = None) -> dict:
         etat["ici"] = ici
     monde_.avancer(etat, session.des, session.moment.jour)  # une mêlée peut être annoncée là où il arrive
     resultat = monde_.situation(etat)
+    ouvertes = session.offres()
+    if ouvertes:
+        resultat["offres_de_mission"] = [missions.resume(o) for o in ouvertes]
     fraiches = monde_.nouvelles(etat)
     return resultat | ({"nouvelles_du_monde": fraiches} if fraiches else {})
+
+
+@outil("Faire accepter au joueur une offre de mission tirée par le moteur (voir l'outil monde). Le moteur ouvre "
+       "le fil, fixe la récompense et te donne, à toi seul, le retournement s'il y en a un : ne le dis jamais au "
+       "joueur, fais-le arriver dans l'histoire. La récompense sera versée par clore_fil, avec reussie. Le joueur "
+       "peut marchander : un seul test.",
+       lambda s: _objet({
+           "offre": _enum([o["id"] for o in s.monde.get("offres", [])] or ["aucune"]),
+           "marchander": _MARCHANDER, "attitude": _ATTITUDE,
+       }, ["offre"]),
+       disponible=lambda s: _au_calme(s) and s.monde is not None and bool(s.monde.get("offres")))
+def accepter_mission(session: Session, offre: str, marchander: str = "non", attitude: str = "neutre") -> dict:
+    etat = session.monde
+    o = missions.offre(etat, offre)
+    texte = session.memoire.ouvrir_fil(o["id"], o["texte"]).texte  # refuse un identifiant déjà pris, avant tout test
+    amical = monde_.reputation(etat, o["commanditaire"]) in (monde_.AMI, monde_.MEMBRE)
+    m = _marchandage(session, marchander, "amical" if amical else attitude)
+    mission = gains.ouvrir_mission(session.personnage, o["id"], o["danger"], m, o.get("prime", 0))
+    session.personnage.missions[o["id"]]["offre"] = missions.prendre(etat, o["id"])
+    resultat = {"mission": o["id"], "texte": texte, "commanditaire": o["commanditaire"], "cible": o["cible"],
+                "lieu": o["lieu"], "danger": o["danger"], "recompense": mission.recompense, "avance": mission.avance,
+                "argent": session.personnage.argent, "monnaie": session.univers.monnaie, **_rapport_marchandage(m)}
+    if o.get("retournement"):
+        resultat["retournement_pour_toi_seul"] = o["retournement"]
+    if o.get("camp"):
+        resultat["rappel"] = f"C'est une mêlée : fais-le se battre avec l'outil melee, camp « {o['camp']} »."
+    return resultat
 
 
 def _arme_de_faction(session: Session):
@@ -2012,4 +2048,9 @@ def clore_fil(session: Session, identifiant: str, issue: str, reussie: bool | No
         verse = gains.clore_mission(session.personnage, identifiant, reussie)
         resultat |= {"mission_reussie": reussie, "recompense_versee": verse, "argent": session.personnage.argent,
                      "monnaie": session.univers.monnaie}
+        if session.monde is not None and mission.get("offre"):  # une mission du générateur change le monde
+            changements = missions.conclure(session.monde, session.des, mission["offre"], reussie,
+                                            session.moment.jour)
+            if changements:
+                resultat["monde"] = changements
     return resultat
