@@ -22,6 +22,7 @@ AMORCE = {
     "passe": "Yuki a grandi dans les étages bas d'Osaka. Elle pirate pour payer les soins de sa mère.",
     "lieu": "Un comptoir à nouilles sous la voie rapide, à la tombée de la nuit.",
     "situation": "Un homme en costume pose une enveloppe devant elle : la dette est due ce soir.",
+    "secret": "Tanaka travaille en réalité pour la corpo qui a rendu sa mère malade.",
     "pnj": [{"identifiant": "mere_sato", "nom": "Emi Sato", "role": "Sa mère, malade", "attitude": "L'aime, s'inquiète."},
             {"identifiant": "tanaka", "nom": "Tanaka", "role": "Recouvreur de dettes", "attitude": "Poli, sans pitié."}],
     "fils": [{"identifiant": "dette_mere", "texte": "Racheter la dette de sa mère avant la fin du mois."}],
@@ -65,12 +66,14 @@ def test_l_amorce_est_verifiee():
     assert propre.scene.startswith("Un comptoir") and "enveloppe" in propre.scene
     for changement, attendu in (
             ({"passe": ""}, "« passe »"),
-            ({"lieu": "x" * 301}, "« lieu »"),
+            ({"lieu": "x" * 401}, "« lieu »"),
             ({"pnj": AMORCE["pnj"][:1]}, f"de {NB_PNJ[0]} à {NB_PNJ[1]}"),
             ({"fils": []}, "« fils »"),
             ({"pnj": [dict(AMORCE["pnj"][0], identifiant="Mère Sato"), AMORCE["pnj"][1]]}, "Identifiant invalide"),
             ({"pnj": [AMORCE["pnj"][0], dict(AMORCE["pnj"][1], identifiant="mere_sato")]}, "en double"),
             ({"pnj": [AMORCE["pnj"][0], dict(AMORCE["pnj"][1], nom="x" * 41)]}, "nom"),
+            ({"secret": ""}, "« secret »"),
+            ({"fils": [dict(AMORCE["fils"][0], identifiant=amorce.FIL_SECRET)]}, "en double"),
             ({"fils": "une dette"}, "« fils »")):
         propre, erreurs = verifier(dict(AMORCE, **changement))
         assert propre is None and any(attendu in e for e in erreurs), changement
@@ -96,6 +99,9 @@ def test_l_amorce_remplit_la_memoire(tmp_path):
     assert relue.souvenirs[0].startswith("## Avant la campagne") and "comptoir à nouilles" in relue.souvenirs[0]
     assert "Tanaka" in relue.bloc() and "Avant la campagne" in relue.bloc()
     assert any("Tanaka" in ligne for ligne in proposee.lignes())
+    # Le secret : jamais montré au joueur, mais gardé pour le MJ, dans la scène et dans un fil qu'il pourra clore
+    assert not any("corpo qui a rendu" in ligne for ligne in proposee.lignes())
+    assert "corpo qui a rendu" in proposee.scene and "corpo qui a rendu" in relue.fils[amorce.FIL_SECRET].texte
 
 
 def test_la_fiche_du_mj_dit_le_sexe_et_l_allure(yuki):
