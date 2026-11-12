@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
+from aria import combat as combat_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -336,7 +336,11 @@ class Session:
         self.jour_du_monde = self.moment.jour
         self.offres()
         fraiches = monde_.nouvelles(self.monde)
-        return {"nouvelles_du_monde": fraiches} if fraiches else {}
+        resultat = {"nouvelles_du_monde": fraiches} if fraiches else {}
+        if meteo_.actif(self.monde):
+            meteo_.avancer(self.monde, self.des, self.moment.jour)
+            resultat["temps_du_jour"] = meteo_.decrire(self.monde, self.univers.nom_affiche)
+        return resultat
 
     def offres(self) -> list[dict]:
         """Les offres de mission ouvertes là où est le joueur, tenues à jour (REGLES.md 14.8)."""
@@ -495,22 +499,33 @@ def _echeances(echeances) -> list[dict]:
 
 # --- Tests hors combat ------------------------------------------------------------------------
 
+def _dehors(s: Session, quoi: str) -> dict:
+    """Le champ « dehors » d'un outil, dans une campagne qui a sa météo (REGLES.md 15.3)."""
+    if not meteo_.actif(s.monde):
+        return {}
+    return {"dehors": {"type": "boolean", "description": f"Vrai si {quoi} dehors : le moteur applique le temps qu'il "
+                                                         "fait. Faux à l'abri."}}
+
+
 @outil("Faire un test de compétence du personnage joueur. À utiliser dès qu'une action a une issue incertaine "
        "et des conséquences. Le moteur lance le d100 ; raconte ensuite le résultat selon son degré.",
        lambda s: _objet({
            "competence": _enum(sorted(s.noms_competences), "La compétence, avec son nom dans cet univers."),
            "difficulte": _difficulte(),
            "pourquoi": {"type": "string", "description": "Ce que le personnage tente, en une phrase."},
-       }, ["competence", "difficulte"]))
-def test_competence(session: Session, competence: str, difficulte: str, pourquoi: str = "") -> dict:
+       } | _dehors(s, "l'action se passe"), ["competence", "difficulte"]))
+def test_competence(session: Session, competence: str, difficulte: str, pourquoi: str = "",
+                    dehors: bool = False) -> dict:
     socle = session.noms_competences[competence]
-    valeur = session.joueur.valeur(socle)
+    meteo = meteo_.modificateur(session.monde, socle) if dehors else 0
+    valeur = session.joueur.valeur(socle) + meteo
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
     progression.cocher(session.personnage, socle, resultat)
     if not session.combat:
         session.joueur.consommer_effets_du_jet()
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": competence}
-    return {"competence": competence, **_test(resultat)}
+    return {"competence": competence, **_test(resultat)} | (
+        {"meteo": f"{meteo_.temps(session.monde)} : {meteo:+d}"} if meteo else {})
 
 
 @outil("Faire un test de caractéristique du personnage joueur, quand aucune compétence ne correspond.",
@@ -789,8 +804,8 @@ def embuscade(session: Session, discretion_agresseurs: int) -> dict:
        lambda s: _objet({
            "pnj": {"type": "array", "items": _enum(sorted(s.pnj)), "description": "Les PNJ qui combattent."},
            "surpris": _enum(["personne", "joueur", "ennemis"], "Le camp surpris perd son premier round."),
-       }, ["pnj"]))
-def debut_combat(session: Session, pnj: list, surpris: str = "personne") -> dict:
+       } | _dehors(s, "le combat a lieu"), ["pnj"]))
+def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors: bool = False) -> dict:
     if session.combat:
         raise ErreurOutil("Un combat est déjà en cours.")
     if not pnj:
@@ -804,8 +819,13 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne") -> dict
         surpris_liste = []
     session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste, tour_par_tour=True)
     session.rounds, session.debut_round = [], len(session.journal) + 1  # + 1 : cet appel-ci
+    meteo = {}
+    if dehors:
+        session.combat.malus_tir, session.combat.malus_tir_long = meteo_.malus_de_tir(session.monde)
+        if session.combat.malus_tir or session.combat.malus_tir_long:
+            meteo = {"meteo": f"{meteo_.temps(session.monde)} : le moteur l'applique aux tirs"}
     return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre],
-            "au_tour_de": _qui_joue(session), "consigne": _consigne(session), "fiche": _fiche(session)}
+            "au_tour_de": _qui_joue(session), "consigne": _consigne(session), "fiche": _fiche(session)} | meteo
 
 
 @outil("Faire entrer des PNJ dans le combat en cours (renforts, passant qui s'en mêle). Le moteur les place "
@@ -1810,6 +1830,9 @@ def monde(session: Session, ici: str | None = None) -> dict:
         etat["ici"] = ici
     monde_.avancer(etat, session.des, session.moment.jour)  # une mêlée peut être annoncée là où il arrive
     resultat = monde_.situation(etat)
+    if meteo_.actif(etat):
+        meteo_.avancer(etat, session.des, session.moment.jour)
+        resultat["meteo"] = meteo_.decrire(etat, session.univers.nom_affiche)
     ouvertes = session.offres()
     if ouvertes:
         resultat["offres_de_mission"] = [missions.resume(o) for o in ouvertes]
