@@ -17,7 +17,7 @@ Une autre campagne, dans un univers généré depuis la bibliothèque :
 import argparse
 import sys
 
-from aria import banc, banc_generateur, chemins, generateur, llm, optimiseur, outils, progression
+from aria import banc, banc_generateur, chemins, creation_texte, generateur, llm, optimiseur, outils, progression
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.des import Des
@@ -63,9 +63,11 @@ class SansPersonnage(Exception):
 class Jeu:
     def __init__(self, serveur: llm.Serveur, budget: int | None, contexte: int = optimiseur.CONTEXTE_CIBLE,
                  des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
-                 choix: "generateur.Choix | None" = None, budget_generation: int | None = None):
+                 choix: "generateur.Choix | None" = None, budget_generation: int | None = None,
+                 creer: bool = False):
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
-        encore d'univers prend Néo-Tokyo, l'univers étalon du banc."""
+        encore d'univers prend Néo-Tokyo, l'univers étalon du banc. `creer` : le joueur crée son personnage
+        (sinon, c'est Kaito, le Netrunner de la démo)."""
         self.entree, self.dire = entree, sortie
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
@@ -82,10 +84,19 @@ class Jeu:
             elif choix:
                 generation = budget if budget_generation is None else budget_generation
                 univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=generation,
-                                                                gardes={NETRUNNER})
+                                                                gardes=set() if creer else {NETRUNNER})
                 self.montrer_adaptation(univers, adaptation)
             else:
                 univers = charger_univers(banc.UNIVERS)
+            if creer:
+                generation = budget if budget_generation is None else budget_generation
+                perso, depart = creation_texte.Guide(univers, entree, sortie, serveur, generation).creer()
+                self.session = Session(univers, perso, des or Des(), Moment(1, Periode.APRES_MIDI),
+                                       arme=depart.arme if depart else None, armure=depart.armure if depart else None,
+                                       vehicule=depart.vehicule if depart else None, campagne=self.campagne)
+                # L'amorce de la campagne arrive au lot suivant : en attendant, le MJ ouvre la première scène
+                self.table = Table(serveur, self.session, budget, "", contexte=contexte)
+                return
             local = univers.nom_local  # le parcours et l'équipement de Kaito, sous les noms de cet univers
             if local(NETRUNNER) not in univers.parcours:
                 raise SansPersonnage(f"{univers.nom} n'a pas de Netrunner pour Kaito : la création de personnage "
@@ -130,15 +141,15 @@ class Jeu:
     def jouer(self):
         k, u = self.session.personnage, self.session.univers
         if self.mort():
-            self.dire(f"Kaito est mort. Pour une nouvelle campagne, supprime le dossier {self.campagne.dossier}.")
+            self.dire(f"{k.nom} est mort. Pour une nouvelle campagne, supprime le dossier {self.campagne.dossier}.")
             return
         self.dire(f"=== {u.nom} ===\n{u.cadre}")
         if self.reprise:
             self.dire(f"\nReprise de la campagne : {self.session.moment}.")
-        self.dire(f"\nTu es {k.nom}, netrunner. {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, "
+        self.dire(f"\nTu es {k.nom}, {k.parcours.lower()}. {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, "
                   f"{k.points_destin} points de destin.")
         self.dire(f"Motivation : {k.motivation}. Lien : {k.lien}. Défaut : {k.defaut}.")
-        self.dire("Écris ce que fait Kaito. « etat » : ta fiche ; « quitter » : fin de la session.")
+        self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « quitter » : fin de la session.")
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
             phrase = self.entree("\n> ").strip()
@@ -152,7 +163,7 @@ class Jeu:
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
             if self.mort():
-                self.dire("\nKaito est mort dans les rues de Néo-Tokyo. Fin de la partie.")
+                self.dire(f"\n{k.nom} est mort. Fin de la partie.")
                 return
         self.fin_de_session()
 
@@ -274,7 +285,7 @@ def main(arguments: list[str] | None = None):
             if choix is None:
                 return
         Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
-            budget_generation=banc_generateur.budget_generateur(profil)).jouer()
+            budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None).jouer()
     except SansPersonnage as erreur:
         print(erreur)
     except (KeyboardInterrupt, EOFError):

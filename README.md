@@ -60,7 +60,7 @@ En combat, le moteur tient le tour de parole : chacun agit à son tour, dans l'o
 
 `etat` affiche ta fiche, `quitter` termine la session : le MJ range la scène en cours dans la mémoire, puis viennent la progression des compétences et la sauvegarde. La partie est aussi sauvegardée après chaque action. Au lancement suivant, la campagne reprend là où tu l'as laissée, et le MJ te rappelle où vous en étiez.
 
-Pour une autre campagne, dans un univers généré depuis la bibliothèque, donne-lui un nom et un genre ; les réglages sont préremplis selon le genre (REGLES.md 1.2). L'univers est écrit une seule fois dans le dossier de la campagne (`univers.json`) et ne change plus ensuite. Tant que la création de personnage n'existe pas, c'est Kaito qui joue : seul un univers Cyberpunk a son parcours.
+Pour une autre campagne, dans un univers généré depuis la bibliothèque, donne-lui un nom et un genre ; les réglages sont préremplis selon le genre (REGLES.md 1.2). L'univers est écrit une seule fois dans le dossier de la campagne (`univers.json`) et ne change plus ensuite. Une nouvelle campagne commence par la création de ton personnage, guidée : réponds « tout » pour que tout soit proposé d'un coup (les chiffres par le code, le nom et la personnalité par le LLM), ou avance pas à pas en gardant, relançant ou saisissant chaque étape.
 
 ```bash
 .venv\Scripts\python.exe -m aria.jeu --campagne osaka --genre Cyberpunk --nom "Osaka 2091" --cadre "Osaka sous la pluie acide" --annee 2091
