@@ -9,6 +9,7 @@ from enum import Enum
 
 from aria.des import Des
 from aria.equipement import ARMES_A_DISTANCE, CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Recharge, formule_degats
+from aria.inventaire import BONUS_ACTION_MINEURE, InventaireImpossible, a_chargeur, cadence
 from aria.personnage import MALUS_BLESSURE_GRAVE, Caracteristique, Etat, Personnage
 from aria.progression import cocher
 from aria.reglages import Curseur
@@ -206,6 +207,9 @@ class Combattant:
         self.arme = arme
         self.armure = armure
         self.munitions: dict[Arme, int] = {}
+        # Ses chargeurs et ses cartouches (REGLES.md 13.5) : l'inventaire d'un personnage, ou la réserve d'un
+        # PNJ. None : il recharge sans compter (avant l'économie, et au banc d'essai).
+        self.reserve = None
         self.budget = BudgetRound()
         self.defenses_ce_round = 0
         self.vise = False  # bonus de visée en attente du prochain tir
@@ -260,6 +264,8 @@ class Combattant:
                 pilotage = max(pilotage, _valeur_ou_zero(op, "Technologie"))
             return pilotage + self.modificateur_magique
         valeur = self.fiche.valeur(competence) + self.modificateur_magique
+        if self.reserve is not None:
+            valeur += self.reserve.malus(competence)  # la surcharge, un gilet lourd, un sac de randonnée
         if self.iem and isinstance(self.fiche, Personnage):
             valeur -= self.fiche.bonus_implants(competence)  # les implants sont coupés
         for armure in (self.armure, self.armure_implantee):
@@ -521,9 +527,10 @@ class Combat:
         self._agir(combattant, TypeAction.MINEURE)
         combattant.vise = combattant.a_vise = True
 
-    def degainer(self, combattant: Combattant, arme: Arme | None):
-        """Prendre une autre arme en main, ou la ranger avec None (action mineure)."""
-        self._agir(combattant, TypeAction.MINEURE)
+    def degainer(self, combattant: Combattant, arme: Arme | None, rangee: bool = False):
+        """Prendre une autre arme en main, ou la ranger avec None (action mineure). `rangee` : l'arme était au
+        fond du sac, et la sortir coûte une action simple (REGLES.md 13.9)."""
+        self._agir(combattant, TypeAction.SIMPLE if rangee else TypeAction.MINEURE)
         if arme and arme not in combattant.munitions:
             combattant._charger(arme)
         combattant.arme = arme
@@ -533,8 +540,55 @@ class Combat:
         if not arme or not arme.munitions:
             raise ActionImpossible(f"{combattant.nom} n'a rien à recharger.")
         action = TypeAction.MINEURE if arme.chargeur.recharge is Recharge.MINEURE else TypeAction.SIMPLE
-        self._agir(combattant, action)
-        combattant.munitions[arme] = arme.chargeur.capacite
+        if combattant.reserve is None:
+            self._agir(combattant, action)
+            combattant.munitions[arme] = arme.chargeur.capacite
+            return
+        # Les munitions sont comptées (REGLES.md 13.5) : on change de chargeur s'il en reste un garni sous la
+        # main ; un chargeur rapide recharge un barillet en une action mineure ; sinon, on garnit à la main.
+        if combattant.reserve.chargeur_garni(arme):
+            self._agir(combattant, action if a_chargeur(arme) else TypeAction.MINEURE)
+            combattant.munitions[arme] = combattant.reserve.changer_chargeur(arme, combattant.munitions[arme])
+        elif a_chargeur(arme):
+            try:
+                combattant.reserve.changer_chargeur(arme, combattant.munitions[arme])
+            except InventaireImpossible as erreur:  # dit pourquoi : plus de chargeur garni, ou rangé dans le sac
+                raise ActionImpossible(str(erreur)) from erreur
+        else:
+            self.garnir(combattant)
+
+    def garnir(self, combattant: Combattant, avec_la_mineure: bool = False) -> int:
+        """Garnit à la main (REGLES.md 13.5) : une action simple, pour un nombre de cartouches qui dépend de la
+        compétence Armes à distance et du moyen (la main, un garnisseur, une lame-chargeur) ; l'action mineure du
+        round, si elle y est consacrée, en ajoute 2. Une arme sans chargeur se garnit directement ; pour les
+        autres, le chargeur de rechange le moins vide, ou à défaut celui de l'arme. Renvoie les cartouches garnies."""
+        arme, reserve = combattant.arme, combattant.reserve
+        if not arme or not arme.munitions:
+            raise ActionImpossible(f"{combattant.nom} n'a rien à garnir.")
+        if reserve is None:
+            raise ActionImpossible("Les munitions ne sont pas comptées ici : recharge suffit.")
+        try:
+            competence = combattant.fiche.valeur(ARMES_A_DISTANCE)
+        except KeyError:
+            competence = 0
+        nombre = cadence(competence, reserve.moyen_de_garnir(arme)) + (BONUS_ACTION_MINEURE if avec_la_mineure else 0)
+        directe = not a_chargeur(arme)
+        try:
+            if directe:
+                garnies, contenu = reserve.garnir(arme, nombre, combattant.munitions[arme])
+            else:
+                try:
+                    garnies, contenu = reserve.garnir(arme, nombre)
+                except InventaireImpossible:  # pas de chargeur de rechange à garnir : celui de l'arme
+                    garnies, contenu = reserve.garnir(arme, nombre, combattant.munitions[arme])
+        except InventaireImpossible as erreur:
+            raise ActionImpossible(str(erreur)) from erreur
+        self._agir(combattant, TypeAction.SIMPLE)
+        if avec_la_mineure:
+            self._agir(combattant, TypeAction.MINEURE)
+        if contenu is not None:
+            combattant.munitions[arme] = contenu
+        return garnies
 
     # --- L'attaque ---------------------------------------------------------------------
 

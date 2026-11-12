@@ -36,6 +36,7 @@ JOURNAL_SERVEUR = chemins.DONNEES / "serveur_jeu.log"
 QUITTER = ("quitter", "/quitter")
 PLANS_VUS = "plans_vus.json"  # les plans d'amorce déjà piochés
 ETAT = ("etat", "état", "/etat")
+INVENTAIRE = ("inventaire", "inv", "/inventaire")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.
 # La ruelle de la démo v1 ouvre la campagne ; le quartier reste, d'une session à l'autre.
 EMBUSCADE = (
@@ -197,7 +198,7 @@ class Jeu:
         self.dire(f"\nTu es {k.nom}, {k.parcours.lower()}. {k.pv}/{k.pv_max} PV, {k.sm} en Santé mentale, "
                   f"{k.points_destin} points de destin.")
         self.dire(f"Motivation : {k.motivation}. Lien : {k.lien}. Défaut : {k.defaut}.")
-        self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « quitter » : fin de la session.")
+        self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « inventaire » : ce que tu portes ; « quitter » : fin de la session.")
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
             phrase = self.entree("\n> ").strip()
@@ -207,6 +208,9 @@ class Jeu:
                 break
             if phrase.lower() in ETAT:
                 self.afficher_etat()
+                continue
+            if phrase.lower() in INVENTAIRE:
+                self.afficher_inventaire()
                 continue
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie
@@ -228,8 +232,27 @@ class Jeu:
         if narrer:
             self.dire("\n" + (tour.narration.strip() or "(Le MJ reste muet… Reformule ton action.)"))
 
+    def afficher_inventaire(self):
+        if not self.session.inventaire:
+            self.dire("Pas d'inventaire dans cette campagne (elle date d'avant l'économie).")
+            return
+        self.session.noter_les_charges()
+        i = self.session.inventaire.resume()
+        self.dire(f"\nInventaire — {i['emplacements']} emplacements")
+        self.dire(f"  Sous la main : {', '.join(i['prets']) or 'rien'}")
+        self.dire(f"  Dans le sac : {', '.join(i['ranges']) or 'rien'}")
+        if i["portes"]:
+            self.dire(f"  Sur le dos : {', '.join(i['portes'])}")
+        if i["portage"]:
+            self.dire(f"  Portage : {', '.join(i['portage'])}")
+        for chargeur in i["chargeurs"]:
+            self.dire(f"  Chargeur — {chargeur}")
+        if i["vrac"]:
+            self.dire("  En vrac : " + ", ".join(f"{n} × {calibre}" for calibre, n in i["vrac"].items()))
+
     def sauvegarder(self):
         s = self.session
+        s.noter_les_charges()
         arme = [s.joueur.arme.nom] if s.joueur.arme else []
         armure = s.joueur.armure.nom if s.joueur.armure else None
         sauvegarder(Partie(s.personnage, s.univers, s.moment, armes=arme, arme_en_main=arme[0] if arme else None,

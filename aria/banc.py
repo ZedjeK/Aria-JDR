@@ -485,6 +485,7 @@ def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
     cyberpunk = charger_univers(UNIVERS)
     kaito = cyberpunk.creer_personnage("Netrunner", **FICHE_KAITO)
     cyberpunk.equiper(kaito, **EQUIPEMENT_KAITO)
+    kaito.inventaire = None  # le banc joue encore sans inventaire ni munitions comptées (à revoir avec ses situations)
     return Session(cyberpunk, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée")
 
 

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from aria import economie
+from aria.inventaire import equipement_de_depart
 from aria.equipement import (
     Arme,
     Armure,
@@ -170,6 +171,7 @@ class Univers:
             perso.implants.append(pose(fiche, cote=cote if systeme and systeme.par else None))
             perso.sm = min(perso.sm, perso.sm_max)
         perso.objets = list(objets)
+        equipement_de_depart(perso, self, arme, armure, list(objets))
         return Depart(arme, armure, vehicule)
 
     def verifier_depart(self, parcours: str, arme: str | None = None, armure: str | None = None,

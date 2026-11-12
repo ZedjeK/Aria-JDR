@@ -7,7 +7,9 @@ combat en cours (combat.md) : le joueur et le MJ voient exactement la même vér
 from aria.economie import montant
 from aria.personnage import Etat
 
-VERBES = {"deplacer": "se déplace", "viser": "vise", "recharger": "recharge", "degainer": "dégaine"}
+VERBES = {"deplacer": "se déplace", "viser": "vise", "recharger": "recharge", "degainer": "dégaine",
+          "garnir": "garnit"}
+VERBES_INVENTAIRE = {"preparer": "sous la main", "ranger": "rangé", "poser": "abandonné"}
 
 
 def jet(r: dict) -> str:
@@ -58,7 +60,16 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
         return [f"⚔️ Combat ! Initiative : {', '.join(r['ordre_initiative'])}"]
     if o == "action_combat":
         arme = f" ({a['arme']})" if a.get("arme") else ""
+        if r["action"] == "garnir":
+            arme = f" {r['cartouches_garnies']} cartouches à la main"
+        elif r["action"] == "recharger" and "munitions" in r:
+            arme = f" ({r['munitions']} dans l'arme)"
         return [f"⚔️ {session.combattant(r['qui']).nom} {VERBES[r['action']]}{arme}"]
+    if o == "inventaire":
+        if r["action"] == "regarnir":
+            garnies = sum(r["cartouches_garnies"].values())
+            return [f"🎒 Chargeurs regarnis : {garnies} cartouches"] if garnies else []
+        return [f"🎒 {a['objet']} : {VERBES_INVENTAIRE[r['action']]}"]
     if o == "attaquer":
         return _decrire_attaque(r)
     if o == "lancer_sort":

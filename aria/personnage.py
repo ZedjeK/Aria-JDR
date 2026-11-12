@@ -135,6 +135,9 @@ class Personnage:
     niveau_de_vie: str = "modeste"  # celui qu'il a choisi : « à la rue », « modeste » ou « confortable »
     semaine_payee: bool = True  # faux : il n'a pas pu payer, et vit à la rue en attendant
     echeance: int = 8  # le jour de la prochaine échéance du coût de la vie
+    # Ce qu'il porte et ses munitions (REGLES.md 13.5 et 13.9, voir aria.inventaire). None : un personnage
+    # d'avant l'économie, qui dégaine toute l'armurerie et recharge sans compter.
+    inventaire: dict | None = None
 
     # Suivi des soins (REGLES.md 8)
     blessure_grave_soignee: bool = False  # un jet de Médecine l'a traitée : elle peut guérir pendant la nuit

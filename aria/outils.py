@@ -38,6 +38,8 @@ from aria.combat import (
     tester_embuscade,
 )
 from aria.des import Des
+from aria import inventaire as inventaire_
+from aria.inventaire import Inventaire, ReservePnj
 from aria.memoire import LONGUEURS, MORT, VIVANT, Memoire
 from aria.personnage import Caracteristique, Etat, Personnage
 from aria.reglages import Jalon
@@ -144,9 +146,23 @@ class Session:
     def __post_init__(self):
         u = self.univers
         self.joueur = Combattant(self.personnage, "joueur", None, u.armure(self.armure) if self.armure else None)
+        # Avec un inventaire, les munitions sont comptées, et seules les armes possédées se dégainent
+        self.inventaire = Inventaire(self.personnage, u) if self.personnage.inventaire is not None else None
+        if self.inventaire:
+            self.joueur.reserve = self.inventaire
+            # Ce que la session met en main ou sur le dos entre dans l'inventaire, s'il n'y est pas déjà
+            if self.arme and not self.inventaire.a(self.arme, inventaire_.ARME):
+                fiche = u.arme(self.arme)
+                self.inventaire.ajouter(self.arme, inventaire_.ARME, charge=fiche.chargeur.capacite if fiche.munitions else 0)
+                if fiche.munitions and not fiche.usage_unique:
+                    self.inventaire.ajouter_chargeur(fiche)
+            if self.armure and not self.inventaire.a(self.armure, inventaire_.ARMURE):
+                self.inventaire.ajouter(self.armure, inventaire_.ARMURE, portee=True)
+            self.charger_les_armes()
         if self.arme:
             self.joueur.arme = self.arme_par_nom(self.arme)
-            self.joueur._charger(self.joueur.arme)
+            if self.joueur.arme not in self.joueur.munitions:
+                self.joueur._charger(self.joueur.arme)
         self.equiper_implants()
         if isinstance(self.vehicule, str):
             self.vehicule = vehicules_.Engin(u.vehicule(self.vehicule))
@@ -265,8 +281,27 @@ class Session:
             self.joueur.armes_implantees = frozenset(a.nom for a in corps.armes())
 
     def armes_du_joueur(self) -> list:
-        """L'armurerie de l'univers, plus les armes implantées du joueur (des lames-mantis…)."""
-        return list(self.univers.armes) + (self.corps().armes() if self.univers.implants else [])
+        """Les armes que le joueur possède, plus ses armes implantées (des lames-mantis…). Sans inventaire
+        (avant l'économie) : toute l'armurerie de l'univers."""
+        possedees = self.inventaire.armes() if self.inventaire else list(self.univers.armes)
+        return possedees + (self.corps().armes() if self.univers.implants else [])
+
+    def charger_les_armes(self):
+        """Reprend, pour chaque arme de l'inventaire, ce que contenait son chargeur à la dernière sauvegarde."""
+        for objet in self.inventaire.objets:
+            if objet["famille"] == inventaire_.ARME:
+                arme = self.univers.arme(objet["nom"])
+                if arme.munitions and arme not in self.joueur.munitions:
+                    self.joueur.munitions[arme] = objet.get("charge", arme.chargeur.capacite)
+
+    def noter_les_charges(self):
+        """Écrit dans l'inventaire ce que contient chaque arme, pour la sauvegarde."""
+        if self.inventaire:
+            for objet in self.inventaire.objets:
+                if objet["famille"] == inventaire_.ARME:
+                    arme = self.univers.arme(objet["nom"])
+                    if arme in self.joueur.munitions:
+                        objet["charge"] = self.joueur.munitions[arme]
 
     def arme_par_nom(self, nom: str):
         for arme in self.armes_du_joueur():
@@ -380,7 +415,8 @@ def etat(session: Session) -> dict:
           | ({"implants": [i["nom"] + (f" ({i['cote']})" if i.get("cote") else "") for i in p.implants]}
              if p.implants else {})
           | ({"vehicule": _etat_engin(session.vehicule)} if session.vehicule else {})
-          | ({"objets": list(p.objets)} if p.objets else {}),
+          | ({"objets": list(p.objets)} if p.objets else {})
+          | ({"inventaire": session.inventaire.resume()} if session.inventaire else {}),
         "pnj": {i: _etat_combattant(c) for i, c in session.pnj.items()},
     }
     if session.combat:
@@ -605,6 +641,8 @@ def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: i
     u = session.univers
     session.pnj[identifiant] = Combattant(fiche, camp, u.arme(arme) if arme else None,
                                           u.armure(armure) if armure else None)
+    if session.inventaire:  # les munitions sont comptées pour tout le monde (REGLES.md 13.5)
+        session.pnj[identifiant].reserve = ReservePnj(u.arme(arme) if arme else None)
     if vehicule:
         session.engins[identifiant] = vehicules_.Engin(u.vehicule(vehicule))
     return {"pnj": identifiant, **_etat_combattant(session.pnj[identifiant])} | (
@@ -658,27 +696,84 @@ def rejoindre_combat(session: Session, pnj: list) -> dict:
 
 
 @outil("Une action de combat sans attaque : se déplacer, viser (+20 au tir de ce round, interdit après un "
-       "déplacement), recharger, ou dégainer une arme de l'armurerie (« aucune » pour ranger).",
+       "déplacement), recharger (changer de chargeur), garnir à la main (une action simple pour quelques "
+       "cartouches, quand il n'y a plus de chargeur garni), ou dégainer une de ses armes (« aucune » pour ranger).",
        lambda s: _objet({
            "qui": _ids(s, "Qui agit."),
-           "action": _enum(["deplacer", "viser", "recharger", "degainer"]),
+           "action": _enum(["deplacer", "viser", "recharger", "garnir", "degainer"]),
            "arme": _enum([a.nom for a in s.armes_du_joueur()] + ["aucune"], "Pour degainer."),
+           "avec_la_mineure": {"type": "boolean", "description": "Pour garnir : y consacrer aussi son action "
+                                                                 "mineure, pour 2 cartouches de plus."},
        }, ["qui", "action"]))
-def action_combat(session: Session, qui: str, action: str, arme: str | None = None) -> dict:
+def action_combat(session: Session, qui: str, action: str, arme: str | None = None,
+                  avec_la_mineure: bool = False) -> dict:
     c, combattant = session.combat_en_cours(), session.participant(qui)
+    garnies = None
     if action == "deplacer":
         c.deplacer(combattant)
     elif action == "viser":
         c.viser(combattant)
     elif action == "recharger":
         c.recharger(combattant)
+    elif action == "garnir":
+        garnies = c.garnir(combattant, avec_la_mineure)
     else:
         if arme is None:
             raise ErreurOutil("Pour degainer, précise l'arme.")
-        c.degainer(combattant, None if arme == "aucune" else session.arme_par_nom(arme))
+        fiche = None if arme == "aucune" else session.arme_par_nom(arme)
+        rangee = bool(fiche and combattant is session.joueur and session.inventaire
+                      and session.inventaire.a(arme, inventaire_.ARME) and not session.inventaire.est_pret(arme))
+        c.degainer(combattant, fiche, rangee=rangee)
     return {"qui": qui, "action": action,
             "budget_restant": {t.value: combattant.budget.restants(t) for t in TypeAction},
-            **({"munitions": combattant.munitions_restantes()} if combattant.arme and combattant.arme.munitions else {})}
+            **({"cartouches_garnies": garnies} if garnies is not None else {}),
+            **({"munitions": combattant.munitions_restantes()} if combattant.arme and combattant.arme.munitions else {}),
+            **(_reserve(session, combattant))}
+
+
+def _reserve(session: Session, combattant: Combattant) -> dict:
+    """Pour le joueur : ses chargeurs et son vrac, que le MJ sache ce qu'il lui reste."""
+    if combattant is not session.joueur or not session.inventaire:
+        return {}
+    resume = session.inventaire.resume()
+    return {"chargeurs": resume["chargeurs"], "cartouches_en_vrac": resume["vrac"]}
+
+
+@outil("Gérer ce que porte le personnage joueur : mettre un objet sous la main (preparer), le remettre dans le "
+       "sac (ranger), l'abandonner (poser), ou regarnir tous ses chargeurs avec ses cartouches en vrac "
+       "(regarnir, hors combat seulement). En combat, sortir un objet du sac coûte une action simple, le "
+       "ranger une action mineure.",
+       lambda s: _objet({
+           "action": _enum(["preparer", "ranger", "poser", "regarnir"]),
+           "objet": _enum(s.inventaire.noms(), "L'objet, sauf pour regarnir."),
+       }, ["action"]),
+       disponible=lambda s: s.inventaire is not None)
+def inventaire(session: Session, action: str, objet: str | None = None) -> dict:
+    inv = session.inventaire
+    if action == "regarnir":
+        if session.combat is not None:
+            raise ErreurOutil("En combat, on garnit à la main : action_combat, action « garnir ».")
+        return {"action": action, "cartouches_garnies": inv.regarnir_tout(), **inv.resume()}
+    if objet is None:
+        raise ErreurOutil("Précise l'objet.")
+    en_main = session.joueur.arme is not None and session.joueur.arme.nom == objet
+    if action == "preparer":
+        if inv.est_pret(objet):
+            raise ErreurOutil(f"« {objet} » est déjà sous la main.")
+        inv.preparer(objet)
+        if session.combat is not None:
+            session.combat._agir(session.joueur, TypeAction.SIMPLE)
+    elif action == "ranger":
+        inv.ranger(objet)
+        if session.combat is not None:
+            session.combat._agir(session.joueur, TypeAction.MINEURE)
+    else:
+        if objet == (session.joueur.armure.nom if session.joueur.armure else None):
+            raise ErreurOutil("L'armure portée ne se pose pas en un geste.")
+        inv.retirer(objet)
+    if en_main and action != "preparer":
+        session.joueur.arme = None
+    return {"action": action, "objet": objet, **inv.resume()}
 
 
 def _rapport_attaque(rapport: RapportAttaque) -> dict:
@@ -801,10 +896,13 @@ def attaquer_zone(session: Session, attaquant: str, cibles: list, couvert_lourd:
         if engin is None:
             raise ErreurOutil(f"{session.combattant(i).nom} n'a pas de véhicule.")
         engins.append(engin)
+    utilisee = qui.arme
     rapport = c.attaquer_zone(
         qui, [session.participant(x) for x in cibles],
         [session.participant(x) for x in couvert_lourd], [session.participant(x) for x in sans_esquive],
         [session.participant(x) for x in voisins], DIFFICULTES[difficulte], engins, tireur)
+    if qui is session.joueur and session.inventaire and utilisee and utilisee.usage_unique             and session.inventaire.a(utilisee.nom, inventaire_.ARME):
+        session.inventaire.retirer(utilisee.nom, inventaire_.ARME)  # une grenade lancée n'est plus dans le sac
     if qui.drone and qui.drone.modele.kamikaze:
         qui.fiche.pv = qui.drone.structure = 0
         qui.fiche.etat = Etat.MORT

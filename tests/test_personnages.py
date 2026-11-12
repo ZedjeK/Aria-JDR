@@ -57,6 +57,7 @@ def test_poser_un_personnage_dans_un_univers(cyberpunk):
         parcours={("Plongeur" if p == "Netrunner" else p): c for p, c in cyberpunk.parcours.items()},
         equipements={("Plongeur" if p == "Netrunner" else p): (listes if p == "Netrunner" else e)
                      for p, e in cyberpunk.equipements.items()},
+        armes=tuple(replace(a, nom="Type-9 muet") if a.nom == "Pistolet silencieux" else a for a in cyberpunk.armes),
         origines={"Plongeur": "Netrunner", "Type-9 muet": "Pistolet silencieux"})
     brouillon, notes = brouillon_dans(renomme, KAITO)
     assert not notes and brouillon.parcours == "Plongeur" and brouillon.equipement["arme"] == "Type-9 muet"
