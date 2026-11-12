@@ -54,7 +54,7 @@ def session(u, des=None, **options):
 
 
 def combat(s, combat_pnj=40):
-    outils.creer_pnj(s, "ganger", "Ganger", "ennemis", combat_pnj, 10, arme="Pistolet léger")
+    outils.creer_pnj(s, "ganger", "ennemis", combat_pnj, 10, nom="Ganger", arme="Pistolet léger")
     outils.debut_combat(s, ["ganger"])
     s.combat.ordre.sort(key=lambda c: c is not s.joueur)  # le joueur d'abord
     return s.combat

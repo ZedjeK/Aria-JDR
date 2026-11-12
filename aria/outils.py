@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, missions, monde as monde_, trame as trame_, vehicules as vehicules_
+from aria import combat as combat_, missions, monde as monde_, noms as noms_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -638,11 +638,45 @@ def point_de_destin(session: Session, usage: str) -> dict:
 
 # --- PNJ et combat ----------------------------------------------------------------------------
 
+def _champs_du_nom(s: Session) -> dict:
+    """Le nom d'un PNJ dans le schéma d'un outil : libre dans une campagne d'avant, tiré par le moteur sinon
+    (REGLES.md 15.1)."""
+    if not noms_.actifs(s.monde):
+        return {"nom": {"type": "string"}}
+    return {"sexe": _enum(noms_.SEXES, "Pour un nouveau PNJ : le moteur tire son nom, ne l'invente pas."),
+            "origine": _enum(s.monde["noms"]["origines"], "L'origine de son nom, seulement si l'histoire l'impose."),
+            "faction": _enum(sorted(s.monde["factions"]), "La faction dont il est membre, s'il en a une.")}
+
+
+def _nom_requis(s: Session) -> list[str]:
+    return [] if noms_.actifs(s.monde) else ["nom"]
+
+
+def _nom_du_pnj(session: Session, identifiant: str, nom: str | None, sexe: str | None = None,
+                origine: str | None = None, faction: str | None = None) -> str:
+    """Le nom d'un PNJ : celui qu'il porte déjà, sinon celui que le moteur tire."""
+    if nom:
+        return nom
+    if not noms_.actifs(session.monde):
+        raise ErreurOutil("Paramètre obligatoire manquant : « nom ».")
+    if identifiant in session.memoire.pnj:
+        return session.memoire.pnj[identifiant].nom
+    if identifiant in session.pnj:
+        return session.pnj[identifiant].nom
+    if sexe is None:
+        raise ErreurOutil("Précise « sexe » : le moteur tire le nom d'un nouveau PNJ.")
+    gang = faction is not None and session.monde["factions"][faction]["type"] in monde_.HORS_LA_LOI
+    try:
+        return noms_.tirer(session.monde, session.des, sexe, origine, gang)
+    except noms_.NomImpossible as e:
+        raise ErreurOutil(str(e)) from e
+
+
 @outil("Créer un PNJ (ennemi, allié ou passant) avec un profil simplifié. Son identifiant sert ensuite "
        "dans les autres outils. L'arme et l'armure viennent de l'armurerie de l'univers.",
        lambda s: _objet({
            "identifiant": {"type": "string", "description": "Court et unique, par exemple ganger_couteau."},
-           "nom": {"type": "string"},
+           **_champs_du_nom(s),
            "camp": _enum(["ennemis", "allies", "neutres"]),
            "combat": {"type": "integer", "minimum": PNJ_COMBAT[0], "maximum": PNJ_COMBAT[1],
                       "description": "Pourcentage pour attaquer, esquiver et riposter (45 = voyou ordinaire)."},
@@ -659,11 +693,12 @@ def point_de_destin(session: Session, usage: str) -> dict:
            "pm": {"type": "integer", "minimum": PNJ_PM[0], "maximum": PNJ_PM[1], "description": "Ses points de magie."},
            "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
                      "description": "Les sorts qu'il connaît, pris dans les domaines de l'univers."},
-       } if s.a_la_magie else {}), ["identifiant", "nom", "camp", "combat", "pv"]))
-def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: int, pv: int,
+       } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp", "combat", "pv"]))
+def creer_pnj(session: Session, identifiant: str, camp: str, combat: int, pv: int, nom: str | None = None,
               arme: str | None = None, armure: str | None = None, dexterite: int = 50,
               competences: dict | None = None, magie: int | None = None, pm: int = 0,
-              sorts: list | None = None, vehicule: str | None = None) -> dict:
+              sorts: list | None = None, vehicule: str | None = None, sexe: str | None = None,
+              origine: str | None = None, faction: str | None = None) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -683,6 +718,7 @@ def creer_pnj(session: Session, identifiant: str, nom: str, camp: str, combat: i
         raise ErreurOutil("Un PNJ qui connaît des sorts a un pourcentage de Magie : précise « magie ».")
     if magie is not None:
         talents["Magie"] = magie
+    nom = _nom_du_pnj(session, identifiant, nom, sexe, origine, faction)
     fiche = FichePnj(nom, combat=combat, pv_max_base=pv, dexterite=dexterite, competences=talents, pm=pm,
                      sorts=tuple(sorts or ()))
     u = session.univers
@@ -2088,11 +2124,13 @@ def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
        "puis quand son attitude change. Le moteur le garde dans la mémoire de la campagne.",
        lambda s: _objet({
            "identifiant": {"type": "string", "description": "Court et unique, par exemple doc_mori."},
-           "nom": {"type": "string"},
+           **_champs_du_nom(s),
            "role": {"type": "string", "description": "Qui il est, en quelques mots."},
            "attitude": {"type": "string", "description": "Ce qu'il pense du personnage, et pourquoi."},
-       }, ["identifiant", "nom", "role", "attitude"]))
-def noter_pnj(session: Session, identifiant: str, nom: str, role: str, attitude: str) -> dict:
+       }, ["identifiant", *_nom_requis(s), "role", "attitude"]))
+def noter_pnj(session: Session, identifiant: str, role: str, attitude: str, nom: str | None = None,
+              sexe: str | None = None, origine: str | None = None, faction: str | None = None) -> dict:
+    nom = _nom_du_pnj(session, identifiant, nom, sexe, origine, faction)
     pnj = session.memoire.noter_pnj(identifiant, nom, role, attitude)
     return {"pnj": identifiant, "nom": pnj.nom, "role": pnj.role, "attitude": pnj.attitude, "etat": pnj.etat}
 
