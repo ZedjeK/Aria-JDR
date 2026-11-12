@@ -256,6 +256,15 @@ Comme les compétences thématiques, les parcours peuvent être générés par l
 - **Le LLM propose le nom et la personnalité** (motivation, lien, défaut, allure en deux phrases). Le code vérifie ; si rien de valide ne sort, le joueur les écrit.
 - Pour varier les propositions, le code tire si le personnage est **une femme ou un homme** (le joueur peut le choisir), trois initiales possibles pour son prénom et le genre de son lien (un parent, un mentor, un lieu, une promesse…).
 
+### Les personnages prédéfinis
+
+Le joueur peut préparer un personnage à l'avance, hors campagne, pour un genre : il le crée avec les métiers et l'équipement de base du genre, tels que la bibliothèque les donne.
+
+- Quand une campagne de ce genre commence avec lui, le générateur **garde son métier** dans l'univers, quoi qu'il adapte par ailleurs.
+- Son équipement prend les noms que le cadre lui a donnés. Ce que le cadre a retiré est reproposé dans les listes de son métier, et le jeu le dit.
+- S'il ne peut pas vivre dans cet univers (un lanceur de sorts dans un univers sans magie), le joueur crée un personnage sur place.
+- Kaito, le Netrunner de Néo-Tokyo, est livré avec le jeu.
+
 ### L'amorce de la campagne
 
 Après la création, l'amorce pose ce qui existe avant la première scène. Elle part d'un **plan** en une phrase :
