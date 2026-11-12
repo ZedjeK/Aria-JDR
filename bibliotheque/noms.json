@@ -1,0 +1,91 @@
+{
+  "origines": {
+    "japonaise": {
+      "indices": ["japon", "tokyo", "osaka", "kyoto", "yokohama", "nippon"],
+      "m": ["Haruto", "Ren", "Daichi", "Sora", "Riku", "Takumi", "Kenji", "Hiroshi", "Shun", "Yuto", "Akira", "Jiro", "Masato", "Noboru", "Satoshi", "Tetsuo", "Kazuki", "Ryota", "Isamu", "Goro"],
+      "f": ["Yui", "Aoi", "Hana", "Rin", "Mio", "Sakura", "Emi", "Naomi", "Keiko", "Ayame", "Chiyo", "Haruka", "Izumi", "Kaede", "Mariko", "Nanami", "Reiko", "Sayuri", "Tomoe", "Yoko"],
+      "famille": ["Sato", "Suzuki", "Takahashi", "Tanaka", "Watanabe", "Ito", "Yamamoto", "Nakamura", "Kobayashi", "Kato", "Yoshida", "Yamada", "Sasaki", "Okabe", "Mori", "Shimizu", "Hayashi", "Inoue", "Kimura", "Fujita"]
+    },
+    "coréenne": {
+      "indices": ["corée", "séoul", "seoul", "busan"],
+      "m": ["Min-jun", "Seo-jun", "Do-yun", "Ji-ho", "Jun-seo", "Hyun-woo", "Tae-yang", "Sung-min", "Dong-hyun", "Jae-won", "Kyung-soo", "Sang-woo", "Young-ho", "Jin-woo", "Chan-ho", "Ki-tae", "Woo-jin", "Seung-hoon", "In-su", "Byung-hun"],
+      "f": ["Seo-yeon", "Ji-woo", "Ha-eun", "Min-seo", "Soo-ah", "Ye-jin", "Eun-ji", "Hye-jin", "Yu-na", "Da-eun", "Mi-rae", "Na-yeon", "So-hee", "Ji-min", "Bo-ra", "Chae-won", "Hyo-rin", "Sun-hee", "Kyung-mi", "Ae-ri"],
+      "famille": ["Kim", "Lee", "Park", "Choi", "Jung", "Kang", "Cho", "Yoon", "Jang", "Lim", "Han", "Oh", "Seo", "Shin", "Kwon", "Hwang", "Ahn", "Song", "Yoo", "Hong"]
+    },
+    "chinoise": {
+      "indices": ["chine", "shanghai", "hong kong", "pékin", "shenzhen", "chongqing"],
+      "m": ["Wei", "Jun", "Hao", "Lei", "Ming", "Tao", "Bo", "Feng", "Gang", "Jian", "Kai", "Long", "Peng", "Qiang", "Shen", "Xiang", "Yong", "Zhen", "Chen-yu", "Zi-han"],
+      "f": ["Mei", "Lan", "Xia", "Ying", "Hua", "Jing", "Li-na", "Fang", "Yan", "Xue", "Qing", "Rou", "Shu", "Ting", "Wen", "Yu-lan", "Zhi", "Ai-ling", "Bao-yu", "Chun"],
+      "famille": ["Wang", "Li", "Zhang", "Liu", "Chen", "Yang", "Huang", "Zhao", "Wu", "Zhou", "Xu", "Sun", "Ma", "Zhu", "Hu", "Guo", "He", "Gao", "Lin", "Luo"]
+    },
+    "européenne": {
+      "indices": ["france", "paris", "lyon", "marseille", "europe", "bruxelles"],
+      "m": ["Lucas", "Hugo", "Mathis", "Théo", "Antoine", "Julien", "Marc", "Étienne", "Bastien", "Cédric", "Damien", "Florent", "Gaël", "Loïc", "Maxime", "Nicolas", "Olivier", "Rémi", "Simon", "Victor"],
+      "f": ["Léa", "Manon", "Camille", "Chloé", "Agathe", "Élise", "Margaux", "Clara", "Jeanne", "Anaïs", "Aurore", "Céline", "Diane", "Flora", "Hélène", "Justine", "Maëlle", "Nadège", "Solène", "Valentine"],
+      "famille": ["Martin", "Bernard", "Dubois", "Moreau", "Lefèvre", "Girard", "Roussel", "Marchand", "Renaud", "Faure", "Blanchard", "Carpentier", "Delmas", "Fontaine", "Garnier", "Lambert", "Mercier", "Perrin", "Rivière", "Vasseur"]
+    },
+    "arabe": {
+      "indices": ["maghreb", "alger", "le caire", "tunis", "dubaï", "casablanca", "beyrouth"],
+      "m": ["Karim", "Youssef", "Malik", "Samir", "Tariq", "Nabil", "Rachid", "Hakim", "Idriss", "Jamal", "Khalil", "Mehdi", "Omar", "Reda", "Sofiane", "Walid", "Yacine", "Zakaria", "Amine", "Bilal"],
+      "f": ["Leïla", "Nour", "Yasmine", "Samira", "Amina", "Dalia", "Farah", "Hanane", "Inès", "Jamila", "Karima", "Lina", "Maïssa", "Nadia", "Rania", "Salma", "Soraya", "Zineb", "Aïcha", "Dounia"],
+      "famille": ["Haddad", "Mansour", "Benali", "Khoury", "Nasser", "Saïdi", "Belkacem", "Chaoui", "Darwish", "Farouk", "Hamdi", "Jaziri", "Kaddour", "Mahfoud", "Nouri", "Rahmani", "Sahraoui", "Tahiri", "Ziani", "Amrani"]
+    },
+    "latine": {
+      "indices": ["mexique", "mexico", "brésil", "são paulo", "buenos aires", "madrid", "barcelone", "espagne", "havane", "bogota"],
+      "m": ["Mateo", "Diego", "Santiago", "Javier", "Carlos", "Emilio", "Rafael", "Andrés", "Bruno", "César", "Esteban", "Felipe", "Gustavo", "Héctor", "Ignacio", "Joaquín", "Luis", "Marcos", "Pablo", "Ramón"],
+      "f": ["Sofía", "Valentina", "Camila", "Lucía", "Elena", "Carmen", "Rosa", "Marisol", "Paloma", "Inés", "Alma", "Beatriz", "Catalina", "Dolores", "Esperanza", "Gabriela", "Isabel", "Luz", "Pilar", "Ximena"],
+      "famille": ["García", "Rodríguez", "Martínez", "López", "Hernández", "Morales", "Ortega", "Vargas", "Castillo", "Reyes", "Aguilar", "Cabrera", "Delgado", "Espinoza", "Fuentes", "Guerrero", "Mendoza", "Navarro", "Salazar", "Zamora"]
+    },
+    "slave": {
+      "indices": ["russie", "moscou", "kiev", "varsovie", "prague", "sibérie", "ukraine", "pologne"],
+      "m": ["Dmitri", "Alexeï", "Ivan", "Nikolaï", "Sergueï", "Mikhaïl", "Andreï", "Boris", "Fiodor", "Grigori", "Igor", "Konstantin", "Leonid", "Maxim", "Oleg", "Pavel", "Roman", "Stanislav", "Viktor", "Youri"],
+      "f": ["Anna", "Olga", "Irina", "Natalia", "Svetlana", "Tatiana", "Ekaterina", "Daria", "Galina", "Ksenia", "Larissa", "Milena", "Nadejda", "Oksana", "Polina", "Raïssa", "Sofia", "Vera", "Yelena", "Zoïa"],
+      "famille": ["Volkov", "Sokolov", "Morozov", "Petrov", "Orlov", "Kozlov", "Lebedev", "Novak", "Kovalenko", "Shevchenko", "Romanenko", "Bondar", "Melnik", "Tkachenko", "Zaitsev", "Belov", "Gromov", "Dragan", "Kowalski", "Horvat"]
+    },
+    "germanique": {
+      "indices": ["allemagne", "berlin", "vienne", "munich", "autriche", "hambourg"],
+      "m": ["Hans", "Klaus", "Dieter", "Jürgen", "Lukas", "Matthias", "Stefan", "Wolfgang", "Anton", "Bernd", "Emil", "Friedrich", "Georg", "Heinrich", "Jonas", "Konrad", "Otto", "Rainer", "Ulrich", "Werner"],
+      "f": ["Greta", "Ingrid", "Liesel", "Hanna", "Petra", "Ursula", "Anke", "Brigitte", "Klara", "Dagmar", "Elke", "Frieda", "Gudrun", "Heidi", "Ilse", "Johanna", "Katrin", "Lotte", "Marlene", "Sabine"],
+      "famille": ["Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Wagner", "Becker", "Hoffmann", "Schäfer", "Koch", "Richter", "Klein", "Wolf", "Neumann", "Braun", "Krüger", "Lange", "Vogel", "Winter", "Brandt"]
+    },
+    "nordique": {
+      "indices": ["fjord", "viking", "scandinav"],
+      "m": ["Bjorn", "Erik", "Gunnar", "Harald", "Ivar", "Leif", "Magnus", "Olaf", "Ragnar", "Sigurd", "Torsten", "Ulf", "Arne", "Einar", "Halvar", "Knut", "Njal", "Rolf", "Sten", "Vidar"],
+      "f": ["Astrid", "Freya", "Gudrid", "Sigrid", "Helga", "Liv", "Solveig", "Thyra", "Ylva", "Brynhild", "Dagny", "Eira", "Gerda", "Hilda", "Ragnhild", "Runa", "Signe", "Tove", "Unn", "Alva"],
+      "famille": ["Eriksson", "Haraldsen", "Bjornsson", "Thorvald", "Sigurdsen", "Ulfsson", "Gunnarsen", "Leifsson", "Ragnarsen", "Olafsson", "Corbeau-Gris", "Main-de-Fer", "Barbe-Rousse", "Longue-Lame", "Œil-de-Loup", "Brise-Écu", "Pied-Léger", "Sang-Froid", "Dent-d'Ours", "Voile-Blanche"]
+    },
+    "royaumes": {
+      "indices": [],
+      "m": ["Aldric", "Bertrand", "Corvin", "Edmond", "Gauvain", "Hugues", "Lothaire", "Perceval", "Rolan", "Tancrède", "Anselme", "Baudoin", "Clotaire", "Evrard", "Foulques", "Geoffroy", "Lambert", "Odon", "Renaud", "Thibaud"],
+      "f": ["Ysolde", "Aliénor", "Blanche", "Clémence", "Elvire", "Guenièvre", "Hester", "Isabeau", "Mahaut", "Ondine", "Aveline", "Bérengère", "Cunégonde", "Ermeline", "Flore", "Gisèle", "Héloïse", "Mélisande", "Pernelle", "Sibylle"],
+      "famille": ["Morne", "Brisefer", "Vane", "de Valombre", "du Gué", "Lenoir", "Hautecour", "de Sombreval", "Beaulieu", "Corbin", "Dufresne", "de Montfaucon", "Grandpré", "Malemort", "de Rochebrune", "Tournebride", "Vaillant", "d'Aubépine", "Lefort", "Marchebois"]
+    },
+    "elfique": {
+      "indices": [],
+      "m": ["Aelar", "Caelis", "Erevan", "Faelyn", "Ilyan", "Lathiel", "Myrion", "Naeris", "Oriel", "Thalien", "Vaelis", "Sylvar", "Elorin", "Daevin", "Aerin", "Belyn", "Corwen", "Ithran", "Lyren", "Taeron"],
+      "f": ["Aelwen", "Caelia", "Elowen", "Faena", "Ilyra", "Lathia", "Myriel", "Naela", "Oriane", "Thalia", "Vaela", "Sylwen", "Elira", "Daena", "Aeris", "Belia", "Ysmira", "Ithiel", "Lyra", "Taelia"],
+      "famille": ["Feuille-d'Argent", "Chant-du-Vent", "Aube-Claire", "Ombre-Lune", "Rive-Lointaine", "Étoile-Basse", "Brume-Dorée", "Cime-Verte", "Source-Vive", "Voix-des-Bois", "Lame-de-Rosée", "Pas-de-Cerf", "Nuit-Douce", "Givre-Ancien", "Flèche-Haute", "Songe-Clair", "Pluie-d'Été", "Racine-Profonde", "Vent-du-Soir", "Lueur-Pâle"]
+    },
+    "naine": {
+      "indices": [],
+      "m": ["Brom", "Dorak", "Garrim", "Hrolf", "Korgan", "Morgrim", "Norvik", "Rurik", "Throk", "Uldar", "Bardin", "Dolgrin", "Grundar", "Hadrik", "Kazrik", "Ludrim", "Orsik", "Storn", "Tordek", "Varrik"],
+      "f": ["Brenna", "Dagna", "Gerta", "Hilde", "Karga", "Marga", "Nessa", "Orla", "Ragna", "Thora", "Ulla", "Bryndis", "Durga", "Gilda", "Helka", "Ingra", "Kelda", "Moira", "Sigrun", "Torva"],
+      "famille": ["Barbe-de-Fer", "Poing-de-Pierre", "Marteau-Gris", "Enclume-Noire", "Forge-Vive", "Pioche-d'Or", "Bouclier-Rond", "Cœur-de-Roche", "Pied-Ferme", "Hache-Longue", "Tonneau-Plein", "Mine-Profonde", "Braise-Ardente", "Dent-de-Granit", "Chope-Vide", "Front-Dur", "Main-Sûre", "Cuivre-Rouge", "Roc-Fendu", "Suie-Noire"]
+    }
+  },
+  "surnoms": {
+    "generique": ["Balafre", "Main-Leste", "Trois-Doigts", "Vipère", "Corbeau", "Pied-Bot", "Belette", "Sans-Dents", "Lame", "Tête-Dure", "Fouine", "Poing-Fermé", "Teigne", "Renard", "Cou-Tordu", "Chouette", "Dos-Rond", "Griffe", "Œil-Blanc", "Bras-Long", "Cendre", "Nez-Cassé", "Mèche", "Dent-d'Or", "Ronce", "Brindille", "Sans-Nom", "Pas-de-Loup", "Grain-de-Sel", "Bout-de-Corde", "Minuit", "Galet", "Fumée", "Verrue", "Chardon", "Tison", "Silex", "Grelot", "Crin", "Épine"],
+    "Cyberpunk": ["Rasoir", "Chrome", "Zéro", "Néon", "Mouche", "Câble", "Statique", "Six-Doigts", "Vif-Argent", "Écho", "Teigne", "Pixel", "Courtjus", "Lame", "Fusible", "Parasite", "Veuve", "Tête-Brûlée", "Cobalt", "Mèche", "Cendre", "Verrou", "Fouine", "Bitume", "Rouille", "Crochet", "Survolt", "Phalène", "Silence", "Mâchoire", "Trois-Fois", "Aiguille", "Guêpe", "Scalpel", "Onze", "Fantôme", "Soudure", "Larsen", "Brouillard", "Cathode"]
+  },
+  "genres": {
+    "Cyberpunk": ["japonaise", "coréenne", "chinoise", "européenne", "arabe", "latine"],
+    "Fantasy": ["royaumes", "elfique", "nordique", "naine"],
+    "Dark fantasy": ["royaumes", "nordique", "germanique"],
+    "Horreur": ["européenne", "germanique", "slave"],
+    "Contemporain": ["européenne", "arabe", "latine", "slave"],
+    "Militaire": ["européenne", "slave", "arabe", "germanique"],
+    "Science-fiction": ["européenne", "japonaise", "arabe", "slave"],
+    "Post-apo": ["européenne", "latine", "slave"]
+  },
+  "generique": ["européenne", "latine", "slave"]
+}

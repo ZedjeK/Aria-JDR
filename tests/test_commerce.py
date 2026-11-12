@@ -170,7 +170,7 @@ def test_commander_un_objet_restreint(u):
 
 def test_la_pose_d_un_implant_se_paie(u):
     s, _ = riche(u, 3000, des=DesTruques(20))
-    outils.creer_pnj(s, "doc", "Doc Mori", "neutres", 30, 10, competences={"Médecine": 70})
+    outils.creer_pnj(s, "doc", "neutres", 30, 10, nom="Doc Mori", competences={"Médecine": 70})
     r = s.appeler("poser_implant", {"implant": "Neuroport", "charcudoc": "doc"})
     assert r["pose"] and r["prix"] == 2000 + 500 and s.personnage.argent == 500
     assert "Pas assez d'argent" in s.appeler("poser_implant", {"implant": "Paume d'interface", "charcudoc": "doc", "cote": "droit"})["erreur"]

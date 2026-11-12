@@ -1,6 +1,6 @@
 # Aria-JDR — Livre de règles
 
-Version 1.1 — 12 novembre 2026. Règles validées par Jérémy.
+Version 1.2 — 12 novembre 2026. Règles validées par Jérémy.
 
 Ce document est la référence unique du système de jeu. Le moteur (code) l'applique à la lettre, et le MJ (LLM) s'en sert pour comprendre ce que le moteur lui renvoie.
 
@@ -327,7 +327,7 @@ Le joueur voit tout sauf le secret (le reste, son personnage le sait déjà), pu
 - Quand une caractéristique monte, les PV, la SM et les PM **actuels** gagnent autant que leur maximum.
 - Une compétence thématique apprise démarre à sa **valeur de base**, puis progresse comme les autres.
 - L'**Esquive** n'est pas recalculée quand la Dextérité monte : elle progresse comme une compétence normale.
-- Apprendre un nouveau sort reste à définir (voir 15) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
+- Apprendre un nouveau sort reste à définir (voir 16) : à la création, le perso connaît déjà tous les sorts de ses deux domaines (voir 10.5).
 
 Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistrés par le code (session jouée, objectif atteint, arc terminé…), jamais décidés librement par le LLM. Les montants restent à définir. Les mêmes jalons servent à la récupération de Santé mentale (voir 9.5).
 
@@ -1341,7 +1341,7 @@ Le joueur choisit le type avant l'amorce.
 | Sans fin | 3 par arc | 2 / 4 / 2, puis un nouvel arc | 1 | débutant | le quotidien du personnage |
 
 - Le départ conseillé n'est pas imposé (voir 5, « L'expérience de départ »).
-- Les montants d'XP seront revus avec la progression (voir 15) ; le principe est fixé : la vitesse dépend du type.
+- Les montants d'XP seront revus avec la progression (voir 16) ; le principe est fixé : la vitesse dépend du type.
 - **Au cœur du problème** : le commanditaire ou la menace est déjà dans la première scène. **Le quotidien** : la campagne s'ouvre sur la vie ordinaire du personnage, et le problème n'arrive qu'à la fin du premier acte.
 
 ### 14.2 Le temps du monde
@@ -1503,7 +1503,22 @@ La mission finale est la dernière mission principale du dernier acte. Le code a
 
 ---
 
-## 15. À définir
+## 15. L'aléatoire du monde
+
+Le MJ raconte, le code tire. Les noms, les PNJ, le temps qu'il fait, les lieux et les rencontres ne s'inventent plus au fil de l'eau : le MJ choisit dans des listes fermées, et le moteur tire le reste. Ces règles valent pour les campagnes créées avec elles ; une campagne plus ancienne garde l'ancien fonctionnement.
+
+### 15.1 Les noms
+
+- **Des tables par origine.** Chaque origine a 20 prénoms d'homme, 20 prénoms de femme et 20 noms de famille, soit 800 noms possibles.
+- **Des origines par genre** : six en Cyberpunk (japonaise, coréenne, chinoise, européenne, arabe, latine), trois ou quatre ailleurs. Un genre sans table prend celles du jeu générique.
+- **Le cadre pèse.** Le code tire l'origine sur 1d10 : l'origine du cadre prend 5 faces (Osaka : japonaise), les autres se partagent le reste. Le MJ peut imposer une origine quand l'histoire le demande.
+- **Les surnoms** : 40 par genre. Un membre de gang en porte un 1 fois sur 3 ; les autres PNJ, jamais.
+- **Jamais deux fois le même.** Un nom tiré ne ressort plus de la campagne.
+- **Le MJ ne nomme plus.** Pour un nouveau PNJ, il donne le sexe, et le code rend le nom. Un PNJ déjà nommé, par l'amorce, par la carte ou par une scène d'avant, garde le sien.
+
+---
+
+## 16. À définir
 
 - Les montants de gain d'XP par jalon.
 - Les armureries de chaque univers (avec le générateur d'univers).

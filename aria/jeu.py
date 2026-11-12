@@ -21,7 +21,7 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
-from aria import monde, trame
+from aria import monde, noms, trame
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire, decrire_monde
 from aria.personnage import CRANS
@@ -112,6 +112,7 @@ class Jeu:
                                        vehicule=depart.vehicule if depart else None, campagne=self.campagne,
                                        monde=monde.creer(des, univers.genre))
                 trame.creer(self.session.monde, des, self.format.type, perso.cran)
+                noms.installer(self.session.monde, univers.genre, univers.cadre)
                 self.table = Table(serveur, self.session, budget, self.amorcer(serveur, generation), contexte=contexte)
                 self.sauvegarder()  # le personnage et son amorce existent : une coupure ne les fait pas perdre
                 return
