@@ -1350,6 +1350,13 @@ def _avec_economie(session: Session) -> bool:
     return session.inventaire is not None
 
 
+def _au_calme(session: Session) -> bool:
+    """Hors combat et hors poursuite : le MJ ne voit les outils du commerce que là où ils servent (en combat,
+    il lui reste l'inventaire, la fouille et la prise)."""
+    en_poursuite = session.poursuite is not None and not session.poursuite.issue
+    return _avec_economie(session) and session.combat is None and not en_poursuite
+
+
 def _marchandage(session: Session, marchander: str, attitude: str):
     """Le test de marchandage demandé, ou None. « menace » : par l'Intimidation."""
     if marchander == "non":
@@ -1379,7 +1386,7 @@ _ATTITUDE = {"type": "string", "enum": list(commerce.ATTITUDES), "description": 
            "vendeur": {"type": "string", "description": "Son identifiant (le même d'une visite à l'autre)."},
            "marche_noir": {"type": "boolean", "description": "Vrai pour un contact du marché noir."},
        }, ["vendeur"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def voir_boutique(session: Session, vendeur: str, marche_noir: bool = False) -> dict:
     lignes = commerce.stock(session.univers, vendeur, session.moment.jour, marche_noir)
     return {"vendeur": vendeur, "stock": lignes, "argent": session.personnage.argent,
@@ -1396,7 +1403,7 @@ def voir_boutique(session: Session, vendeur: str, marche_noir: bool = False) -> 
            "vendeur": {"type": "string", "description": "Pour un objet de stock : l'identifiant du vendeur."},
            "marchander": _MARCHANDER, "attitude": _ATTITUDE,
        }, ["objet"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: str = "", marchander: str = "non",
             attitude: str = "neutre") -> dict:
     if session.combat:
@@ -1424,7 +1431,7 @@ def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: st
            "par_un_contact": {"type": "boolean"},
            "marchander": _MARCHANDER, "attitude": _ATTITUDE,
        }, ["objet"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def vendre(session: Session, objet: str, par_un_contact: bool = False, marchander: str = "non",
            attitude: str = "neutre") -> dict:
     if session.combat:
@@ -1448,7 +1455,7 @@ def vendre(session: Session, objet: str, par_un_contact: bool = False, marchande
            "palier": {"type": "integer", "enum": list(commerce.PALIERS_LIBRES),
                       "description": "Pour une information ou un pot-de-vin seulement."},
        }, ["service"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def payer(session: Session, service: str, palier: int | None = None) -> dict:
     p, monnaie = session.personnage, session.univers.monnaie
     if service == commerce.DETENTE:
@@ -1472,7 +1479,7 @@ def payer(session: Session, service: str, palier: int | None = None) -> dict:
            "objet": _enum(commerce.catalogue(s.univers, s.inventaire)),
            "lieu": _enum(commerce.LIEUX),
        }, ["objet", "lieu"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def commander(session: Session, objet: str, lieu: str) -> dict:
     c = commerce.commander(session.des, session.personnage, session.univers, objet,
                            session.joueur.valeur(commerce.PERSUASION), lieu, session.moment.jour)
@@ -1491,7 +1498,7 @@ def commander(session: Session, objet: str, lieu: str) -> dict:
            "lien_a_charge": {"type": "boolean", "description": "Son lien dépend de lui : 200 par semaine, et le "
                                                                "temps passé avec lui rend 1d6 au lieu de 1d3."},
        }, ["niveau"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def niveau_de_vie(session: Session, niveau: str, payer_maintenant: bool = False,
                   lien_a_charge: bool | None = None) -> dict:
     p = session.personnage
@@ -1515,7 +1522,7 @@ def niveau_de_vie(session: Session, niveau: str, payer_maintenant: bool = False,
            "danger": _enum(gains.RECOMPENSES),
            "marchander": _MARCHANDER, "attitude": _ATTITUDE,
        }, ["identifiant", "fil", "danger"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def ouvrir_mission(session: Session, identifiant: str, fil: str, danger: str, marchander: str = "non",
                    attitude: str = "neutre") -> dict:
     texte = session.memoire.ouvrir_fil(identifiant, fil).texte  # refuse un identifiant déjà pris, avant tout test
@@ -1601,7 +1608,7 @@ def prendre(session: Session, origine: str, objet: str) -> dict:
        "compétence de métier donne le revenu de la semaine (parfois rien). La semaine passe pour de bon : le "
        "coût de la vie est débité, il se repose.",
        lambda s: _objet({}),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def semaine_de_travail(session: Session) -> dict:
     if session.combat or session.poursuite:
         raise ErreurOutil("Pas en plein combat ni en pleine poursuite.")
@@ -1633,7 +1640,7 @@ def semaine_de_travail(session: Session) -> dict:
            "creancier": {"type": "string", "description": "Son identifiant de PNJ, par exemple usurier_tanaka."},
            "somme": {"type": "integer", "enum": list(gains.SOMMES_EMPRUNTABLES)},
        }, ["creancier", "somme"]),
-       disponible=_avec_economie)
+       disponible=_au_calme)
 def emprunter(session: Session, creancier: str, somme: int) -> dict:
     dette = gains.emprunter(session.personnage, creancier, somme)
     return {"creancier": creancier, "somme": somme, "echeance_par_semaine": dette["echeance"],

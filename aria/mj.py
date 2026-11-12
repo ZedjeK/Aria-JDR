@@ -7,6 +7,7 @@ from aria.univers import Univers
 PROMPT = chemins.PROMPTS / "mj.md"
 MAGIE = chemins.PROMPTS / "magie.md"
 INTERDITS = chemins.PROMPTS / "magie_interdite.md"
+ECONOMIE = chemins.PROMPTS / "economie.md"
 
 
 def presenter(personnage: Personnage) -> str:
@@ -35,6 +36,13 @@ def presenter_magie(univers: Univers, personnage: Personnage) -> str:
         interdits=interdits)
 
 
+def presenter_economie(univers: Univers, personnage: Personnage) -> str:
+    """Les règles de l'argent et du matériel (REGLES.md 13). Vide pour un personnage d'avant l'économie."""
+    if personnage.inventaire is None:
+        return ""
+    return ECONOMIE.read_text(encoding="utf-8").format(monnaie=univers.monnaie)
+
+
 def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", memoire: str = "",
                    fil: str = "") -> str:
     """Le prompt du MJ. `scene` : ce que le MJ sait de la situation en cours (lieu, PNJ présents…) ;
@@ -43,6 +51,7 @@ def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", me
     gabarit = PROMPT.read_text(encoding="utf-8")
     return gabarit.format(univers=univers.nom, genre=univers.genre, cadre=univers.cadre,
                           personnage=presenter(personnage), magie=presenter_magie(univers, personnage),
+                          economie=presenter_economie(univers, personnage),
                           memoire=f"\n## Ce dont tu te souviens\n\n{memoire}\n" if memoire else "",
                           scene=f"\n## La scène\n\n{scene}\n" if scene else "",
                           fil=f"\n## Plus tôt dans cette session\n\nLes premiers échanges de la session sont sortis "

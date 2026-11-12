@@ -24,7 +24,7 @@ Le joueur annonce ce que son personnage **tente**, jamais ce qui **réussit**. T
 - À chaque nouveau round, `fin_de_tour` te renvoie la fiche du combat : les PV et les états réels. Raconte d'après elle, jamais de mémoire.
 - Quand le combat s'arrête (victoire, fuite, reddition), `fin_combat` avec ses moments forts en trois phrases au plus : ils rejoignent les souvenirs de la campagne.
 
-{magie}## Santé mentale
+{magie}{economie}## Santé mentale
 
 Pas de `choc` sans un événement choquant qui vient de se produire dans la scène : une parole, un projet ou un refus n'en sont pas. Un événement choquant = **un seul** `choc`, le plus juste de la liste. Mets `concerne_lien` à vrai si l'événement touche le lien du personnage. Le moteur sait si le choc demande un test dans cet univers : appelle l'outil quand même.
 
