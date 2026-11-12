@@ -39,6 +39,16 @@ def decrire_monde(outil: str, arguments: dict, resultat: dict) -> list[str]:
                       + (f", dont {r['avance']} d'avance." if r["avance"] else "."))
     if outil == "clore_fil" and r.get("monde"):
         lignes += [f"🏳 {c}" for c in r["monde"]]
+    if outil == "clore_fil" and r.get("trame"):
+        t = r["trame"]
+        if t.get("xp_gagnee"):
+            lignes.append(f"⭐ Mission principale : +{t['xp_gagnee']} XP")
+        if t.get("cicatrice"):
+            lignes.append(f"🩸 {t['cicatrice'].split(' : ')[0].capitalize()}.")
+    if outil == "indice" and r.get("indice"):
+        lignes.append(f"🧩 Indice : {r['indice']}")
+    if outil == "indice" and "jet" in r:
+        lignes.append(f"🎲 Enquête ({a.get('competence')}) : {jet(r)}")
     return lignes
 
 

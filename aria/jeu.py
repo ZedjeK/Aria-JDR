@@ -40,6 +40,7 @@ ETAT = ("etat", "état", "/etat")
 INVENTAIRE = ("inventaire", "inv", "/inventaire")
 CARTE = ("carte", "/carte")
 MONDE = ("monde", "/monde", "nouvelles")
+PISTES = ("pistes", "/pistes", "indices")
 # Ce que le MJ sait de la scène. Le joueur, lui, ne voit que la narration.
 # La ruelle de la démo v1 ouvre la campagne ; le quartier reste, d'une session à l'autre.
 EMBUSCADE = (
@@ -106,6 +107,7 @@ class Jeu:
                                        arme=depart.arme if depart else None, armure=depart.armure if depart else None,
                                        vehicule=depart.vehicule if depart else None, campagne=self.campagne,
                                        monde=monde.creer(des, univers.genre))
+                trame.creer(self.session.monde, des, self.format.type, perso.cran)
                 self.table = Table(serveur, self.session, budget, self.amorcer(serveur, generation), contexte=contexte)
                 self.sauvegarder()  # le personnage et son amorce existent : une coupure ne les fait pas perdre
                 return
@@ -149,8 +151,12 @@ class Jeu:
                                               f"Complication : {amorce.tirer_complication(self.hasard)}")
             self.dire(f"\nPlan : {plan}\n… le MJ prépare le début de la campagne")
             try:
+                t = trame.trame_de(s.monde)
+                antagoniste = (f"L'antagoniste de la campagne : {t['antagoniste']} "
+                               f"({s.monde['factions'][t['antagoniste']]['type']}) ; derrière, {t['visage']}. Il veut "
+                               f"{t['but']}." if t else "")
                 proposee = amorce.proposer_amorce(serveur, s.univers, s.personnage, plan, budget,
-                                                  trame.TYPES[self.format.type].consigne)
+                                                  trame.TYPES[self.format.type].consigne, antagoniste)
             except llm.ErreurLLM:
                 proposee = None
             if proposee is None:
@@ -160,6 +166,8 @@ class Jeu:
             reponse = self.entree("Entrée pour garder, « r » pour une autre, ou écris une autre idée : ").strip()
             if reponse == "":
                 proposee.ranger(s.memoire, s.moment)
+                if trame.trame_de(s.monde):
+                    trame.poser_le_secret(s.monde["trame"], proposee.couches)
                 return proposee.scene
             if reponse.lower() != "r":
                 idee = reponse
@@ -206,8 +214,8 @@ class Jeu:
                   f"{k.points_destin} points de destin.")
         self.dire(f"Motivation : {k.motivation}. Lien : {k.lien}. Défaut : {k.defaut}.")
         self.dire(f"Écris ce que fait {k.nom}. « etat » : ta fiche ; « inventaire » : ce que tu portes ; "
-                  + ("« carte » : qui tient quoi ; « monde » : les nouvelles ; " if self.session.monde is not None
-                     else "")
+                  + ("« carte » : qui tient quoi ; « monde » : les nouvelles ; « pistes » : tes indices ; "
+                     if self.session.monde is not None else "")
                   + "« quitter » : fin de la session.")
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
@@ -227,6 +235,9 @@ class Jeu:
                 continue
             if phrase.lower() in MONDE:
                 self.afficher_monde()
+                continue
+            if phrase.lower() in PISTES:
+                self.dire("\n" + "\n".join(trame.pistes(self.session.monde)))
                 continue
             self.raconter(lambda: self.table.tour(phrase))
             self.sauvegarder()  # à chaque action : une coupure ne fait jamais perdre la partie

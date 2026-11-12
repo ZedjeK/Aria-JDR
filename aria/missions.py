@@ -8,7 +8,7 @@ Les offres s'ouvrent dans le district où se trouve le joueur, et se renouvellen
 import json
 from functools import lru_cache
 
-from aria import chemins, gains, monde
+from aria import chemins, gains, monde, trame
 from aria.des import Des
 from aria.economie import decaler
 from aria.monde import AMI, HOSTILE, RECHERCHE, a, de
@@ -28,6 +28,8 @@ RENOUVELLEMENT = 5  # 1d5 jours
 CHANCE_RETOURNEMENT = 3  # 1 fois sur 3
 CHANCE_ENTREE = 3  # 1 fois sur 3, l'offre d'une faction amie est sa mission d'entrée
 CHANCE_CONTACT = 3  # 1 fois sur 3, l'offre passe par un PNJ que le joueur connaît
+CHANCE_TRAME = 4  # 1 mission secondaire sur 4 touche la trame
+TRAME = "trame"
 MELEE = "mêlée"
 
 
@@ -100,11 +102,54 @@ def tirer_offre(etat: dict, des: Des, jour: int, cran: str = DEBUTANT, contacts:
         offre["entree"] = True  # la réussir fait du joueur un membre
     if contacts and des.lancer(CHANCE_CONTACT) == 1:
         offre["contact"], offre["source"] = monde._choisir(des, sorted(contacts)), "contact"
+    t = trame.trame_de(etat)
+    if t and not trame.finie(t) and des.lancer(CHANCE_TRAME) == 1:
+        offre["touche_la_trame"] = True  # un homme de l'antagoniste s'en mêle, ou un indice traîne
     occasion = next((e["texte"] for e in monde.en_cours(etat) if e["echelle"] == monde.QUARTIER), None)
     if occasion and offre["source"] == "faction" and not any(o.get("occasion") for o in etat.get("offres", [])):
         offre["occasion"], offre["source"] = occasion, "événement"
     offre["texte"] = _texte(offre)
     return offre
+
+
+def tirer_principale(etat: dict, des: Des) -> dict:
+    """La mission principale suivante (REGLES.md 14.9) : sa cible est l'antagoniste, son danger celui de l'acte,
+    et elle ne disparaît jamais. Le commanditaire est un ennemi de l'antagoniste qui veut bien du joueur ; à
+    défaut, n'importe qui d'autre."""
+    t = etat["trame"]
+    antagoniste = t["antagoniste"]
+    autres = [f for f in sorted(etat["factions"]) if f != antagoniste]
+    fiables = [f for f in autres if monde.reputation(etat, f) not in (HOSTILE, RECHERCHE)]
+    ennemis = [f for f in fiables if monde.hostiles(etat, f, antagoniste)]
+    commanditaire = monde._choisir(des, ennemis or fiables or autres)
+    objectif = monde._choisir(des, OBJECTIFS)
+    tient = commanditaire if objectif == DEFENDRE else antagoniste
+    lieux = sorted(q for q, f in etat["quartiers"].items() if f["maitre"] == tient) or sorted(etat["quartiers"])
+    danger = trame.danger_principal(t)
+    offre = {"id": _numero(etat), "commanditaire": commanditaire, "objectif": objectif,
+             "lieu": monde._choisir(des, lieux), "cible": antagoniste, "danger": danger, "prime": 0,
+             "recompense": gains.RECOMPENSES[danger],
+             "retournement": monde._choisir(des, retournements()) if des.lancer(CHANCE_RETOURNEMENT) == 1 else None,
+             "expire": None, "source": TRAME, "principale": True, "acte": t["acte"]}
+    if trame.est_la_finale(t):
+        offre["finale"] = True
+    offre["texte"] = _texte(offre)
+    return offre
+
+
+def tenir_la_trame(etat: dict, des: Des, jour: int) -> dict | None:
+    """Ouvre la mission principale quand son heure est venue : une seule à la fois, et jamais avant la date
+    que le code a tirée. Renvoie l'offre ouverte, s'il y en a une."""
+    t = trame.trame_de(etat)
+    if t is None or trame.finie(t):
+        return None
+    offres = etat.setdefault("offres", [])
+    if t["principale"] is None and jour >= t["prochaine"]:
+        offre = tirer_principale(etat, des)
+        offres.append(offre)
+        t["principale"] = offre["id"]
+        return offre
+    return next((o for o in offres if o["id"] == t["principale"]), None)
 
 
 def _offres_de_melee(etat: dict, des: Des, cran: str) -> list[dict]:
@@ -134,7 +179,7 @@ def renouveler(etat: dict, des: Des, jour: int, cran: str = DEBUTANT, contacts: 
     Une mêlée annoncée ajoute les offres des deux camps. Renvoie les offres ouvertes."""
     offres = etat.setdefault("offres", [])
     if jour >= etat.get("prochaines_offres", 0):
-        offres[:] = [o for o in offres if o["source"] == MELEE]
+        offres[:] = [o for o in offres if o["source"] in (MELEE, TRAME)]  # la piste principale ne disparaît jamais
         nombre, prochain = des.lancer(OFFRES_MAX), jour + des.lancer(RENOUVELLEMENT)
         for _ in range(nombre):
             offre = tirer_offre(etat, des, prochain, cran, contacts)
@@ -143,6 +188,7 @@ def renouveler(etat: dict, des: Des, jour: int, cran: str = DEBUTANT, contacts: 
         etat["prochaines_offres"] = prochain
     offres[:] = [o for o in offres if o["source"] != MELEE or o["expire"] > jour]
     offres += _offres_de_melee(etat, des, cran)
+    tenir_la_trame(etat, des, jour)
     return offres
 
 
@@ -159,7 +205,7 @@ def prendre(etat: dict, identifiant: str) -> dict:
     prise = offre(etat, identifiant)
     etat["offres"].remove(prise)
     return {cle: prise[cle] for cle in ("commanditaire", "cible", "lieu", "objectif", "controle", "entree", "camp",
-                                        "principale", "touche_la_trame") if cle in prise}
+                                        "principale", "finale", "acte", "touche_la_trame") if cle in prise}
 
 
 def resume(o: dict) -> dict:
@@ -170,6 +216,8 @@ def resume(o: dict) -> dict:
             vue[cle] = o[cle]
     if o.get("entree"):
         vue["mission_d_entree"] = f"réussie, elle le fait entrer chez {o['commanditaire']}"
+    if o.get("principale"):
+        vue["mission_principale"] = "la mission finale" if o.get("finale") else f"acte {o['acte']} : elle attend le joueur"
     return vue
 
 

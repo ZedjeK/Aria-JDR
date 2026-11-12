@@ -1,0 +1,38 @@
+{
+  "buts": [
+    "s'emparer de quelque chose qui ne lui appartient pas",
+    "faire taire quelqu'un qui en sait trop",
+    "se venger d'un affront ancien",
+    "prendre un territoire qui lui résiste",
+    "cacher une faute qui le perdrait",
+    "survivre à plus fort que lui",
+    "faire tomber un rival",
+    "retrouver quelqu'un qui se cache",
+    "achever un projet que personne ne doit voir",
+    "racheter ce qu'il a perdu"
+  ],
+  "visages": {
+    "generique": [
+      "le chef en personne",
+      "un lieutenant ambitieux, qui agit dans le dos du chef",
+      "un bailleur de fonds que personne ne voit",
+      "un ancien allié du personnage",
+      "un proche du personnage",
+      "un rival du même métier que le personnage",
+      "un homme de paille, manipulé par un autre",
+      "quelqu'un que tout le monde croit mort"
+    ],
+    "Cyberpunk": [
+      "le chef en personne",
+      "un lieutenant ambitieux, qui agit dans le dos du chef",
+      "un bailleur de fonds que personne ne voit",
+      "un ancien allié du personnage",
+      "un proche du personnage",
+      "un rival du même métier que le personnage",
+      "une IA qui parle par la voix d'un homme de paille",
+      "un cadre qui joue contre sa propre maison",
+      "un policier corrompu qui couvre toute l'affaire",
+      "quelqu'un que tout le monde croit mort"
+    ]
+  }
+}
