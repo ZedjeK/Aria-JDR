@@ -21,7 +21,7 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
-from aria import lieux, meteo, monde, noms, pnj, trame
+from aria import lieux, meteo, monde, noms, pnj, rencontres, trame
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire, decrire_monde
 from aria.personnage import CRANS
@@ -116,6 +116,7 @@ class Jeu:
                 pnj.installer(self.session.monde, univers.genre)
                 meteo.installer(self.session.monde, des, univers.genre, univers.cadre)
                 lieux.installer(self.session.monde, des, univers.genre)
+                rencontres.installer(self.session.monde, univers.genre)
                 self.table = Table(serveur, self.session, budget, self.amorcer(serveur, generation), contexte=contexte)
                 self.sauvegarder()  # le personnage et son amorce existent : une coupure ne les fait pas perdre
                 return

@@ -1572,6 +1572,17 @@ Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menac
 - **Un quartier sur trois cache un lieu de plus** (planque, tripot clandestin, clinique sans licence). Il se découvre par un test d'Investigation réussi dans le quartier, ou parce qu'une faction amie qui tient le quartier l'indique.
 - **Le décor reste libre** : une ruelle, un toit, un appartement, le MJ les invente. Il n'invente plus un lieu qui vend ou qui soigne.
 
+### 15.5 Les rencontres de rue
+
+- **À chaque entrée dans un quartier**, le code lance 1d10. Une rencontre a lieu sur 1 ou 2 dans un quartier calme, sur 1 à 4 dans un quartier disputé ou un district en guerre ouverte. La nuit ajoute une face.
+- **Une seule rencontre par jour**, et jamais pendant un combat ou une poursuite.
+- **Trois familles**, sur 1d6 : 1 à 3, une scène de rue ; 4 ou 5, une occasion (quelqu'un a besoin d'aide, une rumeur, un objet tombé) ; 6, un danger (un racket, un contrôle, une embuscade).
+- **La réputation pèse.** Hostile chez la faction qui tient le quartier, le danger sort sur 5 ou 6. Recherché, c'est toujours un contrôle ou une traque.
+- **Dix rencontres par famille et par genre.** Un genre sans table prend celles du jeu générique.
+- **Le PNJ de la rencontre** est tiré comme les autres : un nom (15.1), le rôle de la rencontre, une menace (1d6 : 1 à 3 faible, 4 ou 5 moyenne, 6 forte), un caractère et un signe (15.2).
+- **Une rumeur de travail** ouvre une vraie offre de mission, tirée par le code (14.8).
+- **Le joueur reste libre** : il peut passer son chemin. Une embuscade se joue comme toutes les autres, sa Perception contre leur Discrétion (7.2).
+
 ---
 
 ## 16. À définir
