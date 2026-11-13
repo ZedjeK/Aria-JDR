@@ -21,6 +21,7 @@ OCTETS_PAR_VALEUR = {"f16": 2.0, "q8_0": 34 / 32}  # le cache de contexte, par v
 SURCOUT = int(0.6 * GIO)  # tampons de calcul et contexte CUDA (mesuré par Aria-Pilote : 0,2 à 1,1 Gio)
 SURCOUT_MTP = int(1.5 * GIO)  # le contexte de la couche MTP (mesuré ici : 1,9 Gio à 32k)
 MARGE = int(0.5 * GIO)  # VRAM toujours laissée libre pour Windows
+LOT = 2048  # jetons traités d'un coup par le serveur : une couche à fenêtre garde sa fenêtre plus un lot, au plus
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ class ModeleConnu:
 # Du meilleur au plus léger : le premier qui tient en VRAM et passe le banc devient le MJ.
 CATALOGUE = (
     ModeleConnu("Qwen3.8 27B", "Qwen3.8-27B-UD-Q3_K_XL.gguf", "unsloth/Qwen3.8-27B-GGUF"),
+    ModeleConnu("Gemma 4 26B", "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf", "unsloth/gemma-4-26B-A4B-it-GGUF"),
     ModeleConnu("Bonsai 2 27B", "Ternary-Bonsai-2-27B-PQ2_0.gguf", "prism-ml/Ternary-Bonsai-2-27B-gguf"),
     ModeleConnu("Bonsai 2 9B", "Ternary-Bonsai-2-9B-PQ2_0.gguf", "prism-ml/Ternary-Bonsai-2-9B-gguf"),
     ModeleConnu("Bonsai 2 4B", "Ternary-Bonsai-2-4B-PQ2_0.gguf", "prism-ml/Ternary-Bonsai-2-4B-gguf"),
@@ -68,26 +70,56 @@ class Modele:
     valeurs_kv: int  # valeurs du cache de contexte par jeton
     a_mtp: bool
     contexte_max: int
+    valeurs_fenetre: int = 0  # valeurs par jeton des couches à fenêtre glissante
+    fenetre: int = 0  # jetons que ces couches gardent, quel que soit le contexte
 
 
 def valeurs_kv_par_jeton(meta: dict) -> int | None:
-    """Valeurs du cache (K + V) par jeton, ou None si l'en-tête ne le dit pas.
+    """Valeurs du cache (K + V) par jeton de contexte, ou None si l'en-tête ne le dit pas."""
+    cache = cache_du_modele(meta)
+    return cache[0] if cache else None
+
+
+def cache_du_modele(meta: dict) -> tuple[int, int, int] | None:
+    """Le cache de contexte : (valeurs par jeton, valeurs par jeton des couches à fenêtre, jetons de la fenêtre),
+    ou None si l'en-tête ne le dit pas.
 
     Les architectures hybrides (Qwen3.8, Bonsai 2…) n'ont une attention classique qu'une couche
-    sur N (full_attention_interval) ; les autres couches ont un état de taille fixe, négligeable."""
+    sur N (full_attention_interval) ; les autres couches ont un état de taille fixe, négligeable.
+
+    Gemma 4 donne ses têtes couche par couche, et dit lesquelles ont une fenêtre glissante
+    (sliding_window_pattern), avec des clés et des valeurs plus courtes (key_length_swa). Ces couches ne
+    gardent que leur fenêtre (sliding_window), plus un lot de jetons : on les compte à part, avec ce majorant.
+    Si l'en-tête ne donne pas la taille de la fenêtre, elles sont comptées comme des couches ordinaires."""
     couches = gguf.cle(meta, "block_count")
     tetes = gguf.cle(meta, "attention.head_count")
-    if not couches or not tetes:
+    if not couches or not tetes or not isinstance(tetes, (int, list)):
         return None
     tetes = max(tetes) if isinstance(tetes, list) else tetes
     tetes_kv = gguf.cle(meta, "attention.head_count_kv") or tetes
-    tetes_kv = max(tetes_kv) if isinstance(tetes_kv, list) else tetes_kv
     dimension = (gguf.cle(meta, "embedding_length") or 0) // tetes
     k = gguf.cle(meta, "attention.key_length") or dimension
     v = gguf.cle(meta, "attention.value_length") or dimension
+    if not k or not v or not isinstance(tetes_kv, (int, list)):
+        return None
+    glissantes = gguf.cle(meta, "attention.sliding_window_pattern")
+    if isinstance(tetes_kv, list) or isinstance(glissantes, list):
+        courtes = ((gguf.cle(meta, "attention.key_length_swa") or k) + (gguf.cle(meta, "attention.value_length_swa") or v))
+        fenetre = gguf.cle(meta, "attention.sliding_window")
+        fenetre = fenetre + LOT if isinstance(fenetre, int) and fenetre > 0 else 0
+        entieres = sous_fenetre = 0
+        for couche in range(couches):
+            par_couche = tetes_kv[couche] if isinstance(tetes_kv, list) and couche < len(tetes_kv) else (
+                max(tetes_kv) if isinstance(tetes_kv, list) else tetes_kv)
+            glissante = isinstance(glissantes, list) and couche < len(glissantes) and glissantes[couche]
+            if glissante and fenetre:
+                sous_fenetre += par_couche * courtes
+            else:
+                entieres += par_couche * (courtes if glissante else k + v)
+        return (entieres, sous_fenetre, fenetre if sous_fenetre else 0) if entieres or sous_fenetre else None
     intervalle = gguf.cle(meta, "full_attention_interval")
     couches_attention = couches // intervalle if isinstance(intervalle, int) and intervalle > 1 else couches
-    return couches_attention * tetes_kv * (k + v) if k and v else None
+    return couches_attention * tetes_kv * (k + v), 0, 0
 
 
 def decrire(chemin: Path, nom: str | None = None) -> Modele | None:
@@ -96,15 +128,17 @@ def decrire(chemin: Path, nom: str | None = None) -> Modele | None:
         meta = gguf.lire_metadonnees(chemin)
     except (OSError, gguf.GgufInvalide):
         return None
-    valeurs = valeurs_kv_par_jeton(meta)
-    if not valeurs:
+    cache = cache_du_modele(meta)
+    if not cache:
         return None
-    return Modele(nom or chemin.stem, chemin, chemin.stat().st_size, valeurs,
-                  bool(gguf.cle(meta, "nextn_predict_layers")), gguf.cle(meta, "context_length") or CONTEXTE_CIBLE)
+    return Modele(nom or chemin.stem, chemin, chemin.stat().st_size, cache[0],
+                  bool(gguf.cle(meta, "nextn_predict_layers")), gguf.cle(meta, "context_length") or CONTEXTE_CIBLE,
+                  cache[1], cache[2])
 
 
 def vram_estimee(modele: Modele, reglages: Reglages) -> int:
-    cache = modele.valeurs_kv * OCTETS_PAR_VALEUR[reglages.cache] * reglages.contexte
+    jetons = modele.valeurs_kv * reglages.contexte + modele.valeurs_fenetre * min(modele.fenetre, reglages.contexte)
+    cache = jetons * OCTETS_PAR_VALEUR[reglages.cache]
     return int(modele.taille + cache + SURCOUT + (SURCOUT_MTP if reglages.mtp else 0))
 
 

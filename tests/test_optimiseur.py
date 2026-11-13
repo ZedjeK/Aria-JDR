@@ -6,7 +6,8 @@ import pytest
 
 from aria import gguf
 from aria.materiel import MIO, CarteGraphique, Materiel, lire_nvidia_smi
-from aria.optimiseur import GIO, Modele, Reglages, decrire, paliers, planifier, valeurs_kv_par_jeton, vram_estimee
+from aria.optimiseur import (GIO, LOT, Modele, Reglages, cache_du_modele, decrire, paliers, planifier,
+                             valeurs_kv_par_jeton, vram_estimee)
 
 # L'en-tête de Bonsai 2 27B / Qwen3.8 27B : 64 couches, une attention classique toutes les 4
 META_QWEN = {"general.architecture": "qwen35", "qwen35.block_count": 64, "qwen35.embedding_length": 5120,
@@ -56,11 +57,12 @@ def test_empreinte_et_vram():
 
 def test_lecture_d_un_en_tete(tmp_path):
     chemin = tmp_path / "test.gguf"
-    ecrire_gguf(chemin, META_QWEN | {"tokenizer.ggml.tokens": [1, 2, 3]})
+    ecrire_gguf(chemin, META_QWEN | {"tokenizer.ggml.tokens": list(range(600)), "qwen35.par_couche": [1, 2, 3]})
     meta = gguf.lire_metadonnees(chemin)
     assert meta["general.architecture"] == "qwen35"
     assert gguf.cle(meta, "block_count") == 64
-    assert meta["tokenizer.ggml.tokens"] == {"longueur": 3}
+    assert meta["tokenizer.ggml.tokens"] == {"longueur": 600}  # un long tableau est sauté
+    assert meta["qwen35.par_couche"] == [1, 2, 3]  # un court tableau de nombres est lu
 
 
 @pytest.mark.parametrize("contenu", [b"PASGGUF", b"GGUF\x03\x00"])
@@ -86,6 +88,27 @@ def test_cache_d_un_modele_hybride():
     m = modele(0)
     assert m.valeurs_kv * 2 * 16384 == GIO
     assert vram_estimee(m, Reglages(16384)) == int(GIO + 0.6 * GIO)
+
+
+def test_cache_d_un_modele_a_fenetres_glissantes():
+    # Gemma 4 : des têtes et un motif de fenêtres donnés couche par couche, des clés plus courtes sous fenêtre
+    meta = {"general.architecture": "gemma4", "gemma4.block_count": 6, "gemma4.embedding_length": 2816,
+            "gemma4.attention.head_count": 16, "gemma4.attention.head_count_kv": [8, 8, 8, 8, 8, 2],
+            "gemma4.attention.key_length": 512, "gemma4.attention.value_length": 512,
+            "gemma4.attention.key_length_swa": 256, "gemma4.attention.value_length_swa": 256,
+            "gemma4.attention.sliding_window_pattern": [1, 1, 1, 1, 1, 0], "gemma4.attention.sliding_window": 1024}
+    # Une couche sur six garde tout le contexte ; les cinq autres, leur fenêtre et un lot
+    assert cache_du_modele(meta) == (2 * (512 + 512), 5 * 8 * (256 + 256), 1024 + LOT)
+    assert valeurs_kv_par_jeton(meta) == 2 * (512 + 512)
+    m = Modele("Gemma", None, 0, *cache_du_modele(meta)[:1], False, 262144, *cache_du_modele(meta)[1:])
+    ecart = vram_estimee(m, Reglages(32768)) - vram_estimee(m, Reglages(16384))
+    assert ecart == 2 * (512 + 512) * 2 * 16384  # doubler le contexte ne coûte que la couche entière
+    assert vram_estimee(m, Reglages(1024)) < vram_estimee(m, Reglages(4096))  # la fenêtre ne dépasse pas le contexte
+    # Sans taille de fenêtre, les couches glissantes comptent comme des couches ordinaires (majorant)
+    sans = {c: v for c, v in meta.items() if c != "gemma4.attention.sliding_window"}
+    assert cache_du_modele(sans) == (5 * 8 * (256 + 256) + 2 * (512 + 512), 0, 0)
+    # Un tableau trop long pour être lu : on ne sait pas, et on le dit
+    assert cache_du_modele(meta | {"gemma4.attention.head_count_kv": {"longueur": 9000}}) is None
 
 
 def test_paliers_avec_et_sans_mtp():
