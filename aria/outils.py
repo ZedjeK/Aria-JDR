@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, missions, monde as monde_, noms as noms_, trame as trame_, vehicules as vehicules_
+from aria import combat as combat_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -203,7 +203,7 @@ class Session:
             resultat = outil.fonction(self, **arguments)
             if self.monde is not None and self.moment.jour != self.jour_du_monde:
                 resultat = resultat | self.vivre()  # le temps a passé : le monde a bougé
-        except (ErreurOutil, monde_.MondeImpossible, trame_.TrameImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
+        except (ErreurOutil, monde_.MondeImpossible, pnj_.PnjImpossible, trame_.TrameImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
                 ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
@@ -672,9 +672,31 @@ def _nom_du_pnj(session: Session, identifiant: str, nom: str | None, sexe: str |
         raise ErreurOutil(str(e)) from e
 
 
+def _dangers_en_cours(session: Session) -> list[str]:
+    """Le danger de chaque mission ouverte : il plafonne la menace des PNJ (REGLES.md 15.2)."""
+    dangers = [m.get("danger") or m.get("offre", {}).get("danger") for m in session.personnage.missions.values()]
+    return [d for d in dangers if d]
+
+
+def _schema_pnj_par_role(s: Session) -> dict:
+    return _objet({
+        "identifiant": {"type": "string", "description": "Court et unique, par exemple ganger_couteau."},
+        **_champs_du_nom(s),
+        "camp": _enum(["ennemis", "allies", "neutres"]),
+        "role": _enum(pnj_.noms_des_roles(s.monde), "Ce qu'il est. Le moteur tire ses chiffres, son équipement et "
+                                                    "ses deux traits : ne les invente pas."),
+        "menace": _enum(pnj_.MENACES, "faible : sans danger ; moyenne : voyou ordinaire ; forte : professionnel ; "
+                                      "élite : un seul par scène. Le danger de la mission la plafonne."),
+    } | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
+                            "poursuite.")} if s.univers.vehicules else {}) | ({
+        "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
+                  "description": "Pour un lanceur de sorts : les sorts qu'il connaît. Sa Magie suit sa menace."},
+    } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp", "role", "menace"])
+
+
 @outil("Créer un PNJ (ennemi, allié ou passant) avec un profil simplifié. Son identifiant sert ensuite "
        "dans les autres outils. L'arme et l'armure viennent de l'armurerie de l'univers.",
-       lambda s: _objet({
+       lambda s: _schema_pnj_par_role(s) if pnj_.actifs(s.monde) else _objet({
            "identifiant": {"type": "string", "description": "Court et unique, par exemple ganger_couteau."},
            **_champs_du_nom(s),
            "camp": _enum(["ennemis", "allies", "neutres"]),
@@ -694,11 +716,12 @@ def _nom_du_pnj(session: Session, identifiant: str, nom: str | None, sexe: str |
            "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
                      "description": "Les sorts qu'il connaît, pris dans les domaines de l'univers."},
        } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp", "combat", "pv"]))
-def creer_pnj(session: Session, identifiant: str, camp: str, combat: int, pv: int, nom: str | None = None,
-              arme: str | None = None, armure: str | None = None, dexterite: int = 50,
+def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None = None, pv: int | None = None,
+              nom: str | None = None, arme: str | None = None, armure: str | None = None, dexterite: int = 50,
               competences: dict | None = None, magie: int | None = None, pm: int = 0,
               sorts: list | None = None, vehicule: str | None = None, sexe: str | None = None,
-              origine: str | None = None, faction: str | None = None) -> dict:
+              origine: str | None = None, faction: str | None = None, role: str | None = None,
+              menace: str | None = None) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -708,7 +731,21 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int, pv: in
         connus = ", ".join(f"{i} ({c.nom})" for i, c in session.pnj.items())
         raise ErreurOutil(f"L'identifiant « {identifiant} » est déjà pris. PNJ existants : {connus}. "
                           f"Pour un nouveau PNJ, prends un autre identifiant, par exemple « {libre} ».")
-    talents = {}
+    profil = None
+    if pnj_.actifs(session.monde):
+        if role is None or menace is None:
+            raise ErreurOutil("Précise « role » et « menace » : le moteur tire le reste.")
+        elite = session.monde["pnj"]["elite"]
+        if menace == pnj_.ELITE and elite in session.pnj and session.pnj[elite].fiche.etat is Etat.ACTIF:
+            raise ErreurOutil(f"Un seul PNJ d'élite par scène : {session.pnj[elite].nom} est déjà là.")
+        profil = pnj_.tirer(session.monde, session.des, session.univers, role, menace, _dangers_en_cours(session))
+        combat, pv, dexterite = profil["combat"], profil["pv"], profil["dexterite"]
+        arme, armure, competences = profil["arme"], profil["armure"], None
+        if sorts:
+            magie, pm = profil["niveau"], profil["niveau"] // 2
+    elif combat is None or pv is None:
+        raise ErreurOutil("Paramètres obligatoires manquants : « combat » et « pv ».")
+    talents = dict(profil["competences"]) if profil else {}
     for nom_competence, valeur in (competences or {}).items():
         socle = session.noms_competences.get(nom_competence, nom_competence)
         if not isinstance(valeur, int) or not PNJ_COMPETENCE[0] <= valeur <= PNJ_COMPETENCE[1]:
@@ -728,8 +765,15 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int, pv: in
         session.pnj[identifiant].reserve = ReservePnj(u.arme(arme) if arme else None)
     if vehicule:
         session.engins[identifiant] = vehicules_.Engin(u.vehicule(vehicule))
+    if profil and menace == pnj_.ELITE:
+        session.monde["pnj"]["elite"] = identifiant
     return {"pnj": identifiant, **_etat_combattant(session.pnj[identifiant])} | (
-        {"vehicule": vehicule} if vehicule else {})
+        {"vehicule": vehicule} if vehicule else {}) | ({
+            "role": role, "menace": menace, "combat": combat,
+            "competences": {u.nom_affiche(c): v for c, v in profil["competences"].items()},
+            "caractere": profil["caractere"], "signe": profil["signe"],
+            "consigne": "Joue-le avec ce caractère et ce signe. S'il compte, garde-les dans son rôle (noter_pnj).",
+        } if profil else {})
 
 
 @outil("Tester une embuscade : la Perception du joueur contre la Discrétion des agresseurs.",
@@ -2117,6 +2161,8 @@ def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
     t = trame_.trame_de(session.monde)
     if t:
         t["enquete"] = False  # une enquête par scène
+    if pnj_.actifs(session.monde):
+        session.monde["pnj"]["elite"] = None  # un seul PNJ d'élite par scène
     return {"souvenir": souvenir}
 
 

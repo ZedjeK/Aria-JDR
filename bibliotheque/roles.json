@@ -1,0 +1,71 @@
+{
+  "roles": {
+    "generique": [
+      {"nom": "passant", "competences": ["Perception", "Athlétisme", "Persuasion"], "armes": [], "armure": "aucune", "max": "faible"},
+      {"nom": "marchand", "competences": ["Persuasion", "Perspicacité", "Tromperie"], "armes": [], "armure": "aucune", "max": "faible"},
+      {"nom": "voyou", "competences": ["Intimidation", "Discrétion", "Escamotage"], "armes": ["mêlée"], "armure": "aucune"},
+      {"nom": "garde", "competences": ["Perception", "Intimidation", "Athlétisme"], "armes": ["mêlée", "poing"], "armure": "légère"},
+      {"nom": "homme de loi", "competences": ["Investigation", "Perception", "Intimidation"], "armes": ["mêlée", "poing"], "armure": "légère"},
+      {"nom": "soldat", "competences": ["Athlétisme", "Perception", "Commandement"], "armes": ["mêlée", "longue"], "armure": "lourde"},
+      {"nom": "tueur", "competences": ["Discrétion", "Perception", "Athlétisme"], "armes": ["mêlée", "poing"], "armure": "légère"},
+      {"nom": "artisan", "competences": ["Artisanat", "Technologie", "Sécurité"], "armes": [], "armure": "aucune"},
+      {"nom": "guérisseur", "competences": ["Médecine", "Sciences", "Perspicacité"], "armes": [], "armure": "aucune"},
+      {"nom": "intermédiaire", "competences": ["Persuasion", "Investigation", "Perspicacité"], "armes": ["mêlée", "poing"], "armure": "aucune"},
+      {"nom": "notable", "competences": ["Persuasion", "Commandement", "Érudition"], "armes": [], "armure": "aucune"},
+      {"nom": "chef", "competences": ["Commandement", "Intimidation", "Perspicacité"], "armes": ["mêlée", "poing"], "armure": "légère", "min": "forte"}
+    ],
+    "Cyberpunk": [
+      {"nom": "passant", "competences": ["Perception", "Athlétisme", "Persuasion"], "armes": [], "armure": "aucune", "max": "faible"},
+      {"nom": "commerçant", "competences": ["Persuasion", "Perspicacité", "Tromperie"], "armes": [], "armure": "aucune", "max": "faible"},
+      {"nom": "voyou", "competences": ["Intimidation", "Discrétion", "Escamotage"], "armes": ["mêlée", "poing"], "armure": "aucune"},
+      {"nom": "garde", "competences": ["Perception", "Intimidation", "Sécurité"], "armes": ["poing"], "armure": "légère"},
+      {"nom": "policier", "competences": ["Investigation", "Perception", "Intimidation"], "armes": ["poing"], "armure": "légère"},
+      {"nom": "soldat de corpo", "competences": ["Athlétisme", "Perception", "Commandement"], "armes": ["longue"], "armure": "lourde"},
+      {"nom": "tueur", "competences": ["Discrétion", "Perception", "Athlétisme"], "armes": ["poing", "mêlée"], "armure": "légère"},
+      {"nom": "technicien", "competences": ["Technologie", "Artisanat", "Sécurité"], "armes": [], "armure": "aucune"},
+      {"nom": "médecin de rue", "competences": ["Médecine", "Cybernétique", "Sciences"], "armes": [], "armure": "aucune"},
+      {"nom": "fixer", "competences": ["Réseau", "Persuasion", "Perspicacité"], "armes": ["poing"], "armure": "légère"},
+      {"nom": "cadre", "competences": ["Persuasion", "Commandement", "Érudition"], "armes": [], "armure": "aucune"},
+      {"nom": "chef", "competences": ["Commandement", "Intimidation", "Perspicacité"], "armes": ["poing"], "armure": "légère", "min": "forte"}
+    ]
+  },
+  "caracteres": [
+    "méfiant", "bavard", "taiseux", "nerveux", "jovial", "hautain", "servile", "blasé", "curieux", "rancunier",
+    "généreux", "cupide", "pieux", "moqueur", "mélancolique", "colérique", "prudent", "téméraire",
+    "menteur par habitude", "loyal jusqu'à l'entêtement", "distrait", "méticuleux", "superstitieux", "cynique",
+    "naïf", "protecteur", "envieux", "fier", "honteux de son passé", "fatigué de tout", "ambitieux", "nostalgique",
+    "rieur", "froid", "impatient", "patient à l'excès", "susceptible", "flatteur", "têtu", "rêveur"
+  ],
+  "signes": {
+    "generique": [
+      "une cicatrice en travers du sourcil", "une voix cassée", "des mains abîmées par le travail",
+      "un tic à la paupière", "une dent en or", "une démarche qui boite légèrement", "des cheveux blancs avant l'âge",
+      "un rire trop fort", "un regard qui ne se pose jamais", "une odeur de tabac froid", "des ongles rongés",
+      "un nez cassé mal remis", "une tache de naissance au cou", "des épaules voûtées", "une carrure de lutteur",
+      "une maigreur de chat errant", "des yeux très clairs", "une barbe de trois jours", "un crâne rasé",
+      "une tresse jusqu'à la taille", "des vêtements trop grands", "une mise impeccable", "un doigt manquant",
+      "une toux sèche", "un accent d'ailleurs", "une voix très douce", "un sourire à qui il manque une dent",
+      "des taches d'encre sur les doigts", "une brûlure ancienne sur l'avant-bras", "un bijou jamais quitté",
+      "des cernes profonds", "une façon de parler très lentement", "un débit de mitraille", "une main qui tremble",
+      "un port de tête de soldat", "des bottes usées jusqu'à la corde", "un chapeau enfoncé sur les yeux",
+      "une cicatrice de corde au poignet", "un œil plus sombre que l'autre", "une manie de tout compter"
+    ],
+    "Cyberpunk": [
+      "un œil cybernétique qui ne cligne pas", "un bras chromé rayé", "des tatouages lumineux sur le cou",
+      "un port de données derrière l'oreille", "une voix synthétique légèrement décalée",
+      "des doigts métalliques qui cliquettent", "une cicatrice de greffe mal refermée",
+      "des lentilles à affichage qui scintillent", "un crâne rasé barré d'une suture",
+      "un masque filtrant pendu au cou", "une veste couverte d'écussons de gang", "des cheveux teints en néon",
+      "une mâchoire renforcée", "une odeur de fluide de refroidissement", "un tic dû à un implant mal réglé",
+      "des câbles tressés dans les cheveux", "un imperméable transparent", "des bottes à semelles magnétiques",
+      "une main gantée en permanence", "un tatouage de corporation barré", "des pupilles qui changent de couleur",
+      "une toux de fumeur de synthétique", "des cernes de nuit blanche sur le réseau", "un collier de puces mémoire",
+      "une prothèse de jambe qui siffle", "une peau trop lisse, refaite", "des dents en céramique",
+      "un code-barres au poignet", "une brûlure d'arc électrique sur la joue", "des lunettes miroir jamais retirées",
+      "un accent des colonies orbitales", "une voix rauque de fond de bar", "une cicatrice de lame sur la gorge",
+      "des ongles en acier poli", "un manteau qui cache mal un holster", "un sourire aux dents limées",
+      "une nervosité de sevrage", "une oreille remplacée par un capteur", "des gants coupés tachés d'huile",
+      "un regard qui lit ton prix"
+    ]
+  }
+}

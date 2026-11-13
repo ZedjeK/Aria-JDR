@@ -199,5 +199,5 @@ def test_tout_survit_a_la_sauvegarde(u, tmp_path):
     s.appeler("ouvrir_mission", {"identifiant": "m", "fil": "Une escorte.", "danger": "simple"})
     s.appeler("niveau_de_vie", {"niveau": "modeste", "lien_a_charge": True})
     relu = personnage_depuis_dict(personnage_vers_dict(s.personnage))
-    assert relu.dettes == s.personnage.dettes and relu.missions == {"m": {"recompense": 500, "avance": 0}}
+    assert relu.dettes == s.personnage.dettes and relu.missions == {"m": {"recompense": 500, "avance": 0, "danger": "simple"}}
     assert relu.lien_a_charge and relu.argent == 2000 and Campagne(tmp_path)

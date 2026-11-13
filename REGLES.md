@@ -1516,6 +1516,26 @@ Le MJ raconte, le code tire. Les noms, les PNJ, le temps qu'il fait, les lieux e
 - **Jamais deux fois le même.** Un nom tiré ne ressort plus de la campagne.
 - **Le MJ ne nomme plus.** Pour un nouveau PNJ, il donne le sexe, et le code rend le nom. Un PNJ déjà nommé, par l'amorce, par la carte ou par une scène d'avant, garde le sien.
 
+### 15.2 Les PNJ
+
+Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menace** dans des listes fermées ; le code tire le reste.
+
+| Menace | Combat | Points de vie | Compétences du rôle |
+|---|---|---|---|
+| Faible | 20 + 2d10 | 6 + 1d6 | 40 |
+| Moyenne | 40 + 2d10 | 10 + 1d6 | 55 |
+| Forte | 55 + 2d10 | 14 + 1d8 | 70 |
+| Élite | 75 + 1d10 | 20 + 1d10 | 80 |
+
+- La **Dextérité** se tire pour tous sur 40 + 2d10. Les seuils de menace sont ceux du butin (13.8).
+- **Douze rôles par genre.** En Cyberpunk : passant, commerçant, voyou, garde, policier, soldat de corpo, tueur, technicien, médecin de rue, fixer, cadre, chef. Un genre sans table prend les rôles du jeu générique.
+- **Un rôle donne** trois compétences, au niveau de la menace, et un équipement tiré dans l'armurerie de l'univers : rien pour un passant, une arme de mêlée ou de poing pour un voyou, une arme longue et une armure lourde pour un soldat. Une armure légère protège de 1 ou 2, une lourde de 2 à 4, selon la menace.
+- **Un rôle borne la menace** : un passant ou un commerçant reste faible, un chef est au moins fort.
+- **Deux traits** : un caractère et un signe physique, tirés chacun dans une table de 40. Le MJ joue le PNJ avec.
+- **Le plafond.** En mission, le danger borne la menace : un service ou une mission simple, moyenne au plus ; risquée, forte ; dangereuse et au-delà, élite. Hors mission, forte au plus. **Un seul PNJ d'élite par scène.**
+- Les hommes d'une faction dans une mêlée (14.4) et le bras armé de la finale (14.11) gardent les chiffres que le moteur leur donne.
+- **Un lanceur de sorts** a sa Magie au niveau des compétences de sa menace, et la moitié en points de magie. Ses sorts restent choisis par le MJ dans les domaines de l'univers.
+
 ---
 
 ## 16. À définir

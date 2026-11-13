@@ -91,7 +91,8 @@ def decrire(outil: str, arguments: dict, resultat: dict, session) -> list[str]:
     if o == "point_de_destin":
         return [f"✨ Point de destin dépensé ({r['points_destin_restants']} restants)"]
     if o == "creer_pnj":
-        return [f"👤 {r['nom']} : combat {a['combat']}, {r['pv']} PV" + (f", {r['arme']}" if r["arme"] else "")]
+        return [f"👤 {r['nom']} : combat {a.get('combat', r.get('combat'))}, {r['pv']} PV"
+                + (f", {r['arme']}" if r["arme"] else "")]
     if o == "embuscade":
         perception = session.univers.nom_affiche("Perception")
         return [f"🎲 Embuscade : leur Discrétion {jet(r['discretion'])}, ta {perception} {jet(r['perception'])}"
