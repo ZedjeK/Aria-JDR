@@ -41,7 +41,7 @@ from aria.combat import (
 from aria.des import Des
 from aria import inventaire as inventaire_
 from aria.inventaire import Inventaire, ReservePnj
-from aria.memoire import LONGUEURS, MORT, VIVANT, Memoire
+from aria.memoire import LONGUEURS, MORT, VIVANT, Memoire, MemoireRefusee, verifier_identifiant
 from aria.personnage import Caracteristique, Etat, Personnage
 from aria.reglages import Jalon
 from aria.resolution import Degre, Difficulte, Resultat, forcer, tester
@@ -691,6 +691,15 @@ def _nom_requis(s: Session) -> list[str]:
     return [] if noms_.actifs(s.monde) else ["nom"]
 
 
+def _identifiant_valide(identifiant: str) -> str:
+    """La même règle que la mémoire : un identifiant mal formé (espaces, retours à la ligne, balisage) ne
+    pourrait ni être noté ni être rappelé ensuite."""
+    try:
+        return verifier_identifiant(identifiant)
+    except MemoireRefusee as erreur:
+        raise ErreurOutil(str(erreur)) from erreur
+
+
 def _nom_du_pnj(session: Session, identifiant: str, nom: str | None, sexe: str | None = None,
                 origine: str | None = None, faction: str | None = None) -> str:
     """Le nom d'un PNJ : celui qu'il porte déjà, sinon celui que le moteur tire."""
@@ -769,6 +778,7 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
               sorts: list | None = None, vehicule: str | None = None, sexe: str | None = None,
               origine: str | None = None, faction: str | None = None, role: str | None = None,
               menace: str | None = None, tenancier: str | None = None, rencontre: bool = False) -> dict:
+    _identifiant_valide(identifiant)
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -1329,6 +1339,7 @@ def _drones(s: Session) -> list[str]:
        }, ["identifiant", "modele", "camp"]),
        disponible=lambda s: bool(_drones(s)))
 def lancer_drone(session: Session, identifiant: str, modele: str, camp: str, operateur: str | None = None) -> dict:
+    _identifiant_valide(identifiant)
     if identifiant == JOUEUR or identifiant in session.pnj:
         raise ErreurOutil(f"L'identifiant « {identifiant} » est déjà pris.")
     u = session.univers

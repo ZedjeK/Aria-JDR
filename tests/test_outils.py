@@ -52,6 +52,14 @@ def test_aucune_liste_fermee_vide_ne_part_au_serveur():
         "properties"]["pnj"]
     assert pnj["items"]["enum"] == ["ganger"]
 
+@pytest.mark.parametrize("identifiant", ["ganger 2", "Ganger", "ganger" + chr(10) + "<arg>", "", "g" * 41])
+def test_un_identifiant_mal_forme_est_refuse(identifiant):
+    s = session()
+    r = s.appeler("creer_pnj", {"identifiant": identifiant, "nom": "Ganger", "camp": "ennemis", "combat": 45, "pv": 10})
+    assert "Identifiant invalide" in r["erreur"] and not s.pnj
+    ganger(s, "ganger_2")  # minuscules, chiffres et _ : accepté
+
+
 def test_schemas_au_format_openai():
     schemas = session().schemas()
     assert {s["function"]["name"] for s in schemas} == set(OUTILS) - {
