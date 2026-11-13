@@ -1536,6 +1536,28 @@ Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menac
 - Les hommes d'une faction dans une mêlée (14.4) et le bras armé de la finale (14.11) gardent les chiffres que le moteur leur donne.
 - **Un lanceur de sorts** a sa Magie au niveau des compétences de sa menace, et la moitié en points de magie. Ses sorts restent choisis par le MJ dans les domaines de l'univers.
 
+### 15.3 La météo
+
+- **Cinq climats** : tempéré, pluvieux, aride, froid, tropical. Le cadre en a un ; chaque genre a le sien par défaut (Cyberpunk : pluvieux ; Post-apo : aride ; les autres : tempéré).
+- **Quatre saisons de 90 jours.** La saison de départ est tirée sur 1d4, puis elle tourne. Un climat tropical n'a que deux saisons de 180 jours, sèche et humide.
+- **Huit temps** : clair, couvert, pluie, orage, brouillard, vent fort, neige, canicule. Un genre peut avoir son temps propre, qui remplace l'orage : pluie acide en Cyberpunk, tempête de cendres en Post-apo.
+- **Chaque matin**, le code lance 1d6 : sur 1 à 3, le temps de la veille continue ; sur 4 à 6, il retire 1d10 dans la table du climat et de la saison.
+- **Les effets ne jouent que dehors.** Le MJ dit si l'action ou le combat se passe dehors ; le moteur applique alors :
+
+| Temps | Appliqué par le moteur | Appliqué par le MJ |
+|---|---|---|
+| Clair, couvert | — | — |
+| Pluie | Perception −10 | les traces s'effacent en une demi-journée |
+| Orage, tempête de cendres | Perception −20, tir à distance −10 | — |
+| Pluie acide | Perception −20, tir à distance −10 | 1 point de dégâts par demi-journée passée dehors sans armure ni abri |
+| Brouillard | Discrétion +10, tir à longue portée −20 | — |
+| Vent fort | tir à distance −10 | — |
+| Neige | Pilotage −10 | poursuite à pied −10 ; suivre une piste +10 |
+| Canicule | Athlétisme −10 | le repos pris dehors ne rend rien |
+
+- Le MJ lit le temps du jour dans son prompt et avec l'outil `monde` ; le joueur, dans la commande `monde`. Il n'y a **pas de prévisions**.
+- La météo ne déclenche aucun événement : ceux du quartier et de la ville ont leurs tables (14.7).
+
 ---
 
 ## 16. À définir

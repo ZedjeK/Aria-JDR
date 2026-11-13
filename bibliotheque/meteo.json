@@ -1,0 +1,40 @@
+{
+  "climats": {
+    "tempéré": {
+      "indices": [],
+      "printemps": ["clair", "clair", "clair", "couvert", "couvert", "pluie", "pluie", "vent fort", "brouillard", "orage"],
+      "été": ["clair", "clair", "clair", "clair", "clair", "couvert", "pluie", "orage", "orage", "canicule"],
+      "automne": ["clair", "couvert", "couvert", "couvert", "pluie", "pluie", "pluie", "brouillard", "vent fort", "orage"],
+      "hiver": ["clair", "couvert", "couvert", "couvert", "pluie", "pluie", "brouillard", "vent fort", "neige", "neige"]
+    },
+    "pluvieux": {
+      "indices": ["pluie", "mousson", "bruine"],
+      "printemps": ["clair", "couvert", "couvert", "pluie", "pluie", "pluie", "pluie", "brouillard", "vent fort", "orage"],
+      "été": ["clair", "clair", "couvert", "couvert", "pluie", "pluie", "pluie", "orage", "orage", "canicule"],
+      "automne": ["couvert", "couvert", "pluie", "pluie", "pluie", "pluie", "brouillard", "vent fort", "orage", "clair"],
+      "hiver": ["couvert", "couvert", "pluie", "pluie", "pluie", "pluie", "brouillard", "brouillard", "vent fort", "neige"]
+    },
+    "aride": {
+      "indices": ["désert", "dunes", "sahara", "terres brûlées"],
+      "printemps": ["clair", "clair", "clair", "clair", "clair", "clair", "couvert", "vent fort", "vent fort", "canicule"],
+      "été": ["clair", "clair", "clair", "clair", "vent fort", "vent fort", "canicule", "canicule", "canicule", "canicule"],
+      "automne": ["clair", "clair", "clair", "clair", "clair", "clair", "couvert", "couvert", "vent fort", "pluie"],
+      "hiver": ["clair", "clair", "clair", "clair", "clair", "couvert", "couvert", "vent fort", "vent fort", "pluie"]
+    },
+    "froid": {
+      "indices": ["arctique", "sibérie", "toundra", "glaces", "hiver éternel"],
+      "printemps": ["clair", "clair", "couvert", "couvert", "couvert", "pluie", "pluie", "brouillard", "vent fort", "neige"],
+      "été": ["clair", "clair", "clair", "clair", "couvert", "couvert", "couvert", "pluie", "pluie", "orage"],
+      "automne": ["clair", "couvert", "couvert", "couvert", "pluie", "pluie", "brouillard", "vent fort", "neige", "neige"],
+      "hiver": ["clair", "clair", "couvert", "couvert", "brouillard", "vent fort", "vent fort", "neige", "neige", "neige"]
+    },
+    "tropical": {
+      "indices": ["jungle", "tropique", "équateur", "mékong"],
+      "sèche": ["clair", "clair", "clair", "clair", "clair", "couvert", "couvert", "canicule", "canicule", "orage"],
+      "humide": ["couvert", "couvert", "pluie", "pluie", "pluie", "pluie", "orage", "orage", "orage", "brouillard"]
+    }
+  },
+  "climat_du_genre": {"Cyberpunk": "pluvieux", "Post-apo": "aride"},
+  "climat_par_defaut": "tempéré",
+  "temps_du_genre": {"Cyberpunk": "pluie acide", "Post-apo": "tempête de cendres"}
+}

@@ -439,6 +439,8 @@ class Combat:
         self.actif = self._prochain(0)  # l'indice, dans l'ordre, de celui dont c'est le tour
         self.sauvegardes: list[RapportSauvegarde] = []  # les effets persistants, en attente d'être racontés
         self.fumee = 0  # les rounds de fumée qui restent : tirer à travers, c'est un couvert lourd
+        self.malus_tir = 0  # le temps qu'il fait, dehors : ce que perd tout tir à distance (REGLES.md 15.3)
+        self.malus_tir_long = 0  # et ce que perd en plus un tir à longue portée
 
     # --- Le tour de parole ---------------------------------------------------------
 
@@ -619,7 +621,7 @@ class Combat:
         modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
         effets = []
         if not arme.corps_a_corps:
-            modificateur += couvert.value
+            modificateur += couvert.value + self.malus_tir + (self.malus_tir_long if arme.portee is Portee.LONGUE else 0)
             if attaquant.vise:
                 modificateur += BONUS_VISER
                 attaquant.vise = False
