@@ -877,7 +877,9 @@ def qualifier_modele(modele: optimiseur.Modele, vram_libre: int | None, afficher
     compte_rendu = {"modele": modele.nom, "fichier": modele.chemin.name, "reussi": False, "essais": []}
     paliers = optimiseur.planifier(modele, vram_libre)
     if not paliers:
-        compte_rendu["raison"] = "ne tient pas dans la VRAM libre"
+        libre = "aucune carte NVIDIA" if vram_libre is None else f"{vram_libre / optimiseur.GIO:.1f} Gio libres"
+        compte_rendu["raison"] = (f"pas assez de VRAM libre : il en faut "
+                                  f"{optimiseur.vram_requise(modele) / optimiseur.GIO:.1f} Gio, {libre}")
         return compte_rendu
     serveur = llm.demarrer_au_mieux(modele, paliers, journal=journal)
     if serveur is None:

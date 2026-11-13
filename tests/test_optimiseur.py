@@ -6,8 +6,8 @@ import pytest
 
 from aria import gguf
 from aria.materiel import MIO, CarteGraphique, Materiel, lire_nvidia_smi
-from aria.optimiseur import (GIO, LOT, Modele, Reglages, cache_du_modele, decrire, paliers, planifier,
-                             valeurs_kv_par_jeton, vram_estimee)
+from aria.optimiseur import (GIO, LOT, MARGE, Modele, Reglages, cache_du_modele, decrire, paliers, planifier,
+                             valeurs_kv_par_jeton, vram_estimee, vram_requise)
 
 # L'en-tête de Bonsai 2 27B / Qwen3.8 27B : 64 couches, une attention classique toutes les 4
 META_QWEN = {"general.architecture": "qwen35", "qwen35.block_count": 64, "qwen35.embedding_length": 5120,
@@ -112,7 +112,9 @@ def test_cache_d_un_modele_a_fenetres_glissantes():
 
 
 def test_paliers_avec_et_sans_mtp():
-    assert [str(r) for r in paliers(modele(7))] == ["16k, cache f16", "16k, cache q8_0", "12k, cache q8_0"]
+    # Pas de palier sous 16k : le prompt du MJ et ses outils n'y tiendraient pas
+    assert [str(r) for r in paliers(modele(7))] == ["16k, cache f16", "16k, cache q8_0"]
+    assert vram_requise(modele(7)) == vram_estimee(modele(7), Reglages(16384, "q8_0")) + MARGE
     assert [str(r) for r in paliers(modele(7, mtp=True))][:2] == ["16k, cache f16, MTP", "16k, cache q8_0, MTP"]
 
 
