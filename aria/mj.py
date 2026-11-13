@@ -9,6 +9,7 @@ MAGIE = chemins.PROMPTS / "magie.md"
 INTERDITS = chemins.PROMPTS / "magie_interdite.md"
 ECONOMIE = chemins.PROMPTS / "economie.md"
 MONDE = chemins.PROMPTS / "monde.md"
+ALEATOIRE = chemins.PROMPTS / "aleatoire.md"
 
 
 def presenter(personnage: Personnage) -> str:
@@ -45,7 +46,7 @@ def presenter_economie(univers: Univers, personnage: Personnage) -> str:
 
 
 def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", memoire: str = "",
-                   fil: str = "", monde: bool = False) -> str:
+                   fil: str = "", monde: bool = False, aleatoire: bool = False) -> str:
     """Le prompt du MJ. `scene` : ce que le MJ sait de la situation en cours (lieu, PNJ présents…) ;
     `memoire` : le bloc Mémoire de la campagne ; `fil` : ce que le moteur a gardé des échanges
     de la session sortis de la conversation."""
@@ -53,7 +54,8 @@ def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", me
     return gabarit.format(univers=univers.nom, genre=univers.genre, cadre=univers.cadre,
                           personnage=presenter(personnage), magie=presenter_magie(univers, personnage),
                           economie=presenter_economie(univers, personnage)
-                          + (MONDE.read_text(encoding="utf-8") if monde else ""),
+                          + (MONDE.read_text(encoding="utf-8") if monde else "")
+                          + (ALEATOIRE.read_text(encoding="utf-8") if aleatoire else ""),
                           memoire=f"\n## Ce dont tu te souviens\n\n{memoire}\n" if memoire else "",
                           scene=f"\n## La scène\n\n{scene}\n" if scene else "",
                           fil=f"\n## Plus tôt dans cette session\n\nLes premiers échanges de la session sont sortis "
