@@ -90,6 +90,23 @@ def _verifier(valeur, schema: dict, chemin: str):
         _verifier_objet(valeur, schema, chemin)
 
 
+AUCUNE_VALEUR = "Aucune valeur possible pour l'instant."
+
+
+def _sans_liste_vide(schema):
+    """Le schéma tel qu'il part au serveur : une liste fermée vide (aucun PNJ dans la scène, par exemple) est
+    invalide en JSON Schema, et llama-server refuse alors toute la requête. On la retire et on le dit dans la
+    description ; la vérification des arguments, elle, garde le schéma complet."""
+    if isinstance(schema, list):
+        return [_sans_liste_vide(element) for element in schema]
+    if not isinstance(schema, dict):
+        return schema
+    propre = {cle: _sans_liste_vide(valeur) for cle, valeur in schema.items() if cle != "enum" or valeur}
+    if schema.get("enum") == []:
+        propre["description"] = " ".join(filter(None, [schema.get("description"), AUCUNE_VALEUR]))
+    return propre
+
+
 def _verifier_objet(arguments: dict, schema: dict, chemin: str = "arguments"):
     proprietes = schema.get("properties", {})
     for cle in arguments:
@@ -183,7 +200,8 @@ class Session:
     def schemas(self) -> list[dict]:
         """La liste des outils au format OpenAI, à envoyer au LLM à chaque tour."""
         return [{"type": "function",
-                 "function": {"name": o.nom, "description": o.description, "parameters": o.parametres(self)}}
+                 "function": {"name": o.nom, "description": o.description,
+                              "parameters": _sans_liste_vide(o.parametres(self))}}
                 for o in OUTILS.values() if o.disponible(self)]
 
     def appeler(self, nom: str, arguments: "dict | str | None" = None) -> dict:

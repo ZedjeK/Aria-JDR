@@ -29,6 +29,29 @@ def ganger(s: Session, identifiant="ganger", **profil):
 
 # --- Catalogue et garde-fous ------------------------------------------------------------------
 
+def _listes_fermees(schema) -> list:
+    if isinstance(schema, list):
+        return [x for element in schema for x in _listes_fermees(element)]
+    if not isinstance(schema, dict):
+        return []
+    return ([schema["enum"]] if "enum" in schema else []) + [x for v in schema.values() for x in _listes_fermees(v)]
+
+
+def test_aucune_liste_fermee_vide_ne_part_au_serveur():
+    s = session()  # aucun PNJ dans la scène : la liste des PNJ de debut_combat est vide
+    assert OUTILS["debut_combat"].parametres(s)["properties"]["pnj"]["items"]["enum"] == []
+    listes = _listes_fermees(s.schemas())
+    assert listes and all(listes)
+    pnj = next(o for o in s.schemas() if o["function"]["name"] == "debut_combat")["function"]["parameters"][
+        "properties"]["pnj"]
+    assert "enum" not in pnj["items"] and "Aucune valeur possible" in pnj["items"]["description"]
+    assert pnj["description"] == "Les PNJ qui combattent."
+    assert "erreur" in s.appeler("debut_combat", {"pnj": ["inconnu"]})  # le moteur refuse toujours un PNJ inventé
+    ganger(s)
+    pnj = next(o for o in s.schemas() if o["function"]["name"] == "debut_combat")["function"]["parameters"][
+        "properties"]["pnj"]
+    assert pnj["items"]["enum"] == ["ganger"]
+
 def test_schemas_au_format_openai():
     schemas = session().schemas()
     assert {s["function"]["name"] for s in schemas} == set(OUTILS) - {
