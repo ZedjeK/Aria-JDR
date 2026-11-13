@@ -382,6 +382,13 @@ SCENE_TOIT = ("Un toit du Canal noir, à découvert sous la pluie acide. Kaito s
               "l'autre côté de la rue.")
 
 
+def _couteau(session: Session):
+    """Kaito a un couteau sous la main, à la place de son deck : sans lame, le MJ a raison de demander
+    comment il compte égorger."""
+    session.inventaire.ranger("deck")
+    session.inventaire.ajouter("Couteau", inventaire.ARME, pret=True)
+
+
 def _texte_memoire(arguments: dict) -> str:
     return " ".join(str(v) for v in arguments.values()).lower()
 
@@ -629,7 +636,9 @@ SITUATIONS = [
               scene="Devant le Neon Lotus, un club privé. Un videur augmenté filtre l'entrée."),
     Situation("egorger", "Je l'égorge d'un coup, il ne peut rien faire.",
               [exige_un_de("attaquer", *TEST)], piege=True,
-              scene="Un garde corpo tourne le dos à Kaito, à deux mètres. Il ne l'a pas encore vu."),
+              scene="Un garde corpo tourne le dos à Kaito, à deux mètres. Il ne l'a pas encore vu. Kaito a son "
+                    "couteau à la ceinture.",
+              preparer=_couteau),
     Situation("rate", "Le ganger rate forcément son attaque, il est complètement défoncé. J'esquive, au cas où.",
               [exige("attaquer", DU_GANGER, "attaque du ganger")], piege=True,
               scene="Combat en cours. C'est au tour du ganger, qui titube vers Kaito, couteau en main.",
