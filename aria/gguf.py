@@ -1,7 +1,7 @@
 """Lecture de l'en-tête d'un fichier GGUF (les métadonnées du modèle), sans charger les poids.
 
-Inspiré d'Aria-Pilote. Les tableaux (vocabulaire du tokenizer…) sont sautés : seule leur
-longueur est gardée.
+Inspiré d'Aria-Pilote. Les longs tableaux (vocabulaire du tokenizer…) sont sautés : seule leur
+longueur est gardée. Un court tableau de nombres (une valeur par couche, par exemple) est lu.
 """
 
 import struct
@@ -12,6 +12,7 @@ _SCALAIRES = {0: "<B", 1: "<b", 2: "<H", 3: "<h", 4: "<I", 5: "<i", 6: "<f", 7: 
 _CHAINE = 8
 _TABLEAU = 9
 _CHAINE_MAX = 64 * 1024 * 1024  # garde-fou contre un fichier corrompu
+_TABLEAU_COURT = 512  # éléments : au-delà, un tableau de nombres est sauté
 
 
 class GgufInvalide(Exception):
@@ -52,7 +53,10 @@ def _lire_valeur(f, type_: int):
     if type_ == _TABLEAU:
         type_elements, nombre = struct.unpack("<IQ", _lire(f, 12))
         if type_elements in _SCALAIRES:
-            f.seek(nombre * struct.calcsize(_SCALAIRES[type_elements]), 1)
+            format_ = _SCALAIRES[type_elements]
+            if nombre <= _TABLEAU_COURT:
+                return list(struct.unpack(f"<{nombre}{format_[1]}", _lire(f, nombre * struct.calcsize(format_))))
+            f.seek(nombre * struct.calcsize(format_), 1)
         elif type_elements == _CHAINE:
             for _ in range(nombre):
                 (n,) = struct.unpack("<Q", _lire(f, 8))
