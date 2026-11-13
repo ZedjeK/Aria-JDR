@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
+from aria import combat as combat_, lieux as lieux_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -203,7 +203,7 @@ class Session:
             resultat = outil.fonction(self, **arguments)
             if self.monde is not None and self.moment.jour != self.jour_du_monde:
                 resultat = resultat | self.vivre()  # le temps a passé : le monde a bougé
-        except (ErreurOutil, monde_.MondeImpossible, pnj_.PnjImpossible, trame_.TrameImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
+        except (ErreurOutil, monde_.MondeImpossible, lieux_.LieuImpossible, pnj_.PnjImpossible, trame_.TrameImpossible, ActionImpossible, soins.SoinImpossible, progression.ProgressionImpossible,
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
                 ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
@@ -524,8 +524,13 @@ def test_competence(session: Session, competence: str, difficulte: str, pourquoi
     if not session.combat:
         session.joueur.consommer_effets_du_jet()
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": competence}
+    trouve = None
+    if socle == "Investigation" and resultat.reussi and not session.combat and lieux_.actifs(session.monde):
+        trouve = lieux_.reveler(session.monde)
     return {"competence": competence, **_test(resultat)} | (
-        {"meteo": f"{meteo_.temps(session.monde)} : {meteo:+d}"} if meteo else {})
+        {"meteo": f"{meteo_.temps(session.monde)} : {meteo:+d}"} if meteo else {}) | (
+        {"lieu_trouve": f"En cherchant, il découvre un lieu caché du quartier : {trouve['nom']}, tenu par "
+                        f"{trouve['tenancier']['nom']}."} if trouve else {})
 
 
 @outil("Faire un test de caractéristique du personnage joueur, quand aucune compétence ne correspond.",
@@ -702,11 +707,15 @@ def _schema_pnj_par_role(s: Session) -> dict:
                                                     "ses deux traits : ne les invente pas."),
         "menace": _enum(pnj_.MENACES, "faible : sans danger ; moyenne : voyou ordinaire ; forte : professionnel ; "
                                       "élite : un seul par scène. Le danger de la mission la plafonne."),
-    } | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
+    } | ({"tenancier": _enum([l["nom"] for l in lieux_.du_quartier(s.monde)],
+                             "Pour le tenancier d'un lieu du quartier : son lieu. Son nom, son rôle et sa menace "
+                             "sont déjà fixés : ne donne alors ni sexe, ni role, ni menace.")}
+         if lieux_.actifs(s.monde) and lieux_.du_quartier(s.monde) else {}) | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
                             "poursuite.")} if s.univers.vehicules else {}) | ({
         "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
                   "description": "Pour un lanceur de sorts : les sorts qu'il connaît. Sa Magie suit sa menace."},
-    } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp", "role", "menace"])
+    } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp",
+                                 *([] if lieux_.actifs(s.monde) else ["role", "menace"])])
 
 
 @outil("Créer un PNJ (ennemi, allié ou passant) avec un profil simplifié. Son identifiant sert ensuite "
@@ -736,7 +745,7 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
               competences: dict | None = None, magie: int | None = None, pm: int = 0,
               sorts: list | None = None, vehicule: str | None = None, sexe: str | None = None,
               origine: str | None = None, faction: str | None = None, role: str | None = None,
-              menace: str | None = None) -> dict:
+              menace: str | None = None, tenancier: str | None = None) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -746,14 +755,21 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
         connus = ", ".join(f"{i} ({c.nom})" for i, c in session.pnj.items())
         raise ErreurOutil(f"L'identifiant « {identifiant} » est déjà pris. PNJ existants : {connus}. "
                           f"Pour un nouveau PNJ, prends un autre identifiant, par exemple « {libre} ».")
-    profil = None
+    profil, patron = None, None
     if pnj_.actifs(session.monde):
+        if tenancier:
+            patron = lieux_.lieu(session.monde, tenancier)["tenancier"]
+            role, menace, nom = patron["role"], patron["menace"], patron["nom"]
         if role is None or menace is None:
             raise ErreurOutil("Précise « role » et « menace » : le moteur tire le reste.")
         elite = session.monde["pnj"]["elite"]
         if menace == pnj_.ELITE and elite in session.pnj and session.pnj[elite].fiche.etat is Etat.ACTIF:
             raise ErreurOutil(f"Un seul PNJ d'élite par scène : {session.pnj[elite].nom} est déjà là.")
-        profil = pnj_.tirer(session.monde, session.des, session.univers, role, menace, _dangers_en_cours(session))
+        # Le tenancier d'un lieu garde la menace tirée avec la carte, quelle que soit la mission en cours
+        dangers = ["exceptionnelle"] if patron else _dangers_en_cours(session)
+        profil = pnj_.tirer(session.monde, session.des, session.univers, role, menace, dangers)
+        if patron and patron["caractere"]:
+            profil["caractere"], profil["signe"] = patron["caractere"], patron["signe"]
         combat, pv, dexterite = profil["combat"], profil["pv"], profil["dexterite"]
         arme, armure, competences = profil["arme"], profil["armure"], None
         if sorts:
@@ -1434,6 +1450,8 @@ def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | No
                   qualite: str = "d'origine", clandestine: bool = False, offert: bool = False) -> dict:
     if session.combat:
         raise ErreurOutil("On ne pose pas d'implant en plein combat.")
+    if not offert:
+        _exiger_un_lieu(session, lieux_.IMPLANTS)
     fiche, paye = session.univers.implant(implant), {}
     if session.inventaire and not offert:
         # L'implant et sa pose se paient avant le jet (REGLES.md 13.7) : on paie l'acte, pas le résultat
@@ -1476,6 +1494,13 @@ def _regles_du_lieu(session: Session) -> dict:
     if regles["refus"]:
         raise ErreurOutil(regles["refus"])
     return regles
+
+
+def _exiger_un_lieu(session: Session, besoin: str):
+    """Dans une campagne qui a ses lieux, on n'achète et on ne se soigne que là où un lieu le permet
+    (REGLES.md 15.4)."""
+    if lieux_.actifs(session.monde):
+        lieux_.exiger(session.monde, besoin)
 
 
 def _decalage(session: Session, categorie: str) -> int:
@@ -1556,6 +1581,8 @@ def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: st
             raise ErreurOutil(f"« {objet} » ({etat}) n'est pas dans le stock de « {vendeur} » cette semaine : "
                               f"{[ligne['objet'] for ligne in en_stock]}.")
     famille = commerce.article(session.univers, objet).famille
+    if etat != commerce.MARCHE_NOIR:  # le marché noir passe par un contact, pas par une boutique
+        _exiger_un_lieu(session, lieux_.ARMES if famille in commerce.CATEGORIES_DE_PRIX else lieux_.MATERIEL)
     decalage = (lieu["neuf"] if etat == commerce.NEUF else 0) + _decalage(
         session, commerce.CATEGORIES_DE_PRIX.get(famille, "tout"))
     m = _marchandage(session, marchander, "amical" if lieu["amical"] else attitude)
@@ -1614,6 +1641,8 @@ def payer(session: Session, service: str, palier: int | None = None) -> dict:
     if service in commerce.SERVICES:
         # Le lieu et les événements déplacent le prix d'un service ; pas celui d'un pot-de-vin, que le MJ choisit
         lieu = _regles_du_lieu(session)
+        if service in commerce.SOINS:
+            _exiger_un_lieu(session, lieux_.SOINS)
         categorie = "soins" if service in commerce.SOINS else "services"
         somme = economie.decaler(commerce.SERVICES[service], lieu["services"] + _decalage(session, categorie))
     elif palier is None:
@@ -1833,6 +1862,15 @@ def monde(session: Session, ici: str | None = None) -> dict:
     if meteo_.actif(etat):
         meteo_.avancer(etat, session.des, session.moment.jour)
         resultat["meteo"] = meteo_.decrire(etat, session.univers.nom_affiche)
+    if lieux_.actifs(etat):
+        lieux_.visiter(etat, etat["ici"])
+        maitre = etat["quartiers"][etat["ici"]]["maitre"]
+        indique = lieux_.reveler(etat) if monde_.reputation(etat, maitre) in (monde_.AMI, monde_.MEMBRE) else None
+        resultat["lieux"] = lieux_.decrire(etat)
+        resultat["consigne_lieux"] = ("Ces lieux sont ceux du quartier, avec leurs tenanciers : n'en invente aucun "
+                                      "qui vende ou qui soigne. Le décor (rue, toit, appartement) reste libre.")
+        if indique:
+            resultat["lieu_indique"] = f"{maitre} lui indique un lieu caché du quartier : {indique['nom']}."
     ouvertes = session.offres()
     if ouvertes:
         resultat["offres_de_mission"] = [missions.resume(o) for o in ouvertes]

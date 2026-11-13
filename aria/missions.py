@@ -8,7 +8,7 @@ Les offres s'ouvrent dans le district où se trouve le joueur, et se renouvellen
 import json
 from functools import lru_cache
 
-from aria import chemins, gains, monde, trame
+from aria import chemins, gains, lieux as lieux_, monde, trame
 from aria.des import Des
 from aria.economie import decaler
 from aria.monde import AMI, HOSTILE, RECHERCHE, a, de
@@ -109,6 +109,11 @@ def tirer_offre(etat: dict, des: Des, jour: int, cran: str = DEBUTANT, contacts:
     if occasion and offre["source"] == "faction" and not any(o.get("occasion") for o in etat.get("offres", [])):
         offre["occasion"], offre["source"] = occasion, "événement"
     offre["texte"] = _texte(offre)
+    if lieux_.actifs(etat):
+        ou = lieux_.endroit(etat, des, lieu)
+        if ou:
+            offre["endroit"] = ou
+            offre["texte"] += f" Sur place : {ou}."
     return offre
 
 

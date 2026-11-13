@@ -1558,6 +1558,20 @@ Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menac
 - Le MJ lit le temps du jour dans son prompt et avec l'outil `monde` ; le joueur, dans la commande `monde`. Il n'y a **pas de prévisions**.
 - La météo ne déclenche aucun événement : ceux du quartier et de la ville ont leurs tables (14.7).
 
+### 15.4 Les lieux d'un quartier
+
+- **Chaque quartier a 1d3 + 2 lieux**, tirés une fois avec la carte : ils ne changent plus.
+- **Seize types de lieux par genre.** En Cyberpunk : bar, club, marché, armurerie, clinique, charcudoc, garage, atelier, entrepôt, hôtel, tripot, commissariat, bureau de corpo, temple, squat, station. Un genre sans table prend les lieux du jeu générique.
+- **Le minimum d'un district** : un endroit où boire et s'informer, un lieu où se faire soigner, une armurerie, un marché. Le code complète si le tirage ne les a pas donnés.
+- **Un district dominé** a le quartier général de la faction qui le domine, tenu par son chef.
+- **Un lieu a** une enseigne (60 par genre, jamais deux fois la même tant qu'il en reste) et un **tenancier** tiré une fois pour toutes : un nom (15.1), un rôle, une menace (1d6 : 1 à 3 faible, 4 ou 5 moyenne, 6 forte), un caractère et un signe (15.2).
+- **L'attitude des tenanciers** suit la réputation du joueur chez la faction qui tient le quartier : hostile, neutre ou amicale.
+- **Le commerce passe par les lieux.** On achète une arme, une armure ou des munitions dans une armurerie, le reste du matériel au marché ou à l'atelier ; on se fait soigner dans une clinique ; on se fait poser un implant chez un charcudoc. Si le quartier n'a pas ce lieu, le code refuse et indique le plus proche. Le marché noir et la revente passent par un contact, pas par un lieu.
+- **Les missions** désignent un lieu précis du quartier.
+- **Ce que le joueur connaît** : les lieux de son quartier au départ, ceux des autres quand il y entre. La commande `carte` les montre.
+- **Un quartier sur trois cache un lieu de plus** (planque, tripot clandestin, clinique sans licence). Il se découvre par un test d'Investigation réussi dans le quartier, ou parce qu'une faction amie qui tient le quartier l'indique.
+- **Le décor reste libre** : une ruelle, un toit, un appartement, le MJ les invente. Il n'invente plus un lieu qui vend ou qui soigne.
+
 ---
 
 ## 16. À définir

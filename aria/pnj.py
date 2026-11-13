@@ -120,6 +120,11 @@ def _armure(des: Des, univers, classe: str, menace: str):
     return None
 
 
+def traits(genre: str, des: Des) -> tuple[str, str]:
+    """Un caractère et un signe physique, dans cet ordre de dés."""
+    return _choisir(des, _bibliotheque()["caracteres"]), _choisir(des, _table(genre, "signes"))
+
+
 def tirer(etat: dict, des: Des, univers, role: str, menace: str, dangers: list[str] = ()) -> dict:
     """Tire le profil d'un PNJ. Ordre des dés : combat, points de vie, Dextérité (2d10), [classe d'arme, arme],
     [armure], caractère, signe."""
@@ -136,8 +141,7 @@ def tirer(etat: dict, des: Des, univers, role: str, menace: str, dangers: list[s
     armure = _armure(des, univers, r["armure"], menace)
     if armure:
         profil["armure"] = armure.nom
-    profil["caractere"] = _choisir(des, _bibliotheque()["caracteres"])
-    profil["signe"] = _choisir(des, _table(genre, "signes"))
+    profil["caractere"], profil["signe"] = traits(genre, des)
     return profil
 
 
