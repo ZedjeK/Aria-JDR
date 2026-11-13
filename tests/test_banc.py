@@ -196,3 +196,14 @@ def test_la_boule_de_feu_vise_la_destruction():
     massacre = ("choc", {"choc": "MASSACRE"})
     partie = jouer(FauxServeur({"boule": [massacre]}), situation("boule"), 0, 1)
     assert partie.raisons == ["interdit : choc (le marché rasé)"]
+
+
+def test_pas_assez_de_vram_le_banc_dit_combien_il_en_faut():
+    from pathlib import Path
+
+    from aria import banc, optimiseur
+    modele = optimiseur.Modele("Test", Path("test.gguf"), 12 * optimiseur.GIO, 32768, False, 262144)
+    compte_rendu = banc.qualifier_modele(modele, 13 * optimiseur.GIO)  # aucun palier ne tient : aucun serveur lancé
+    assert not compte_rendu["reussi"]
+    assert compte_rendu["raison"] == "pas assez de VRAM libre : il en faut 13.6 Gio, 13.0 Gio libres"
+    assert "aucune carte NVIDIA" in banc.qualifier_modele(modele, None)["raison"]

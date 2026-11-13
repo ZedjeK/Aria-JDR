@@ -15,8 +15,9 @@ from pathlib import Path
 from aria import gguf
 
 GIO = 1024 ** 3
+# Le prompt du MJ avec ses outils pèse environ 14 000 jetons (mesuré le 2026-11-13 sur Qwen3.8 et Gemma 4) :
+# en dessous de ce contexte, le serveur refuse la première requête. Il n'y a donc pas de palier plus petit.
 CONTEXTE_CIBLE = 16384
-CONTEXTE_MINIMUM = 12288
 OCTETS_PAR_VALEUR = {"f16": 2.0, "q8_0": 34 / 32}  # le cache de contexte, par valeur stockée
 SURCOUT = int(0.6 * GIO)  # tampons de calcul et contexte CUDA (mesuré par Aria-Pilote : 0,2 à 1,1 Gio)
 SURCOUT_MTP = int(1.5 * GIO)  # le contexte de la couche MTP (mesuré ici : 1,9 Gio à 32k)
@@ -145,10 +146,14 @@ def vram_estimee(modele: Modele, reglages: Reglages) -> int:
 def paliers(modele: Modele) -> list[Reglages]:
     """Les réglages à essayer, du plus confortable au plus économe."""
     cible = min(CONTEXTE_CIBLE, modele.contexte_max)
-    minimum = min(CONTEXTE_MINIMUM, cible)
-    sans_mtp = [Reglages(cible), Reglages(cible, "q8_0"), Reglages(minimum, "q8_0")]
-    avec_mtp = [replace(r, mtp=True) for r in sans_mtp[:2]] if modele.a_mtp else []
+    sans_mtp = [Reglages(cible), Reglages(cible, "q8_0")]
+    avec_mtp = [replace(r, mtp=True) for r in sans_mtp] if modele.a_mtp else []
     return avec_mtp + sans_mtp
+
+
+def vram_requise(modele: Modele) -> int:
+    """La VRAM libre qu'il faut pour le palier le plus économe, marge comprise."""
+    return min(vram_estimee(modele, r) for r in paliers(modele)) + MARGE
 
 
 def planifier(modele: Modele, vram_libre: int | None) -> list[Reglages]:
