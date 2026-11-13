@@ -1,0 +1,78 @@
+{
+  "generique": {
+    "scène": [
+      {"t": "Un marchand ambulant hèle les passants et connaît tous les ragots du coin.", "role": "marchand"},
+      {"t": "Deux charretiers s'engueulent autour d'un chargement renversé.", "role": "passant"},
+      {"t": "Un enfant vend des babioles « presque neuves » sur une couverture.", "role": "passant"},
+      {"t": "Un illuminé annonce la fin des temps à qui veut l'entendre.", "role": "passant"},
+      {"t": "Quelqu'un te dévisage, sûr de t'avoir déjà vu quelque part.", "role": "passant"},
+      {"t": "Un artisan répare une enseigne qui menace de tomber.", "role": "artisan"},
+      {"t": "Une patrouille contrôle les passants au hasard, sans conviction.", "role": "homme de loi"},
+      {"t": "Un notable égaré cherche son chemin et serre sa sacoche contre lui.", "role": "notable"},
+      {"t": "Un musicien joue pour quelques pièces, un chapeau à ses pieds.", "role": "passant"},
+      {"t": "Une file d'attente s'étire devant un étal qui vient d'être réapprovisionné.", "role": "marchand"}
+    ],
+    "occasion": [
+      {"t": "Un porteur blessé te tend un paquet : il ne pourra pas finir sa course.", "role": "passant"},
+      {"t": "Un intermédiaire que tu ne connais pas a entendu parler de toi et a un travail à proposer.", "role": "intermédiaire", "offre": true},
+      {"t": "Une rumeur court dans la rue : quelqu'un paie bien pour un coup de main.", "role": "marchand", "offre": true},
+      {"t": "Une bourse est tombée d'une poche, juste devant toi.", "role": "passant"},
+      {"t": "Un guérisseur cherche des bras pour porter un blessé jusque chez lui.", "role": "guérisseur"},
+      {"t": "Un artisan solde son matériel avant de quitter la ville.", "role": "artisan"},
+      {"t": "Une femme te demande de la raccompagner : on la suit depuis trois rues.", "role": "passant"},
+      {"t": "Un voyou veut vendre une information sur ce qui se prépare dans le quartier.", "role": "voyou"},
+      {"t": "Un garde te fait signe : son maître cherche quelqu'un de discret.", "role": "garde", "offre": true},
+      {"t": "Un enfant a vu quelque chose qu'il n'aurait pas dû voir, et il a peur.", "role": "passant"}
+    ],
+    "danger": [
+      {"t": "Trois voyous barrent la rue et réclament un droit de passage.", "role": "voyou"},
+      {"t": "Une patrouille t'arrête : des questions, puis la fouille des poches.", "role": "homme de loi", "traque": true},
+      {"t": "Des hommes de main du quartier t'emboîtent le pas : ils veulent savoir ce que tu fais là.", "role": "tueur", "traque": true},
+      {"t": "Un tire-laine tente sa chance dans la foule.", "role": "voyou"},
+      {"t": "Une embuscade : on t'attendait au coin de la ruelle.", "role": "voyou", "embuscade": true},
+      {"t": "Un désespéré brandit une lame et veut ton argent.", "role": "voyou"},
+      {"t": "Un garde nerveux te prend pour un autre et dégaine.", "role": "garde"},
+      {"t": "Un règlement de comptes éclate à dix pas, et les coups ne choisissent pas.", "role": "voyou"},
+      {"t": "Un tueur suit quelqu'un dans la foule, et tu es sur son chemin.", "role": "tueur"},
+      {"t": "Une rixe déborde d'une porte et t'entraîne avec elle.", "role": "voyou"}
+    ]
+  },
+  "Cyberpunk": {
+    "scène": [
+      {"t": "Un vendeur de nouilles ambulant hèle les passants et connaît tous les ragots du coin.", "role": "commerçant"},
+      {"t": "Deux livreurs s'engueulent autour d'un drone de livraison écrasé.", "role": "passant"},
+      {"t": "Une gamine vend des puces de données « presque neuves » sur une couverture.", "role": "passant"},
+      {"t": "Un prêcheur de rue annonce la fin du réseau à qui veut l'entendre.", "role": "passant"},
+      {"t": "Quelqu'un te dévisage, sûr de t'avoir déjà vu quelque part.", "role": "passant"},
+      {"t": "Un technicien répare un panneau publicitaire qui crache des étincelles.", "role": "technicien"},
+      {"t": "Une patrouille contrôle des papiers au hasard, sans conviction.", "role": "policier"},
+      {"t": "Un cadre égaré cherche son chemin et serre sa mallette contre lui.", "role": "cadre"},
+      {"t": "Un musicien joue sur un synthé rafistolé, une coupelle à ses pieds.", "role": "passant"},
+      {"t": "Une file d'attente s'étire devant un distributeur qui vient d'être réapprovisionné.", "role": "commerçant"}
+    ],
+    "occasion": [
+      {"t": "Un livreur blessé te tend un colis : il ne pourra pas finir sa course.", "role": "passant"},
+      {"t": "Un fixer que tu ne connais pas a entendu parler de toi et a un travail à proposer.", "role": "fixer", "offre": true},
+      {"t": "Une rumeur court sur le trottoir : quelqu'un paie bien pour un coup de main.", "role": "commerçant", "offre": true},
+      {"t": "Un portefeuille est tombé d'une poche, juste devant toi.", "role": "passant"},
+      {"t": "Un médecin de rue cherche des bras pour porter un blessé jusqu'à son cabinet.", "role": "médecin de rue"},
+      {"t": "Un technicien solde du matériel avant de quitter la ville.", "role": "technicien"},
+      {"t": "Une femme te demande de la raccompagner : on la suit depuis trois rues.", "role": "passant"},
+      {"t": "Un voyou veut vendre une information sur ce qui se prépare dans le quartier.", "role": "voyou"},
+      {"t": "Un garde de boutique te fait signe : son patron cherche quelqu'un de discret.", "role": "garde", "offre": true},
+      {"t": "Un gamin a vu quelque chose qu'il n'aurait pas dû voir, et il a peur.", "role": "passant"}
+    ],
+    "danger": [
+      {"t": "Trois voyous barrent la rue et réclament un droit de passage.", "role": "voyou"},
+      {"t": "Une patrouille t'arrête : contrôle d'identité, puis la fouille des poches.", "role": "policier", "traque": true},
+      {"t": "Des hommes de main du quartier t'emboîtent le pas : ils veulent savoir ce que tu fais là.", "role": "tueur", "traque": true},
+      {"t": "Un pickpocket tente sa chance dans la foule.", "role": "voyou"},
+      {"t": "Une embuscade : on t'attendait au coin de la ruelle.", "role": "voyou", "embuscade": true},
+      {"t": "Un junkie en manque brandit une lame et veut ton argent.", "role": "voyou"},
+      {"t": "Un garde nerveux te prend pour un autre et dégaine.", "role": "garde"},
+      {"t": "Un règlement de comptes éclate à dix mètres, et les balles ne choisissent pas.", "role": "voyou"},
+      {"t": "Un tueur suit quelqu'un dans la foule, et tu es sur son chemin.", "role": "tueur"},
+      {"t": "Une bagarre déborde d'un bar et t'entraîne avec elle.", "role": "voyou"}
+    ]
+  }
+}

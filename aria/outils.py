@@ -15,7 +15,8 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
-from aria import combat as combat_, lieux as lieux_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_, trame as trame_, vehicules as vehicules_
+from aria import combat as combat_, lieux as lieux_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_
+from aria import rencontres as rencontres_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -710,12 +711,16 @@ def _schema_pnj_par_role(s: Session) -> dict:
     } | ({"tenancier": _enum([l["nom"] for l in lieux_.du_quartier(s.monde)],
                              "Pour le tenancier d'un lieu du quartier : son lieu. Son nom, son rôle et sa menace "
                              "sont déjà fixés : ne donne alors ni sexe, ni role, ni menace.")}
-         if lieux_.actifs(s.monde) and lieux_.du_quartier(s.monde) else {}) | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
+         if lieux_.actifs(s.monde) and lieux_.du_quartier(s.monde) else {}) | (
+        {"rencontre": {"type": "boolean", "description": "Vrai pour le PNJ de la rencontre de rue en cours : son "
+                                                         "nom, son rôle et sa menace sont déjà fixés."}}
+        if rencontres_.en_cours(s.monde) else {}) | ({"vehicule": _enum([v.nom for v in s.univers.vehicules], "Ce qu'il conduit ou monte, pour une "
                             "poursuite.")} if s.univers.vehicules else {}) | ({
         "sorts": {"type": "array", "items": _enum(sorted(x.nom for d in s.univers.domaines for x in d.tous)),
                   "description": "Pour un lanceur de sorts : les sorts qu'il connaît. Sa Magie suit sa menace."},
     } if s.a_la_magie else {}), ["identifiant", *_nom_requis(s), "camp",
-                                 *([] if lieux_.actifs(s.monde) else ["role", "menace"])])
+                                 *([] if lieux_.actifs(s.monde) or rencontres_.actives(s.monde)
+                                   else ["role", "menace"])])
 
 
 @outil("Créer un PNJ (ennemi, allié ou passant) avec un profil simplifié. Son identifiant sert ensuite "
@@ -745,7 +750,7 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
               competences: dict | None = None, magie: int | None = None, pm: int = 0,
               sorts: list | None = None, vehicule: str | None = None, sexe: str | None = None,
               origine: str | None = None, faction: str | None = None, role: str | None = None,
-              menace: str | None = None, tenancier: str | None = None) -> dict:
+              menace: str | None = None, tenancier: str | None = None, rencontre: bool = False) -> dict:
     if session.memoire.est_mort(identifiant):
         raise ErreurOutil(f"{session.memoire.pnj[identifiant].nom} ({identifiant}) est mort : "
                           "la mémoire de la campagne s'en souvient.")
@@ -759,6 +764,12 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
     if pnj_.actifs(session.monde):
         if tenancier:
             patron = lieux_.lieu(session.monde, tenancier)["tenancier"]
+        elif rencontre:
+            croise = rencontres_.en_cours(session.monde)
+            if croise is None:
+                raise ErreurOutil("Aucune rencontre de rue n'est en cours ici.")
+            patron = croise["pnj"]
+        if patron:
             role, menace, nom = patron["role"], patron["menace"], patron["nom"]
         if role is None or menace is None:
             raise ErreurOutil("Précise « role » et « menace » : le moteur tire le reste.")
@@ -798,6 +809,8 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
         session.engins[identifiant] = vehicules_.Engin(u.vehicule(vehicule))
     if profil and menace == pnj_.ELITE:
         session.monde["pnj"]["elite"] = identifiant
+    if profil and rencontre:
+        rencontres_.clore(session.monde)  # le PNJ de la rencontre ne se crée qu'une fois
     return {"pnj": identifiant, **_etat_combattant(session.pnj[identifiant])} | (
         {"vehicule": vehicule} if vehicule else {}) | ({
             "role": role, "menace": menace, "combat": combat,
@@ -1855,6 +1868,7 @@ DELAI_ENTRE_SERVICES = 7  # jours : un seul service rendu compte par faction et 
        disponible=_avec_monde)
 def monde(session: Session, ici: str | None = None) -> dict:
     etat = session.monde
+    avant = etat["ici"]
     if ici:
         etat["ici"] = ici
     monde_.avancer(etat, session.des, session.moment.jour)  # une mêlée peut être annoncée là où il arrive
@@ -1874,6 +1888,20 @@ def monde(session: Session, ici: str | None = None) -> dict:
     ouvertes = session.offres()
     if ouvertes:
         resultat["offres_de_mission"] = [missions.resume(o) for o in ouvertes]
+    en_poursuite = session.poursuite is not None and not session.poursuite.issue
+    if rencontres_.actives(etat) and ici and ici != avant and not en_poursuite:
+        croise = rencontres_.tirer(etat, session.des, session.moment.jour, session.moment.periode is Periode.NUIT)
+        if croise:
+            resultat["rencontre_de_rue"] = rencontres_.decrire(croise)
+            if croise.get("offre"):  # la rumeur ouvre une vraie offre, que le moteur tire
+                contacts = [p.nom for i, p in session.memoire.pnj.items() if not session.memoire.est_mort(i)]
+                offre = missions.tirer_offre(etat, session.des, etat.get("prochaines_offres", session.moment.jour),
+                                             session.personnage.cran, contacts)
+                if offre:
+                    offre["source"] = "rencontre"
+                    etat.setdefault("offres", []).append(offre)
+                    resultat.setdefault("offres_de_mission", []).append(missions.resume(offre))
+                    resultat["rencontre_de_rue"]["offre_de_mission"] = offre["id"]
     fraiches = monde_.nouvelles(etat)
     return resultat | ({"nouvelles_du_monde": fraiches} if fraiches else {})
 
