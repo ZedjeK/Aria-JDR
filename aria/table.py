@@ -16,7 +16,7 @@ import json
 import time
 from dataclasses import dataclass, field
 
-from aria import llm, meteo, mj, optimiseur, trame
+from aria import llm, meteo, mj, noms, optimiseur, trame
 from aria.compte_rendu import decrire
 from aria.outils import Session
 
@@ -115,7 +115,8 @@ class Table:
         fil = "\n".join((["- (…)"] if self._fil_coupe else []) + self.fil)
         memoire = "\n".join(bloc for bloc in (s.memoire.bloc(), trame.bloc(s.monde),
                                               meteo.bloc(s.monde, s.univers.nom_affiche)) if bloc)
-        return mj.prompt_systeme(s.univers, s.personnage, self.scene, memoire, fil, monde=s.monde is not None)
+        return mj.prompt_systeme(s.univers, s.personnage, self.scene, memoire, fil, monde=s.monde is not None,
+                                 aleatoire=noms.actifs(s.monde))
 
     def _rafraichir_systeme(self):
         """Le MJ a pu écrire dans la mémoire pendant le tour : il voit toujours sa dernière version."""

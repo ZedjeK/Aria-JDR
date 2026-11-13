@@ -35,11 +35,11 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_soixante_neuf_situations_dont_dix_huit_pieges():
-    assert len(SITUATIONS) == 69
-    assert sum(s.piege for s in SITUATIONS) == 18
-    assert len({s.nom for s in SITUATIONS}) == 69
-    assert len({s.joueur for s in SITUATIONS}) == 69  # le faux serveur les reconnaît à la phrase du joueur
+def test_soixante_dix_sept_situations_dont_vingt_pieges():
+    assert len(SITUATIONS) == 77
+    assert sum(s.piege for s in SITUATIONS) == 20
+    assert len({s.nom for s in SITUATIONS}) == 77
+    assert len({s.joueur for s in SITUATIONS}) == 77  # le faux serveur les reconnaît à la phrase du joueur
     assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 6
 
 

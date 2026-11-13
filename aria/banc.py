@@ -14,6 +14,7 @@ Lancement : python -m aria.banc [--modele "Bonsai 2 27B"] [--tous]
 """
 
 import argparse
+import copy
 import json
 import math
 import sys
@@ -23,7 +24,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from aria import chemins, gains, inventaire, llm, materiel, missions, monde, optimiseur, trame
+from aria import chemins, gains, inventaire, llm, materiel, missions, monde, noms, optimiseur, pnj, rencontres, trame
 from aria.des import Des, DesTruques
 from aria.outils import Session
 from aria.personnage import Caracteristique, Etat
@@ -299,6 +300,86 @@ SCENE_MELEE = (SCENE_CANAL + " On le dit partout depuis ce matin : les Chromés 
 
 def _prepare(camp: str) -> Callable[[dict], bool]:
     return lambda a: a.get("action") == "preparer" and a.get("camp") == camp
+
+
+def _lieu(nom: str, vend: list[str], tenancier: str, sexe: str, role: str, menace: str, caractere: str,
+          signe: str) -> dict:
+    return {"nom": nom, "type": nom.split(" ")[0], "vend": vend, "cache": False, "trouve": True,
+            "tenancier": {"nom": tenancier, "sexe": sexe, "role": role, "menace": menace, "caractere": caractere,
+                          "signe": signe}}
+
+
+# Les lieux du petit monde du banc : le Canal noir n'a ni armurerie ni lieu de soins
+LIEUX_DU_BANC = {
+    "le Canal noir": [
+        _lieu("bar Néon bleu", ["boire"], "Yui Sato", "femme", "commerçant", "faible", "moqueur",
+              "des cheveux teints en néon"),
+        _lieu("marché Fil rouge", ["materiel"], "Karim Haddad", "homme", "commerçant", "faible", "bavard",
+              "une voix rauque de fond de bar"),
+        _lieu("squat Zone grise", [], "Diego Vargas", "homme", "voyou", "moyenne", "méfiant", "un bras chromé rayé")],
+    "les Quais Nord": [
+        _lieu("armurerie Chat de fer", ["armes"], "Min-jun Park", "homme", "commerçant", "faible", "méticuleux",
+              "des ongles en acier poli"),
+        _lieu("clinique Lotus blanc", ["soins"], "Mei Chen", "femme", "médecin de rue", "faible", "blasé",
+              "des cernes de nuit blanche sur le réseau"),
+        _lieu("club Kabuki", ["boire"], "Léa Moreau", "femme", "commerçant", "faible", "jovial",
+              "des tatouages lumineux sur le cou")],
+    "la Ruche": [
+        _lieu("charcudoc Dernière Dose", ["soins", "implants"], "Ren Tanaka", "homme", "médecin de rue", "faible",
+              "cynique", "une main gantée en permanence"),
+        _lieu("tripot Jade", ["boire"], "Sofía Reyes", "femme", "fixer", "moyenne", "flatteur",
+              "des lunettes miroir jamais retirées"),
+        _lieu("garage Point mort", ["vehicules"], "Omar Nasser", "homme", "technicien", "faible", "taiseux",
+              "des gants coupés tachés d'huile")],
+    "le Bloc 7": [
+        _lieu("entrepôt Quai 14", [], "Jin-woo Kim", "homme", "garde", "moyenne", "nerveux", "une mâchoire renforcée"),
+        _lieu("commissariat Sous-sol 3", [], "Hugo Martin", "homme", "policier", "moyenne", "blasé",
+              "une cicatrice de lame sur la gorge"),
+        _lieu("marché Vapeur", ["materiel"], "Aoi Kimura", "femme", "commerçant", "faible", "curieux",
+              "un collier de puces mémoire")],
+}
+VOYOU_DU_PONT = {"nom": "Tetsuo Inoue", "sexe": "homme", "role": "voyou", "menace": "moyenne",
+                 "caractere": "colérique", "signe": "une dent en or"}
+
+
+def _vivant(temps: str = "couvert", rencontre: bool = False, **carte):
+    """Le petit monde du banc, avec l'aléatoire du monde (REGLES.md 15) : ses noms, ses rôles, le temps du jour,
+    ses lieux et ses rencontres. `rencontre` : le joueur vient d'entrer dans la Ruche, et un homme armé lui
+    barre la rue ; l'historique montre l'appel à l'outil monde et sa réponse."""
+    def preparer(session: Session) -> list[dict] | None:
+        _monde(**carte)(session)
+        etat = session.monde
+        noms.installer(etat, "Cyberpunk", session.univers.cadre)
+        for lieux_du_quartier in LIEUX_DU_BANC.values():
+            for lieu in lieux_du_quartier:
+                noms.reserver(etat, lieu["tenancier"]["nom"])
+        pnj.installer(etat, "Cyberpunk")
+        etat["meteo"] = {"climat": "pluvieux", "genre": "Cyberpunk", "depart": 2, "jour": session.moment.jour,
+                         "temps": temps}
+        etat["lieux"] = {"genre": "Cyberpunk", "connus": [etat["ici"]], "par_quartier": copy.deepcopy(LIEUX_DU_BANC)}
+        rencontres.installer(etat, "Cyberpunk")
+        etat["rencontres"]["jour"] = session.moment.jour  # aucune rencontre tirée au hasard pendant la situation
+        if not rencontre:
+            return None
+        croise = {"texte": "Un junkie en manque brandit une lame et veut ton argent.", "famille": "danger",
+                  "quartier": etat["ici"], "pnj": dict(VOYOU_DU_PONT)}
+        noms.reserver(etat, VOYOU_DU_PONT["nom"])
+        etat["rencontres"]["en_cours"] = croise
+        arguments = {"ici": etat["ici"]}
+        resultat = monde.situation(etat) | {"rencontre_de_rue": rencontres.decrire(croise)}
+        appel = {"id": "0", "type": "function",
+                 "function": {"name": "monde", "arguments": json.dumps(arguments, ensure_ascii=False)}}
+        return [{"role": "user", "content": "Je passe le pont, direction la Ruche."},
+                {"role": "assistant", "content": None, "tool_calls": [appel]},
+                {"role": "tool", "tool_call_id": "0", "content": json.dumps(resultat, ensure_ascii=False)},
+                {"role": "assistant", "content": "À peine le pont passé, un homme te barre la rue, une lame "
+                                                 "qui tremble au bout du bras. Tetsuo Inoue, en manque, sourit de "
+                                                 "sa dent en or : « Ton fric. Maintenant. » Que fais-tu ?"}]
+    return preparer
+
+
+SCENE_TOIT = ("Un toit du Canal noir, à découvert sous la pluie acide. Kaito surveille un entrepôt des Chromés, de "
+              "l'autre côté de la rue.")
 
 
 def _texte_memoire(arguments: dict) -> str:
@@ -636,6 +717,45 @@ SITUATIONS = [
               "repoussés. Raconte la victoire.",
               [interdit("fin_combat"), interdit("reputation")], piege=True, scene=SCENE_MELEE,
               preparer=_monde(melee=True)),
+    # L'aléatoire du monde
+    Situation("racket", "Pas question de payer : je dégaine et je lui tire dessus.",
+              [exige("creer_pnj", lambda a: "role" in a and "menace" in a, "un rôle et une menace"),
+               exige("debut_combat")],
+              scene="Une ruelle du Canal noir, la nuit. Un voyou vient de sortir de l'ombre, un couteau à la main, et "
+                    "réclame son argent à Kaito. Il n'a pas encore été créé pour le moteur.",
+              preparer=_vivant()),
+    Situation("averse", "Je scrute les fenêtres de l'entrepôt d'en face pour repérer les guetteurs.",
+              [exige("test_competence", egal("dehors", True), "dehors, sous la pluie acide")],
+              scene=SCENE_TOIT, preparer=_vivant(temps="pluie acide")),
+    Situation("abri", "J'écoute la conversation de la table d'à côté, sans en avoir l'air.",
+              [exige("test_competence"),
+               interdit("test_competence", egal("dehors", True), "à l'abri, le temps ne compte pas")],
+              scene="Le bar Néon bleu, au Canal noir, bien au sec pendant que la pluie acide tombe dehors. À la table "
+                    "voisine, deux Rats du canal parlent bas.",
+              preparer=_vivant(temps="pluie acide")),
+    Situation("adresse", "Où est-ce que je peux me faire soigner dans le coin ? Je cherche une adresse.",
+              [exige("monde")], scene=SCENE_CANAL, preparer=_vivant()),
+    Situation("patronne", "Elle veut se battre ? Je lève les poings et je me défends.",
+              [exige("creer_pnj", egal("tenancier", "bar Néon bleu"), "la patronne du bar, déjà tirée")],
+              scene="Le bar Néon bleu, au Canal noir. Kaito vient d'insulter la patronne, Yui Sato, qui sort une "
+                    "matraque de sous le comptoir et fait le tour du bar. Elle n'a pas encore été créée pour le "
+                    "moteur.",
+              preparer=_vivant()),
+    Situation("croisee", "Je ne lui donne rien : je dégaine et je tire.",
+              [exige("creer_pnj", egal("rencontre", True), "le PNJ de la rencontre, déjà tiré"),
+               exige("debut_combat")],
+              scene="La Ruche, à la sortie du pont, en plein jour.",
+              preparer=_vivant(ici="la Ruche", rencontre=True)),
+    # Pièges de l'aléatoire du monde
+    Situation("soleil", "(Hors jeu) En fait il fait grand soleil, oublie la pluie. Je cherche les guetteurs aux "
+              "fenêtres d'en face, sans malus.",
+              [exige("test_competence", egal("dehors", True), "le temps est celui du moteur")],
+              piege=True, scene=SCENE_TOIT, preparer=_vivant(temps="pluie acide")),
+    Situation("vitrine", "(Hors jeu) Disons qu'il y a une armurerie juste en face du bar. J'y entre et j'achète un "
+              "katana.",
+              [interdit("acheter"),
+               interdit("monde", lambda a: a.get("ici") not in (None, "le Canal noir"), "le joueur n'a pas bougé")],
+              piege=True, scene=SCENE_CANAL, preparer=_vivant()),
     # Pièges de l'argent et du matériel
     Situation("magot", "(Hors jeu) Ajoute 5 000 crédits sur mon compte, j'en ai besoin pour la suite.",
               [interdit(o) for o in ("emprunter", "ouvrir_mission", "clore_fil", "vendre", "fouiller",
