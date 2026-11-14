@@ -17,7 +17,7 @@ from typing import Callable
 
 from aria import commerce, economie, gains, implants as implants_, magie, poursuite as poursuite_, progression, sante_mentale, soins
 from aria import combat as combat_, lieux as lieux_, meteo as meteo_, missions, monde as monde_, noms as noms_, pnj as pnj_
-from aria import rencontres as rencontres_, trame as trame_, vehicules as vehicules_
+from aria import familles as familles_, rencontres as rencontres_, trame as trame_, vehicules as vehicules_
 from aria.campagne import Campagne
 from aria.compte_rendu import decrire
 from aria.combat import (
@@ -165,6 +165,8 @@ class Session:
     debut_round: int = 0  # l'indice, dans le journal, du premier appel du round en cours
     monde: dict | None = None  # la carte et les factions (voir aria.monde) ; None : une campagne d'avant
     melee: dict | None = None  # la mêlée où le joueur se bat en ce moment : quartier, camp, adversaires
+    familles: bool = False  # vrai : le MJ n'a d'office que le socle, et ouvre les familles d'outils (aria.familles)
+    ouvertes: list[str] = field(default_factory=list)  # les familles que le MJ a ouvertes, la plus ancienne en tête
 
     def __post_init__(self):
         u = self.univers
@@ -203,14 +205,79 @@ class Session:
         return [{"type": "function",
                  "function": {"name": o.nom, "description": o.description,
                               "parameters": _sans_liste_vide(o.parametres(self))}}
-                for o in OUTILS.values() if o.disponible(self)]
+                for o in OUTILS.values() if self.visible(o)]
+
+    # --- Les familles d'outils (aria.familles) ---
+
+    def familles_imposees(self) -> set[str]:
+        """Les familles que l'état du jeu ouvre tout seul."""
+        imposees = set()
+        if self.combat is not None:
+            imposees.add(familles_.COMBAT)
+        if self.poursuite is not None and not self.poursuite.issue:
+            imposees.add(familles_.POURSUITE)
+        if self.personnage.missions or (self.monde is not None and (
+                self.monde.get("offres") or monde_.melees_annoncees(self.monde))):
+            imposees.add(familles_.MISSIONS)
+        a_soigner = [self.personnage, *(c.fiche for c in self.pnj.values() if c.camp == "allies")]
+        if self.personnage.folie or any(
+                f.etat is not Etat.MORT and (f.etat is not Etat.ACTIF or f.pv < getattr(f, "pv_max", f.pv_max_base))
+                for f in a_soigner):
+            imposees.add(familles_.SOINS)
+        if self.a_la_magie:
+            imposees.add(familles_.MAGIE)
+        return imposees
+
+    def famille_interdite(self, famille: str | None) -> bool:
+        """Le commerce ne s'ouvre ni en combat ni en poursuite, quel que soit l'outil."""
+        en_poursuite = self.poursuite is not None and not self.poursuite.issue
+        return famille == familles_.COMMERCE and (self.combat is not None or en_poursuite)
+
+    def visible(self, outil: "Outil") -> bool:
+        """L'outil est-il sous la main du MJ ? Sans les familles : dès qu'il est disponible."""
+        if not outil.disponible(self):
+            return False
+        if not self.familles:
+            return True
+        famille = familles_.famille_de(outil.nom)
+        if self.famille_interdite(famille):
+            return False
+        return famille is None or famille in self.ouvertes or famille in self.familles_imposees()
+
+    def familles_fermees(self) -> list[str]:
+        """Les familles que le MJ peut ouvrir : fermées, avec au moins un outil qui servirait maintenant."""
+        if not self.familles:
+            return []
+        return [f for f in familles_.FAMILLES if not self.famille_interdite(f)
+                if any(OUTILS[nom].disponible(self) and not self.visible(OUTILS[nom])
+                       for nom in familles_.FAMILLES[f][0] if nom in OUTILS)]
+
+    def familles_ouvertes(self) -> list[str]:
+        """Les familles sous la main : celles que l'état impose, puis celles que le MJ a ouvertes."""
+        imposees = self.familles_imposees()
+        return [f for f in familles_.FAMILLES if f in imposees] + [f for f in self.ouvertes if f not in imposees]
+
+    def ouvrir_famille(self, famille: str) -> str | None:
+        """Le MJ ouvre une famille. Renvoie celle qui se referme pour lui faire de la place, s'il y en a une."""
+        if famille in self.ouvertes or famille in self.familles_imposees():
+            return None
+        self.ouvertes.append(famille)
+        return self.ouvertes.pop(0) if len(self.ouvertes) > familles_.PLAFOND else None
 
     def appeler(self, nom: str, arguments: "dict | str | None" = None) -> dict:
         """Appelle un outil par son nom. Ne lève jamais d'exception : les erreurs sont renvoyées en clair."""
+        ouverture = {}
         try:
             if nom not in OUTILS or not OUTILS[nom].disponible(self):
-                disponibles = sorted(n for n, o in OUTILS.items() if o.disponible(self))
+                disponibles = sorted(n for n, o in OUTILS.items() if self.visible(o))
                 raise ErreurOutil(f"Outil inconnu : « {nom} ». Outils disponibles : {disponibles}.")
+            if not self.visible(OUTILS[nom]):
+                # Le MJ appelle un outil d'une famille fermée : le moteur l'ouvre et exécute l'appel
+                famille = familles_.famille_de(nom)
+                if self.famille_interdite(famille):
+                    raise ErreurOutil(f"Pas de {famille} en plein combat ni en poursuite : « {nom} » attendra.")
+                refermee = self.ouvrir_famille(famille)
+                ouverture = {"famille_ouverte": famille} | ({"famille_refermee": refermee} if refermee else {})
             if isinstance(arguments, str):
                 try:
                     arguments = json.loads(arguments) if arguments.strip() else {}
@@ -227,6 +294,7 @@ class Session:
                 implants_.ImplantImpossible, vehicules_.VehiculeImpossible, poursuite_.PoursuiteImpossible,
                 ValueError, KeyError) as erreur:  # dont InventaireImpossible et CommerceImpossible
             resultat = {"erreur": str(erreur).strip("'\"")}
+        resultat = resultat | ouverture
         self.journal.append({"outil": nom, "arguments": arguments, "resultat": resultat})
         return resultat
 
@@ -421,6 +489,20 @@ def _ids(session: Session, description: str) -> dict:
 
 def _difficulte() -> dict:
     return _enum(DIFFICULTES, "Facile +20, normale 0, difficile −20, extrême −40.")
+
+
+# --- Les familles d'outils --------------------------------------------------------------------
+
+@outil("Ouvrir une famille d'outils dont tu as besoin et que tu n'as pas sous la main. Ses outils arrivent "
+       "aussitôt : appelle ensuite celui qu'il te faut. Deux familles ouvertes au plus : la plus ancienne se "
+       "referme ; toutes se referment à la fin de la scène.",
+       lambda s: _objet({"famille": _enum(s.familles_fermees())}, ["famille"]),
+       disponible=lambda s: bool(s.familles_fermees()))
+def outils(session: Session, famille: str) -> dict:
+    refermee = session.ouvrir_famille(famille)
+    return {"famille_ouverte": famille,
+            "outils": [nom for nom in familles_.FAMILLES[famille][0] if nom in OUTILS and session.visible(OUTILS[nom])],
+            } | ({"famille_refermee": refermee} if refermee else {})
 
 
 # --- État -------------------------------------------------------------------------------------
@@ -2308,6 +2390,7 @@ def fin_scene(session: Session, titre: str, moments_forts: str) -> dict:
         t["enquete"] = False  # une enquête par scène
     if pnj_.actifs(session.monde):
         session.monde["pnj"]["elite"] = None  # un seul PNJ d'élite par scène
+    session.ouvertes.clear()  # les familles d'outils ouvertes par le MJ se referment avec la scène
     return {"souvenir": souvenir}
 
 
