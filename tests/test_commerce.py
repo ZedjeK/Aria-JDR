@@ -34,6 +34,23 @@ def test_les_articles(u):
             article(u, nom)
 
 
+def test_le_nom_d_un_objet_est_verifie_par_le_moteur_pas_par_une_liste(u):
+    s, i = riche(u, 1000)
+    for outil in ("acheter", "commander"):
+        schema = next(o for o in s.schemas() if o["function"]["name"] == outil)["function"]["parameters"]
+        assert "enum" not in schema["properties"]["objet"]  # la liste de tout l'univers n'est plus dans le schéma
+    r = s.appeler("acheter", {"objet": "katana"})  # un écart de casse est pardonné
+    assert r["achete"] and r["objet"] == "Katana" and i.a("Katana", ARME)
+    r = s.appeler("acheter", {"objet": "Katanna"})  # une faute : refusé, avec les noms proches
+    assert "n'existe pas dans cet univers" in r["erreur"] and "Katana" in r["erreur"] and s.personnage.argent == 800
+    r = s.appeler("acheter", {"objet": "Sabre laser"})  # rien de proche : le moteur ne laisse pas deviner
+    assert "n'existe pas dans cet univers" in r["erreur"] and s.personnage.argent == 800
+    r = s.appeler("commander", {"objet": "Sabre laser", "lieu": "grande ville"})
+    assert "n'existe pas dans cet univers" in r["erreur"]
+    # Les boîtes et les chargeurs ne valent que pour les armes qu'il possède
+    assert s.appeler("acheter", {"objet": "Boîte de cartouches (Katana)"}).get("erreur")
+
+
 def test_acheter_du_materiel_courant(u):
     s, i = riche(u, 1000)
     r = s.appeler("acheter", {"objet": "Katana"})

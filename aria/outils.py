@@ -10,6 +10,7 @@ Une erreur ne fait jamais planter la partie : elle est renvoyée au LLM sous la 
 {"erreur": "…"} pour qu'il corrige son appel.
 """
 
+import difflib
 import json
 from dataclasses import dataclass, field
 from typing import Callable
@@ -397,6 +398,21 @@ def _enum(valeurs, description: str = "") -> dict:
     if description:
         schema["description"] = description
     return schema
+
+
+def _nom_exact(nom: str, connus: list[str], genre: str) -> str:
+    """Le nom tel que l'univers l'écrit. Les longues listes (tout ce qui s'achète, tous les implants) ne sont
+    plus dans le schéma de l'outil : le MJ donne un nom, et le moteur le vérifie ici. Un écart de casse est
+    pardonné ; un nom inconnu est refusé avec les noms proches, ou toute la liste s'il n'y en a aucun."""
+    if nom in connus:
+        return nom
+    memes = [c for c in connus if c.casefold() == nom.strip().casefold()]
+    if len(memes) == 1:
+        return memes[0]
+    proches = difflib.get_close_matches(nom, connus, n=8, cutoff=0.5) or [
+        c for c in connus if nom.strip().casefold() in c.casefold()][:8]
+    raise ErreurOutil(f"« {nom} » n'existe pas dans cet univers ({genre}). "
+                      + (f"Noms proches : {proches}." if proches else f"Noms possibles : {sorted(connus)}."))
 
 
 def _ids(session: Session, description: str) -> dict:
@@ -1480,7 +1496,8 @@ def lancer_sort(session: Session, lanceur: str, sort: str, cible: str | None = N
        "Médecine ou de Cybernétique. Réussi, l'implant est posé et la Santé mentale maximum baisse de son prix. "
        "Les options demandent leur fondation (pas de lames-mantis sans bras cybernétique).",
        lambda s: _objet({
-           "implant": _enum([i.nom for i in s.univers.implants]),
+           "implant": {"type": "string", "description": "Son nom exact dans cet univers. S'il n'existe pas, le "
+                                                        "moteur te donne les noms proches."},
            "charcudoc": _ids(s, "Qui pose l'implant."),
            "cote": _enum(implants_.COTES, "Pour un bras ou une main : quel côté."),
            "qualite": _enum(["d'origine", "usé"], "Usé : d'occasion ou du marché noir, il coûte 2 points de plus."),
@@ -1492,6 +1509,7 @@ def poser_implant(session: Session, implant: str, charcudoc: str, cote: str | No
                   qualite: str = "d'origine", clandestine: bool = False, offert: bool = False) -> dict:
     if session.combat:
         raise ErreurOutil("On ne pose pas d'implant en plein combat.")
+    implant = _nom_exact(implant, [i.nom for i in session.univers.implants], "implant")
     if not offert:
         _exiger_un_lieu(session, lieux_.IMPLANTS)
     fiche, paye = session.univers.implant(implant), {}
@@ -1581,6 +1599,13 @@ def _rapport_marchandage(m) -> dict:
 _MARCHANDER = {"type": "string", "enum": ["non", "persuasion", "menace"],
                "description": "Marchander : un seul test par transaction. Par la menace, le PNJ lui en voudra."}
 _ATTITUDE = {"type": "string", "enum": list(commerce.ATTITUDES), "description": "L'attitude du vendeur envers lui."}
+_OBJET_A_ACHETER = {"type": "string", "description": "Son nom exact dans cet univers : une arme, une armure, un "
+                     "véhicule, du matériel, « Boîte de cartouches (arme) » ou « Chargeur (arme) ». S'il n'existe "
+                     "pas, le moteur te donne les noms proches."}
+
+
+def _objet_a_acheter(session: Session, objet: str) -> str:
+    return _nom_exact(objet, commerce.catalogue(session.univers, session.inventaire), "objet à vendre")
 
 
 @outil("Montrer ce qu'un vendeur propose cette semaine, en plus du matériel courant (toujours disponible en "
@@ -1604,7 +1629,7 @@ def voir_boutique(session: Session, vendeur: str, marche_noir: bool = False) -> 
        "débite et range l'objet. État « neuf » pour le matériel courant ; « occasion », « marque » ou « marché "
        "noir » pour un objet du stock d'un vendeur (voir_boutique). Le matériel militaire ne se vend pas.",
        lambda s: _objet({
-           "objet": _enum(commerce.catalogue(s.univers, s.inventaire)),
+           "objet": _OBJET_A_ACHETER,
            "etat": _enum([commerce.NEUF, commerce.OCCASION, commerce.MARQUE, commerce.MARCHE_NOIR]),
            "vendeur": {"type": "string", "description": "Pour un objet de stock : l'identifiant du vendeur."},
            "marchander": _MARCHANDER, "attitude": _ATTITUDE,
@@ -1614,6 +1639,7 @@ def acheter(session: Session, objet: str, etat: str = commerce.NEUF, vendeur: st
             attitude: str = "neutre") -> dict:
     if session.combat:
         raise ErreurOutil("On n'achète rien en plein combat.")
+    objet = _objet_a_acheter(session, objet)
     lieu = _regles_du_lieu(session)
     if etat == commerce.MARCHE_NOIR and lieu["sans_receleur"]:
         raise ErreurOutil("Les autorités tiennent ce quartier : pas de marché noir ici.")
@@ -1699,11 +1725,12 @@ def payer(session: Session, service: str, palier: int | None = None) -> dict:
        "de 1 à 3 jours, un palier au-dessus du prix. La somme est payée à la commande, et l'objet arrive tout "
        "seul le jour dit.",
        lambda s: _objet({
-           "objet": _enum(commerce.catalogue(s.univers, s.inventaire)),
+           "objet": _OBJET_A_ACHETER,
            "lieu": _enum(commerce.LIEUX),
        }, ["objet", "lieu"]),
        disponible=_au_calme)
 def commander(session: Session, objet: str, lieu: str) -> dict:
+    objet = _objet_a_acheter(session, objet)
     c = commerce.commander(session.des, session.personnage, session.univers, objet,
                            session.joueur.valeur(commerce.PERSUASION), lieu, session.moment.jour)
     progression.cocher(session.personnage, commerce.PERSUASION, c.test)

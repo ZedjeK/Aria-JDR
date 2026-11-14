@@ -122,6 +122,16 @@ def test_l_outil_et_un_echec():
     assert "poser_implant" in {o["function"]["name"] for o in s.schemas()}
 
 
+def test_le_nom_d_un_implant_est_verifie_par_le_moteur_pas_par_une_liste():
+    s = session(5)
+    schema = next(o for o in s.schemas() if o["function"]["name"] == "poser_implant")["function"]["parameters"]
+    assert "enum" not in schema["properties"]["implant"]
+    r = s.appeler("poser_implant", {"implant": "Neuroporte", "charcudoc": "doc"})  # une faute : les noms proches
+    assert "n'existe pas dans cet univers" in r["erreur"] and "Neuroport" in r["erreur"] and not s.personnage.implants
+    r = s.appeler("poser_implant", {"implant": "neuroport", "charcudoc": "doc"})  # un écart de casse est pardonné
+    assert r["implant"] == "Neuroport" and r["pose"]
+
+
 def test_pas_d_implant_en_combat():
     s = session()
     s.appeler("creer_pnj", {"identifiant": "ganger", "nom": "Ganger", "camp": "ennemis", "combat": 40, "pv": 10})
