@@ -1,6 +1,9 @@
 """Les familles d'outils du MJ (aria.familles) : le socle, ce que le moteur ouvre seul, ce que le MJ ouvre."""
 
-from aria import familles
+import itertools
+import json
+
+from aria import familles, llm, table
 from aria.banc import SITUATIONS, nouvelle_session
 from aria.outils import OUTILS
 
@@ -155,3 +158,50 @@ def test_le_banc_joue_avec_les_familles():
     assert s.ouvertes == [familles.COMMERCE, familles.SOINS] and familles.POURSUITE in s.familles_fermees()
     r = s.appeler("outils", {"famille": familles.POURSUITE})
     assert r["famille_refermee"] == familles.COMMERCE and "debut_poursuite" in r["outils"]
+
+
+# La place : le contexte de 16 384 jetons moins la réponse (PLAFOND_JETONS) et la réserve d'un tour. Le prompt de base
+# (système + schémas d'outils) en prend une part, l'historique des échanges garde le reste. Mesuré le 2026-11-15
+# (3,37 caractères par jeton) : socle seul 6 800 jetons, deux familles du MJ de 7 400 à 10 000, éteint 10 700.
+CARACTERES_PAR_JETON = 3.37
+LIMITE = 16384 - llm.PLAFOND_JETONS - table.RESERVE_TOUR
+ECHANGE = 500  # un échange moyen : phrase du joueur, deux appels d'outils avec leurs résultats, 150 jetons de narration
+
+
+def base(s) -> int:
+    systeme = table.Table(None, s, 512, "Une ruelle.").messages[0]["content"]
+    return int((len(systeme) + len(json.dumps(s.schemas(), ensure_ascii=False))) / CARACTERES_PAR_JETON)
+
+
+def test_le_socle_laisse_la_place_a_au_moins_six_echanges():
+    assert (LIMITE - base(session())) // ECHANGE >= 6  # avant les familles : 195 jetons, un seul échange gardé
+
+
+def test_deux_familles_du_mj_laissent_la_place_a_au_moins_un_echange():
+    # La pire paire, combat et commerce (9 980 jetons), n'en laisse qu'un ; les autres en laissent de 3 à 7. Elle ne se
+    # rencontre guère : dès que le combat est imposé, le commerce se ferme.
+    for a, b in itertools.combinations(session().familles_fermees(), 2):
+        s = session()
+        s.appeler("outils", {"famille": a})
+        s.appeler("outils", {"famille": b})
+        assert (LIMITE - base(s)) // ECHANGE >= 1, (a, b)
+
+
+def test_la_table_garde_une_dizaine_d_echanges_avec_le_socle():
+    class Faux:
+        def discuter(self, messages, schemas, budget):
+            taille = len(json.dumps(messages, ensure_ascii=False)) + len(json.dumps(schemas or [], ensure_ascii=False))
+            if messages[-1]["role"] == "user":
+                appel = {"name": "test_competence", "arguments": json.dumps({
+                    "competence": "Discrétion", "difficulte": "normale", "pourquoi": "Kaito se glisse entre les bennes."})}
+                message = {"role": "assistant", "content": "", "tool_calls": [{"id": f"c{len(messages)}", "function": appel}]}
+            else:
+                message = {"role": "assistant", "content": "Le néon grésille sous la pluie acide. " * 15}
+            return {"choices": [{"message": message}],
+                    "usage": {"prompt_tokens": int(taille / CARACTERES_PAR_JETON), "completion_tokens": 150}}
+
+    s = session()
+    t = table.Table(Faux(), s, 512, "Une ruelle.")
+    for _ in range(20):
+        t.tour("Je me glisse derrière les bennes pour voir la patrouille.")
+    assert sum(1 for m in t.messages if m["role"] == "user") >= 6
