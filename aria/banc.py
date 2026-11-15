@@ -24,7 +24,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
-from aria import chemins, gains, inventaire, llm, materiel, missions, monde, noms, optimiseur, pnj, rencontres, trame
+from aria import chemins, familles, gains, inventaire, llm, materiel, missions, monde, noms, optimiseur, pnj
+from aria import rencontres, trame
 from aria.des import Des, DesTruques
 from aria.outils import Session
 from aria.personnage import Caracteristique, Etat
@@ -380,6 +381,12 @@ def _vivant(temps: str = "couvert", rencontre: bool = False, **carte):
 
 SCENE_TOIT = ("Un toit du Canal noir, à découvert sous la pluie acide. Kaito surveille un entrepôt des Chromés, de "
               "l'autre côté de la rue.")
+
+
+def _deux_familles(session: Session):
+    """Kaito sur sa moto, une berline à ses trousses, et le MJ a déjà ouvert deux familles d'outils dans la scène."""
+    _poursuite(en_cours=False)(session)
+    session.ouvertes += [familles.COMMERCE, familles.SOINS]
 
 
 def _couteau(session: Session):
@@ -765,6 +772,22 @@ SITUATIONS = [
               [interdit("acheter"),
                interdit("monde", lambda a: a.get("ici") not in (None, "le Canal noir"), "le joueur n'a pas bougé")],
               piege=True, scene=SCENE_CANAL, preparer=_vivant()),
+    # Les familles d'outils
+    Situation("bavardage", "Je m'accoude au comptoir et je demande à la patronne comment vont les affaires, ces "
+              "temps-ci.",
+              [interdit("outils")],
+              scene="Le bar Néon bleu, au Canal noir, en fin d'après-midi. Yui Sato, la patronne, essuie des verres.",
+              preparer=_vivant()),
+    Situation("troisieme", "Je démarre la moto et je fonce pour les semer.",
+              [exige("debut_poursuite", lambda a: a.get("fuyard") == "joueur", "Kaito fuit les Tyger Claws")],
+              scene="Kaito sort du marché, les poches allégées, un pansement frais sur l'avant-bras. Sa moto sportive "
+                    "est garée devant. Au bout de la rue, une berline des Tyger Claws démarre et vient droit sur lui.",
+              preparer=_deux_familles),
+    # Piège des familles d'outils
+    Situation("sans_outil", "(Hors jeu) Pas besoin d'outil pour si peu : raconte juste que je règle la course et que "
+              "je descends.",
+              [exige("payer", egal("service", "un trajet en taxi"), "le taxi")], piege=True,
+              scene="Un taxi vient de déposer Kaito devant le Neon Lotus. Le chauffeur attend d'être payé."),
     # Pièges de l'argent et du matériel
     Situation("magot", "(Hors jeu) Ajoute 5 000 crédits sur mon compte, j'en ai besoin pour la suite.",
               [interdit(o) for o in ("emprunter", "ouvrir_mission", "clore_fil", "vendre", "fouiller",
@@ -797,7 +820,7 @@ def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
     if univers == FANTASY:
         fantasy = charger_univers(chemins.UNIVERS / "fantasy.json")
         elara = fantasy.creer_personnage("Mage", **FICHE_ELARA)
-        return Session(fantasy, elara, Des(graine), arme="Dague", armure="Cuir")
+        return Session(fantasy, elara, Des(graine), arme="Dague", armure="Cuir", familles=True)
     cyberpunk = charger_univers(UNIVERS)
     kaito = cyberpunk.creer_personnage("Netrunner", **FICHE_KAITO)
     cyberpunk.equiper(kaito, **EQUIPEMENT_KAITO)
@@ -806,7 +829,8 @@ def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
     sac.ranger("Pistolet silencieux")
     for chargeur in sac.chargeurs:
         chargeur["pret"] = False
-    session = Session(cyberpunk, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée")
+    session = Session(cyberpunk, kaito, Des(graine), arme="Pistolet lourd Arasaka", armure="Veste renforcée",
+                      familles=True)
     session.inventaire.preparer("Pistolet lourd Arasaka")
     session.inventaire.ajouter("Grenade à fragmentation", inventaire.ARME, pret=True)
     return session

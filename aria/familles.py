@@ -30,8 +30,9 @@ FAMILLES: dict[str, tuple[tuple[str, ...], str]] = {
                "travailler, poser un implant"),
     MISSIONS: (("ouvrir_mission", "accepter_mission", "indice", "reputation", "melee"),
                "ouvrir ou accepter une mission, donner un indice, changer une réputation, jouer une mêlée"),
-    SOINS: (("soigner", "repos", "choc", "recuperer_sante_mentale"),
-            "soigner, se reposer, encaisser un choc, récupérer de la Santé mentale"),
+    # `choc` est dans le socle : un choc se décide sur le moment, et le MJ ne pense pas à aller chercher l'outil
+    SOINS: (("soigner", "repos", "recuperer_sante_mentale"),
+            "soigner, se reposer, récupérer de la Santé mentale"),
     MAGIE: (("lancer_sort",), "lancer un sort"),
 }
 

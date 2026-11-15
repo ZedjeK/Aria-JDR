@@ -10,6 +10,7 @@ INTERDITS = chemins.PROMPTS / "magie_interdite.md"
 ECONOMIE = chemins.PROMPTS / "economie.md"
 MONDE = chemins.PROMPTS / "monde.md"
 ALEATOIRE = chemins.PROMPTS / "aleatoire.md"
+OUTILS = chemins.PROMPTS / "outils.md"
 
 
 def presenter(personnage: Personnage) -> str:
@@ -45,8 +46,18 @@ def presenter_economie(univers: Univers, personnage: Personnage) -> str:
     return ECONOMIE.read_text(encoding="utf-8").format(monnaie=univers.monnaie)
 
 
+def presenter_familles(ouvertes: list[str], fermees: dict[str, str]) -> str:
+    """La section « Tes outils » : les familles sous la main, et celles que le MJ peut ouvrir avec ce qu'elles
+    contiennent (voir aria.familles)."""
+    lignes = "\n".join(f"- {famille} : {contenu} ;" for famille, contenu in fermees.items())
+    return OUTILS.read_text(encoding="utf-8").format(
+        ouvertes=", ".join(ouvertes) if ouvertes else "aucune pour l'instant",
+        fermees=f"Fermées :\n{lignes[:-2]}." if fermees else "Fermées : aucune.")
+
+
 def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", memoire: str = "",
-                   fil: str = "", monde: bool = False, aleatoire: bool = False) -> str:
+                   fil: str = "", monde: bool = False, aleatoire: bool = False,
+                   familles: tuple[list[str], dict[str, str]] | None = None) -> str:
     """Le prompt du MJ. `scene` : ce que le MJ sait de la situation en cours (lieu, PNJ présents…) ;
     `memoire` : le bloc Mémoire de la campagne ; `fil` : ce que le moteur a gardé des échanges
     de la session sortis de la conversation."""
@@ -55,7 +66,8 @@ def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", me
                           personnage=presenter(personnage), magie=presenter_magie(univers, personnage),
                           economie=presenter_economie(univers, personnage)
                           + (MONDE.read_text(encoding="utf-8") if monde else "")
-                          + (ALEATOIRE.read_text(encoding="utf-8") if aleatoire else ""),
+                          + (ALEATOIRE.read_text(encoding="utf-8") if aleatoire else "")
+                          + (presenter_familles(*familles) if familles else ""),
                           memoire=f"\n## Ce dont tu te souviens\n\n{memoire}\n" if memoire else "",
                           scene=f"\n## La scène\n\n{scene}\n" if scene else "",
                           fil=f"\n## Plus tôt dans cette session\n\nLes premiers échanges de la session sont sortis "
