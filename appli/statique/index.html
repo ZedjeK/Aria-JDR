@@ -14,6 +14,8 @@
     <h1>Aria JDR</h1>
     <nav>
       <a href="#accueil" class="actif">Accueil</a>
+      <a href="#campagnes">Campagnes</a>
+      <a href="#personnages">Personnages</a>
       <a href="#reglages">Réglages</a>
     </nav>
     <p class="version" id="version"></p>
@@ -26,12 +28,34 @@
     <section class="panneau" id="accueil">
       <h2>Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.</h2>
       <p id="mj" class="mj">…</p>
-      <p>Les campagnes, les personnages, la partie et le banc d'essai arrivent dans cette interface, un écran après
-        l'autre. En attendant, le jeu se joue dans la console : <code>python -m aria</code>.</p>
+      <p>Tu peux déjà voir tes campagnes, ta corbeille, tes personnages et le MJ de ce PC. La partie et le banc d'essai
+        arrivent dans cette interface, un écran après l'autre. En attendant, le jeu se joue dans la console :
+        <code>python -m aria</code>.</p>
+    </section>
+
+    <section class="panneau" id="campagnes">
+      <h2>Campagnes</h2>
+      <p class="note">Reprendre une campagne et en commencer une nouvelle arrivent avec la partie.</p>
+      <ul class="liste" id="liste-campagnes"></ul>
+      <h3>Corbeille</h3>
+      <ul class="liste" id="liste-corbeille"></ul>
+      <button type="button" id="vider-corbeille" class="secondaire">Vider la corbeille</button>
+      <p class="statut" id="statut-campagnes" role="status"></p>
+    </section>
+
+    <section class="panneau" id="personnages">
+      <h2>Personnages</h2>
+      <p class="note">Les personnages préparés à l'avance, hors campagne. En créer un arrive avec la partie.</p>
+      <ul class="liste" id="liste-personnages"></ul>
+      <p class="statut" id="statut-personnages" role="status"></p>
     </section>
 
     <section class="panneau" id="reglages">
       <h2>Réglages</h2>
+      <h3>Le MJ de ce PC</h3>
+      <p id="mj-detail" class="mj">…</p>
+      <button type="button" id="ouvrir-donnees" class="secondaire">Ouvrir le dossier des données</button>
+      <p class="statut" id="statut-reglages" role="status"></p>
       <form id="formulaire">
         <h3>Fond animé</h3>
         <label class="ligne"><input type="checkbox" id="fond-actif"> Fond animé</label>

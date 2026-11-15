@@ -161,6 +161,114 @@ function section() {
 window.addEventListener("hashchange", section);
 section();
 
+// --- La gestion : campagnes, corbeille, personnages, MJ ---
+// Ce que le joueur ou le MJ ont écrit (noms d'univers, de personnages…) n'entre jamais dans du HTML : textContent seulement.
+function el(balise, classe, texte) {
+  const noeud = document.createElement(balise);
+  if (classe) noeud.className = classe;
+  if (texte !== undefined) noeud.textContent = texte;
+  return noeud;
+}
+
+function ligne(titre, detail, classeDetail, boutons) {
+  const li = el("li");
+  const texte = el("div");
+  texte.append(el("div", "titre", titre), el("div", `detail ${classeDetail || ""}`, detail));
+  const actions = el("div");
+  for (const [libelle, action] of boutons) {
+    const bouton = el("button", "secondaire", libelle);
+    bouton.type = "button";
+    bouton.addEventListener("click", action);
+    actions.append(bouton);
+  }
+  li.append(texte, actions);
+  return li;
+}
+
+function vide(liste, texte) {
+  liste.replaceChildren(el("li", "vide", texte));
+}
+
+async function agir(statut, chemin, options, reussite) {
+  statut.className = "statut";
+  try {
+    const reponse = await api(chemin, { method: "POST", ...options });
+    statut.textContent = reussite(reponse);
+  } catch (erreur) {
+    statut.className = "statut erreur";
+    statut.textContent = erreur.message;
+  }
+  await Promise.all([campagnes(), corbeille(), personnages()]);
+}
+
+async function campagnes() {
+  const liste = champ("liste-campagnes");
+  const toutes = await api("/api/campagnes");
+  if (!toutes.length) return vide(liste, "Aucune campagne pour l'instant.");
+  liste.replaceChildren(...toutes.map((c) => {
+    const jeter = ["Mettre à la corbeille", () => {
+      if (confirm(`Mettre « ${c.nom} » à la corbeille ? Tu pourras la restaurer.`)) {
+        agir(champ("statut-campagnes"), `/api/campagnes/${encodeURIComponent(c.nom)}/corbeille`, {},
+          () => `« ${c.nom} » est dans la corbeille.`);
+      }
+    }];
+    if (!c.lisible) return ligne(c.nom, `illisible (${c.erreur})`, "etat-mort", [jeter]);
+    const perso = c.personnage ? `${c.personnage.nom}, ${c.personnage.parcours} · ` : "";
+    const detail = `${c.univers} (${c.genre}, ${c.ton}, ${c.magie ? "magie" : "sans magie"}) · ${perso}${c.etape}`;
+    return ligne(c.nom, detail, `etat-${c.etat}`, [jeter]);
+  }));
+}
+
+async function corbeille() {
+  const liste = champ("liste-corbeille");
+  const jetees = await api("/api/corbeille");
+  champ("vider-corbeille").hidden = !jetees.length;
+  if (!jetees.length) return vide(liste, "La corbeille est vide.");
+  liste.replaceChildren(...jetees.map((j) => ligne(j.nom, j.date ? `jetée le ${j.date}` : "", "", [["Restaurer", () =>
+    agir(champ("statut-campagnes"), `/api/corbeille/${encodeURIComponent(j.id)}/restaurer`, {},
+      (r) => `« ${r.nom} » est restaurée.`)]])));
+}
+
+async function personnages() {
+  const liste = champ("liste-personnages");
+  const prets = await api("/api/personnages");
+  liste.replaceChildren(...prets.map((p) => ligne(p.nom, p.titre, "", p.livre ? [] : [["Supprimer", () => {
+    if (confirm(`Supprimer ${p.nom} pour de bon ? C'est définitif.`)) {
+      agir(champ("statut-personnages"), `/api/personnages/${encodeURIComponent(p.id)}/supprimer`, {},
+        (r) => `${r.nom} est supprimé.`);
+    }
+  }]])));
+}
+
+champ("vider-corbeille").addEventListener("click", () => {
+  if (confirm("Effacer pour de bon tout ce que contient la corbeille ? C'est définitif.")) {
+    agir(champ("statut-campagnes"), "/api/corbeille/vider",
+      { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirme: true }) },
+      (r) => `${r.effacees} campagne(s) effacée(s).`);
+  }
+});
+
+champ("ouvrir-donnees").addEventListener("click", () =>
+  agir(champ("statut-reglages"), "/api/donnees/ouvrir", {}, (r) => `Dossier ouvert : ${r.dossier}`));
+
+async function mj() {
+  const info = await api("/api/mj");
+  const accueil = champ("mj");
+  const detail = champ("mj-detail");
+  if (info.qualifie) {
+    accueil.textContent = `MJ retenu sur ce PC : ${info.modele}, réflexion ${info.budget_reflexion} jetons.`;
+    detail.textContent = `Modèle : ${info.modele} (${info.fichier}). Réflexion : ${info.budget_reflexion} jetons par action, `
+      + `${info.budget_generateur} pour créer un univers, un personnage ou une amorce.`;
+  } else {
+    accueil.textContent = "Aucun MJ n'est qualifié sur ce PC : le banc d'essai le fera.";
+    detail.textContent = "Pas de MJ qualifié sur ce PC : le banc d'essai (bientôt dans cette interface) le qualifiera.";
+  }
+  const manque = info.moteur_present ? "" : ` Le serveur du MJ est introuvable : ${info.moteur}. Place le dossier Aria-LLM `
+    + "à côté de l'exe, ou dans ton dossier d'utilisateur.";
+  detail.textContent += manque;
+  accueil.className = detail.className = info.qualifie && info.moteur_present ? "mj ok" : "mj";
+}
+
 // --- Démarrage ---
 (async () => {
   try {
@@ -168,11 +276,7 @@ section();
     champ("version").textContent = `Version ${etat.version}`;
     afficher(await api("/api/reglages"));
     Fond.configurer(await api("/api/fond"));
-    const mj = await api("/api/mj");
-    champ("mj").textContent = mj.qualifie
-      ? `MJ retenu sur ce PC : ${mj.modele}, réflexion ${mj.budget_reflexion} jetons.`
-      : "Aucun MJ n'est qualifié sur ce PC : le banc d'essai le fera.";
-    champ("mj").className = mj.qualifie ? "mj ok" : "mj";
+    await Promise.all([mj(), campagnes(), corbeille(), personnages()]);
   } catch (erreur) {
     message.className = "erreur";
     message.textContent = erreur.message;
