@@ -289,6 +289,18 @@ const Partie = (() => {
   let dernier = 0;
   let suivi = false;
   let etat = { actif: false, nature: "" };
+  let depuis = Date.now();  // le dernier signe de vie du jeu : un événement, ou le départ
+  let attente = null;  // ce que dit la page pendant que le jeu travaille, avec le temps écoulé
+  let minuteur = null;
+
+  const duree = (ms) => {
+    const s = Math.floor(ms / 1000);
+    return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s`;
+  };
+
+  function majAttente() {
+    if (attente !== null) champ("partie-etat").textContent = `${attente} Depuis ${duree(Date.now() - depuis)}.`;
+  }
 
   function ecrire(classe, texte) {
     const bas = journal.scrollHeight - journal.scrollTop - journal.clientHeight < 40;
@@ -310,11 +322,14 @@ const Partie = (() => {
     if (pret) texte.focus({ preventScroll: true });
     champ("commandes").hidden = !(actif && pret && attend.trim() === ">" && etat.nature === "campagne");
     champ("interrompre").hidden = !actif;
-    champ("partie-etat").textContent = !actif
-      ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.")
-      : pret ? "À toi de jouer."
-        : etat.nature === "banc" ? "La qualification tourne : une ligne par situation, plus d'une heure en tout."
-        : "Le jeu travaille… (le MJ réfléchit, parfois une minute)";
+    const travaille = actif && !pret;
+    attente = !travaille ? null
+      : etat.nature === "banc" ? "La qualification tourne : une ligne par situation, plus d'une heure en tout."
+      : "Le jeu travaille : le MJ réfléchit (une minute pour une réponse, jusqu'à une dizaine pour créer un univers).";
+    if (travaille && minuteur === null) minuteur = setInterval(majAttente, 1000);
+    if (!travaille && minuteur !== null) { clearInterval(minuteur); minuteur = null; }
+    if (travaille) majAttente();
+    else champ("partie-etat").textContent = !actif ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.") : "À toi de jouer.";
   }
 
   async function suivre() {
@@ -324,6 +339,7 @@ const Partie = (() => {
       for (;;) {
         const lot = await api(`/api/partie/evenements?apres=${dernier}&attente=20`);
         lot.evenements.forEach(afficher);
+        if (lot.evenements.length) depuis = Date.now();
         dernier = lot.dernier;
         etat = { ...etat, actif: lot.actif };
         controles(lot.actif, lot.attend);
@@ -345,6 +361,7 @@ const Partie = (() => {
       etat = await envoyer(chemin, corps);
       journal.replaceChildren();
       dernier = 0;
+      depuis = Date.now();
       champ("partie-titre").textContent = etat.titre;
       location.hash = "#partie";
       suivre();
