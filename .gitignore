@@ -1,11 +1,15 @@
-# Environnement virtuel Python
-.venv/
+# Socle commun des applis Aria
+*.exe
+/.work/
+/.build_cache/
+.env
+*.syso
+node_modules/
+dist/
 
-# Fichiers générés par Python et pytest
+# Python
+.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-
-# Construction de l'exe portable (construire.ps1)
 build/
-dist/

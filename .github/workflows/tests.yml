@@ -1,39 +1,49 @@
-# Tests du moteur (pytest) à chaque push et à chaque pull request.
-# Aucun modèle ni llama-server : les tests ne touchent qu'au moteur et à des faux (monkeypatch, tmp_path).
+# Tests : sur chaque PR vers main et sur chaque push sur main.
 #
-# Linux suffit : le code propre à Windows est déjà gardé (sys.platform pour la RAM, CREATE_NO_WINDOW
-# lu avec getattr, nvidia-smi cherché avec shutil.which) et les chemins passent par pathlib.
-# Les chemins .venv\Scripts ne figurent que dans les messages et la doc.
-
+# Aucun filtre de chemins (paths, paths-ignore) : un workflow ignoré laisserait le check « tests » en attente et
+# bloquerait toute PR, puisque le ruleset de main l'exige.
 name: Tests
 
 on:
-  push:
   pull_request:
+    branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
 
-jobs:
-  pytest:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # La version minimale (requires-python) et la dernière stable
-        python: ["3.11", "3.x"]
+concurrency:
+  group: tests-${{ github.ref }}
+  # Seulement sur les PR : deux fusions rapprochées n'annulent pas le run de main.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  tests: # ce nom est celui que le ruleset exige : ne jamais le renommer
+    runs-on: windows-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.11" # la version minimale du projet (requires-python)
 
-      # Le projet n'est pas installable tel quel (pas de section de build : « pip install .[dev] »
-      # échoue sur la découverte des paquets) : pytest seul, comme dans les extras dev.
-      - name: Installer pytest
-        run: python -m pip install "pytest>=9"
+      - name: Installer pytest et PyInstaller
+        run: python -m pip install "pytest>=9" pyinstaller==6.22.3
 
-      - name: Lancer les tests
-        run: python -m pytest
+      - name: Tests
+        run: ./tools/tester.ps1
+
+      # Les scripts .ps1 doivent aussi tourner sous Windows PowerShell 5.1, celui livré avec Windows.
+      # Même job : le check exigé par le ruleset garde son nom « tests ».
+      - name: Tests sous Windows PowerShell 5.1
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./tools/tester.ps1

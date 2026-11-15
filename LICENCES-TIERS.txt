@@ -1,0 +1,51 @@
+Aria JDR : composants tiers embarqués
+=====================================
+
+Ce fichier liste tout ce que l'exe embarque et qui n'a pas été écrit pour
+Aria JDR. Il est mis à jour à chaque version et joint au zip.
+
+Pour chaque composant : nom, version, source officielle, licence, et la façon
+dont il a été vérifié.
+
+Interpréteur Python et ses bibliothèques natives
+------------------------------------------------
+
+Python (interpréteur, bibliothèque standard)
+  Version      : 3.11 (la version exacte de chaque zip est dans BUILDINFO.txt)
+  Source       : https://www.python.org
+  Licence      : Python Software Foundation License (PSF-2.0)
+  Vérification : installé par actions/setup-python, épinglée par SHA dans
+                 les workflows. L'empreinte de l'interpréteur n'est pas
+                 contrôlée par ce dépôt.
+
+Bibliothèques natives livrées avec Python 3.11 et copiées dans l'exe :
+OpenSSL (libssl, libcrypto), libffi, bzip2, liblzma, runtime Visual C++
+(VCRUNTIME140).
+  Version      : celle qui accompagne l'interpréteur ci-dessus
+  Source       : https://www.python.org, https://openssl-library.org,
+                 https://sourceware.org/libffi, https://sourceware.org/bzip2,
+                 https://tukaani.org/xz
+  Licence      : OpenSSL 3 : Apache-2.0 ; libffi : MIT ; bzip2 : licence BSD
+                 de bzip2 ; liblzma : domaine public ; VCRUNTIME140 :
+                 redistribuable Microsoft Visual C++
+  Vérification : voir Python ci-dessus. Les versions exactes ne sont pas
+                 relevées par ce dépôt.
+
+PyInstaller
+-----------
+
+PyInstaller (outil de construction, dont le chargeur est copié dans l'exe)
+  Version      : 6.22.3
+  Source       : https://github.com/pyinstaller/pyinstaller
+  Licence      : GPL-2.0 ou plus récente, avec une exception qui autorise à
+                 distribuer les programmes construits avec PyInstaller sous
+                 une autre licence
+  Vérification : version épinglée dans build.ps1 et dans les workflows,
+                 installée depuis PyPI par pip. Aucune empreinte n'est
+                 verrouillée.
+
+Autres composants
+-----------------
+
+Aucun. Le serveur llama (fork PrismML de llama.cpp) et les modèles ne sont pas
+embarqués : l'utilisateur les télécharge lui-même, et chacun a sa licence.

@@ -1,83 +1,134 @@
-# Release : un tag vX.Y.Z construit l'exe portable et crée la release EN BROUILLON.
-# La publication reste un geste de l'auteur : on relit le brouillon, puis on publie.
+# Release : pousser un tag « vX.Y.Z » teste, construit l'exe portable, en fait le zip et son empreinte, atteste sa
+# provenance, puis crée la release en BROUILLON. Tu relis les notes, tu vérifies l'empreinte et tu publies : publier
+# est le geste qui prévient les utilisateurs, aucun workflow ne le fait à ta place.
 #
-# - Tag poussé : tests, construction, vérifications, brouillon avec l'exe et son empreinte.
-# - Lancement à la main (workflow_dispatch) : le même essai sans rien publier, pour s'assurer que la
-#   construction passe avant de poser le tag.
+#     git tag -a v1.2.3 -m "Version 1.2.3"; git push origin v1.2.3
 #
-# Le jeton d'écriture n'est donné qu'à l'étape qui crée le brouillon ; aucun champ du tag n'est
-# interpolé dans une commande : il passe par une variable d'environnement.
-
+# Le tag doit être celui de la version affichée par tools/version.ps1, sinon le build s'arrête avant de rien publier.
+# Ne le pousse qu'une fois la version et les notes (docs/releases/<tag>.md) fusionnées dans main.
+#
+# Le commit du tag doit aussi appartenir à la branche par défaut : un tag posé sur une branche non fusionnée est refusé.
+#
+# Les notes, la fiche projet et les licences doivent être complètes (tools/verifier-release.ps1) : sans notes de
+# version, aucune release, plus de notes générées à leur place.
+#
+# Deux jobs : « build » ne fait que lire (tests, exe, zip, empreinte) ; « publication » est le seul dont le jeton peut
+# écrire, et il n'exécute aucun code du dépôt.
+#
+# Essai à blanc, sans tag : « build » tourne sur main, liste ce qui manque encore pour sortir la version de
+# tools/version.ps1 et garde le zip 7 jours en artefact ; « publication » ne tourne pas.
+#
+#     gh workflow run Release --ref main
+#     $id = gh run list --workflow Release --limit 1 --json databaseId --jq '.[0].databaseId'
+#     gh run watch $id --exit-status
 name: Release
 
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
   contents: read
 
-jobs:
-  exe:
-    runs-on: windows-latest
-    # Écriture : seulement pour créer le brouillon. Le jeton n'est lu que par l'étape « Créer le brouillon ».
-    permissions:
-      contents: write
+defaults:
+  run:
+    shell: pwsh
 
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
+          fetch-depth: 0 # tout l'historique : il faut pouvoir situer le tag par rapport à la branche par défaut
+
+      - name: Le tag est sur la branche par défaut
+        if: github.event_name == 'push'
+        env:
+          BRANCHE: ${{ github.event.repository.default_branch }}
+        run: |
+          git merge-base --is-ancestor $env:GITHUB_SHA "origin/$env:BRANCHE"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Le tag $env:GITHUB_REF_NAME pointe sur un commit qui n'est pas dans $env:BRANCHE : aucune release."
+          }
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: "3.11"  # la version minimale du projet (requires-python)
-
-      - name: Vérifier le tag, la version et les notes
-        shell: pwsh
-        env:
-          TAG_DU_PUSH: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
-        run: |
-          $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
-          $tag = if ($env:TAG_DU_PUSH) { $env:TAG_DU_PUSH } else { "v$version" }  # essai à la main : le tag attendu
-          if ($tag -ne "v$version") { throw "Le tag $tag ne correspond pas à la version $version de pyproject.toml." }
-          if (-not (Test-Path "docs/releases/$tag.md")) { throw "Les notes docs/releases/$tag.md manquent." }
-          if ($env:TAG_DU_PUSH) {
-            # Le commit du tag doit être dans main : un tag posé sur une branche non relue ne publie rien
-            git fetch origin main
-            git merge-base --is-ancestor HEAD origin/main
-            if ($LASTEXITCODE -ne 0) { throw "Le commit du tag n'est pas dans main." }
-          }
-          "TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          python-version: "3.11" # la version minimale du projet (requires-python)
 
       - name: Installer pytest et PyInstaller
+        run: python -m pip install "pytest>=9" pyinstaller==6.22.3
+
+      - name: Le tag est celui de la version
+        if: github.event_name == 'push'
         run: |
-          python -m venv .venv
-          .venv\Scripts\python.exe -m pip install "pytest>=9" pyinstaller==6.22.3
+          $version = "$(./tools/version.ps1 | Select-Object -Last 1)".Trim()
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "Le tag $env:GITHUB_REF_NAME ne correspond pas à la version $version donnée par tools/version.ps1."
+          }
 
-      - name: Lancer les tests
-        run: .venv\Scripts\python.exe -m pytest
+      - name: Notes, fiche projet et licences complètes
+        if: github.event_name == 'push'
+        run: ./tools/verifier-release.ps1 -Tag $env:GITHUB_REF_NAME
 
-      - name: Construire l'exe
-        shell: pwsh
-        run: ./construire.ps1
+      - name: Ce qui manque encore pour sortir cette version (essai à blanc)
+        if: github.event_name == 'workflow_dispatch'
+        run: ./tools/verifier-release.ps1 -EssaiABlanc
 
-      - name: Calculer l'empreinte
-        shell: pwsh
-        run: |
-          $exe = "dist/Aria-JDR.exe"
-          if (-not (Test-Path $exe)) { throw "L'exe n'a pas été construit." }
-          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
-          "$hash  Aria-JDR.exe" | Out-File -FilePath "dist/Aria-JDR.exe.sha256" -Encoding ascii
-          Get-Content "dist/Aria-JDR.exe.sha256"
+      - name: Tests
+        run: ./tools/tester.ps1
 
-      - name: Créer le brouillon
-        if: github.ref_type == 'tag'
-        shell: pwsh
+      - name: Construire l'exe portable
+        run: ./build.ps1
+
+      - name: Zip, empreinte et BUILDINFO
+        run: ./tools/empaqueter.ps1
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: |
+            .work/release/*.zip
+            .work/release/*.zip.sha256
+          include-hidden-files: true # .work commence par un point : sans cette ligne, l'action ignorerait le zip
+          if-no-files-found: error
+          retention-days: 7
+
+  publication:
+    needs: build
+    if: github.event_name == 'push' # jamais sur un essai à blanc
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      # Seulement pour lire les notes de version : aucun code du dépôt n'est exécuté dans ce job.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: release
+
+      - name: Attestation de provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*.zip
+
+      - name: Release en brouillon
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create $env:TAG --draft --verify-tag --title "Aria-JDR $($env:TAG.TrimStart('v'))" `
-            --notes-file "docs/releases/$env:TAG.md" "dist/Aria-JDR.exe" "dist/Aria-JDR.exe.sha256"
+          $version = $env:GITHUB_REF_NAME.TrimStart("v")
+          $zip = "release/Aria-JDR-$version.zip"
+          $notes = "docs/releases/$env:GITHUB_REF_NAME.md"
+          if (-not (Test-Path $notes)) { throw "$notes est introuvable : aucune release sans notes de version." }
+          gh release create $env:GITHUB_REF_NAME $zip "$zip.sha256" --draft --verify-tag --title "Aria JDR $version" --notes-file $notes
