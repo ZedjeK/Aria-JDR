@@ -4,7 +4,7 @@ Construit Aria-JDR.exe, l'exe portable, dans .work\sortie\.
 
 .DESCRIPTION
 PyInstaller (pyinstaller==6.22.3) empaquète le moteur, les univers, la bibliothèque et les prompts du MJ en un seul
-exe. Le serveur llama et les modèles restent dehors : ils pèsent plusieurs Go (voir le README). Ne demande pas les
+exe. L'exe se décompresse dans cache\ du dossier de données (--runtime-tmpdir), jamais dans %TEMP%. Le serveur llama et les modèles restent dehors : ils pèsent plusieurs Go (voir le README). Ne demande pas les
 droits administrateur et ne lance rien. Les versions des outils vont dans .work\outils.txt, que tools\empaqueter.ps1
 recopie dans BUILDINFO.txt.
 
@@ -49,6 +49,7 @@ $versionPyInstaller = "$(& $python -m PyInstaller --version 2>&1)".Trim()
 & $python -m PyInstaller --noconfirm --clean --onefile --console `
     --name Aria-JDR `
     --icon $icone `
+    --runtime-tmpdir '%USERPROFILE%\.Aria-JDR\cache' `
     --paths $racine `
     --specpath $pyinstaller --workpath $pyinstaller --distpath $sortie `
     --add-data "$racine\univers;univers" `
