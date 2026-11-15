@@ -130,6 +130,9 @@ class Jeu:
             self.session = Session(univers, kaito, des or Des(), Moment(1, Periode.APRES_MIDI),
                                    arme=local("Pistolet lourd Arasaka"), armure=local("Veste renforcée"),
                                    campagne=self.campagne)
+        # Le MJ n'a d'office que le socle de ses outils, et ouvre les familles au besoin (aria.familles). Rien
+        # n'est écrit dans la sauvegarde : cela vaut aussi pour une campagne qui reprend.
+        self.session.familles = True
         # Le quartier de Kaito ne vaut que pour Néo-Tokyo ; ailleurs, la mémoire de la campagne dit où on en est
         quartier = "" if self.campagne.univers.is_file() else QUARTIER
         self.table = Table(serveur, self.session, budget, quartier if self.reprise else SCENE, contexte=contexte)

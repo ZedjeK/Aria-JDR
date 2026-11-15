@@ -7,7 +7,7 @@ from aria.outils import OUTILS
 CYBERPUNK = next(s.univers for s in SITUATIONS if s.nom == "racket")
 SOCLE = {"etat", "monde", "inventaire", "test_competence", "test_caracteristique", "forcer_jet", "attaquer",
          "creer_pnj", "noter_pnj", "debut_combat", "embuscade", "avancer_temps", "fin_scene", "ouvrir_fil",
-         "clore_fil", "jalon", "point_de_destin", "fouiller", "prendre"}
+         "clore_fil", "jalon", "point_de_destin", "fouiller", "prendre", "choc"}
 
 
 def session(allumees: bool = True):
@@ -27,8 +27,8 @@ def ganger(s):
 
 def test_chaque_outil_a_sa_place():
     ranges = [nom for outils, _ in familles.FAMILLES.values() for nom in outils]
-    assert len(ranges) == len(set(ranges)) == 35 and set(ranges) <= set(OUTILS)
-    assert set(OUTILS) - set(ranges) == SOCLE | {"outils"}  # le socle : 19 outils, plus celui qui ouvre les familles
+    assert len(ranges) == len(set(ranges)) == 34 and set(ranges) <= set(OUTILS)
+    assert set(OUTILS) - set(ranges) == SOCLE | {"outils"}  # le socle : 20 outils, plus celui qui ouvre les familles
     assert familles.famille_de("acheter") == familles.COMMERCE and familles.famille_de("etat") is None
 
 
@@ -128,3 +128,30 @@ def test_la_fin_de_scene_referme_ce_que_le_mj_a_ouvert():
     s.appeler("outils", {"famille": familles.COMMERCE})
     r = s.appeler("fin_scene", {"titre": "Au marché", "moments_forts": "Kaito a regardé les étals."})
     assert "erreur" not in r and s.ouvertes == [] and "acheter" not in noms(s)
+
+
+def test_la_section_du_prompt_suit_les_familles():
+    from aria.table import Table
+    s = session()
+    prompt = Table(None, s, 512, "Une ruelle.").messages[0]["content"]
+    assert "## Tes outils" in prompt and "Ouvertes : aucune pour l'instant." in prompt
+    assert "- commerce : voir une boutique, acheter" in prompt and "- magie" not in prompt
+    s.appeler("outils", {"famille": familles.COMMERCE})
+    prompt = Table(None, s, 512, "Une ruelle.").messages[0]["content"]
+    assert "Ouvertes : commerce." in prompt and "- commerce :" not in prompt and "- soins et santé mentale :" in prompt
+    # Éteintes : le prompt d'avant, sans la section
+    assert "## Tes outils" not in Table(None, session(allumees=False), 512, "Une ruelle.").messages[0]["content"]
+
+
+def test_le_banc_joue_avec_les_familles():
+    for situation in SITUATIONS:
+        s = nouvelle_session(1, situation.univers)
+        if situation.preparer:
+            situation.preparer(s)
+        assert s.familles and not [j for j in s.journal if "erreur" in j["resultat"]], situation.nom
+    troisieme = next(x for x in SITUATIONS if x.nom == "troisieme")
+    s = nouvelle_session(1, troisieme.univers)
+    troisieme.preparer(s)
+    assert s.ouvertes == [familles.COMMERCE, familles.SOINS] and familles.POURSUITE in s.familles_fermees()
+    r = s.appeler("outils", {"famille": familles.POURSUITE})
+    assert r["famille_refermee"] == familles.COMMERCE and "debut_poursuite" in r["outils"]
