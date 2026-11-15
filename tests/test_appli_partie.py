@@ -306,3 +306,80 @@ def test_le_vrai_moteur_joue_une_reprise_de_bout_en_bout_par_la_session(tmp_path
     assert "La pluie tombe sur Néo-Tokyo." in texte and "Le ganger recule d'un pas." in texte
     assert "PV" in texte and "=== Fin de session ===" in texte and "Partie sauvegardée" in texte
     assert [e["texte"] for e in p.evenements(0)["evenements"] if e["type"] == "joueur"] == ["etat", "Je regarde le ganger.", "quitter"]
+
+
+# --- Le banc
+
+
+def test_interrompre_un_banc_passe_par_sa_sortie_car_il_ne_pose_aucune_question(tmp_path):
+    lignes = []
+
+    def banc_qui_dure(entree, sortie):
+        for n in range(1000):
+            sortie(f"✓ situation {n}")
+            lignes.append(n)
+            time.sleep(0.01)
+
+    p = partie.Partie(tmp_path)
+    p.demarrer("banc", "Qualification du MJ", None, banc_qui_dure)
+    assert attendre(lambda: len(lignes) >= 3)
+    p.arreter()
+    assert p.attendre_la_fin(5) and p.etat()["erreur"] is None
+    assert len(lignes) < 1000
+    assert [e["texte"] for e in p.evenements(0)["evenements"] if e["type"] == "texte"][-1] == "\nInterrompu."
+
+
+def test_le_banc_qualifie_le_mj_puis_le_generateur_et_lui_donne_la_sortie_de_la_page(donnees_jeu, mj_pret, monkeypatch):
+    from aria import banc, banc_generateur
+    ordre = []
+    monkeypatch.setattr(banc, "qualifier", lambda afficher: (ordre.append("mj"), afficher("MJ retenu : M."), {"modele": "M"})[2])
+    monkeypatch.setattr(banc_generateur, "lancer", lambda sortie: (ordre.append("generateur"), sortie("Générateur retenu."))[0])
+    client = ouvrir(donnees_jeu, mj_pret, sans_mj=True)  # le banc se lance justement quand aucun MJ n'est qualifié
+    reponse = client.post("/api/banc")
+    assert reponse.status_code == 200 and reponse.json()["nature"] == "banc"
+    assert attendre(lambda: not client.get("/api/partie").json()["actif"])
+    textes = [e["texte"] for e in client.get("/api/partie/evenements").json()["evenements"] if e["type"] == "texte"]
+    assert ordre == ["mj", "generateur"] and textes == ["MJ retenu : M.", "Générateur retenu."]
+
+
+def test_si_aucun_modele_ne_passe_le_generateur_n_est_pas_lance(donnees_jeu, mj_pret, monkeypatch):
+    from aria import banc, banc_generateur
+    appels = []
+    monkeypatch.setattr(banc, "qualifier", lambda afficher: afficher("Aucun modèle ne passe.") or None)
+    monkeypatch.setattr(banc_generateur, "lancer", lambda sortie: appels.append("generateur"))
+    client = ouvrir(donnees_jeu, mj_pret, sans_mj=True)
+    client.post("/api/banc")
+    assert attendre(lambda: not client.get("/api/partie").json()["actif"])
+    assert appels == []
+
+
+def test_le_banc_ne_demarre_pas_sans_serveur_llama_ni_pendant_une_autre_partie(donnees_jeu, mj_pret, monkeypatch):
+    sans_moteur = ouvrir(donnees_jeu).post("/api/banc")
+    assert sans_moteur.status_code == 409 and "introuvable" in sans_moteur.json()["detail"]
+    monkeypatch.setattr(jeu, "lancer", lambda camp, *a, entree, sortie, **k: entree("> "))
+    fausse_campagne("neo-tokyo")
+    client = ouvrir(donnees_jeu, mj_pret)
+    client.post("/api/partie/reprendre", json={"nom": "neo-tokyo"})
+    attendre(lambda: client.get("/api/partie").json()["attend"])
+    assert client.post("/api/banc").status_code == 409
+    client.post("/api/partie/arreter")
+    attendre(lambda: not client.get("/api/partie").json()["actif"])
+
+
+def test_interrompre_le_banc_par_la_route_laisse_le_profil_tel_quel(donnees_jeu, mj_pret, monkeypatch):
+    from aria import banc
+    ecrit = []
+
+    def faux_banc(afficher):
+        for n in range(1000):
+            afficher(f"✓ situation {n}")
+            time.sleep(0.01)
+        ecrit.append("profil écrit")  # ne doit jamais arriver : on interrompt avant la fin
+
+    monkeypatch.setattr(banc, "qualifier", faux_banc)
+    client = ouvrir(donnees_jeu, mj_pret, sans_mj=True)
+    client.post("/api/banc")
+    attendre(lambda: client.get("/api/partie").json()["dernier"] >= 2)
+    assert client.post("/api/partie/arreter").status_code == 200
+    assert attendre(lambda: not client.get("/api/partie").json()["actif"])
+    assert ecrit == [] and client.get("/api/partie").json()["erreur"] is None

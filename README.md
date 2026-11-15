@@ -54,6 +54,8 @@ La partie est sauvegardée dans `.Aria-JDR\demo_kaito.json`.
 
 ## Le MJ : qualifier un modèle sur son PC
 
+Dans l'interface : Réglages › « Qualifier le MJ ». Depuis les sources, en console :
+
 Le MJ tourne avec [le fork PrismML de llama.cpp](https://github.com/PrismML-Eng/llama.cpp), attendu par défaut dans `%USERPROFILE%\Aria-LLM\llama-prism\`, avec les modèles dans `%USERPROFILE%\Aria-LLM\modeles\` (la liste est dans `aria/optimiseur.py`).
 
 ```bash
@@ -102,7 +104,7 @@ Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque re
 
 ## L'exe portable
 
-> Cette version de l'exe ouvre l'interface web, où l'on gère ses campagnes, sa corbeille et ses personnages, où l'on reprend ou commence une campagne et où l'on crée un personnage, avec le MJ de ce PC. Le banc d'essai n'y est pas encore. Le menu décrit ici est celui de la console (`python -m aria`, depuis les sources), qui garde aussi le banc et la démo sans MJ.
+> Cette version de l'exe ouvre l'interface web, où l'on gère ses campagnes, sa corbeille et ses personnages, où l'on reprend ou commence une campagne et où l'on crée un personnage, avec le MJ de ce PC, qualifié depuis les Réglages. Le menu décrit ici est celui de la console (`python -m aria`, depuis les sources), qui garde aussi la démo sans MJ.
 
 `Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu :
 
@@ -157,7 +159,7 @@ Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 
 ## Limites à connaître
 
-- **L'interface web n'a pas encore le banc d'essai** : qualifier (ou requalifier) le MJ se fait pour l'instant dans la console (`python -m aria`, depuis les sources), pas avec l'exe. Sans MJ qualifié, l'interface ne démarre aucune partie.
+- **Sans MJ qualifié, l'interface ne démarre aucune partie** : au premier lancement, qualifie-le dans les Réglages (plus d'une heure, avec le serveur du MJ qui occupe la carte graphique). Interrompre la qualification laisse le profil actuel tel quel.
 - **Une seule partie à la fois**, et la réponse du MJ arrive d'un bloc, après quelques dizaines de secondes, pas mot à mot. Fermer l'onglet n'arrête pas la partie : elle continue côté serveur, et la page la reprend quand on la rouvre. Pour l'arrêter, utilise « Interrompre la partie » ou « Quitter la session ».
 - **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
 - **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.

@@ -30,8 +30,7 @@
       <h2>Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.</h2>
       <p id="mj" class="mj">…</p>
       <p>Reprends une campagne ou commence-en une dans <em>Campagnes</em>, prépare un personnage dans <em>Personnages</em>.
-        Le banc d'essai du MJ arrive dans cette interface ; en attendant, il se lance depuis la console :
-        <code>python -m aria</code>.</p>
+        Le MJ se qualifie dans <em>Réglages</em>, une fois par PC.</p>
     </section>
 
     <section class="panneau" id="campagnes">
@@ -103,13 +102,17 @@
         <button type="button" class="secondaire" data-commande="pistes">Pistes</button>
         <button type="button" class="secondaire" data-commande="quitter">Quitter la session</button>
       </div>
-      <button type="button" class="secondaire" id="interrompre" hidden>Interrompre la partie</button>
+      <button type="button" class="secondaire" id="interrompre" hidden>Interrompre</button>
     </section>
 
     <section class="panneau" id="reglages">
       <h2>Réglages</h2>
       <h3>Le MJ de ce PC</h3>
       <p id="mj-detail" class="mj">…</p>
+      <p class="note">La qualification fait jouer au MJ des dizaines de situations pour trouver le plus petit budget de réflexion qui tient les
+        règles, puis le générateur d'univers : <strong>plus d'une heure</strong>, et le serveur du MJ occupe la carte graphique
+        (ses besoins en VRAM libre sont dits au début). Le profil actuel n'est remplacé que si un modèle passe.</p>
+      <button type="button" id="qualifier">Qualifier le MJ</button>
       <button type="button" id="ouvrir-donnees" class="secondaire">Ouvrir le dossier des données</button>
       <p class="statut" id="statut-reglages" role="status"></p>
       <form id="formulaire">
