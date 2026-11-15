@@ -46,16 +46,22 @@ New-Item -ItemType Directory -Path $sortie -Force | Out-Null
 $ErrorActionPreference = 'Continue'
 $versionPython = "$(& $python --version 2>&1)".Trim()
 $versionPyInstaller = "$(& $python -m PyInstaller --version 2>&1)".Trim()
-& $python -m PyInstaller --noconfirm --clean --onefile --console `
+$versionFastApi = "$(& $python -c 'import fastapi; print(fastapi.__version__)' 2>&1)".Trim()
+$versionUvicorn = "$(& $python -c 'import uvicorn; print(uvicorn.__version__)' 2>&1)".Trim()
+& $python -m PyInstaller --noconfirm --clean --onefile --noconsole `
     --name Aria-JDR `
     --icon $icone `
     --runtime-tmpdir '%USERPROFILE%\.Aria-JDR\cache' `
+    --collect-submodules uvicorn `
     --paths $racine `
     --specpath $pyinstaller --workpath $pyinstaller --distpath $sortie `
     --add-data "$racine\univers;univers" `
     --add-data "$racine\bibliotheque;bibliotheque" `
     --add-data "$racine\aria\prompts;aria\prompts" `
-    (Join-Path $racine 'aria\__main__.py')
+    --add-data "$racine\appli\statique;appli\statique" `
+    --add-data "$racine\docs\logo.svg;docs" `
+    --add-data "$racine\pyproject.toml;." `
+    (Join-Path $racine 'appli\__main__.py')
 $code = $LASTEXITCODE
 $ErrorActionPreference = 'Stop'
 if ($code -ne 0) { throw "La construction d'Aria JDR a échoué." }
@@ -64,5 +70,5 @@ $exe = Join-Path $sortie 'Aria-JDR.exe'
 if (-not (Test-Path -LiteralPath $exe)) { throw "Aria-JDR.exe est absent de .work\sortie\ après la construction." }
 
 [IO.File]::WriteAllLines((Join-Path $work 'outils.txt'),
-    [string[]]@($versionPython, "PyInstaller : $versionPyInstaller"), (New-Object Text.UTF8Encoding($false)))
+    [string[]]@($versionPython, "PyInstaller : $versionPyInstaller", "FastAPI : $versionFastApi", "uvicorn : $versionUvicorn"), (New-Object Text.UTF8Encoding($false)))
 Write-Host "Prêt : $exe ($([math]::Round((Get-Item -LiteralPath $exe).Length / 1MB, 1)) Mo)"

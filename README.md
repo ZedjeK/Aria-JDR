@@ -16,13 +16,13 @@ Les règles du jeu sont dans [REGLES.md](REGLES.md).
 
 ## Avant de commencer
 
-Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDIA fait tourner le MJ : la seule essayée est une RTX 4080 SUPER (16 Gio), avec Qwen3.8 27B. Le serveur llama et les modèles ne sont pas dans l'exe (plusieurs Go) : voir « L'exe portable ». Le jeu n'ouvre aucune connexion vers Internet.
+Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDIA fait tourner le MJ : la seule essayée est une RTX 4080 SUPER (16 Gio), avec Qwen3.8 27B. Le serveur llama et les modèles ne sont pas dans l'exe (plusieurs Go) : voir « L'exe portable ». Le jeu n'ouvre aucune connexion vers Internet : son interface s'ouvre dans ton navigateur, mais elle est servie par ton PC, sur `127.0.0.1:8420`.
 
 ## Installation
 
 1. Télécharge `Aria-JDR-<version>.zip` depuis la page des versions.
 2. Décompresse d'abord le zip en entier : clic droit, « Extraire tout ». Choisis un dossier stable (pas Téléchargements). Ne lance pas l'exe depuis l'aperçu du zip dans l'Explorateur : Windows n'en extrait que l'exe, sans les fichiers livrés à côté de lui.
-3. Lance `Aria-JDR.exe`.
+3. Lance `Aria-JDR.exe` : l'interface s'ouvre dans ton navigateur par défaut. Relancer l'exe rouvre l'interface déjà ouverte au lieu d'en démarrer une seconde.
 
 L'exe n'est pas signé : Windows peut afficher « Windows a protégé votre ordinateur ». Clique sur « Informations complémentaires », puis sur « Exécuter quand même ». Il n'y a ni installation ni mise à jour automatique : pour changer de version, décompresse le nouveau zip et remplace l'exe ; tes parties restent dans `%USERPROFILE%\.Aria-JDR`.
 
@@ -39,7 +39,7 @@ Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier
 
 ```bash
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install pytest
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 ## Jouer la démo
@@ -102,6 +102,8 @@ Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque re
 
 ## L'exe portable
 
+> Cette version de l'exe ouvre l'interface web, qui n'a pas encore les écrans ci-dessous : ils viennent un lot après l'autre. Le menu décrit ici est celui de la console (`python -m aria`, depuis les sources).
+
 `Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu :
 
 - **Nouvelle campagne** : son nom, son genre, son cadre (écrit par toi, ou proposé par le MJ) et son ton, puis l'univers, le personnage (créé sur place, ou pris parmi tes personnages prêts pour ce genre) et l'amorce ;
@@ -136,23 +138,27 @@ Tout est dans `%USERPROFILE%\.Aria-JDR`, que tu lances l'exe ou les sources :
 - `banc_*.json`, `banc_generateur.json` : le détail des bancs d'essai ;
 - `serveur_*.log` : les journaux du serveur llama ;
 - `cache\` : là où l'exe se décompresse pendant qu'il tourne ;
-- `demo_kaito.json` : la sauvegarde de la démo.
+- `demo_kaito.json` : la sauvegarde de la démo ;
+- `reglages.json` : les réglages de l'interface (le fond animé) ;
+- `journal.json` : les 500 dernières opérations de l'interface ;
+- `sauvegardes\` : une copie datée de `reglages.json` avant chaque modification ;
+- `secrets\` : le port et le jeton de l'instance en cours, chiffrés pour ton compte Windows, effacés à l'arrêt.
 
-Aucun secret n'y est gardé. Supprimer ce dossier remet le jeu à neuf (parties comprises : copie d'abord `campagnes\` et `personnages\` si tu y tiens).
+Aucun mot de passe ni clé n'y est gardé. Supprimer ce dossier remet le jeu à neuf (parties comprises : copie d'abord `campagnes\` et `personnages\` si tu y tiens).
 
 ## Sécurité
 
 - **Droits** : le jeu se lance sans droits administrateur.
-- **Connexions sortantes** : aucune vers Internet. Le jeu lance le serveur llama sur ton PC et lui parle sur `127.0.0.1:8080`, rien d'autre.
-- **Secrets** : le jeu n'en garde aucun.
+- **Connexions sortantes** : aucune vers Internet. Le jeu écoute sur `127.0.0.1:8420` pour son interface, lance le serveur llama sur ton PC et lui parle sur `127.0.0.1:8080`, rien d'autre. Il lance ton navigateur par défaut pour ouvrir l'interface.
+- **Interface locale** : elle ne s'ouvre que par l'appli. Un jeton tiré au hasard à chaque lancement est exigé à chaque requête, et les en-têtes `Host` et `Origin` sont vérifiés : une page web ouverte dans ton navigateur ne peut pas la piloter.
+- **Secrets** : le jeu ne garde que le port et le jeton de l'instance en cours, chiffrés par la protection des données de Windows (DPAPI) et effacés à l'arrêt. Cette protection ne joue pas contre un programme lancé sous le même compte Windows.
 
 Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 
 ## Limites à connaître
 
-- **Pas de fenêtre** : le jeu se joue dans une console, avec un menu texte.
+- **L'interface web n'a pas encore les écrans de jeu** : campagnes, personnages, partie et banc se jouent pour l'instant dans la console (`python -m aria`, depuis les sources), pas avec l'exe.
 - **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
-- **Le dossier de données ne suit pas encore le contrat commun des applis Aria** : pas de `reglages.json`, de `journal.json` ni de `sauvegardes\`.
 - **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.
 - **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.
 - **Le MJ est un LLM** : le moteur tire les dés et tient les chiffres, mais la narration peut se tromper ou s'écarter de la scène.
@@ -164,7 +170,7 @@ Projet personnel, sans audit de sécurité indépendant.
 
 ## Provenance des composants
 
-L'exe embarque l'interpréteur Python et ses bibliothèques natives, ainsi que le chargeur de PyInstaller : le détail est dans [LICENCES-TIERS.txt](LICENCES-TIERS.txt). Le serveur llama et les modèles, que tu télécharges toi-même, ont leurs propres licences : lis-les avant de les utiliser.
+L'exe embarque l'interpréteur Python et ses bibliothèques natives, le chargeur de PyInstaller, FastAPI, uvicorn et leurs dépendances, et les polices Space Grotesk et IBM Plex Mono : le détail est dans [LICENCES-TIERS.txt](LICENCES-TIERS.txt). Le serveur llama et les modèles, que tu télécharges toi-même, ont leurs propres licences : lis-les avant de les utiliser.
 
 ## Compiler soi-même
 
@@ -172,7 +178,7 @@ Il faut Python 3.11 ou plus. Une fois, depuis la racine du dépôt :
 
 ```powershell
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install pytest pyinstaller==6.22.3
+.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 Puis :
@@ -187,6 +193,7 @@ L'exe est dans `.work\sortie\Aria-JDR.exe`. `.	ools\empaqueter.ps1` en fait le z
 
 ```
 aria/           le moteur, le MJ, la table, les bancs ; aria/prompts/ : les prompts du MJ
+appli/          l'interface web locale : serveur FastAPI, données, coffre, instance unique ; appli/statique/ : la page
 univers/        les univers en JSON
 bibliotheque/   parcours, armes, armures, implants, véhicules, magie
 tests/          les tests (pytest)

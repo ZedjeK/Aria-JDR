@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aria JDR</title>
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <!-- Le fond animé couvre la zone principale seulement, jamais le menu latéral : les panneaux sont opaques -->
+  <aside class="menu">
+    <img class="logo" src="/logo.svg" alt="Logo d'Aria JDR" width="56" height="56">
+    <h1>Aria JDR</h1>
+    <nav>
+      <a href="#accueil" class="actif">Accueil</a>
+      <a href="#reglages">Réglages</a>
+    </nav>
+    <p class="version" id="version"></p>
+    <button id="quitter" type="button" class="secondaire">Quitter</button>
+  </aside>
+
+  <main class="zone">
+    <canvas id="fond" aria-hidden="true"></canvas>
+
+    <section class="panneau" id="accueil">
+      <h2>Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.</h2>
+      <p id="mj" class="mj">…</p>
+      <p>Les campagnes, les personnages, la partie et le banc d'essai arrivent dans cette interface, un écran après
+        l'autre. En attendant, le jeu se joue dans la console : <code>python -m aria</code>.</p>
+    </section>
+
+    <section class="panneau" id="reglages">
+      <h2>Réglages</h2>
+      <form id="formulaire">
+        <h3>Fond animé</h3>
+        <label class="ligne"><input type="checkbox" id="fond-actif"> Fond animé</label>
+        <label class="ligne">Vitesse
+          <select id="fond-vitesse">
+            <option value="lente">Lente</option>
+            <option value="normale">Normale</option>
+            <option value="rapide">Rapide</option>
+          </select>
+        </label>
+        <label class="ligne">Éléments par passage, au moins
+          <input type="number" id="fond-minimum" min="1" max="12">
+        </label>
+        <label class="ligne">et au plus
+          <input type="number" id="fond-maximum" min="1" max="12">
+        </label>
+        <button type="submit">Enregistrer</button>
+        <p id="message" role="status"></p>
+      </form>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

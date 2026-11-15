@@ -31,6 +31,28 @@ OpenSSL (libssl, libcrypto), libffi, bzip2, liblzma, runtime Visual C++
   Vérification : voir Python ci-dessus. Les versions exactes ne sont pas
                  relevées par ce dépôt.
 
+Interface web locale
+---------------------
+
+FastAPI, uvicorn et leurs dépendances, copiés dans l'exe avec les modules Python qu'ils fournissent :
+  FastAPI 0.129 (MIT), Starlette 0.52 (BSD-3-Clause), uvicorn 0.41 (BSD-3-Clause), pydantic 2.12 et pydantic-core 2.41 (MIT),
+  annotated-types (MIT), annotated-doc (MIT), typing-extensions (PSF-2.0), typing-inspection (MIT), anyio (MIT),
+  idna (BSD-3-Clause), h11 (MIT), click (BSD-3-Clause), colorama (BSD-3-Clause)
+  Version      : celle installée à la construction ; FastAPI et uvicorn sont dans BUILDINFO.txt, les autres ne sont pas
+                 relevées. Les numéros ci-dessus sont ceux du poste de l'auteur au 2026-11-15.
+  Source       : PyPI, page de chaque projet
+  Licence      : celle indiquée à côté de chacun, lue dans les métadonnées des paquets installés
+  Vérification : exigences dans requirements.txt, installées par pip. Aucune empreinte n'est verrouillée.
+
+Polices
+-------
+
+Space Grotesk (500, 600, 700) et IBM Plex Mono (400, 500, 600), alphabet latin
+  Version      : fichiers .woff2 au format Fontsource, copiés d'Aria Pilote ; la version n'est pas relevée
+  Source       : https://github.com/floriankarsten/space-grotesk et https://github.com/IBM/plex
+  Licence      : SIL Open Font License 1.1 (les textes sont dans appli/statique/polices)
+  Vérification : aucune empreinte publiée n'a été comparée
+
 PyInstaller
 -----------
 
@@ -47,5 +69,5 @@ PyInstaller (outil de construction, dont le chargeur est copié dans l'exe)
 Autres composants
 -----------------
 
-Aucun. Le serveur llama (fork PrismML de llama.cpp) et les modèles ne sont pas
+Aucun autre. Le serveur llama (fork PrismML de llama.cpp) et les modèles ne sont pas
 embarqués : l'utilisateur les télécharge lui-même, et chacun a sa licence.
