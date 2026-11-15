@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Moteur de JDR solo avec un MJ LLM local, sur un socle de règles d100 multi-univers."
 license = "MIT"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["fastapi>=0.129", "uvicorn>=0.41"]
 
 [project.optional-dependencies]
-dev = ["pytest>=9"]
+dev = ["pytest>=9", "httpx>=0.28.1"]
 # Pour construire l'exe portable (build.ps1).
 exe = ["pyinstaller==6.22.3"]
 

@@ -1,0 +1,7 @@
+# Exécution : l'interface web locale
+fastapi>=0.129
+uvicorn>=0.41
+# Tests (le TestClient de FastAPI demande httpx) et construction de l'exe
+httpx>=0.28.1
+pytest>=9
+pyinstaller==6.22.3
