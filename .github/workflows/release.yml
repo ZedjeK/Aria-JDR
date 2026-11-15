@@ -1,0 +1,83 @@
+# Release : un tag vX.Y.Z construit l'exe portable et crée la release EN BROUILLON.
+# La publication reste un geste de l'auteur : on relit le brouillon, puis on publie.
+#
+# - Tag poussé : tests, construction, vérifications, brouillon avec l'exe et son empreinte.
+# - Lancement à la main (workflow_dispatch) : le même essai sans rien publier, pour s'assurer que la
+#   construction passe avant de poser le tag.
+#
+# Le jeton d'écriture n'est donné qu'à l'étape qui crée le brouillon ; aucun champ du tag n'est
+# interpolé dans une commande : il passe par une variable d'environnement.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exe:
+    runs-on: windows-latest
+    # Écriture : seulement pour créer le brouillon. Le jeton n'est lu que par l'étape « Créer le brouillon ».
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"  # la version minimale du projet (requires-python)
+
+      - name: Vérifier le tag, la version et les notes
+        shell: pwsh
+        env:
+          TAG_DU_PUSH: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          $version = python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"
+          $tag = if ($env:TAG_DU_PUSH) { $env:TAG_DU_PUSH } else { "v$version" }  # essai à la main : le tag attendu
+          if ($tag -ne "v$version") { throw "Le tag $tag ne correspond pas à la version $version de pyproject.toml." }
+          if (-not (Test-Path "docs/releases/$tag.md")) { throw "Les notes docs/releases/$tag.md manquent." }
+          if ($env:TAG_DU_PUSH) {
+            # Le commit du tag doit être dans main : un tag posé sur une branche non relue ne publie rien
+            git fetch origin main
+            git merge-base --is-ancestor HEAD origin/main
+            if ($LASTEXITCODE -ne 0) { throw "Le commit du tag n'est pas dans main." }
+          }
+          "TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Installer pytest et PyInstaller
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install "pytest>=9" pyinstaller==6.22.3
+
+      - name: Lancer les tests
+        run: .venv\Scripts\python.exe -m pytest
+
+      - name: Construire l'exe
+        shell: pwsh
+        run: ./construire.ps1
+
+      - name: Calculer l'empreinte
+        shell: pwsh
+        run: |
+          $exe = "dist/Aria-JDR.exe"
+          if (-not (Test-Path $exe)) { throw "L'exe n'a pas été construit." }
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  Aria-JDR.exe" | Out-File -FilePath "dist/Aria-JDR.exe.sha256" -Encoding ascii
+          Get-Content "dist/Aria-JDR.exe.sha256"
+
+      - name: Créer le brouillon
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:TAG --draft --verify-tag --title "Aria-JDR $($env:TAG.TrimStart('v'))" `
+            --notes-file "docs/releases/$env:TAG.md" "dist/Aria-JDR.exe" "dist/Aria-JDR.exe.sha256"
