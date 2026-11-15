@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/logo.png" width="160" alt="Logo d'Aria JDR : un A néon glitché avec un dé à dix faces orange">
+  <img src="docs/logo.png" width="160" alt="Logo d'Aria JDR : un A néon glitché avec un d20 orange">
 </p>
 
 <h1 align="center">Aria JDR</h1>
