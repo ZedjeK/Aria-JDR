@@ -1,4 +1,12 @@
-# Aria-JDR
+<p align="center">
+  <img src="docs/logo.png" width="160" alt="Logo d'Aria JDR : un A néon glitché avec un dé à dix faces orange">
+</p>
+
+<h1 align="center">Aria JDR</h1>
+
+<p align="center">
+  Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.
+</p>
 
 [![Tests](https://github.com/ZedjeK/Aria-JDR/actions/workflows/tests.yml/badge.svg)](https://github.com/ZedjeK/Aria-JDR/actions/workflows/tests.yml)
 

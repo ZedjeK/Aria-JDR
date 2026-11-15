@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Logo d'Aria JDR : un A néon glitché avec un dé orange à la place de la barre">
+  <defs>
+    <!-- Le A néon : deux jambages, et une barre brisée par le dé -->
+    <g id="a" fill="none" stroke-linecap="square">
+      <path id="jambes" d="M168 372 L256 132 L344 372"/>
+      <path id="barre" d="M196 300 H218 M294 300 H316"/>
+    </g>
+    <clipPath id="coupe-haute"><rect x="0" y="196" width="512" height="20"/></clipPath>
+    <clipPath id="coupe-basse"><rect x="0" y="326" width="512" height="14"/></clipPath>
+  </defs>
+
+  <rect width="512" height="512" fill="#030812"/>
+  <polygon points="150,36 362,36 476,150 476,362 362,476 150,476 36,362 36,150" fill="#06101f" stroke="#5c8bff" stroke-width="12"/>
+
+  <!-- Le A : halo bleu décalé, trait cyan, cœur clair -->
+  <use href="#a" stroke="#5c8bff" stroke-width="34" opacity=".55" transform="translate(8 6)"/>
+  <use href="#a" stroke="#7df9ff" stroke-width="26"/>
+  <use href="#a" stroke="#ddebff" stroke-width="8"/>
+
+  <!-- Le glitch : deux tranches du A décalées de part et d'autre -->
+  <g clip-path="url(#coupe-haute)">
+    <use href="#a" stroke="#7df9ff" stroke-width="26" transform="translate(14 0)"/>
+    <use href="#a" stroke="#ddebff" stroke-width="8" transform="translate(14 0)"/>
+  </g>
+  <g clip-path="url(#coupe-basse)">
+    <use href="#a" stroke="#5c8bff" stroke-width="26" transform="translate(-12 0)"/>
+    <use href="#a" stroke="#ddebff" stroke-width="8" transform="translate(-12 0)"/>
+  </g>
+
+  <!-- L'élément orange : un dé à dix faces, celui des jets de cent, à la place de la barre du A -->
+  <g transform="translate(256 302)">
+    <polygon points="0,-44 36,-2 0,46 -36,-2" fill="#ff8a1f" opacity=".30" transform="translate(4 3)"/>
+    <polygon points="0,-44 36,-2 0,46 -36,-2" fill="#06101f" stroke="#ff8a1f" stroke-width="10" stroke-linejoin="miter"/>
+    <path d="M0 -44 V-2 M-36 -2 H36 M0 -2 L-36 -2 M0 -2 L0 46" fill="none" stroke="#ff8a1f" stroke-width="5"/>
+    <path d="M0 -2 L-36 -2 M0 -2 L36 -2" fill="none" stroke="#ff8a1f" stroke-width="5"/>
+  </g>
+</svg>

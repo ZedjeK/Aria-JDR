@@ -7,7 +7,7 @@ jour quand l'appli change.
 | --- | --- |
 | Nom | Aria JDR (dépôt et exe : `Aria-JDR`) |
 | Promesse | Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles. |
-| Élément orange du logo | proposé : un dé à cent faces, à valider avec le logo |
+| Élément orange du logo | un dé à dix faces, celui des jets de cent, à la place de la barre du A |
 | Fond animé | aucun pour l'instant : le jeu n'a pas de fenêtre. Il se définira avec elle |
 | Stack | Python 3.11 ou plus, aucune dépendance à l'exécution, exe PyInstaller en un seul fichier (console). La stack `python-fastapi` du modèle n'existe pas encore |
 | Droits administrateur | non |
