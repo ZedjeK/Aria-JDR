@@ -69,6 +69,18 @@ button.secondaire:hover { color: var(--rouge); border-color: var(--rouge); backg
 :focus-visible { outline: 2px solid var(--ambre); outline-offset: 2px; }
 .arret { padding: 24px; }
 .mj { color: var(--texte-2); }
+.note { color: var(--texte-2); font-size: 14px; }
+.liste { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.liste li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px;
+            background: var(--fond); border: 1px solid var(--ligne); }
+.liste .titre { font-weight: 700; }
+.liste .detail { color: var(--texte-2); font-size: 14px; }
+.liste .vide { color: var(--texte-2); justify-content: flex-start; }
+.liste button { margin: 0; padding: 4px 12px; }
+.etat-mort { color: var(--rouge); }
+.etat-terminee { color: var(--ambre); }
+.statut { min-height: 1.5em; color: var(--texte-2); }
+.statut.erreur { color: var(--rouge); }
 .mj.ok { color: var(--cyan); }
 #message { min-height: 1.5em; color: var(--texte-2); }
 #message.erreur { color: var(--rouge); }

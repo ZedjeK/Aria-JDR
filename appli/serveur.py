@@ -3,7 +3,6 @@
 Chaque appli ajoute ses routes ici. Les lectures sont des GET ; tout ce qui modifie quelque chose est un POST ou un PUT.
 """
 
-import json
 from collections.abc import Callable
 from pathlib import Path
 
@@ -11,13 +10,16 @@ from fastapi import Body, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from appli import donnees, fond, identite, securite
+from appli import donnees, fond, gestion, identite, securite
 
 
-def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callable[[], None] | None = None) -> FastAPI:
-    """`racine` : le dossier de données (celui de l'utilisateur par défaut) ; `arreter` : ce que fait « Quitter »."""
+def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callable[[], None] | None = None,
+              profil_valide: Callable[[], dict | None] | None = None, moteur: Callable[[], Path] | None = None) -> FastAPI:
+    """`racine` : le dossier de données de l'appli (celui de l'utilisateur par défaut) ; `arreter` : ce que fait « Quitter » ;
+    `profil_valide` et `moteur` : ce que disent le banc et le dossier du serveur llama (remplaçables dans les tests)."""
     app = FastAPI(title=identite.NOM, version=identite.version(), docs_url=None, redoc_url=None, openapi_url=None)
     securite.installer(app, port, jeton)
+    app.include_router(gestion.routeur(racine, profil_valide, moteur))
 
     @app.get("/api/etat")
     def etat():
@@ -40,16 +42,6 @@ def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callab
             raise HTTPException(500, f"Réglages non enregistrés : {erreur.strerror or erreur}") from erreur
         donnees.noter("réglages", "Réglages enregistrés.", racine)
         return nouveaux.en_dict()
-
-    @app.get("/api/mj")
-    def mj():
-        """Le MJ retenu sur ce PC (profil_mj.json, écrit par le banc) ; « qualifie » est faux tant que le banc n'a pas tourné."""
-        fichier = (Path(racine) if racine is not None else identite.dossier_donnees()) / "profil_mj.json"
-        try:
-            profil = json.loads(fichier.read_text(encoding="utf-8"))
-            return {"qualifie": True, "modele": str(profil["modele"]), "budget_reflexion": int(profil["budget_reflexion"])}
-        except (OSError, ValueError, KeyError, TypeError):
-            return {"qualifie": False}
 
     @app.get("/api/fond")
     def lire_fond():

@@ -13,6 +13,8 @@ sont dans `docs/releases/`.
 
 - L'interface web locale d'Aria JDR, sur le squelette `python-fastapi` du modèle : serveur sur `127.0.0.1:8420` gardé par un jeton, réglages (dont le fond animé de d20), journal, sauvegardes, instance unique. Les écrans de jeu viennent ensuite.
 
+- La gestion dans l'interface : les campagnes (avec l'étape où en est chacune), la corbeille (restaurer, vider), les personnages prêts, le MJ retenu sur ce PC et le dossier des données.
+
 ### Modifié
 
 - L'exe ouvre l'interface web dans le navigateur au lieu du menu en console, qui reste disponible depuis les sources (`python -m aria`). L'exe n'a donc pas encore les écrans de jeu.
