@@ -10,7 +10,7 @@ from fastapi import Body, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from appli import donnees, fond, gestion, identite, securite
+from appli import donnees, fond, gestion, identite, partie, securite
 
 
 def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callable[[], None] | None = None,
@@ -19,7 +19,11 @@ def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callab
     `profil_valide` et `moteur` : ce que disent le banc et le dossier du serveur llama (remplaçables dans les tests)."""
     app = FastAPI(title=identite.NOM, version=identite.version(), docs_url=None, redoc_url=None, openapi_url=None)
     securite.installer(app, port, jeton)
-    app.include_router(gestion.routeur(racine, profil_valide, moteur))
+    profil_valide = profil_valide or gestion.lire_profil_valide
+    moteur = moteur or gestion.chercher_moteur
+    app.state.partie = session = partie.Partie(racine)
+    app.include_router(gestion.routeur(racine, profil_valide, moteur, session))
+    app.include_router(partie.routeur(session, profil_valide, moteur))
 
     @app.get("/api/etat")
     def etat():
@@ -54,6 +58,8 @@ def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callab
     def quitter():
         if arreter is None:
             raise HTTPException(409, "Cette appli ne sait pas s'arrêter seule.")
+        if session.actif:
+            raise HTTPException(409, "Une partie est ouverte : termine-la d'abord (le serveur du MJ doit être arrêté proprement).")
         donnees.noter("arrêt", "Arrêt demandé depuis l'interface.", racine)
         arreter()
         return {"arret": True}

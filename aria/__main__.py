@@ -9,7 +9,7 @@ import traceback
 from dataclasses import replace
 from pathlib import Path
 
-from aria import (banc, banc_generateur, campagne, chemins, creation_texte, demo, generateur, jeu, llm, personnages,
+from aria import (banc, banc_generateur, campagne, chemins, demo, generateur, jeu, llm, personnages,
                   trame)
 from aria.bibliotheque import GENRES
 from aria.campagne import Campagne
@@ -246,24 +246,9 @@ def nouveau_personnage(entree=input, sortie=print):
     """Crée un personnage dans l'univers de base d'un genre, puis le range. Avec le MJ s'il est disponible et
     si le joueur le veut : c'est lui qui propose le nom et la personnalité."""
     genre = choisir_genre(entree, sortie)
-    univers = personnages.univers_de_base(genre)
     cran = choisir_cran(trame.DEBUTANT, entree, sortie)
     avec_mj = entree("Charger le MJ pour qu'il propose le nom et la personnalité ? (o/n) ").strip().lower() in OUI
-    try:
-        if avec_mj and mj_disponible(entree, sortie):
-            with jeu.mj_charge() as mj:
-                if mj is None:
-                    return
-                serveur, profil, _ = mj
-                brouillon = creation_texte.Guide(univers, entree, sortie, serveur,
-                                                 banc_generateur.budget_generateur(profil), cran=cran).composer()
-        else:
-            brouillon = creation_texte.Guide(univers, entree, sortie, cran=cran).composer()
-    except creation_texte.Abandon:
-        sortie("Création abandonnée.")
-        return
-    pret = personnages.enregistrer(brouillon, genre)
-    sortie(f"\n{pret.nom} est prêt : tu pourras le prendre en lançant une nouvelle campagne de {genre}.")
+    personnages.creer(genre, cran, avec_mj and mj_disponible(entree, sortie), entree, sortie)
 
 
 # --- Les réglages ---------------------------------------------------------------------------------------

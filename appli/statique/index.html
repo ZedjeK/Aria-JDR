@@ -16,6 +16,7 @@
       <a href="#accueil" class="actif">Accueil</a>
       <a href="#campagnes">Campagnes</a>
       <a href="#personnages">Personnages</a>
+      <a href="#partie">Partie</a>
       <a href="#reglages">Réglages</a>
     </nav>
     <p class="version" id="version"></p>
@@ -28,14 +29,15 @@
     <section class="panneau" id="accueil">
       <h2>Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.</h2>
       <p id="mj" class="mj">…</p>
-      <p>Tu peux déjà voir tes campagnes, ta corbeille, tes personnages et le MJ de ce PC. La partie et le banc d'essai
-        arrivent dans cette interface, un écran après l'autre. En attendant, le jeu se joue dans la console :
+      <p>Reprends une campagne ou commence-en une dans <em>Campagnes</em>, prépare un personnage dans <em>Personnages</em>.
+        Le banc d'essai du MJ arrive dans cette interface ; en attendant, il se lance depuis la console :
         <code>python -m aria</code>.</p>
     </section>
 
     <section class="panneau" id="campagnes">
       <h2>Campagnes</h2>
-      <p class="note">Reprendre une campagne et en commencer une nouvelle arrivent avec la partie.</p>
+      <p class="note">Reprendre une campagne charge le MJ : compte quelques dizaines de secondes avant sa première réponse.</p>
+      <button type="button" id="nouvelle-campagne">Nouvelle campagne</button>
       <ul class="liste" id="liste-campagnes"></ul>
       <h3>Corbeille</h3>
       <ul class="liste" id="liste-corbeille"></ul>
@@ -45,9 +47,63 @@
 
     <section class="panneau" id="personnages">
       <h2>Personnages</h2>
-      <p class="note">Les personnages préparés à l'avance, hors campagne. En créer un arrive avec la partie.</p>
+      <p class="note">Les personnages préparés à l'avance, hors campagne : tu les prends en commençant une campagne.</p>
+      <button type="button" id="nouveau-personnage">Créer un personnage</button>
       <ul class="liste" id="liste-personnages"></ul>
       <p class="statut" id="statut-personnages" role="status"></p>
+    </section>
+
+    <section class="panneau" id="nouvelle" hidden>
+      <h2>Nouvelle campagne</h2>
+      <form id="form-nouvelle" class="formulaire">
+        <label>Nom de la campagne <input type="text" id="nv-nom" required maxlength="40" autocomplete="off"></label>
+        <p class="note">Des lettres sans accent, des chiffres et des tirets, 40 caractères au plus.</p>
+        <label>Genre <select id="nv-genre"></select></label>
+        <label>Nom de l'univers <input type="text" id="nv-univers" autocomplete="off" placeholder="vide : celui du genre"></label>
+        <label>Cadre, en une phrase <input type="text" id="nv-cadre" autocomplete="off"></label>
+        <label>Année du cadre <input type="number" id="nv-annee" placeholder="vide : le MJ la déduit"></label>
+        <label class="ligne"><input type="checkbox" id="nv-surprends"> Le MJ propose le nom et le cadre</label>
+        <label>Ton <select id="nv-ton"></select></label>
+        <label class="ligne" id="nv-magie-ligne"><input type="checkbox" id="nv-magie"> Avec de la magie</label>
+        <label>Type de campagne <select id="nv-type"></select></label>
+        <p class="note" id="nv-type-desc"></p>
+        <label>Personnage <select id="nv-perso"></select></label>
+        <label id="nv-cran-ligne">Expérience de départ <select id="nv-cran"></select></label>
+        <button type="submit">Commencer</button>
+        <button type="button" class="secondaire" id="nv-annuler">Annuler</button>
+        <p class="statut" id="statut-nouvelle" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panneau" id="creer-personnage" hidden>
+      <h2>Créer un personnage</h2>
+      <form id="form-personnage" class="formulaire">
+        <label>Genre <select id="pe-genre"></select></label>
+        <label>Expérience de départ <select id="pe-cran"></select></label>
+        <label class="ligne"><input type="checkbox" id="pe-mj"> Le MJ propose le nom et la personnalité (charge le MJ)</label>
+        <button type="submit">Commencer</button>
+        <button type="button" class="secondaire" id="pe-annuler">Annuler</button>
+        <p class="statut" id="statut-personnage" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panneau large" id="partie">
+      <h2 id="partie-titre">Partie</h2>
+      <div id="journal" class="journal" role="log" aria-live="polite" tabindex="0"></div>
+      <p class="statut" id="partie-etat" role="status">Aucune partie n'est ouverte.</p>
+      <form id="saisie" class="saisie">
+        <input type="text" id="saisie-texte" autocomplete="off" disabled aria-label="Ta réponse">
+        <button type="submit" id="saisie-envoyer" disabled>Envoyer</button>
+      </form>
+      <div class="commandes" id="commandes" hidden>
+        <button type="button" class="secondaire" data-commande="etat">État</button>
+        <button type="button" class="secondaire" data-commande="inventaire">Inventaire</button>
+        <button type="button" class="secondaire" data-commande="carte">Carte</button>
+        <button type="button" class="secondaire" data-commande="monde">Monde</button>
+        <button type="button" class="secondaire" data-commande="pistes">Pistes</button>
+        <button type="button" class="secondaire" data-commande="quitter">Quitter la session</button>
+      </div>
+      <button type="button" class="secondaire" id="interrompre" hidden>Interrompre la partie</button>
     </section>
 
     <section class="panneau" id="reglages">

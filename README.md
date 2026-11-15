@@ -102,7 +102,7 @@ Le MJ écrit sa mémoire avec ses outils, et le moteur la vérifie. À chaque re
 
 ## L'exe portable
 
-> Cette version de l'exe ouvre l'interface web, qui a déjà la gestion (voir les campagnes, la corbeille, les personnages prêts et le MJ de ce PC) mais pas encore la partie, la création d'une campagne ou d'un personnage, ni le banc : ils viennent un lot après l'autre. Le menu décrit ici est celui de la console (`python -m aria`, depuis les sources).
+> Cette version de l'exe ouvre l'interface web, où l'on gère ses campagnes, sa corbeille et ses personnages, où l'on reprend ou commence une campagne et où l'on crée un personnage, avec le MJ de ce PC. Le banc d'essai n'y est pas encore. Le menu décrit ici est celui de la console (`python -m aria`, depuis les sources), qui garde aussi le banc et la démo sans MJ.
 
 `Aria-JDR.exe` regroupe tout dans un seul fichier, avec un menu :
 
@@ -157,7 +157,8 @@ Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 
 ## Limites à connaître
 
-- **L'interface web n'a pas encore la partie** : elle liste les campagnes (qu'elle peut mettre à la corbeille et restaurer), les personnages prêts et le MJ de ce PC, mais reprendre une campagne, en commencer une, créer un personnage et qualifier le MJ se font pour l'instant dans la console (`python -m aria`, depuis les sources), pas avec l'exe.
+- **L'interface web n'a pas encore le banc d'essai** : qualifier (ou requalifier) le MJ se fait pour l'instant dans la console (`python -m aria`, depuis les sources), pas avec l'exe. Sans MJ qualifié, l'interface ne démarre aucune partie.
+- **Une seule partie à la fois**, et la réponse du MJ arrive d'un bloc, après quelques dizaines de secondes, pas mot à mot. Fermer l'onglet n'arrête pas la partie : elle continue côté serveur, et la page la reprend quand on la rouvre. Pour l'arrêter, utilise « Interrompre la partie » ou « Quitter la session ».
 - **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
 - **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.
 - **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.

@@ -14,12 +14,12 @@ from fastapi import APIRouter, Body, HTTPException
 from appli import donnees
 
 
-def _profil_valide() -> dict | None:
+def lire_profil_valide() -> dict | None:
     from aria import banc
     return banc.profil_valide()
 
 
-def _moteur() -> Path:
+def chercher_moteur() -> Path:
     from aria import llm
     return llm.MOTEUR
 
@@ -70,11 +70,12 @@ def decrire_personnage(pret) -> dict:
 
 
 def routeur(racine: Path | None = None, profil_valide: Callable[[], dict | None] | None = None,
-            moteur: Callable[[], Path] | None = None) -> APIRouter:
+            moteur: Callable[[], Path] | None = None, partie=None) -> APIRouter:
     """Les routes de la gestion. `racine` : le dossier de données de l'appli (le journal) ; `profil_valide` et `moteur` :
-    ce que dit le banc et où est le serveur llama, remplaçables dans les tests."""
-    profil_valide = profil_valide or _profil_valide
-    moteur = moteur or _moteur
+    ce que dit le banc et où est le serveur llama, remplaçables dans les tests ; `partie` : la partie en cours, dont on
+    ne jette pas la campagne."""
+    profil_valide = profil_valide or lire_profil_valide
+    moteur = moteur or chercher_moteur
     api = APIRouter(prefix="/api")
 
     @api.get("/mj")
@@ -104,6 +105,8 @@ def routeur(racine: Path | None = None, profil_valide: Callable[[], dict | None]
         from aria import campagne
         if nom not in campagne.noms():
             raise HTTPException(404, "Cette campagne n'existe pas.")
+        if partie is not None and partie.actif and partie.campagne == nom:
+            raise HTTPException(409, "On joue cette campagne en ce moment : termine la partie d'abord.")
         campagne.supprimer(nom)
         donnees.noter("campagne", f"Campagne « {nom} » mise à la corbeille.", racine)
         return {"nom": nom}
