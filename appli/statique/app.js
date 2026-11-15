@@ -249,6 +249,12 @@ champ("vider-corbeille").addEventListener("click", () => {
   }
 });
 
+champ("qualifier").addEventListener("click", () => {
+  if (confirm("Qualifier le MJ prend plus d'une heure et occupe la carte graphique. Ne lance rien de lourd pendant ce temps. Continuer ?")) {
+    demarrer("/api/banc", {}, champ("statut-reglages"));
+  }
+});
+
 champ("ouvrir-donnees").addEventListener("click", () =>
   agir(champ("statut-reglages"), "/api/donnees/ouvrir", {}, (r) => `Dossier ouvert : ${r.dossier}`));
 
@@ -256,13 +262,14 @@ async function mj() {
   const info = await api("/api/mj");
   const accueil = champ("mj");
   const detail = champ("mj-detail");
+  champ("qualifier").textContent = info.qualifie ? "Requalifier le MJ" : "Qualifier le MJ";
   if (info.qualifie) {
     accueil.textContent = `MJ retenu sur ce PC : ${info.modele}, réflexion ${info.budget_reflexion} jetons.`;
     detail.textContent = `Modèle : ${info.modele} (${info.fichier}). Réflexion : ${info.budget_reflexion} jetons par action, `
       + `${info.budget_generateur} pour créer un univers, un personnage ou une amorce.`;
   } else {
-    accueil.textContent = "Aucun MJ n'est qualifié sur ce PC : le banc d'essai le fera.";
-    detail.textContent = "Pas de MJ qualifié sur ce PC : le banc d'essai (bientôt dans cette interface) le qualifiera.";
+    accueil.textContent = "Aucun MJ n'est qualifié sur ce PC : qualifie-le dans les Réglages.";
+    detail.textContent = "Pas de MJ qualifié sur ce PC : la qualification, plus bas, le fera.";
   }
   const manque = info.moteur_present ? "" : ` Le serveur du MJ est introuvable : ${info.moteur}. Place le dossier Aria-LLM `
     + "à côté de l'exe, ou dans ton dossier d'utilisateur.";
@@ -305,7 +312,9 @@ const Partie = (() => {
     champ("interrompre").hidden = !actif;
     champ("partie-etat").textContent = !actif
       ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.")
-      : pret ? "À toi de jouer." : "Le jeu travaille… (le MJ réfléchit, parfois une minute)";
+      : pret ? "À toi de jouer."
+        : etat.nature === "banc" ? "La qualification tourne : une ligne par situation, plus d'une heure en tout."
+        : "Le jeu travaille… (le MJ réfléchit, parfois une minute)";
   }
 
   async function suivre() {
@@ -325,6 +334,7 @@ const Partie = (() => {
     } finally {
       suivi = false;
       rafraichirTout().catch(() => {});
+      mj().catch(() => {});  // un banc a pu qualifier le MJ
     }
   }
 
@@ -376,7 +386,10 @@ for (const bouton of document.querySelectorAll("[data-commande]")) {
 }
 
 champ("interrompre").addEventListener("click", async () => {
-  if (!confirm("Interrompre la partie ? La dernière sauvegarde est gardée ; ce qui n'est pas sauvegardé est perdu.")) return;
+  const banc = (await api("/api/partie")).nature === "banc";
+  if (!confirm(banc
+    ? "Interrompre la qualification ? Elle s'arrête à la fin de la situation en cours, et le profil actuel du MJ est gardé tel quel."
+    : "Interrompre la partie ? La dernière sauvegarde est gardée ; ce qui n'est pas sauvegardé est perdu.")) return;
   try { await envoyer("/api/partie/arreter", {}); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
 });
 

@@ -170,28 +170,34 @@ def budget_generateur(profil: dict) -> int | None:
     return profil.get("budget_generateur") or profil["budget_reflexion"]
 
 
+def lancer(budgets=BUDGETS, sortie=print):
+    """Qualifie le générateur avec le MJ retenu sur ce PC, et range le budget dans son profil. La ligne de commande et
+    l'interface web passent toutes deux par ici ; `sortie` est la console par défaut."""
+    profil = banc.profil_valide()
+    if profil is None:
+        sortie("Pas de MJ qualifié sur ce PC : lance d'abord le banc du MJ.")
+        return
+    modele = optimiseur.decrire(llm.DOSSIER_MODELES / profil["fichier"], profil["modele"])
+    reglages = optimiseur.Reglages(**profil["reglages"])
+    sortie(f"{modele.nom} ({reglages})")
+    with llm.Serveur(modele, reglages) as serveur:
+        if not serveur.demarrer():
+            sortie("Le serveur ne démarre pas : la carte graphique est peut-être occupée.")
+            return
+        budget, essais = qualifier(serveur, budgets, afficher=sortie)
+    enregistrer(budget, essais)
+    sortie(f"Détail : {DETAIL}")
+    sortie(f"Générateur retenu : réflexion {budget} jetons." if budget else
+           "Aucun budget ne passe : le jeu gardera celui du MJ pour créer les campagnes.")
+
+
 def main(arguments: list[str] | None = None):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(prog="aria.banc_generateur", description="Qualifier le générateur d'univers.")
     parser.add_argument("--budgets", type=int, nargs="+", default=BUDGETS)
     arguments = parser.parse_args(arguments)
-    profil = banc.profil_valide()
-    if profil is None:
-        print("Pas de MJ qualifié sur ce PC : lance d'abord le banc du MJ (python -m aria.banc).")
-        return
-    modele = optimiseur.decrire(llm.DOSSIER_MODELES / profil["fichier"], profil["modele"])
-    reglages = optimiseur.Reglages(**profil["reglages"])
-    print(f"{modele.nom} ({reglages})", flush=True)
-    with llm.Serveur(modele, reglages) as serveur:
-        if not serveur.demarrer():
-            print("Le serveur ne démarre pas : la carte graphique est peut-être occupée.")
-            return
-        budget, essais = qualifier(serveur, arguments.budgets, afficher=lambda t: print(t, flush=True))
-    enregistrer(budget, essais)
-    print(f"Détail : {DETAIL}")
-    print(f"Générateur retenu : réflexion {budget} jetons." if budget else
-          "Aucun budget ne passe : le jeu gardera celui du MJ pour créer les campagnes.")
+    lancer(arguments.budgets, lambda texte: print(texte, flush=True))
 
 
 if __name__ == "__main__":

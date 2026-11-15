@@ -72,3 +72,19 @@ def test_creer_un_personnage_abandonne_le_dit_par_la_sortie_donnee(monkeypatch):
     dits = []
     assert personnages.creer("Cyberpunk", "débutant", False, lambda invite="": "", dits.append) is None
     assert dits == ["Création abandonnée."]
+
+
+def test_le_banc_du_generateur_dit_par_la_sortie_donnee_qu_aucun_mj_n_est_qualifie(monkeypatch):
+    from aria import banc, banc_generateur
+    monkeypatch.setattr(banc, "profil_valide", lambda: None)
+    dits = []
+    banc_generateur.lancer(sortie=dits.append)
+    assert len(dits) == 1 and "Pas de MJ qualifié" in dits[0]
+
+
+def test_la_ligne_de_commande_du_banc_du_generateur_passe_par_la_meme_fonction(monkeypatch):
+    from aria import banc_generateur
+    recus = []
+    monkeypatch.setattr(banc_generateur, "lancer", lambda budgets, sortie: recus.append(budgets))
+    banc_generateur.main(["--budgets", "128", "256"])
+    assert recus == [[128, 256]]

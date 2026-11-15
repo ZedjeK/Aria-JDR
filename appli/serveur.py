@@ -59,7 +59,7 @@ def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callab
         if arreter is None:
             raise HTTPException(409, "Cette appli ne sait pas s'arrêter seule.")
         if session.actif:
-            raise HTTPException(409, "Une partie est ouverte : termine-la d'abord (le serveur du MJ doit être arrêté proprement).")
+            raise HTTPException(409, "Une partie ou un banc est en cours : termine-le d'abord (le serveur du MJ doit être arrêté proprement).")
         donnees.noter("arrêt", "Arrêt demandé depuis l'interface.", racine)
         arreter()
         return {"arret": True}

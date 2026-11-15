@@ -22,7 +22,7 @@ class PartieEnCours(Exception):
 
 
 class Partie:
-    def __init__(self, racine: Path | None = None):
+    def __init__(self, racine: Path | None = None):  # nature : « campagne », « personnage » ou « banc »
         self._racine = racine
         self._verrou = threading.Condition()
         self._fil: threading.Thread | None = None
@@ -30,7 +30,7 @@ class Partie:
         self._numero = 0
         self._reponse: str | None = None
         self.actif = False
-        self.nature = ""  # « campagne » ou « personnage »
+        self.nature = ""
         self.titre = ""
         self.campagne: str | None = None  # la campagne ouverte, qu'on ne jette pas pendant qu'on y joue
         self.attend: str | None = None  # la question posée au joueur, tant qu'elle attend sa réponse
@@ -40,6 +40,10 @@ class Partie:
     # --- Ce que le moteur utilise (depuis le fil de travail)
 
     def sortie(self, texte: str = "") -> None:
+        # Un banc ne pose aucune question : c'est sa sortie, une ligne par situation, qui lui apprend qu'on l'interrompt.
+        # Il lève EOFError au beau milieu de sa boucle ; ses `with` arrêtent le serveur du MJ en sortant.
+        if self.arret and self.nature == "banc":
+            raise EOFError
         self._ajouter("texte", str(texte))
 
     def entree(self, invite: str = "") -> str:
@@ -123,7 +127,7 @@ class Partie:
         try:
             travail(self.entree, self.sortie)
         except EOFError:
-            self.sortie("\nPartie interrompue.")
+            self._ajouter("texte", "\nInterrompu." if self.nature == "banc" else "\nPartie interrompue.")
         except Exception as erreur:  # noqa: BLE001 : le fil ne doit jamais mourir sans le dire à la page
             self.erreur = f"{type(erreur).__name__} : {erreur}"
             self.sortie(f"\nLa partie s'est arrêtée sur une erreur ({self.erreur}).")
@@ -136,14 +140,17 @@ class Partie:
             donnees.noter("partie", f"Partie terminée : {self.titre}.", self._racine)
 
 
-def _verifier_le_mj(profil_valide, moteur) -> None:
-    """Sans serveur llama ni MJ qualifié, rien ne démarre : on le dit avant de lancer le fil."""
+def _verifier_le_moteur(moteur) -> None:
     if not Path(moteur()).is_file():
         raise HTTPException(409, f"Le serveur du MJ est introuvable : {moteur()}. Place le dossier Aria-LLM à côté de l'exe, "
                                  "ou dans ton dossier d'utilisateur.")
+
+
+def _verifier_le_mj(profil_valide, moteur) -> None:
+    """Sans serveur llama ni MJ qualifié, rien ne démarre : on le dit avant de lancer le fil."""
+    _verifier_le_moteur(moteur)
     if not profil_valide():
-        raise HTTPException(409, "Pas encore de MJ qualifié sur ce PC. Le banc d'essai le qualifie : pour l'instant, "
-                                 "lance-le depuis la console (python -m aria.banc).")
+        raise HTTPException(409, "Pas encore de MJ qualifié sur ce PC : lance la qualification dans les Réglages.")
 
 
 def options_de_creation() -> dict:
@@ -184,7 +191,7 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         try:
             partie.demarrer(nature, titre, campagne, travail)
         except PartieEnCours:
-            raise HTTPException(409, "Une partie est déjà ouverte : termine-la d'abord.") from None
+            raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.") from None
         return partie.etat()
 
     @api.post("/partie/reprendre")
@@ -194,7 +201,7 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         if nom not in campagne.noms():  # un nom n'est jamais un chemin : seulement un élément de la liste du moteur
             raise HTTPException(404, "Cette campagne n'existe pas.")
         if partie.actif:
-            raise HTTPException(409, "Une partie est déjà ouverte : termine-la d'abord.")
+            raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.")
         _verifier_le_mj(profil_valide, moteur)
         return lancer("campagne", f"Campagne « {nom} »", nom,
                       lambda entree, sortie: jeu.lancer(campagne.Campagne.nommee(nom), entree=entree, sortie=sortie))
@@ -207,7 +214,7 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         from aria.bibliotheque import GENRES
         from aria.reglages import Curseur
         if partie.actif:
-            raise HTTPException(409, "Une partie est déjà ouverte : termine-la d'abord.")
+            raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.")
         nom = campagne.nom_valide(str(corps.get("nom", "")))
         if nom is None:
             raise HTTPException(400, "Le nom : 40 caractères au plus, des lettres sans accent, des chiffres et des tirets.")
@@ -263,7 +270,7 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         from aria import personnages, trame
         from aria.bibliotheque import GENRES
         if partie.actif:
-            raise HTTPException(409, "Une partie est déjà ouverte : termine-la d'abord.")
+            raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.")
         genre, cran = corps.get("genre"), corps.get("cran") or trame.DEBUTANT
         if genre not in GENRES:
             raise HTTPException(400, "Ce genre n'existe pas.")
@@ -274,6 +281,22 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
             _verifier_le_mj(profil_valide, moteur)
         return lancer("personnage", f"Nouveau personnage ({genre})", None,
                       lambda entree, sortie: personnages.creer(genre, cran, avec_mj, entree, sortie))
+
+    @api.post("/banc")
+    def banc():
+        """Qualifie le MJ de ce PC (le banc, puis celui du générateur d'univers) : plus d'une heure. Le profil actuel n'est
+        remplacé que si un modèle passe ; interrompre le banc le laisse tel quel."""
+        from aria import banc as banc_du_mj
+        from aria import banc_generateur
+        if partie.actif:
+            raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.")
+        _verifier_le_moteur(moteur)
+
+        def travail(entree, sortie):
+            if banc_du_mj.qualifier(afficher=sortie):
+                banc_generateur.lancer(sortie=sortie)  # puis le générateur d'univers, avec le modèle retenu
+
+        return lancer("banc", "Qualification du MJ", None, travail)
 
     @api.post("/partie/saisie")
     def saisie(corps: dict = Body(...)):
