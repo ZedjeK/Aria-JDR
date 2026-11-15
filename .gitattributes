@@ -1,0 +1,20 @@
+* text=auto
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.md   text
+*.json text
+*.yml  text
+# Fichiers lus tels quels par l'appli : toujours LF
+*.tmpl text eol=lf
+# Binaires embarqués : jamais de conversion
+*.png   binary
+*.ico   binary
+*.gz    binary
+*.dll   binary
+*.ttf   binary
+*.woff2 binary
+*.zip   binary
+
+# Python : sources en LF, lus tels quels par l'exe
+*.py   text eol=lf
+*.toml text eol=lf

@@ -1,0 +1,26 @@
+# Mises à jour automatiques : une PR par semaine et par écosystème, 5 ouvertes au plus, les petites montées groupées.
+# Une nouvelle version d'action n'est proposée qu'après 7 jours : le temps qu'une version piégée soit repérée et
+# retirée. Les correctifs de sécurité ne sont pas concernés par ce délai.
+# Désactivable en supprimant ce fichier.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      mises-a-jour-mineures:
+        update-types: ["minor", "patch"]
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      pip-mineures:
+        update-types: ["minor", "patch"]

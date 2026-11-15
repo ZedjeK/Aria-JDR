@@ -6,6 +6,18 @@ Application de jeu de rôle solo : on choisit son univers (fantasy, cyberpunk, p
 
 Les règles du jeu sont dans [REGLES.md](REGLES.md).
 
+## Avant de commencer
+
+Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDIA fait tourner le MJ : la seule essayée est une RTX 4080 SUPER (16 Gio), avec Qwen3.8 27B. Le serveur llama et les modèles ne sont pas dans l'exe (plusieurs Go) : voir « L'exe portable ». Le jeu n'ouvre aucune connexion vers Internet.
+
+## Installation
+
+1. Télécharge `Aria-JDR-<version>.zip` depuis la page des versions.
+2. Décompresse d'abord le zip en entier : clic droit, « Extraire tout ». Choisis un dossier stable (pas Téléchargements). Ne lance pas l'exe depuis l'aperçu du zip dans l'Explorateur : Windows n'en extrait que l'exe, sans les fichiers livrés à côté de lui.
+3. Lance `Aria-JDR.exe`.
+
+L'exe n'est pas signé : Windows peut afficher « Windows a protégé votre ordinateur ». Clique sur « Informations complémentaires », puis sur « Exécuter quand même ». Il n'y a ni installation ni mise à jour automatique : pour changer de version, décompresse le nouveau zip et remplace l'exe ; tes parties restent dans `%USERPROFILE%\.Aria-JDR`.
+
 Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier `%USERPROFILE%\.Aria-JDR\`, que tu lances l'exe ou les sources. Ce dossier ne se change pas ; le menu Réglages a un raccourci pour l'ouvrir.
 
 ## Principe
@@ -15,7 +27,7 @@ Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier
 - **Les univers** sont des fichiers JSON dans le dossier `univers/` : réglages, noms des compétences, parcours et armurerie. Le moteur les vérifie au chargement.
 - **La bibliothèque** (dossier `bibliotheque/`) range une seule fois tout ce qui peut exister dans une partie : les parcours des 8 genres, les armes, les armures, les modifications, les fabricants, les implants, les véhicules et les drones, les domaines de magie. Chaque entrée dit dans quels genres elle a sa place ; une campagne ne garde que ce qui a droit à son genre et à sa magie. Le moteur vérifie toute la bibliothèque au chargement, avec les règles du jeu.
 
-## Installation (Windows)
+## Depuis les sources
 
 ```bash
 python -m venv .venv
@@ -99,24 +111,85 @@ Aria-JDR\
   Aria-LLM\      (facultatif : llama-prism\ et modeles\)
 ```
 
-Pour le construire (`dist\Aria-JDR.exe`), installe PyInstaller une fois, puis lance le script :
-
-```bash
-.venv\Scripts\python.exe -m pip install pyinstaller==6.22.3
-```
-
-```bash
-powershell -ExecutionPolicy Bypass -File construire.ps1
-```
+Pour le construire toi-même : voir « Compiler soi-même ».
 
 Certains antivirus signalent à tort les exe PyInstaller : c'est un faux positif connu.
 
 `python -m aria` ouvre le même menu depuis les sources.
 
+## Où sont tes données
+
+Tout est dans `%USERPROFILE%\.Aria-JDR`, que tu lances l'exe ou les sources :
+
+- `campagnes\` : une par campagne, avec sa sauvegarde, sa mémoire en Markdown et son univers ;
+- `personnages\` : les personnages préparés à l'avance, Kaito compris ;
+- `corbeille\` : les campagnes supprimées, qui ne sont pas effacées ;
+- `profil_mj.json` : le MJ retenu sur ce PC et le réglage du serveur qui va avec ;
+- `banc_*.json`, `banc_generateur.json` : le détail des bancs d'essai ;
+- `serveur_*.log` : les journaux du serveur llama ;
+- `demo_kaito.json` : la sauvegarde de la démo.
+
+Aucun secret n'y est gardé. Supprimer ce dossier remet le jeu à neuf (parties comprises : copie d'abord `campagnes\` et `personnages\` si tu y tiens).
+
+## Sécurité
+
+- **Droits** : le jeu se lance sans droits administrateur.
+- **Connexions sortantes** : aucune vers Internet. Le jeu lance le serveur llama sur ton PC et lui parle sur `127.0.0.1:8080`, rien d'autre.
+- **Secrets** : le jeu n'en garde aucun.
+
+Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
+
+## Limites à connaître
+
+- **Pas de fenêtre** : le jeu se joue dans une console, avec un menu texte.
+- **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
+- **Le dossier de données ne suit pas encore le contrat commun des applis Aria** : pas de `reglages.json`, de `journal.json` ni de `sauvegardes\`.
+- **L'exe se décompresse dans `%TEMP%`** à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture.
+- **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.
+- **Le MJ est un LLM** : le moteur tire les dés et tient les chiffres, mais la narration peut se tromper ou s'écarter de la scène.
+- **Aucune partie longue n'a été mesurée** : les mesures viennent du banc, pas de campagnes jouées.
+
+Mises à jour : l'empreinte SHA-256 vérifie que le téléchargement est intact, pas d'où il vient. La provenance repose sur le compte GitHub de l'auteur, sur les releases immuables (une version publiée ne change plus, à condition que ce réglage soit activé sur le dépôt) et sur l'attestation jointe à chaque zip. Si le compte de l'auteur était compromis, une version piégée pourrait quand même être proposée.
+
+Projet personnel, sans audit de sécurité indépendant.
+
+## Provenance des composants
+
+L'exe embarque l'interpréteur Python et ses bibliothèques natives, ainsi que le chargeur de PyInstaller : le détail est dans [LICENCES-TIERS.txt](LICENCES-TIERS.txt). Le serveur llama et les modèles, que tu télécharges toi-même, ont leurs propres licences : lis-les avant de les utiliser.
+
+## Compiler soi-même
+
+Il faut Python 3.11 ou plus. Une fois, depuis la racine du dépôt :
+
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install pytest pyinstaller==6.22.3
+```
+
+Puis :
+
+```powershell
+.uild.ps1
+```
+
+L'exe est dans `.work\sortie\Aria-JDR.exe`. `.	ools\empaqueter.ps1` en fait le zip de la version et son empreinte dans `.workelease\`. La reproductibilité à l'octet n'a pas été vérifiée : pour une version publiée, compare avec l'attestation (`gh attestation verify <zip> --repo ZedjeK/Aria-JDR`).
+
+## Structure
+
+```
+aria/           le moteur, le MJ, la table, les bancs ; aria/prompts/ : les prompts du MJ
+univers/        les univers en JSON
+bibliotheque/   parcours, armes, armures, implants, véhicules, magie
+tests/          les tests (pytest)
+tools/          version, tests, empaquetage, vérification de release
+docs/           la fiche projet (FICHE.md) et les notes de version
+REGLES.md       le livre de règles
+build.ps1       construit l'exe portable dans .work\sortie```
+
 ## Lancer les tests
 
-```bash
-.venv\Scripts\python.exe -m pytest
+```powershell
+.	ools	ester.ps1
 ```
 
 ## Licence
