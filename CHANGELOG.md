@@ -18,6 +18,7 @@ sont dans `docs/releases/`.
 ### Modifié
 
 - L'exe ouvre l'interface web dans le navigateur au lieu du menu en console, qui reste disponible depuis les sources (`python -m aria`). 
+- Pendant que le jeu travaille, la page dit depuis combien de temps, et le moteur annonce la création de l'univers (plusieurs minutes) avant qu'elle commence, au lieu de se taire.
 - L'exe se décompresse dans `cache\` du dossier de données et non plus dans `%TEMP%`.
 - `construire.ps1` devient `build.ps1` ; l'exe est construit dans `.work\sortie\` et non plus dans `dist\`.
 - `jeu.lancer`, `jeu.mj_charge`, `personnages.creer` (nouveau, repris du menu console) et `banc_generateur.lancer` (nouveau, repris de sa ligne de commande) acceptent l'entrée et la sortie qu'on leur donne ; la console reste leur valeur par défaut.

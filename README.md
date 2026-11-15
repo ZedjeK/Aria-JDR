@@ -160,7 +160,7 @@ Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 ## Limites à connaître
 
 - **Sans MJ qualifié, l'interface ne démarre aucune partie** : au premier lancement, qualifie-le dans les Réglages (plus d'une heure, avec le serveur du MJ qui occupe la carte graphique). Interrompre la qualification laisse le profil actuel tel quel.
-- **Une seule partie à la fois**, et la réponse du MJ arrive d'un bloc, après quelques dizaines de secondes, pas mot à mot. Fermer l'onglet n'arrête pas la partie : elle continue côté serveur, et la page la reprend quand on la rouvre. Pour l'arrêter, utilise « Interrompre la partie » ou « Quitter la session ».
+- **Une seule partie à la fois**, et la réponse du MJ arrive d'un bloc, après quelques dizaines de secondes, pas mot à mot. Créer un univers prend plusieurs minutes (environ six à l'essai, avec ton MJ) : la page affiche depuis combien de temps le jeu travaille. Fermer l'onglet n'arrête pas la partie : elle continue côté serveur, et la page la reprend quand on la rouvre. Pour l'arrêter, utilise « Interrompre la partie » ou « Quitter la session ».
 - **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
 - **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.
 - **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.

@@ -98,6 +98,7 @@ class Jeu:
                 univers = charger_univers(self.campagne.univers)
             elif choix:
                 generation = budget if budget_generation is None else budget_generation
+                self.dire("\n… le MJ crée l'univers et l'adapte au cadre (de une à une dizaine de minutes, sans autre message)")
                 univers, adaptation = generateur.creer_campagne(self.campagne, choix, serveur=serveur, budget=generation,
                                                                 gardes={predefini.parcours} if predefini else set() if creer else {NETRUNNER})
                 self.montrer_adaptation(univers, adaptation)

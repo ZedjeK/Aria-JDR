@@ -88,3 +88,24 @@ def test_la_ligne_de_commande_du_banc_du_generateur_passe_par_la_meme_fonction(m
     monkeypatch.setattr(banc_generateur, "lancer", lambda budgets, sortie: recus.append(budgets))
     banc_generateur.main(["--budgets", "128", "256"])
     assert recus == [[128, 256]]
+
+
+def test_le_moteur_dit_qu_il_cree_l_univers_avant_la_longue_attente(tmp_path, monkeypatch):
+    """La génération de l'univers dure des minutes : le joueur doit le lire avant qu'elle commence, pas après."""
+    from aria import generateur
+
+    class Arrete(Exception):
+        pass
+
+    def creer_campagne(*args, **kwargs):
+        raise Arrete
+
+    monkeypatch.setattr(chemins, "DONNEES", tmp_path / ".Aria-JDR")
+    monkeypatch.setattr(generateur, "creer_campagne", creer_campagne)
+    choix = generateur.choix_par_defaut(generateur.charger(), "Cyberpunk")
+    dits = []
+    try:
+        jeu.Jeu(None, 512, entree=lambda invite="": "", sortie=dits.append, campagne=campagne.Campagne.nommee("essai"), choix=choix)
+    except Arrete:
+        pass
+    assert len(dits) == 1 and "crée l'univers" in dits[0] and "minutes" in dits[0]
