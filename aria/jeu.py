@@ -449,57 +449,57 @@ def main(arguments: list[str] | None = None):
 
 
 @contextmanager
-def mj_charge():
+def mj_charge(sortie=print):
     """Le serveur du MJ, démarré puis arrêté : donne (serveur, profil, réglages), ou None s'il ne peut pas
-    tourner (la raison est affichée)."""
+    tourner (la raison est dite par `sortie`)."""
     profil = banc.profil_valide()
     if profil is None:
-        print("Pas de MJ qualifié sur ce PC. Lance d'abord le banc : .venv\\Scripts\\python.exe -m aria.banc")
+        sortie("Pas de MJ qualifié sur ce PC. Lance d'abord le banc : .venv\\Scripts\\python.exe -m aria.banc")
         yield None
         return
     modele = optimiseur.decrire(llm.DOSSIER_MODELES / profil["fichier"], profil["modele"])
     if modele is None:
-        print(f"Le modèle {profil['fichier']} est illisible. Relance le banc.")
+        sortie(f"Le modèle {profil['fichier']} est illisible. Relance le banc.")
         yield None
         return
     reglages = optimiseur.Reglages(**profil["reglages"])
-    print(f"Chargement du MJ : {modele.nom} ({reglages}), réflexion {profil['budget_reflexion']} jetons…")
+    sortie(f"Chargement du MJ : {modele.nom} ({reglages}), réflexion {profil['budget_reflexion']} jetons…")
     serveur = llm.Serveur(modele, reglages, journal=JOURNAL_SERVEUR)
     try:
         if serveur.demarrer():
             yield serveur, profil, reglages
         else:
-            print(f"Le serveur du MJ ne démarre pas (détails : {JOURNAL_SERVEUR}). "
-                  "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
+            sortie(f"Le serveur du MJ ne démarre pas (détails : {JOURNAL_SERVEUR}). "
+                   "La carte graphique est peut-être occupée : ferme ce qui l'utilise, ou relance le banc.")
             yield None
     finally:
         serveur.arreter()
 
 
 def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprends_moi: bool = False,
-           predefini: "personnages.Predefini | None" = None):
-    """Charge le MJ et joue la campagne : nouvelle si `choix` est donné, reprise sinon. Le menu et la ligne
-    de commande passent tous les deux par ici."""
+           predefini: "personnages.Predefini | None" = None, entree=input, sortie=print):
+    """Charge le MJ et joue la campagne : nouvelle si `choix` est donné, reprise sinon. Le menu, la ligne
+    de commande et l'interface web passent tous par ici ; `entree` et `sortie` sont la console par défaut."""
     # Un univers généré mais pas encore de sauvegarde : la création du personnage n'a pas été finie
     a_creer = campagne.univers.is_file() and not campagne.sauvegarde.is_file()
-    with mj_charge() as mj:
+    with mj_charge(sortie) as mj:
         if mj is None:
             return
         serveur, profil, reglages = mj
         try:
             if choix and surprends_moi:
-                choix = surprendre(serveur, choix, banc_generateur.budget_generateur(profil))
+                choix = surprendre(serveur, choix, banc_generateur.budget_generateur(profil), entree, sortie)
                 if choix is None:
                     return
-            Jeu(serveur, profil["budget_reflexion"], reglages.contexte, campagne=campagne, choix=choix,
-                budget_generation=banc_generateur.budget_generateur(profil), creer=choix is not None or a_creer,
-                predefini=predefini if choix is not None else None).jouer()
+            Jeu(serveur, profil["budget_reflexion"], reglages.contexte, entree=entree, sortie=sortie, campagne=campagne,
+                choix=choix, budget_generation=banc_generateur.budget_generateur(profil),
+                creer=choix is not None or a_creer, predefini=predefini if choix is not None else None).jouer()
         except SansPersonnage as erreur:
-            print(erreur)
+            sortie(str(erreur))
         except creation_texte.Abandon:
-            print("\nCréation abandonnée. Reprends cette campagne pour créer ton personnage.")
+            sortie("\nCréation abandonnée. Reprends cette campagne pour créer ton personnage.")
         except (KeyboardInterrupt, EOFError):
-            print("\nPartie interrompue.")
+            sortie("\nPartie interrompue.")
 
 
 if __name__ == "__main__":

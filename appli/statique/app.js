@@ -213,9 +213,10 @@ async function campagnes() {
       }
     }];
     if (!c.lisible) return ligne(c.nom, `illisible (${c.erreur})`, "etat-mort", [jeter]);
+    const reprendre = ["Reprendre", () => demarrer("/api/partie/reprendre", { nom: c.nom }, champ("statut-campagnes"))];
     const perso = c.personnage ? `${c.personnage.nom}, ${c.personnage.parcours} · ` : "";
     const detail = `${c.univers} (${c.genre}, ${c.ton}, ${c.magie ? "magie" : "sans magie"}) · ${perso}${c.etape}`;
-    return ligne(c.nom, detail, `etat-${c.etat}`, [jeter]);
+    return ligne(c.nom, detail, `etat-${c.etat}`, [reprendre, jeter]);
   }));
 }
 
@@ -269,6 +270,185 @@ async function mj() {
   accueil.className = detail.className = info.qualifie && info.moteur_present ? "mj ok" : "mj";
 }
 
+// --- La partie : le moteur tourne dans un fil du serveur ; la page lit ce qu'il dit et lui envoie les réponses ---
+async function envoyer(chemin, corps) {
+  return api(chemin, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corps) });
+}
+
+const rafraichirTout = () => Promise.all([campagnes(), corbeille(), personnages()]);
+
+const Partie = (() => {
+  const journal = champ("journal");
+  let dernier = 0;
+  let suivi = false;
+  let etat = { actif: false, nature: "" };
+
+  function ecrire(classe, texte) {
+    const bas = journal.scrollHeight - journal.scrollTop - journal.clientHeight < 40;
+    journal.append(el("p", classe, texte));
+    if (bas) journal.scrollTop = journal.scrollHeight;  // on ne ramène pas en bas celui qui relit plus haut
+  }
+
+  function afficher(evenement) {
+    if (evenement.type === "texte") ecrire("l-texte", evenement.texte);
+    else if (evenement.type === "joueur") ecrire("l-joueur", `> ${evenement.texte}`);
+    else if (evenement.type === "invite" && evenement.texte.trim() !== ">") ecrire("l-invite", evenement.texte.trim());
+  }
+
+  function controles(actif, attend) {
+    const pret = attend !== null && attend !== undefined;
+    const texte = champ("saisie-texte");
+    texte.disabled = champ("saisie-envoyer").disabled = !pret;
+    texte.placeholder = !pret ? "" : attend.trim() === ">" ? "Écris ce que fait ton personnage" : attend.trim();
+    if (pret) texte.focus({ preventScroll: true });
+    champ("commandes").hidden = !(actif && pret && attend.trim() === ">" && etat.nature === "campagne");
+    champ("interrompre").hidden = !actif;
+    champ("partie-etat").textContent = !actif
+      ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.")
+      : pret ? "À toi de jouer." : "Le jeu travaille… (le MJ réfléchit, parfois une minute)";
+  }
+
+  async function suivre() {
+    if (suivi) return;
+    suivi = true;
+    try {
+      for (;;) {
+        const lot = await api(`/api/partie/evenements?apres=${dernier}&attente=20`);
+        lot.evenements.forEach(afficher);
+        dernier = lot.dernier;
+        etat = { ...etat, actif: lot.actif };
+        controles(lot.actif, lot.attend);
+        if (!lot.actif) break;
+      }
+    } catch (erreur) {
+      ecrire("l-erreur", `Connexion perdue : ${erreur.message}`);
+    } finally {
+      suivi = false;
+      rafraichirTout().catch(() => {});
+    }
+  }
+
+  async function demarrer(chemin, corps, statut) {
+    statut.className = "statut";
+    statut.textContent = "";
+    try {
+      etat = await envoyer(chemin, corps);
+      journal.replaceChildren();
+      dernier = 0;
+      champ("partie-titre").textContent = etat.titre;
+      location.hash = "#partie";
+      suivre();
+    } catch (erreur) {
+      statut.className = "statut erreur";
+      statut.textContent = erreur.message;
+    }
+  }
+
+  async function reprendreAffichage() {
+    etat = await api("/api/partie");
+    if (etat.titre) champ("partie-titre").textContent = etat.titre;
+    if (etat.actif) location.hash = "#partie";
+    if (etat.dernier) {
+      journal.replaceChildren();
+      dernier = 0;
+      suivre();  // relit tout le fil, puis continue tant que la partie tourne : on n'attend pas sa fin ici
+    }
+  }
+
+  return { demarrer, reprendreAffichage };
+})();
+const demarrer = Partie.demarrer;
+
+champ("saisie").addEventListener("submit", async (evenement) => {
+  evenement.preventDefault();
+  const texte = champ("saisie-texte");
+  const valeur = texte.value;
+  texte.value = "";
+  texte.disabled = champ("saisie-envoyer").disabled = true;  // la réponse part : on attend la suite du jeu
+  try { await envoyer("/api/partie/saisie", { texte: valeur }); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
+});
+
+for (const bouton of document.querySelectorAll("[data-commande]")) {
+  bouton.addEventListener("click", async () => {
+    champ("commandes").hidden = true;
+    try { await envoyer("/api/partie/saisie", { texte: bouton.dataset.commande }); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
+  });
+}
+
+champ("interrompre").addEventListener("click", async () => {
+  if (!confirm("Interrompre la partie ? La dernière sauvegarde est gardée ; ce qui n'est pas sauvegardé est perdu.")) return;
+  try { await envoyer("/api/partie/arreter", {}); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
+});
+
+// --- Les formulaires : nouvelle campagne, nouveau personnage ---
+let options = null;
+const option = (valeur, texte) => { const o = el("option", "", texte); o.value = valeur; return o; };
+
+async function charger_options() {
+  options = options || await api("/api/creation");
+  return options;
+}
+
+function genreChoisi(id) {
+  return options.genres.find((g) => g.nom === champ(id).value);
+}
+
+function majGenre() {
+  const g = genreChoisi("nv-genre");
+  champ("nv-magie-ligne").hidden = !g.magie_au_choix;
+  champ("nv-ton").value = g.ton;
+  champ("nv-perso").replaceChildren(option("", "Le créer pour cette campagne"), ...g.personnages.map((p) => option(p.id, p.titre)));
+  majPerso();
+}
+const majPerso = () => { champ("nv-cran-ligne").hidden = champ("nv-perso").value !== ""; };
+function majType() {
+  const t = options.types.find((x) => x.nom === champ("nv-type").value);
+  champ("nv-type-desc").textContent = t.description;
+  champ("nv-cran").value = t.cran;
+}
+
+champ("nouvelle-campagne").addEventListener("click", async () => {
+  const o = await charger_options();
+  champ("nv-genre").replaceChildren(...o.genres.map((g) => option(g.nom, g.complet ? g.nom : `${g.nom} (contenu encore léger)`)));
+  champ("nv-ton").replaceChildren(...o.tons.map((t) => option(t, t)));
+  champ("nv-type").replaceChildren(...o.types.map((t) => option(t.nom, t.nom)));
+  champ("nv-genre").value = (o.genres.find((g) => g.complet) || o.genres[0]).nom;  // le genre qui a du contenu, d'abord
+  champ("nv-type").value = o.type_standard;
+  champ("nv-cran").replaceChildren(...o.crans.map((c) => option(c, c)));
+  majGenre();
+  majType();
+  location.hash = "#nouvelle";
+});
+champ("nv-genre").addEventListener("change", majGenre);
+champ("nv-perso").addEventListener("change", majPerso);
+champ("nv-type").addEventListener("change", majType);
+champ("nv-annuler").addEventListener("click", () => { location.hash = "#campagnes"; });
+
+champ("form-nouvelle").addEventListener("submit", (evenement) => {
+  evenement.preventDefault();
+  const annee = champ("nv-annee").value;
+  demarrer("/api/partie/nouvelle", {
+    nom: champ("nv-nom").value, genre: champ("nv-genre").value, univers: champ("nv-univers").value,
+    cadre: champ("nv-cadre").value, annee: annee === "" ? null : Number(annee), surprends_moi: champ("nv-surprends").checked,
+    ton: champ("nv-ton").value, magie: champ("nv-magie").checked, type: champ("nv-type").value,
+    personnage: champ("nv-perso").value, cran: champ("nv-cran").value,
+  }, champ("statut-nouvelle"));
+});
+
+champ("nouveau-personnage").addEventListener("click", async () => {
+  const o = await charger_options();
+  champ("pe-genre").replaceChildren(...o.genres.map((g) => option(g.nom, g.complet ? g.nom : `${g.nom} (contenu encore léger)`)));
+  champ("pe-cran").replaceChildren(...o.crans.map((c) => option(c, c)));
+  champ("pe-genre").value = (o.genres.find((g) => g.complet) || o.genres[0]).nom;
+  location.hash = "#creer-personnage";
+});
+champ("pe-annuler").addEventListener("click", () => { location.hash = "#personnages"; });
+champ("form-personnage").addEventListener("submit", (evenement) => {
+  evenement.preventDefault();
+  demarrer("/api/partie/personnage", { genre: champ("pe-genre").value, cran: champ("pe-cran").value, avec_mj: champ("pe-mj").checked },
+    champ("statut-personnage"));
+});
+
 // --- Démarrage ---
 (async () => {
   try {
@@ -277,6 +457,7 @@ async function mj() {
     afficher(await api("/api/reglages"));
     Fond.configurer(await api("/api/fond"));
     await Promise.all([mj(), campagnes(), corbeille(), personnages()]);
+    await Partie.reprendreAffichage();
   } catch (erreur) {
     message.className = "erreur";
     message.textContent = erreur.message;

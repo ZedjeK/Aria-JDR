@@ -113,6 +113,30 @@ def lister(genre: str | None = None) -> list[Predefini]:
     return [p for p in trouves if genre is None or p.genre == genre]
 
 
+def creer(genre: str, cran: str, avec_mj: bool, entree=input, sortie=print) -> Predefini | None:
+    """Crée un personnage dans l'univers de base d'un genre, puis le range. Avec le MJ s'il est disponible et si le
+    joueur le veut : c'est lui qui propose le nom et la personnalité. None si la création est abandonnée ou si le MJ ne
+    peut pas tourner (la raison est dite par `sortie`). Le menu console et l'interface web passent tous deux par ici."""
+    from aria import banc_generateur, creation_texte, jeu  # jeu importe ce module : on ne l'importe qu'à l'appel
+    univers = univers_de_base(genre)
+    try:
+        if avec_mj:
+            with jeu.mj_charge(sortie) as mj:
+                if mj is None:
+                    return None
+                serveur, profil, _ = mj
+                brouillon = creation_texte.Guide(univers, entree, sortie, serveur,
+                                                 banc_generateur.budget_generateur(profil), cran=cran).composer()
+        else:
+            brouillon = creation_texte.Guide(univers, entree, sortie, cran=cran).composer()
+    except creation_texte.Abandon:
+        sortie("Création abandonnée.")
+        return None
+    pret = enregistrer(brouillon, genre)
+    sortie(f"\n{pret.nom} est prêt : tu pourras le prendre en lançant une nouvelle campagne de {genre}.")
+    return pret
+
+
 def supprimer(predefini: Predefini):
     if predefini.fichier is not None:
         predefini.fichier.unlink(missing_ok=True)
