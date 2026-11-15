@@ -135,6 +135,7 @@ Tout est dans `%USERPROFILE%\.Aria-JDR`, que tu lances l'exe ou les sources :
 - `profil_mj.json` : le MJ retenu sur ce PC et le réglage du serveur qui va avec ;
 - `banc_*.json`, `banc_generateur.json` : le détail des bancs d'essai ;
 - `serveur_*.log` : les journaux du serveur llama ;
+- `cache\` : là où l'exe se décompresse pendant qu'il tourne ;
 - `demo_kaito.json` : la sauvegarde de la démo.
 
 Aucun secret n'y est gardé. Supprimer ce dossier remet le jeu à neuf (parties comprises : copie d'abord `campagnes\` et `personnages\` si tu y tiens).
@@ -152,7 +153,7 @@ Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 - **Pas de fenêtre** : le jeu se joue dans une console, avec un menu texte.
 - **Pas d'installation par l'exe, pas de mise à jour automatique** : on remplace l'exe à la main.
 - **Le dossier de données ne suit pas encore le contrat commun des applis Aria** : pas de `reglages.json`, de `journal.json` ni de `sauvegardes\`.
-- **L'exe se décompresse dans `%TEMP%`** à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture.
+- **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.
 - **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.
 - **Le MJ est un LLM** : le moteur tire les dés et tient les chiffres, mais la narration peut se tromper ou s'écarter de la scène.
 - **Aucune partie longue n'a été mesurée** : les mesures viennent du banc, pas de campagnes jouées.

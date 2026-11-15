@@ -13,4 +13,5 @@ sont dans `docs/releases/`.
 
 ### Modifié
 
+- L'exe se décompresse dans `cache\` du dossier de données et non plus dans `%TEMP%`.
 - `construire.ps1` devient `build.ps1` ; l'exe est construit dans `.work\sortie\` et non plus dans `dist\`.
