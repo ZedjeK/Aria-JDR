@@ -19,6 +19,8 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $racine = $PSScriptRoot
+$icone = Join-Path $racine 'docs\Aria-JDR.ico'
+if (-not (Test-Path -LiteralPath $icone)) { throw "L'icône docs\Aria-JDR.ico est introuvable." }
 $python = Join-Path $racine '.venv\Scripts\python.exe'
 if (-not (Test-Path -LiteralPath $python)) {
     $commande = Get-Command python -ErrorAction SilentlyContinue
@@ -46,6 +48,7 @@ $versionPython = "$(& $python --version 2>&1)".Trim()
 $versionPyInstaller = "$(& $python -m PyInstaller --version 2>&1)".Trim()
 & $python -m PyInstaller --noconfirm --clean --onefile --console `
     --name Aria-JDR `
+    --icon $icone `
     --paths $racine `
     --specpath $pyinstaller --workpath $pyinstaller --distpath $sortie `
     --add-data "$racine\univers;univers" `
