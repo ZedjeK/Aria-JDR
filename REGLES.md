@@ -11,7 +11,7 @@ Ce document est la référence unique du système de jeu. Le moteur (code) l'app
 ### 1.1 Le code arbitre, le LLM raconte
 
 - **Le code** gère toute la mécanique : jets de dés, PV, Santé mentale, compétences, inventaire, munitions, XP. Il lance aussi les dés des ennemis.
-- **Le LLM** raconte, décrit, fait parler les PNJ et choisit les actions des ennemis. Quand une règle s'applique, il appelle un outil du moteur et raconte le résultat.
+- **Le LLM** raconte, décrit et fait parler les PNJ. Quand une règle s'applique, il appelle un outil du moteur et raconte le résultat. Dans un combat à pied, c'est le code qui choisit les actions des ennemis (voir 7.8).
 - Quand le LLM doit choisir une valeur (difficulté, gravité d'un choc…), il la choisit **dans une liste fermée**. Le code refuse toute autre valeur.
 
 ### 1.2 Les réglages d'univers
@@ -357,13 +357,21 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 - Un round dure **environ 6 secondes**.
 - Se mettre à couvert et fuir s'appuient sur les déplacements.
 
+**Le décor et le couvert**
+
+- Le MJ fixe le **décor** à l'ouverture du combat, dans une liste fermée : **dégagé**, **encombré** (par défaut) ou **fortifié**.
+- **Se mettre à couvert** coûte un déplacement. Le couvert est **partiel** (−20 au tireur) dans un décor encombré, **lourd** (−40) dans un décor fortifié, et **refusé** dans un décor dégagé.
+- On garde son couvert jusqu'à ce qu'on se déplace autrement ou qu'on passe au corps à corps. Tirer ne le fait pas perdre.
+- Le couvert protège des armes à distance seulement. Un tireur adverse se met à couvert de lui-même quand il le peut.
+
 ### 7.3 L'attaque
 
 - L'attaquant lance sa compétence de combat (Corps à corps ou Armes à distance).
 - **Au corps à corps**, le défenseur choisit d'**esquiver** (Esquive) ou de **riposter** (Corps à corps). C'est le **meilleur degré de réussite** qui l'emporte. En cas d'égalité, l'**esquive gagne**, mais la **riposte perd** face à l'attaquant.
-- **Contre une arme à distance**, on n'esquive pas : le tireur subit −20 contre une cible derrière un couvert partiel, −40 derrière un couvert lourd.
+- **Pour le joueur**, le code prend par défaut la meilleure de ses deux valeurs (Esquive ou Corps à corps ; à égalité, l'esquive). Le réglage « Je choisis ma défense », par combat, lui rend ce choix. Les autres règles de défense ne changent pas.
+- **Contre une arme à distance**, on n'esquive pas : le tireur subit −20 contre une cible à couvert partiel, −40 à couvert lourd (voir 7.2).
 - **Une seule défense gratuite par round.** Chaque défense supplémentaire dans le même round prend −20, cumulable.
-- Le MJ peut fixer la **difficulté** d'une attaque, dans la liste fermée de 2.3 : par exemple Facile contre une cible sans défense (inconsciente, ligotée…).
+- La **difficulté** d'une attaque est fixée par le code : **Facile** contre une cible qui ne peut pas se défendre (inconsciente, ligotée, surprise), **Normale** sinon.
 
 ### 7.4 Les degrés en combat
 
@@ -372,10 +380,20 @@ Il n'y a **pas de réussite avec complication** en combat : l'échelle est criti
 | Degré | Effet |
 |---|---|
 | **Critique** | Dégâts maximum, et l'armure ne compte qu'à moitié |
-| **Réussite majeure** | Dégâts normaux + un bonus au choix : désarmer, repousser, ou +1 dé de dégâts |
+| **Réussite majeure** | Dégâts normaux + un bonus au choix : désarmer, repousser, ou +1 dé de dégâts. Le joueur choisit quand il y a un vrai choix ; un PNJ prend +1 dé |
 | **Réussite** | Dégâts normaux |
 | **Échec** | Raté |
-| **Maladresse** | Raté, avec une conséquence fâcheuse racontée par le MJ (arme fragile cassée, chute…) |
+| **Maladresse** | Raté, avec une conséquence tirée par le code (voir ci-dessous) et racontée par le MJ |
+
+**Conséquence d'une maladresse** : le code lance un d6.
+
+| d6 | Conséquence |
+|---|---|
+| 1-2 | **Arme lâchée** : la reprendre ou la dégainer de nouveau coûte une action mineure |
+| 3-4 | **Déséquilibre** : −20 à sa prochaine défense |
+| 5-6 | **Enrayement** pour une arme à distance (une action mineure pour la débloquer) ; **arme lâchée** au corps à corps |
+
+Une arme **fragile** se brise toujours sur une maladresse (voir 7.5), en plus de ce tirage.
 
 ### 7.5 Armes et armures
 
@@ -495,7 +513,19 @@ Un point de destin permet de **relancer un jet**, ou de transformer une mort (ou
 
 ### 7.8 Les ennemis
 
-Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposter), des PV, une armure, une arme. Le LLM choisit leurs actions ; le code lance leurs dés.
+Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposter), des PV, une armure, une arme. Le code choisit leurs actions et lance leurs dés ; un choix du LLM, dans une liste fermée, ne peut venir qu'en plus, avec le code en repli.
+
+**Le périmètre** : ces règles mènent le **combat à pied**, avec des armes et des sorts à une seule cible. Les zones (7.9), les drones, les sorts de zone et les véhicules restent en combat classique : le MJ pilote alors avec les outils du moteur. Le moteur choisit le mode à l'ouverture du combat.
+
+**Le profil d'un ennemi** se déduit de son arme (mêlée : bretteur ; poing ou arme longue : tireur) et de sa menace (faible, moyenne, forte, élite).
+
+**Son tour**, dans cet ordre : le moral ; l'état de son arme (dégainer, débloquer, recharger) ; le couvert, pour un tireur ; la visée, s'il est à couvert sans avoir bougé ; l'attaque ; sinon, il passe.
+
+**Sa cible** est tirée au sort, pondérée : 1 par cible consciente, +2 si elle est sous la moitié de ses PV, +1 si elle l'a blessé au round précédent. Pas plus de 2 attaquants par cible et par round, sauf cible unique. Aucun acharnement sur un inconscient tant qu'un adversaire actif reste.
+
+**Le moral** : au début de son tour, un ennemi fait un test Normal sur son pourcentage de combat s'il a au plus la moitié de ses PV, une blessure grave, ou la moitié de son camp hors de combat. Chaque déclencheur en plus donne −20. Une menace forte ou élite a +20. Un échec le fait **fuir** : il quitte le combat à la fin de son prochain tour, et on peut encore le frapper d'ici là. S'il a une blessure grave, il **se rend** à la place. Le moral du joueur reste les crises de la section 10.
+
+**La fin du combat** est détectée par le code, victoire ou défaite. Le MJ en raconte les suites ; quand le joueur tombe, c'est lui qui décide de la suite dans les règles existantes.
 
 - Pas de bonus de Force : il est déjà compté dans les dégâts de leur arme.
 - Par défaut : Dextérité 50, Constitution 50, Perception 25.
