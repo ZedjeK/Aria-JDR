@@ -13,7 +13,7 @@ from aria.inventaire import BONUS_ACTION_MINEURE, InventaireImpossible, a_charge
 from aria.personnage import MALUS_BLESSURE_GRAVE, Caracteristique, Etat, Personnage
 from aria.progression import cocher
 from aria.reglages import Curseur
-from aria.resolution import Degre, Difficulte, Issue, Resultat, opposer, tester
+from aria.resolution import Degre, Difficulte, Issue, Resultat, chance_de_reussite, opposer, tester
 from aria.temps import Moment
 from aria.vehicules import (
     EPERONNAGE,
@@ -29,6 +29,12 @@ DEGATS_PERSISTANTS = "1d3"
 MAINS_NUES = Arme("Mains nues", CORPS_A_CORPS, "1d3", Portee.CONTACT)
 MALUS_DEFENSE_SUPPLEMENTAIRE = -20
 BONUS_VISER = 20
+# Le couvert, le moral et la maladresse du combat automatique (REGLES.md 7.2, 7.4 et 7.8)
+MALUS_DESEQUILIBRE = -20
+MALUS_MORAL_SUPPLEMENTAIRE = -20
+BONUS_MORAL_MENACE = 20
+SEUIL_MENACE_FORTE = 60  # au-dessus : menace forte ou élite (voir gains.MENACES)
+TOURS_AVANT_DE_FUIR = 2  # le tour où il craque, puis le suivant : il part à la fin de celui-ci
 # Les armes de zone et l'IEM (REGLES.md 7.9 et 7.10)
 TAILLE_ZONE = {"petite": 2, "moyenne": 4, "grande": 8}
 BONUS_ESQUIVE_DEVIATION = 20
@@ -64,6 +70,26 @@ class Couvert(Enum):
     AUCUN = 0
     PARTIEL = -20
     LOURD = -40
+
+
+class Decor(Enum):
+    """Le décor du combat, fixé par le MJ à l'ouverture (REGLES.md 7.2)."""
+
+    DEGAGE = "dégagé"
+    ENCOMBRE = "encombré"
+    FORTIFIE = "fortifié"
+
+
+COUVERT_DU_DECOR = {Decor.DEGAGE: Couvert.AUCUN, Decor.ENCOMBRE: Couvert.PARTIEL, Decor.FORTIFIE: Couvert.LOURD}
+
+
+class Moral(Enum):
+    """Où en est le moral d'un ennemi (REGLES.md 7.8)."""
+
+    NORMAL = "normal"
+    EN_FUITE = "en fuite"  # il part à la fin de son prochain tour ; on peut encore le frapper
+    PARTI = "parti"  # il a quitté le combat
+    RENDU = "rendu"
 
 
 class IssueZone(Enum):
@@ -215,6 +241,12 @@ class Combattant:
         self.vise = False  # bonus de visée en attente du prochain tir
         self.a_vise = False  # a visé ce round : ne peut plus se déplacer, même après avoir tiré
         self.surpris = False
+        self.couvert = Couvert.AUCUN  # son état « à couvert » (REGLES.md 7.2), perdu s'il se déplace ou passe au contact
+        self.arme_lachee: Arme | None = None  # maladresse : l'arme est à ses pieds, la reprendre coûte une action mineure
+        self.arme_enrayee: Arme | None = None  # maladresse : cette arme à distance est enrayée jusqu'à `debloquer`
+        self.desequilibre = False  # maladresse : −20 à sa prochaine défense
+        self.moral = Moral.NORMAL
+        self.tours_avant_de_partir = 0
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         self.effets: list[EffetEnCours] = []  # ce que les sorts lui ont laissé
         self.armure_implantee: Armure | None = None  # posée par la session, d'après les implants du personnage
@@ -298,6 +330,21 @@ class Combattant:
     @property
     def conscient(self) -> bool:
         return self.fiche.etat is Etat.ACTIF
+
+    @property
+    def hors_combat(self) -> bool:
+        """Parti ou rendu : il ne joue plus (REGLES.md 7.8)."""
+        return self.moral in (Moral.PARTI, Moral.RENDU)
+
+
+@dataclass
+class RapportMoral:
+    """Le test de moral d'un ennemi, au début de son tour (REGLES.md 7.8)."""
+
+    qui: str
+    declencheurs: list[str]
+    test: Resultat
+    moral: Moral  # ce qu'il devient : NORMAL s'il tient, EN_FUITE ou RENDU s'il craque
 
 
 @dataclass
@@ -426,11 +473,12 @@ class Combat:
     """Un combat en cours. Les méthodes renvoient des rapports que le MJ raconte."""
 
     def __init__(self, des: Des, combattants: list[Combattant], curseur: Curseur = Curseur.STANDARD,
-                 surpris: list[Combattant] = (), tour_par_tour: bool = False):
+                 surpris: list[Combattant] = (), tour_par_tour: bool = False, decor: Decor = Decor.ENCOMBRE):
         """`tour_par_tour` : le moteur fait respecter l'ordre d'initiative (seul celui dont c'est le tour
         agit, puis fin_de_tour passe au suivant). La démo v1 et les tests de mécanique s'en passent."""
         self.des = des
         self.curseur = curseur
+        self.decor = decor
         self.round = 1
         self.tour_par_tour = tour_par_tour
         self.ordre = sorted(combattants, key=_initiative, reverse=True)
@@ -466,6 +514,8 @@ class Combat:
         Après le dernier, le round se clôt tout seul : renvoie alors les tests des mourants.
         Au début de chaque tour, les effets persistants mordent leur victime (voir `sauvegardes`)."""
         tests = []
+        if self.au_tour_de:
+            self._fin_du_tour(self.au_tour_de)
         while True:
             suivant = None if self.actif is None else self._prochain(self.actif + 1)
             if suivant is None:
@@ -474,6 +524,14 @@ class Combat:
                 self.actif = suivant
             if self.actif is None or self._debut_de_tour(self.ordre[self.actif]):
                 return tests
+
+    @staticmethod
+    def _fin_du_tour(combattant: Combattant):
+        """Un ennemi en fuite part à la fin de son prochain tour (REGLES.md 7.8)."""
+        if combattant.moral is Moral.EN_FUITE:
+            combattant.tours_avant_de_partir -= 1
+            if combattant.tours_avant_de_partir <= 0:
+                combattant.moral = Moral.PARTI
 
     def _debut_de_tour(self, combattant: Combattant) -> bool:
         """Un jet de sauvegarde par effet persistant : Constitution contre une brûlure, Volonté contre
@@ -498,7 +556,7 @@ class Combat:
         """Un drone télépiloté n'a pas de tour à lui ; un drone coupé par une IEM ne fait rien."""
         if combattant.operateur or (combattant.drone and combattant.iem):
             return False
-        return combattant.conscient and not (combattant.surpris and self.round == 1)
+        return combattant.conscient and not combattant.hors_combat and not (combattant.surpris and self.round == 1)
 
     def action_simple(self, combattant: Combattant):
         """Une action simple sans autre effet sur le combat, par exemple lancer un sort."""
@@ -521,6 +579,25 @@ class Combat:
         if combattant.a_vise:
             raise ActionImpossible(f"{combattant.nom} a visé : il ne peut plus se déplacer ce round.")
         self._agir(combattant, TypeAction.DEPLACEMENT)
+        combattant.couvert = Couvert.AUCUN  # il bouge : il quitte son couvert
+
+    def se_mettre_a_couvert(self, combattant: Combattant) -> Couvert:
+        """Un déplacement pour gagner le couvert du décor (REGLES.md 7.2) : partiel si le décor est encombré,
+        lourd s'il est fortifié, refusé s'il est dégagé. Il le garde jusqu'à son prochain autre déplacement ou
+        jusqu'au corps à corps ; tirer ne le fait pas perdre."""
+        couvert = COUVERT_DU_DECOR[self.decor]
+        if couvert is Couvert.AUCUN:
+            raise ActionImpossible("Le décor est dégagé : il n'y a rien pour se mettre à couvert.")
+        self.deplacer(combattant)
+        combattant.couvert = couvert
+        return couvert
+
+    def debloquer(self, combattant: Combattant):
+        """Débloquer une arme enrayée par une maladresse (action mineure, REGLES.md 7.4)."""
+        if combattant.arme_enrayee is None or combattant.arme_enrayee is not combattant.arme:
+            raise ActionImpossible(f"L'arme de {combattant.nom} n'est pas enrayée.")
+        self._agir(combattant, TypeAction.MINEURE)
+        combattant.arme_enrayee = None
 
     def viser(self, combattant: Combattant):
         """+20 au tir de ce round (action mineure), seulement sans se déplacer ce round."""
@@ -536,6 +613,8 @@ class Combat:
         if arme and arme not in combattant.munitions:
             combattant._charger(arme)
         combattant.arme = arme
+        if arme is combattant.arme_lachee:
+            combattant.arme_lachee = None  # elle est reprise
 
     def recharger(self, combattant: Combattant):
         arme = combattant.arme
@@ -601,16 +680,19 @@ class Combat:
         defense: Defense | None = None,
         couvert: Couvert = Couvert.AUCUN,
         bonus_majeure: BonusMajeure = BonusMajeure.DE_SUPPLEMENTAIRE,
-        difficulte: Difficulte = Difficulte.NORMALE,
+        difficulte: Difficulte | None = None,
         tireur: str = "à pied",
     ) -> RapportAttaque:
         """Une attaque complète : jets, défense, dégâts et blessures (REGLES.md 7.3 à 7.6).
 
-        `difficulte` : choisie par le MJ dans la liste fermée, par exemple Facile contre une cible sans défense.
+        `couvert` : en plus du couvert que la cible a pris elle-même ; le plus fort des deux joue (ils ne se cumulent pas).
+        `difficulte` : par défaut, le code la fixe (`difficulte_contre`) ; une valeur donnée la remplace.
         `tireur` : d'où il attaque, si c'est d'un véhicule en mouvement (12.4).
         """
         if cible.fiche.etat is Etat.MORT:
             raise ActionImpossible(f"{cible.nom} est déjà mort.")
+        if cible.moral is Moral.PARTI:
+            raise ActionImpossible(f"{cible.nom} a quitté le combat.")
         arme = attaquant.arme_en_main
         if arme.zone:
             raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone (attaquer_zone).")
@@ -618,13 +700,14 @@ class Combat:
         self._verifier_tireur(arme, tireur)
         self._agir(attaquant, TypeAction.SIMPLE)
 
-        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
+        if difficulte is None:
+            difficulte = self.difficulte_contre(cible)
+        modificateur = self._modificateur_d_attaque(attaquant, arme, cible, couvert, tireur)
         effets = []
-        if not arme.corps_a_corps:
-            modificateur += couvert.value + self.malus_tir + (self.malus_tir_long if arme.portee is Portee.LONGUE else 0)
-            if attaquant.vise:
-                modificateur += BONUS_VISER
-                attaquant.vise = False
+        if arme.corps_a_corps:
+            attaquant.couvert = cible.couvert = Couvert.AUCUN  # au contact, plus personne n'est à couvert
+        else:
+            attaquant.vise = False
             if arme.munitions:
                 attaquant.munitions[arme] -= 1
             elif arme.a(Propriete.LANCER):
@@ -636,6 +719,8 @@ class Combat:
         if attaque.degre is Degre.MALADRESSE and arme.a(Propriete.FRAGILE):
             attaquant.arme = None
             effets.append(f"{arme.nom} se brise.")
+        if attaque.degre is Degre.MALADRESSE:
+            self._maladresse(attaquant, arme, effets)
 
         # La défense : seulement au corps à corps, une gratuite par round, puis −20 par défense en plus
         resultat_defense = None
@@ -643,6 +728,9 @@ class Combat:
         if peut_defendre:
             malus = MALUS_DEFENSE_SUPPLEMENTAIRE * cible.defenses_ce_round
             cible.defenses_ce_round += 1
+            if cible.desequilibre:
+                malus += MALUS_DESEQUILIBRE
+                cible.desequilibre = False
             if defense is Defense.ESQUIVE:
                 competence_defense = "Esquive"
                 resultat_defense = tester(self.des, cible.valeur("Esquive"), combat=True, modificateur=malus)
@@ -664,6 +752,106 @@ class Combat:
             self._infliger(cible, cible.arme_de_melee, resultat_defense.degre, attaquant, bonus_majeure, rapport)
         return rapport
 
+    def _modificateur_d_attaque(self, attaquant: Combattant, arme: Arme, cible: Combattant, couvert: Couvert,
+                                tireur: str) -> int:
+        """Tout ce qui s'ajoute ou se retranche au jet d'attaque, sans toucher à l'état du combat."""
+        modificateur = arme.bonus_sans(electronique=attaquant.iem).jet + TIREURS[tireur]
+        if not arme.corps_a_corps:
+            modificateur += min(couvert.value, cible.couvert.value) + self.malus_tir
+            modificateur += self.malus_tir_long if arme.portee is Portee.LONGUE else 0
+            modificateur += BONUS_VISER if attaquant.vise else 0
+        return modificateur
+
+    def _maladresse(self, attaquant: Combattant, arme: Arme, effets: list[str]):
+        """Le d6 d'une maladresse (REGLES.md 7.4) : arme lâchée, déséquilibre, ou enrayement (au corps à corps,
+        l'arme lâchée)."""
+        d6 = self.des.lancer(6)
+        if d6 in (3, 4):
+            attaquant.desequilibre = True
+            effets.append(f"Déséquilibre : {attaquant.nom} a {MALUS_DESEQUILIBRE} à sa prochaine défense.")
+        elif d6 >= 5 and not arme.corps_a_corps:
+            if attaquant.arme is arme:
+                attaquant.arme_enrayee = arme
+                effets.append(f"{arme.nom} s'enraye : une action mineure pour la débloquer.")
+        elif attaquant.arme is arme:  # 1-2, et 5-6 au corps à corps
+            attaquant.arme, attaquant.arme_lachee = None, arme
+            effets.append(f"{attaquant.nom} lâche {arme.nom} : la reprendre coûte une action mineure.")
+
+    # --- Ce que le code décide à la place du MJ (REGLES.md 7.3, 7.4) ------------------------
+
+    def peut_se_defendre(self, cible: Combattant) -> bool:
+        """Inconscient, surpris au premier round ou rendu : on ne se défend pas."""
+        return cible.conscient and cible.moral is not Moral.RENDU and not (cible.surpris and self.round == 1)
+
+    def difficulte_contre(self, cible: Combattant) -> Difficulte:
+        """Facile contre une cible qui ne peut pas se défendre, Normale sinon."""
+        return Difficulte.NORMALE if self.peut_se_defendre(cible) else Difficulte.FACILE
+
+    @staticmethod
+    def defense_par_defaut(defenseur: Combattant) -> Defense:
+        """La meilleure de ses deux défenses au corps à corps ; à égalité, l'esquive."""
+        esquive = _valeur_ou_zero(defenseur, "Esquive")
+        riposte = _valeur_ou_zero(defenseur, CORPS_A_CORPS) + defenseur.arme_de_melee.bonus.jet
+        return Defense.RIPOSTE if riposte > esquive else Defense.ESQUIVE
+
+    @staticmethod
+    def options_majeure(attaquant: Combattant, cible: Combattant) -> list[BonusMajeure]:
+        """Les bonus qu'une réussite majeure peut vraiment donner : un seul, c'est qu'il n'y a pas de choix."""
+        arme = attaquant.arme_en_main
+        options = [BonusMajeure.DE_SUPPLEMENTAIRE]
+        if cible.arme and not cible.drone:
+            options.append(BonusMajeure.DESARMER)
+        if arme.corps_a_corps:
+            options.append(BonusMajeure.REPOUSSER)
+        return options
+
+    def chance_de_toucher(self, attaquant: Combattant, cible: Combattant, couvert: Couvert = Couvert.AUCUN,
+                          tireur: str = "à pied") -> int:
+        """Le pourcentage de chances de réussir son jet d'attaque, pour le menu du joueur. Il ne compte pas la
+        défense de la cible au corps à corps : c'est le jet contre lequel elle oppose le sien."""
+        arme = attaquant.arme_en_main
+        valeur = attaquant.valeur(arme.competence) + self.difficulte_contre(cible).modificateur
+        valeur += self._modificateur_d_attaque(attaquant, arme, cible, couvert, tireur)
+        return chance_de_reussite(valeur)
+
+    # --- Le moral des ennemis (REGLES.md 7.8) -------------------------------------------
+
+    def declencheurs_de_moral(self, combattant: Combattant) -> list[str]:
+        """Ce qui met le moral d'un ennemi à l'épreuve : la moitié de ses PV, une blessure grave, la moitié de
+        son camp hors de combat."""
+        fiche, raisons = combattant.fiche, []
+        if fiche.pv * 2 <= fiche.pv_max_base:
+            raisons.append("la moitié de ses PV")
+        if fiche.blessure_grave:
+            raisons.append("une blessure grave")
+        camp = [c for c in self.ordre if c.camp == combattant.camp]
+        dehors = sum(1 for c in camp if not c.conscient or c.hors_combat or c.moral is Moral.EN_FUITE)
+        if dehors and dehors * 2 >= len(camp):
+            raisons.append("la moitié de son camp hors de combat")
+        return raisons
+
+    def tester_moral(self, combattant: Combattant) -> RapportMoral | None:
+        """Au début de son tour, un ennemi éprouvé fait un test Normal sur son pourcentage de combat : −20 par
+        déclencheur en plus du premier, +20 pour une menace forte ou élite. Raté, il fuit (il part à la fin de son
+        prochain tour), ou il se rend s'il a une blessure grave. Renvoie None s'il n'y a rien à tester : un
+        personnage joueur (son moral, ce sont les crises de la section 10), ou un ennemi déjà en fuite."""
+        fiche = combattant.fiche
+        if not isinstance(fiche, FichePnj) or combattant.moral is not Moral.NORMAL:
+            return None
+        raisons = self.declencheurs_de_moral(combattant)
+        if not raisons:
+            return None
+        modificateur = MALUS_MORAL_SUPPLEMENTAIRE * (len(raisons) - 1)
+        if fiche.combat > SEUIL_MENACE_FORTE:
+            modificateur += BONUS_MORAL_MENACE
+        test = tester(self.des, fiche.competence(CORPS_A_CORPS), modificateur=modificateur)
+        moral = Moral.NORMAL
+        if not test.reussi:
+            moral = Moral.RENDU if fiche.blessure_grave else Moral.EN_FUITE
+            combattant.moral = moral
+            combattant.tours_avant_de_partir = TOURS_AVANT_DE_FUIR
+        return RapportMoral(combattant.nom, raisons, test, moral)
+
     @staticmethod
     def _verifier_tireur(arme: Arme, tireur: str):
         if tireur not in TIREURS:
@@ -676,6 +864,8 @@ class Combat:
     def _verifier_arme_utilisable(self, attaquant: Combattant, arme: Arme):
         if not arme.corps_a_corps and arme.munitions and attaquant.munitions[arme] == 0:
             raise ActionImpossible(f"L'arme de {attaquant.nom} est vide : il faut recharger.")
+        if attaquant.arme_enrayee is arme:
+            raise ActionImpossible(f"{arme.nom} est enrayée : il faut la débloquer.")
         if attaquant.iem and arme.nom in attaquant.armes_implantees:
             raise ActionImpossible(f"{arme.nom} est coupée par l'IEM jusqu'à la fin du round.")
 
@@ -978,7 +1168,7 @@ class Combat:
         return tests
 
     def actifs(self, camp: str) -> list[Combattant]:
-        return [c for c in self.ordre if c.camp == camp and c.conscient]
+        return [c for c in self.ordre if c.camp == camp and c.conscient and not c.hors_combat]
 
 
 def blesser(des: Des, curseur: Curseur, victime: Combattant, degats: int) -> RapportBlessure:

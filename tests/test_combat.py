@@ -277,7 +277,7 @@ def test_majeure_desarmer():
 def test_maladresse_brise_une_arme_fragile():
     batte = Arme("Batte fêlée", CORPS_A_CORPS, "1d6", Portee.CONTACT, proprietes=frozenset({Propriete.FRAGILE}))
     k, g = kaito(), ganger(arme=batte)
-    rapport = combat(DesTruques(97), k, g).attaquer(g, k)  # combat 45 : maladresse de 96 à 100
+    rapport = combat(DesTruques(97, 3), k, g).attaquer(g, k)  # combat 45 : maladresse de 96 à 100
     assert rapport.attaque.degre is Degre.MALADRESSE
     assert g.arme is None
     assert k.fiche.pv == 8
@@ -389,7 +389,7 @@ def test_embuscade():
 
 def test_le_camp_surpris_perd_son_premier_round():
     k, g = kaito(), ganger()
-    c = combat(DesTruques(30, 2), k, g, surpris=[k])
+    c = combat(DesTruques(40, 2), k, g, surpris=[k])
     assert not c.peut_agir(k)
     with pytest.raises(ActionImpossible):
         c.deplacer(k)
