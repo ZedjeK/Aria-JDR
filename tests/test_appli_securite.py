@@ -100,3 +100,12 @@ def test_quitter_appelle_l_arret(tmp_path):
     client = TestClient(app, base_url=f"http://127.0.0.1:{PORT}", follow_redirects=False)
     client.get(f"/?j={JETON}")
     assert client.post("/api/quitter").status_code == 200 and arrets == [1]
+
+
+def test_enregistrer_le_fond_ne_remet_pas_les_reglages_de_combat_a_zero(ouvert, tmp_path):
+    donnees.enregistrer_reglages(donnees.Reglages(combat=donnees.Combat("aucun", True, False)), tmp_path)
+    reponse = ouvert.put("/api/reglages", json={"fond": {"actif": False}})
+    assert reponse.json()["combat"] == {"recit": "aucun", "pvExacts": True, "choisirSaDefense": False}
+    ouvert.put("/api/reglages", json={"combat": {"recit": "fin", "pvExacts": False, "choisirSaDefense": True}})
+    enregistres = donnees.charger_reglages(tmp_path)
+    assert enregistres.combat == donnees.Combat("fin", False, True) and not enregistres.fond.actif

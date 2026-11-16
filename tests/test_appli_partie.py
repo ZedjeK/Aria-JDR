@@ -269,7 +269,7 @@ def test_une_campagne_qui_existe_deja_n_est_pas_ecrasee(donnees_jeu, mj_pret):
 def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choix(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
 
-    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None):
+    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None):
         recus.update(nom=camp.dossier.name, choix=choix, surprends_moi=surprends_moi, predefini=predefini)
         sortie("Univers créé.")
 
@@ -285,7 +285,7 @@ def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choi
 
 def test_le_mj_qui_propose_le_cadre_passe_par_surprends_moi(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
-    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None:
+    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None:
                         recus.update(surprends_moi=surprends_moi, nom=choix.nom))
     client = ouvrir(donnees_jeu, mj_pret)
     client.post("/api/partie/nouvelle", json={**NOUVELLE, "surprends_moi": True})
@@ -429,3 +429,15 @@ def test_interrompre_le_banc_par_la_route_laisse_le_profil_tel_quel(donnees_jeu,
     assert client.post("/api/partie/arreter").status_code == 200
     assert attendre(lambda: not client.get("/api/partie").json()["actif"])
     assert ecrit == [] and client.get("/api/partie").json()["erreur"] is None
+
+
+def test_les_reglages_de_combat_enregistres_partent_avec_la_partie(donnees_jeu, mj_pret, monkeypatch):
+    from aria.combat_partie import Recit, ReglagesDeCombat
+    recus = []
+    monkeypatch.setattr(jeu, "lancer", lambda camp, *a, entree, sortie, **k: recus.append(k["reglages_combat"]))
+    donnees.enregistrer_reglages(donnees.Reglages(combat=donnees.Combat("fin", True, True)), donnees_jeu)
+    fausse_campagne("neo-tokyo")
+    client = ouvrir(donnees_jeu, mj_pret)
+    client.post("/api/partie/reprendre", json={"nom": "neo-tokyo"})
+    assert attendre(lambda: recus)
+    assert recus == [ReglagesDeCombat(Recit.A_LA_FIN, True, True)]

@@ -11,6 +11,7 @@ ECONOMIE = chemins.PROMPTS / "economie.md"
 MONDE = chemins.PROMPTS / "monde.md"
 ALEATOIRE = chemins.PROMPTS / "aleatoire.md"
 OUTILS = chemins.PROMPTS / "outils.md"
+COMBAT_CLASSIQUE = chemins.PROMPTS / "combat_classique.md"
 
 
 def presenter(personnage: Personnage) -> str:
@@ -57,12 +58,14 @@ def presenter_familles(ouvertes: list[str], fermees: dict[str, str]) -> str:
 
 def prompt_systeme(univers: Univers, personnage: Personnage, scene: str = "", memoire: str = "",
                    fil: str = "", monde: bool = False, aleatoire: bool = False,
-                   familles: tuple[list[str], dict[str, str]] | None = None) -> str:
+                   familles: tuple[list[str], dict[str, str]] | None = None, combat_classique: bool = True) -> str:
     """Le prompt du MJ. `scene` : ce que le MJ sait de la situation en cours (lieu, PNJ présents…) ;
     `memoire` : le bloc Mémoire de la campagne ; `fil` : ce que le moteur a gardé des échanges
-    de la session sortis de la conversation."""
+    de la session sortis de la conversation. `combat_classique` : les lignes de pilotage d'un combat mené par le
+    MJ (attaquer, fin_de_tour…) ; faux quand le code mène les combats à pied (REGLES.md 7.8)."""
     gabarit = PROMPT.read_text(encoding="utf-8")
     return gabarit.format(univers=univers.nom, genre=univers.genre, cadre=univers.cadre,
+                          combat=COMBAT_CLASSIQUE.read_text(encoding="utf-8") if combat_classique else "",
                           personnage=presenter(personnage), magie=presenter_magie(univers, personnage),
                           economie=presenter_economie(univers, personnage)
                           + (MONDE.read_text(encoding="utf-8") if monde else "")

@@ -142,6 +142,12 @@ def _test(resultat: Resultat) -> dict:
 
 # --- La session de jeu ------------------------------------------------------------------------
 
+# Pendant un combat à pied, le code mène les actions et les dés : le MJ n'a que des jets de base, de quoi faire
+# entrer quelqu'un, et fin_combat. Ni attaque, ni dégâts, ni tour de parole (REGLES.md 7.8).
+OUTILS_A_PIED = frozenset({"etat", "test_competence", "test_caracteristique", "forcer_jet", "choc", "point_de_destin",
+                           "creer_pnj", "noter_pnj", "inventaire", "rejoindre_combat", "fin_combat"})
+
+
 @dataclass
 class Session:
     """Tout ce que le MJ manipule pendant une partie : l'univers, le perso, les PNJ, le combat, le temps."""
@@ -158,6 +164,8 @@ class Session:
     poursuite: poursuite_.Poursuite | None = None
     combat: Combat | None = None
     mode_combat: ModeCombat | None = None  # qui mène le combat en cours, choisi à son ouverture (REGLES.md 7.8)
+    combat_par_le_code: bool = False  # la partie sait mener un combat à pied (aria.combat_partie) : sinon, le MJ le mène
+    main_du_mj: frozenset[str] | None = None  # pendant un combat à pied, ce que le MJ a sous la main (par défaut : OUTILS_A_PIED)
     dernier_test: dict | None = None
     journal: list[dict] = field(default_factory=list)
     campagne: Campagne | None = None  # None : rien n'est écrit sur le disque (le banc d'essai)
@@ -202,6 +210,11 @@ class Session:
 
     # --- Outils : catalogue et appel ---
 
+    @property
+    def a_pied(self) -> bool:
+        """Un combat à pied est en cours, et c'est le code qui le mène."""
+        return self.combat_par_le_code and self.combat is not None and self.mode_combat is ModeCombat.A_PIED
+
     def schemas(self) -> list[dict]:
         """La liste des outils au format OpenAI, à envoyer au LLM à chaque tour."""
         return [{"type": "function",
@@ -239,6 +252,8 @@ class Session:
         """L'outil est-il sous la main du MJ ? Sans les familles : dès qu'il est disponible."""
         if not outil.disponible(self):
             return False
+        if self.a_pied:
+            return outil.nom in (self.main_du_mj or OUTILS_A_PIED)
         if not self.familles:
             return True
         famille = familles_.famille_de(outil.nom)
@@ -273,6 +288,9 @@ class Session:
             if nom not in OUTILS or not OUTILS[nom].disponible(self):
                 disponibles = sorted(n for n, o in OUTILS.items() if self.visible(o))
                 raise ErreurOutil(f"Outil inconnu : « {nom} ». Outils disponibles : {disponibles}.")
+            if self.a_pied and not self.visible(OUTILS[nom]):
+                raise ErreurOutil(f"Le code mène ce combat : « {nom} » n'est pas à toi ici. "
+                                  f"Tu as : {sorted(n for n, o in OUTILS.items() if self.visible(o))}.")
             if not self.visible(OUTILS[nom]):
                 # Le MJ appelle un outil d'une famille fermée : le moteur l'ouvre et exécute l'appel
                 famille = familles_.famille_de(nom)
@@ -956,6 +974,11 @@ def embuscade(session: Session, discretion_agresseurs: int) -> dict:
     return {"discretion": _resume(r.discretion), "perception": _resume(r.perception), "joueur_surpris": r.surpris}
 
 
+CONSIGNE_A_PIED = ("Le code mène ce combat : il joue les ennemis, lance tous les dés et donne son menu au joueur. "
+                   "Raconte l'ouverture en deux ou trois phrases, sans rien jouer ni faire attaquer personne, puis "
+                   "arrête-toi : tu reparleras à chaque round, d'après les faits qu'on te donnera.")
+
+
 @outil("Commencer un combat entre le joueur et des PNJ. Le moteur fixe l'ordre d'initiative et tient le tour "
        "de parole : chacun agit à son tour, puis fin_de_tour passe au suivant.",
        lambda s: _objet({
@@ -982,6 +1005,8 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors:
         session.combat.malus_tir, session.combat.malus_tir_long = meteo_.malus_de_tir(session.monde)
         if session.combat.malus_tir or session.combat.malus_tir_long:
             meteo = {"meteo": f"{meteo_.temps(session.monde)} : le moteur l'applique aux tirs"}
+    if session.a_pied:
+        return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre], "consigne": CONSIGNE_A_PIED} | meteo
     return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre],
             "au_tour_de": _qui_joue(session), "consigne": _consigne(session), "fiche": _fiche(session)} | meteo
 
