@@ -3,7 +3,28 @@
 Un bloc par version, le plus récent en haut. Les notes complètes d'une version
 sont dans `docs/releases/`.
 
-## Non publié
+## 0.2.0
+
+### Ajouté
+
+- Le combat à pied mené par le code (REGLES.md 7.8) : le moteur choisit l'action des ennemis avec une IA par profil (bretteur, tireur) qui tient compte du moral, de l'arme, du couvert et du nombre d'attaquants par cible ; le MJ ne tire plus leurs dés.
+- Le menu du joueur en combat : attaquer, viser, recharger, débloquer, changer d'arme, se mettre à couvert, lancer un sort à une cible, stabiliser, parler, autre action, fuir, terminer le tour. Dans la page, des boutons (clic ou touches 1 à 9), les options impossibles grisées avec leur raison ; dans la console, un menu numéroté.
+- Le récit du combat par le MJ, sans outils et à partir des faits du code (sans chiffre, sans fait inventé, sans rien décider à la place du joueur), à chaque round, à la fin seulement ou jamais ; à la fin, `fin_combat` avec les moments forts, et un repli du code si le MJ se tait.
+- Les réactions du joueur : choisir sa défense à chaque attaque et le bonus d'une réussite majeure, selon le réglage.
+- Les réglages de combat dans la page : moment du récit, PV exacts des ennemis, choix de sa défense, ennemis choisis par le MJ.
+- Un essai, éteint par défaut : le plan du round par le MJ (une requête par round, intentions fermées, 25 secondes au plus, repli sur l'IA du code).
+- Un simulateur de combats (`aria/simulateur_combat.py`, sept scénarios) et un mini-banc du plan (`python -m aria.banc_plan`).
+- Au banc, dix situations de combat à pied (récits, « Parler », « Autre action », fuite, déclenchement) : 83 situations dont 23 pièges.
+
+### Modifié
+
+- Le prompt du MJ allège sa section combat quand le code mène ; les combats avec drone, arme de zone, lanceur de sorts ou véhicule restent menés par le MJ comme avant (`aria/prompts/combat_classique.md`).
+- En combat à pied, le MJ n'a que les outils dont il a besoin (état, jets, choc, destin, PNJ, inventaire, fin du combat) ; appeler un outil de combat renvoie une erreur qui le dit.
+- Fuir : le MJ clôt le combat puis ouvre la poursuite.
+- Les réglages de l'interface se fusionnent avec l'existant au lieu de l'écraser.
+- Le banc compare les récits sans tenir compte de l'apostrophe typographique du modèle.
+
+## 0.1.0
 
 ### Ajouté
 
