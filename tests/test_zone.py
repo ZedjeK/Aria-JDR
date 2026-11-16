@@ -191,7 +191,7 @@ def test_l_iem_coupe_les_implants():
 def test_le_tir_perd_son_viseur_sous_l_iem():
     k, g = kaito_augmente(), ganger()
     subir_iem(k, "Grenade IEM")
-    r = combat(DesTruques(99), k, g).attaquer(k, g)
+    r = combat(DesTruques(99, 3), k, g).attaquer(k, g)
     assert r.attaque.valeur == 50 - 20  # Armes à distance 50, sans le viseur, et aveuglé
 
 

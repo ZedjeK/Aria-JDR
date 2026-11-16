@@ -78,6 +78,11 @@ def calculer_degre(jet: int, valeur: int, combat: bool = False) -> Degre:
     return degre
 
 
+def chance_de_reussite(valeur: int, combat: bool = True) -> int:
+    """Le pourcentage de chances de réussir un jet contre cette valeur finale, d'après les 100 jets possibles."""
+    return sum(calculer_degre(jet, valeur, combat).est_reussite for jet in range(1, 101))
+
+
 @dataclass(frozen=True)
 class Resultat:
     """Le résultat complet d'un test."""

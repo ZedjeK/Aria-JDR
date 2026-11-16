@@ -22,7 +22,7 @@ from aria.combat import (
 )
 from aria.des import Des
 from aria.personnage import Caracteristique as C, Etat
-from aria.resolution import Degre, Issue, Resultat
+from aria.resolution import Issue, Resultat
 from aria.sauvegarde import Partie, sauvegarder
 from aria.temps import Moment, Periode
 from aria.univers import charger_univers
@@ -125,7 +125,7 @@ class Demo:
                                   "ennemis", u.arme("Couteau"))
         self.tireur = Combattant(FichePnj("Le tireur", combat=40, pv_max_base=9, dexterite=50),
                                  "ennemis", u.arme("Pistolet lourd"))
-        self.a_couvert = self.au_contact = self.enraye = False
+        self.a_couvert = self.au_contact = False
 
         embuscade = tester_embuscade(self.des, self.kaito.competence("Perception"), 45)
         self.dire(f"\nDeux silhouettes t'attendaient. Leur discrétion : {jet(embuscade.discretion)}. "
@@ -223,11 +223,17 @@ class Demo:
                     mineures.append(("Viser (+20 au tir de ce round, mais tu ne pourras plus bouger)", lambda: c.viser(k)))
             if peut_recharger and recharge_mineure:
                 mineures.append((f"Recharger ({restantes} balles restantes)", self.recharger))
+            if k.arme_lachee:
+                mineures.append(("Ramasser ton arme", lambda: c.degainer(k, k.arme_lachee)))
+            if k.arme and k.arme_enrayee is k.arme:
+                mineures.append(("Débloquer ton arme enrayée", lambda: c.debloquer(k)))
 
         simples, raison_simple = [], ""
         if not budget.peut(TypeAction.SIMPLE):
             raison_simple = ("tu t'es déplacé deux fois" if budget.utilise[TypeAction.DEPLACEMENT] == 2
                              else "action simple déjà utilisée")
+        elif k.arme and k.arme_enrayee is k.arme:
+            raison_simple = "ton arme est enrayée : débloque-la d'abord"
         elif k.arme and restantes:
             bonus = " (+20, tu as visé)" if k.vise else ""
             for cible in (self.couteau, self.tireur):
@@ -266,6 +272,7 @@ class Demo:
         c, g = self.combat, self.couteau
         if not c.peut_agir(g):
             return
+        self.remettre_en_etat(g)
         if not self.au_contact:
             c.deplacer(g)
             self.au_contact = True
@@ -283,19 +290,22 @@ class Demo:
         c, g = self.combat, self.tireur
         if not c.peut_agir(g):
             return
-        if self.enraye:
-            self.enraye = False
+        if g.arme_enrayee is g.arme and g.arme:
+            c.debloquer(g)
             self.dire("\nLe tireur jure en désenrayant son arme.")
-            return
+        self.remettre_en_etat(g)
         if g.munitions_restantes() == 0:
             c.recharger(g)
             self.dire("\nLe tireur recharge.")
         self.dire("\nLe tireur fait feu" + (" sur ta benne !" if self.a_couvert else " !"))
         rapport = c.attaquer(g, self.k, couvert=Couvert.PARTIEL if self.a_couvert else Couvert.AUCUN)
         self.raconter(rapport)
-        if rapport.attaque.degre is Degre.MALADRESSE:
-            self.enraye = True
-            self.dire("  → Son pistolet s'enraye !")
+
+    def remettre_en_etat(self, ennemi: Combattant):
+        """Un ennemi qui a lâché son arme la reprend avant d'attaquer (une action mineure)."""
+        if ennemi.arme_lachee:
+            self.dire(f"\n{ennemi.nom} ramasse son arme.")
+            self.combat.degainer(ennemi, ennemi.arme_lachee)
 
     def proposer_destin(self) -> bool:
         """Si Kaito vient de mourir, propose un point de destin. Renvoie vrai si la partie s'arrête."""

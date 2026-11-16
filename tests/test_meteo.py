@@ -120,7 +120,7 @@ def test_une_campagne_sans_meteo_n_a_pas_le_champ():
 
 
 def test_un_combat_dehors_gene_les_tirs():
-    s = avec_meteo("pluie acide", 99, 50, 50)
+    s = avec_meteo("pluie acide", 99, 3, 50, 50)
     ganger(s)
     debut = s.appeler("debut_combat", {"pnj": ["ganger"], "dehors": True})
     assert "pluie acide" in debut["meteo"] and (s.combat.malus_tir, s.combat.malus_tir_long) == (-10, 0)

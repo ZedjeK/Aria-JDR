@@ -53,10 +53,10 @@ def test_l_armement_d_un_vehicule(vehicule, erreur):
 
 def test_tirer_depuis_un_vehicule():
     k, g = kaito(PISTOLET), ganger()
-    r = combat(DesTruques(99), k, g).attaquer(k, g, tireur="conducteur")
+    r = combat(DesTruques(99, 3), k, g).attaquer(k, g, tireur="conducteur")
     assert r.attaque.valeur == 50 - 20
     k2 = kaito(PISTOLET)
-    assert combat(DesTruques(99), k2, g).attaquer(k2, g, tireur="passager").attaque.valeur == 50 - 10
+    assert combat(DesTruques(99, 3), k2, g).attaquer(k2, g, tireur="passager").attaque.valeur == 50 - 10
     k3 = kaito(replace(FUSIL, proprietes=frozenset({Propriete.DEUX_MAINS})))
     with pytest.raises(ActionImpossible, match="une main"):
         combat(DesTruques(), k3, g).attaquer(k3, g, tireur="conducteur")
@@ -141,7 +141,7 @@ def test_un_drone_telepilote_agit_avec_l_action_de_son_operateur():
     k, g = kaito(PISTOLET), ganger(dexterite=40)
     d = combattant_drone(Engin(DRONE), "joueur", PISTOLET, operateur=k)
     assert d.valeur("Armes à distance") == 40  # le Pilotage de Kaito
-    c = combat(DesTruques(99), k, g, d, tour_par_tour=True)
+    c = combat(DesTruques(99, 3), k, g, d, tour_par_tour=True)
     assert [x.nom for x in c.ordre if c.peut_agir(x)] == ["Kaito", "Ganger"]  # pas de tour à lui
     c.attaquer(d, g)
     with pytest.raises(ActionImpossible, match="budget"):
@@ -173,7 +173,7 @@ def session_armee(*des):
 
 def test_les_outils_de_l_armement():
     # Le drone autonome tire (99 : raté) ; le flic, depuis la tourelle du pick-up, tire sur Kaito (99).
-    s = session_armee(99, 99)
+    s = session_armee(99, 3, 99, 3)
     s.appeler("creer_pnj", {"identifiant": "flic", "nom": "Flic", "camp": "ennemis", "combat": 45, "pv": 10,
                             "vehicule": "Pick-up armé"})
     assert "erreur" not in s.appeler("debut_combat", {"pnj": ["flic"]})
