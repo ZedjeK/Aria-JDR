@@ -73,10 +73,11 @@ class Combat:
     recit: str = "round"
     pv_exacts: bool = False
     choisir_sa_defense: bool = False
+    pnj_par_le_llm: bool = False  # le LLM choisit les actions des PNJ, un plan par round : plus lent, éteint par défaut
 
     def assaini(self) -> "Combat":
         recit = self.recit if isinstance(self.recit, str) and self.recit in RECITS else "round"
-        return Combat(recit, self.pv_exacts is True, self.choisir_sa_defense is True)
+        return Combat(recit, self.pv_exacts is True, self.choisir_sa_defense is True, self.pnj_par_le_llm is True)
 
 
 @dataclass
@@ -97,7 +98,7 @@ class Reglages:
     def en_dict(self) -> dict:
         return {"fond": asdict(self.fond),
                 "combat": {"recit": self.combat.recit, "pvExacts": self.combat.pv_exacts,
-                           "choisirSaDefense": self.combat.choisir_sa_defense},
+                           "choisirSaDefense": self.combat.choisir_sa_defense, "pnjParLeLlm": self.combat.pnj_par_le_llm},
                 "proposerInstallation": self.proposer_installation, "chercherMisesAJour": self.chercher_mises_a_jour}
 
     @staticmethod
@@ -113,7 +114,8 @@ class Reglages:
             fond=Fond(actif=fond.get("actif", True), vitesse=fond.get("vitesse", "normale"),
                       minimum=fond.get("minimum", 2), maximum=fond.get("maximum", 5)),
             combat=Combat(recit=combat.get("recit", "round"), pv_exacts=combat.get("pvExacts", False),
-                          choisir_sa_defense=combat.get("choisirSaDefense", False)),
+                          choisir_sa_defense=combat.get("choisirSaDefense", False),
+                          pnj_par_le_llm=combat.get("pnjParLeLlm", False)),
             proposer_installation=brut.get("proposerInstallation", True),
             chercher_mises_a_jour=brut.get("chercherMisesAJour", True)).assaini()
 

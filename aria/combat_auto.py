@@ -23,6 +23,7 @@ from aria.combat import (
     RapportAttaque,
     RapportMoral,
     RapportSauvegarde,
+    TOURS_AVANT_DE_FUIR,
     TypeAction,
 )
 from aria.equipement import Recharge
@@ -126,6 +127,30 @@ class Action:
     cible: Combattant | None = None
 
 
+class Intention(Enum):
+    """Ce qu'un PNJ veut faire ce round : la liste fermée dont le LLM choisit, quand il planifie (REGLES.md 7.8)."""
+
+    ATTAQUER = "attaquer"
+    S_ABRITER = "s'abriter"
+    VISER = "viser"
+    FUIR = "fuir"
+    SE_RENDRE = "se rendre"
+
+    @property
+    def veut_une_cible(self) -> bool:
+        return self in (Intention.ATTAQUER, Intention.VISER)
+
+
+@dataclass(frozen=True)
+class Choix:
+    intention: Intention
+    cible: Combattant | None = None
+
+
+Plan = dict[Combattant, Choix]  # le choix de chaque PNJ pour le round ; un PNJ absent suit l'IA par défaut
+INAPPLICABLE = object()  # l'intention ne peut pas se jouer ici : l'IA par défaut décide
+
+
 def _action_de_recharge(combattant: Combattant) -> TypeAction:
     return TypeAction.MINEURE if combattant.arme.chargeur.recharge is Recharge.MINEURE else TypeAction.SIMPLE
 
@@ -161,13 +186,46 @@ def tirer_la_cible(combat: Combat, poids: list[tuple[Combattant, int]]) -> Comba
     return poids[-1][0]  # inatteignable : la somme des poids est le maximum du tirage
 
 
+def _suivre_le_choix(combat: Combat, combattant: Combattant, registre: Registre, choix: Choix,
+                     interdits: frozenset[Geste], tireur: bool) -> "Action | None | object":
+    """Traduit une intention du plan en action, dans le budget du tour. None : l'intention est accomplie, le tour
+    est fini ; INAPPLICABLE : elle ne se joue pas ici (cible morte ou déjà prise à deux, pas d'abri…), l'IA décide.
+    Fuir et se rendre se jouent avant le tour, par le moral."""
+    budget, intention = combattant.budget, choix.intention
+
+    def possible(geste: Geste, type_action: TypeAction) -> bool:
+        return geste not in interdits and budget.peut(type_action)
+
+    if intention in (Intention.FUIR, Intention.SE_RENDRE):
+        return INAPPLICABLE
+    if intention is Intention.S_ABRITER:
+        if not tireur or combat.decor is Decor.DEGAGE:
+            return INAPPLICABLE
+        if combattant.couvert is Couvert.AUCUN and possible(Geste.COUVERT, TypeAction.DEPLACEMENT):
+            return Action(Geste.COUVERT)
+        return None
+    # Attaquer ou viser : la cible choisie, si elle est encore légale (en lice, et pas déjà prise à deux attaquants)
+    cible = choix.cible
+    if cible is None or cible not in {c for c, _ in poids_des_cibles(combat, combattant, registre)}:
+        return INAPPLICABLE
+    if intention is Intention.VISER:
+        if not tireur:
+            return INAPPLICABLE
+        if (not combattant.vise and not budget.utilise[TypeAction.DEPLACEMENT]
+                and possible(Geste.VISER, TypeAction.MINEURE)):
+            return Action(Geste.VISER)
+    return Action(Geste.ATTAQUER, cible) if possible(Geste.ATTAQUER, TypeAction.SIMPLE) else None
+
+
 def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
-                     interdits: frozenset[Geste] = frozenset()) -> Action | None:
+                     interdits: frozenset[Geste] = frozenset(), choix: Choix | None = None) -> Action | None:
     """La prochaine action de celui dont c'est le tour, ou None : il a fini (REGLES.md 7.8, dans cet ordre).
 
     Le moral se teste avant, par `Combat.tester_moral`. Un fuyard court, sans rien d'autre. Sinon : l'état de son
     arme (la reprendre, la débloquer, recharger), le couvert pour un tireur, la visée s'il est à couvert sans avoir
-    bougé, l'attaque. `interdits` : les gestes que le moteur vient de refuser (par exemple plus de chargeur)."""
+    bougé, l'attaque. `interdits` : les gestes que le moteur vient de refuser (par exemple plus de chargeur).
+    `choix` : l'intention du plan du round pour ce PNJ ; l'état de son arme passe avant, et si elle ne peut pas se
+    jouer, l'IA décide comme sans plan."""
     budget = combattant.budget
     if not combat.peut_agir(combattant):  # parti ou rendu, à terre, surpris au premier round
         return None
@@ -189,6 +247,10 @@ def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
         return (Action(Geste.RECHARGER)
                 if possible(Geste.RECHARGER, _action_de_recharge(combattant)) else None)
 
+    if choix is not None:
+        suite = _suivre_le_choix(combat, combattant, registre, choix, interdits, tireur)
+        if suite is not INAPPLICABLE:
+            return suite
     if not possible(Geste.ATTAQUER, TypeAction.SIMPLE):
         return None
     if tireur:
@@ -282,10 +344,16 @@ class CombatAuto:
     jouant son tour lui-même ; le simulateur lui confie tout le monde."""
 
     def __init__(self, combat: Combat, mene: Callable[[Combattant], bool] = _est_pnj,
-                 reactions: Reactions | None = None):
+                 reactions: Reactions | None = None,
+                 planificateur: Callable[[Combat, Registre], Plan | None] | None = None):
+        """`planificateur(combat, registre)` : donne le plan du round (un choix par PNJ), appelé une fois par round, au
+        premier tour d'un PNJ ; None ou un PNJ absent du plan : l'IA par défaut joue, comme sans planificateur."""
         self.combat = combat
         self.mene = mene
         self.reactions = reactions
+        self.planificateur = planificateur
+        self.plan: Plan = {}
+        self._round_planifie = 0
         self.registre = Registre()
 
     def fin(self) -> Fin:
@@ -303,10 +371,16 @@ class CombatAuto:
         if combattant is None:
             raise ActionImpossible("Plus personne ne peut agir.")
         self.registre.ouvrir(combat.round)
+        if self.planificateur and self._round_planifie != combat.round:
+            self._round_planifie = combat.round
+            self.plan = self.planificateur(combat, self.registre) or {}
+        choix = self.plan.get(combattant)
         rapport = RapportTour(combattant, combat.round, moral=combat.tester_moral(combattant))
+        if choix and choix.intention in (Intention.FUIR, Intention.SE_RENDRE):
+            rapport.moral = self._partir_de_son_plein_gre(combattant, choix.intention) or rapport.moral
         interdits: set[Geste] = set()
         while len(rapport.evenements) < ACTIONS_MAX_PAR_TOUR:
-            action = prochaine_action(combat, combattant, self.registre, frozenset(interdits))
+            action = prochaine_action(combat, combattant, self.registre, frozenset(interdits), choix)
             if action is None:
                 break
             try:
@@ -319,6 +393,19 @@ class CombatAuto:
             rapport.evenements.append(Evenement(action, attaque))
         rapport.mourants, rapport.sauvegardes = self.finir_le_tour()
         return rapport
+
+    def _partir_de_son_plein_gre(self, combattant: Combattant, intention: Intention):
+        """Le plan du round fait fuir ou rendre un PNJ plus tôt, sans test, mais seulement si un déclencheur de moral
+        est vrai (REGLES.md 7.8). Il ne peut jamais retenir quelqu'un que le test de moral a fait craquer."""
+        if combattant.moral is not Moral.NORMAL or not isinstance(combattant.fiche, FichePnj):
+            return None
+        raisons = self.combat.declencheurs_de_moral(combattant)
+        if not raisons:
+            return None
+        combattant.moral = Moral.EN_FUITE if intention is Intention.FUIR else Moral.RENDU
+        if combattant.moral is Moral.EN_FUITE:
+            combattant.tours_avant_de_partir = TOURS_AVANT_DE_FUIR
+        return RapportMoral(combattant.nom, raisons, None, combattant.moral)
 
     def finir_le_tour(self) -> tuple[list[tuple[str, Resultat]], list[RapportSauvegarde]]:
         """Passe la main : renvoie les tests des mourants si le round se clôt, et les effets persistants qui

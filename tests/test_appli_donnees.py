@@ -71,11 +71,11 @@ def test_sauvegarder_un_fichier_absent_leve_une_erreur(tmp_path):
 
 
 def test_les_reglages_de_combat_ont_leurs_valeurs_par_defaut_et_font_l_aller_retour(tmp_path):
-    assert donnees.charger_reglages(tmp_path).combat == donnees.Combat("round", False, False)
-    r = donnees.Reglages(combat=donnees.Combat("fin", True, True))
+    assert donnees.charger_reglages(tmp_path).combat == donnees.Combat("round", False, False, False)
+    r = donnees.Reglages(combat=donnees.Combat("fin", True, True, True))
     donnees.enregistrer_reglages(r, tmp_path)
     brut = json.loads((tmp_path / donnees.FICHIER_REGLAGES).read_text(encoding="utf-8"))
-    assert brut["combat"] == {"recit": "fin", "pvExacts": True, "choisirSaDefense": True}
+    assert brut["combat"] == {"recit": "fin", "pvExacts": True, "choisirSaDefense": True, "pnjParLeLlm": True}
     assert donnees.charger_reglages(tmp_path) == r
 
 

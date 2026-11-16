@@ -951,6 +951,8 @@ def creer_pnj(session: Session, identifiant: str, camp: str, combat: int | None 
                                           u.armure(armure) if armure else None)
     if session.inventaire:  # les munitions sont comptées pour tout le monde (REGLES.md 13.5)
         session.pnj[identifiant].reserve = ReservePnj(u.arme(arme) if arme else None)
+    if profil:
+        session.pnj[identifiant].caractere = profil["caractere"]
     if vehicule:
         session.engins[identifiant] = vehicules_.Engin(u.vehicule(vehicule))
     if profil and menace == pnj_.ELITE:

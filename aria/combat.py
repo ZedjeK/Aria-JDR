@@ -248,6 +248,7 @@ class Combattant:
         self.desequilibre = False  # maladresse : −20 à sa prochaine défense
         self.moral = Moral.NORMAL
         self.tours_avant_de_partir = 0
+        self.caractere = ""  # un des traits de PNJ (aria.pnj) : ce qui guide son choix quand le LLM planifie le round
         self.sursis = False  # tombé mourant ce round : son premier test attend la fin du round suivant
         self.effets: list[EffetEnCours] = []  # ce que les sorts lui ont laissé
         self.armure_implantee: Armure | None = None  # posée par la session, d'après les implants du personnage
@@ -344,7 +345,7 @@ class RapportMoral:
 
     qui: str
     declencheurs: list[str]
-    test: Resultat
+    test: Resultat | None  # None : il a choisi de fuir ou de se rendre sans test (le plan du round, REGLES.md 7.8)
     moral: Moral  # ce qu'il devient : NORMAL s'il tient, EN_FUITE ou RENDU s'il craque
 
 

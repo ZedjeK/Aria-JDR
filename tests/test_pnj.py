@@ -153,3 +153,9 @@ def test_une_campagne_d_avant_garde_les_chiffres_libres():
     r = s.appeler("creer_pnj", {"identifiant": "g", "nom": "Ganger", "camp": "ennemis", "combat": 45, "pv": 10})
     assert r["pv"] == 10 and "role" not in r
     assert "combat" in s.appeler("creer_pnj", {"identifiant": "h", "nom": "X", "camp": "ennemis"})["erreur"]
+
+
+def test_le_pnj_garde_son_caractere_pour_le_plan_du_round():
+    s = des_libres()
+    r = creer(s)
+    assert r["caractere"] and s.pnj["g"].caractere == r["caractere"]

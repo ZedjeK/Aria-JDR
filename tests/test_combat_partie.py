@@ -32,11 +32,11 @@ class Serveur(ServeurScripte):
         super().__init__(*script)
         self.budgets, self.panne = [], panne
 
-    def discuter(self, messages, outils=None, budget=None):
+    def discuter(self, messages, outils=None, budget=None, **options):
         if self.panne:
             raise llm.ErreurLLM("Le serveur n'a pas répondu : essai")
         self.budgets.append(budget)
-        return super().discuter(messages, outils, budget)
+        return super().discuter(messages, outils, budget, **options)
 
     def outils_de(self, requete: int) -> set[str]:
         return {o["function"]["name"] for o in (self.recus[requete][1] or [])}
@@ -319,3 +319,24 @@ def test_le_jeu_ne_fait_rien_quand_le_combat_est_classique_ou_absent():
     serveur = Serveur()
     jeu_minimal(s, serveur, Script()).combattre_a_pied()
     assert serveur.recus == []
+
+
+def test_l_interrupteur_du_plan_ne_branche_le_planificateur_que_s_il_est_allume(monkeypatch):
+    import aria.combat_partie as combat_partie
+    from aria.combat_plan import PlanificateurLLM
+
+    vus, vrai = [], combat_partie.ouvrir_le_combat
+    monkeypatch.setattr(combat_partie, "ouvrir_le_combat",
+                        lambda s, ecran, planificateur=None: (vus.append(planificateur), vrai(s, ecran, planificateur))[1])
+    for reglages, attendu in ((ReglagesDeCombat(), type(None)), (ReglagesDeCombat(pnj_par_le_llm=True), PlanificateurLLM)):
+        vus.clear()
+        s = combat_a_pied(1)  # Kaito joue le premier et abat le ganger : le plan n'est jamais demandé
+        serveur = Serveur([appel("fin_combat", moments_forts="Fin.")], "Le ganger s'effondre.")
+        partie(s, serveur, Script("Attaquer", "Ganger"), reglages).jouer()
+        assert isinstance(vus[0], attendu) and s.combat is None
+
+
+def test_le_plan_du_llm_est_eteint_par_defaut_et_se_lit_dans_les_reglages():
+    assert ReglagesDeCombat().pnj_par_le_llm is False
+    assert ReglagesDeCombat.depuis_dict({"pnj_par_le_llm": True}).pnj_par_le_llm is True
+    assert ReglagesDeCombat.depuis_dict({"pnj_par_le_llm": "oui"}).pnj_par_le_llm is False

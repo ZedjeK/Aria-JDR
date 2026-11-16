@@ -543,3 +543,13 @@ def test_la_fin_du_tour_du_joueur_ne_le_dit_pas_inactif():
     ecran = script.ecran()
     assert mener_le_combat(s, ouvrir_le_combat(s, ecran), ecran) == Sortie(Nature.PARLER, "On cause ?")
     assert s.combat.round == 2 and "Kaito ne fait rien" not in script.texte
+
+
+def test_les_lignes_du_tour_disent_qu_un_pnj_choisit_de_fuir_sans_test():
+    from aria.combat import RapportMoral
+    from aria.combat_auto import RapportTour
+    s, g = combat_de_session(rapide=True)
+    for moral, attendu in ((Moral.EN_FUITE, "choisit de s'enfuir"), (Moral.RENDU, "choisit de se rendre")):
+        rapport = RapportTour(g, 1, moral=RapportMoral("Ganger", ["la moitié de ses PV"], None, moral))
+        texte = "\n".join(lignes_du_tour(rapport, s.combat, Script().ecran()))
+        assert attendu in texte and "Moral :" not in texte

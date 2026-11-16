@@ -118,6 +118,7 @@ function afficher(reglages) {
   champ("combat-recit").value = reglages.combat.recit;
   champ("combat-pv").checked = reglages.combat.pvExacts;
   champ("combat-defense").checked = reglages.combat.choisirSaDefense;
+  champ("combat-llm").checked = reglages.combat.pnjParLeLlm;
 }
 
 champ("formulaire").addEventListener("submit", async (evenement) => {
@@ -138,6 +139,7 @@ champ("formulaire").addEventListener("submit", async (evenement) => {
           recit: champ("combat-recit").value,
           pvExacts: champ("combat-pv").checked,
           choisirSaDefense: champ("combat-defense").checked,
+          pnjParLeLlm: champ("combat-llm").checked,
         },
       }),
     });
