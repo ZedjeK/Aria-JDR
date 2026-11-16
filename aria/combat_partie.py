@@ -13,6 +13,7 @@ from enum import Enum
 from aria.choix import Choisir
 from aria.combat import Combat, Decor
 from aria.combat_auto import Fin, _cote
+from aria.combat_plan import PlanificateurLLM
 from aria.combat_joueur import (
     Ecran,
     Nature,
@@ -39,6 +40,7 @@ class ReglagesDeCombat:
     recit: Recit = Recit.PAR_ROUND
     pv_exacts: bool = False  # voir les PV exacts des ennemis, au lieu de leur état
     choisir_sa_defense: bool = False  # « Je choisis ma défense »
+    pnj_par_le_llm: bool = False  # le LLM planifie le round des PNJ (étage 2) : éteint par défaut
 
     @staticmethod
     def depuis_dict(brut) -> "ReglagesDeCombat":
@@ -46,7 +48,8 @@ class ReglagesDeCombat:
         if not isinstance(brut, dict):
             return ReglagesDeCombat()
         recit = next((r for r in Recit if r.value == brut.get("recit")), Recit.PAR_ROUND)
-        return ReglagesDeCombat(recit, brut.get("pv_exacts") is True, brut.get("choisir_sa_defense") is True)
+        return ReglagesDeCombat(recit, brut.get("pv_exacts") is True, brut.get("choisir_sa_defense") is True,
+                                brut.get("pnj_par_le_llm") is True)
 
 
 MESSAGE_RECIT = """[Combat : récit] Voici ce qui s'est passé, dans l'ordre. Ces faits sont exacts : ne change rien, n'ajoute rien.
@@ -96,7 +99,8 @@ class CombatDePartie:
     def jouer(self) -> None:
         """Mène le combat jusqu'à son terme : sa fin, ou une action que le MJ a close avec `fin_combat`."""
         s = self.session
-        auto = ouvrir_le_combat(s, self.ecran)
+        planificateur = PlanificateurLLM(self.table.serveur, s) if self.reglages.pnj_par_le_llm else None
+        auto = ouvrir_le_combat(s, self.ecran, planificateur)
         while s.a_pied:
             resultat = mener_le_combat(s, auto, self.ecran, self._avant_le_menu)
             if isinstance(resultat, Fin):

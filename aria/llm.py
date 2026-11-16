@@ -41,11 +41,14 @@ def arguments_serveur(modele: Modele, reglages: Reglages, port: int = PORT) -> l
 
 
 def requete(messages: list[dict], outils: list[dict] | None = None, budget: int | None = None,
-            temperature: float = 0.6, plafond: int = PLAFOND_JETONS) -> dict:
-    """Le corps d'une requête de chat, avec le budget de réflexion voulu."""
+            temperature: float = 0.6, plafond: int = PLAFOND_JETONS, outil_impose: str | None = None) -> dict:
+    """Le corps d'une requête de chat, avec le budget de réflexion voulu. `outil_impose` : le modèle doit appeler cet
+    outil (c'est ainsi qu'on obtient une réponse aux valeurs fermées)."""
     corps = {"messages": messages, "temperature": temperature, "max_tokens": plafond}
     if outils:
         corps["tools"] = outils
+        if outil_impose:
+            corps["tool_choice"] = {"type": "function", "function": {"name": outil_impose}}
     if budget == 0:
         corps["chat_template_kwargs"] = {"enable_thinking": False}
     elif budget is not None:
@@ -97,13 +100,14 @@ class Serveur:
         self._processus = None
 
     def discuter(self, messages: list[dict], outils: list[dict] | None = None, budget: int | None = None,
-                 temperature: float = 0.6) -> dict:
-        """Envoie la conversation ; renvoie la réponse complète de llama-server (message, usage, timings)."""
-        corps = json.dumps(requete(messages, outils, budget, temperature)).encode()
+                 temperature: float = 0.6, delai: int = DELAI_REPONSE, outil_impose: str | None = None) -> dict:
+        """Envoie la conversation ; renvoie la réponse complète de llama-server (message, usage, timings).
+        `delai` : les secondes qu'on attend la réponse avant d'y renoncer (ErreurLLM)."""
+        corps = json.dumps(requete(messages, outils, budget, temperature, outil_impose=outil_impose)).encode()
         demande = urllib.request.Request(f"{self.url}/v1/chat/completions", data=corps,
                                          headers={"Content-Type": "application/json"})
         try:
-            with urllib.request.urlopen(demande, timeout=DELAI_REPONSE) as r:
+            with urllib.request.urlopen(demande, timeout=delai) as r:
                 return json.load(r)
         except (urllib.error.URLError, OSError, ValueError) as erreur:
             raise ErreurLLM(f"Le serveur n'a pas répondu : {erreur}") from erreur

@@ -18,7 +18,7 @@ class ServeurScripte:
         self.script, self.prompt_tokens = list(script), prompt_tokens
         self.recus = []  # (messages, outils) de chaque requête
 
-    def discuter(self, messages, outils=None, budget=None):
+    def discuter(self, messages, outils=None, budget=None, **options):
         self.recus.append(([dict(m) for m in messages], outils))
         suivant = self.script.pop(0) if self.script else "Que fais-tu ?"
         if isinstance(suivant, str):

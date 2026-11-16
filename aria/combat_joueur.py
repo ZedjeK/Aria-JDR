@@ -183,7 +183,11 @@ def lignes_du_tour(rapport: RapportTour, combat: Combat, ecran: Ecran) -> list[s
     if rapport.moral:
         m = rapport.moral
         verbe = {Moral.NORMAL: "tient bon", Moral.EN_FUITE: "craque et s'enfuit", Moral.RENDU: "craque et se rend"}[m.moral]
-        lignes.append(f"  {qui} est éprouvé ({' ; '.join(m.declencheurs)}). Moral : {jet(m.test)} → {verbe}.")
+        if m.test is None:  # il a choisi de partir, sans test : le plan du round
+            choix = "s'enfuir" if m.moral is Moral.EN_FUITE else "se rendre"
+            lignes.append(f"  {qui} est éprouvé ({' ; '.join(m.declencheurs)}) et choisit de {choix}.")
+        else:
+            lignes.append(f"  {qui} est éprouvé ({' ; '.join(m.declencheurs)}). Moral : {jet(m.test)} → {verbe}.")
     for evenement in rapport.evenements:
         if evenement.attaque:
             lignes += lignes_de_l_attaque(evenement.attaque, combat, ecran)
@@ -565,9 +569,10 @@ class TourDuJoueur:
 
 # --- La boucle du combat -----------------------------------------------------------------------
 
-def ouvrir_le_combat(session, ecran: Ecran) -> CombatAuto:
-    """La boucle d'un combat à pied de cette session : les PNJ jouent seuls, le joueur par son menu."""
-    return CombatAuto(session.combat, reactions=ReactionsDuJoueur(session.joueur, ecran))
+def ouvrir_le_combat(session, ecran: Ecran, planificateur=None) -> CombatAuto:
+    """La boucle d'un combat à pied de cette session : les PNJ jouent seuls (selon `planificateur`, le plan du round
+    par le LLM, ou l'IA du code), le joueur par son menu."""
+    return CombatAuto(session.combat, reactions=ReactionsDuJoueur(session.joueur, ecran), planificateur=planificateur)
 
 
 def jouer_les_pnj(auto: CombatAuto, ecran: Ecran) -> list[RapportTour]:
