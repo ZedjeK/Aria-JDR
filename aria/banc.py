@@ -457,16 +457,21 @@ def sans_chiffre(narration: str) -> str | None:
     return "des chiffres dans le récit" if re.search(r"\d", narration) else None
 
 
+def _minuscules(narration: str) -> str:
+    """Le texte en minuscules, l'apostrophe typographique du modèle ramenée à l'apostrophe droite des listes de mots."""
+    return narration.lower().replace("’", "'")
+
+
 def sans(*mots: str) -> Callable[[str], str | None]:
     def verifier(narration: str) -> str | None:
-        trouves = [m for m in mots if m in narration.lower()]
+        trouves = [m for m in mots if m in _minuscules(narration)]
         return f"interdit dans le récit : {', '.join(trouves)}" if trouves else None
     return verifier
 
 
 def avec_un_de(*mots: str) -> Callable[[str], str | None]:
     def verifier(narration: str) -> str | None:
-        return None if any(m in narration.lower() for m in mots) else f"le récit oublie un fait ({mots[0]}…)"
+        return None if any(m in _minuscules(narration) for m in mots) else f"le récit oublie un fait ({mots[0]}…)"
     return verifier
 
 

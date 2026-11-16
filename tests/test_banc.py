@@ -267,6 +267,8 @@ def test_les_verifications_de_narration():
     assert banc.sans_chiffre("Rien à signaler.") is None and "chiffres" in banc.sans_chiffre("4 dégâts")
     assert banc.sans("mort")("Il vit.") is None and "mort" in banc.sans("mort")("Il est MORT.")
     assert banc.avec_un_de("tombe")("Il tombe.") is None and banc.avec_un_de("tombe")("Il rit.")
+    assert banc.avec_un_de("s'éloigne")("Il s’éloigne.") is None  # l'apostrophe typographique du modèle
+    assert banc.sans("s'enfuit")("Il s’enfuit.")
     assert banc.phrases(2, 3)("Un. Deux.") is None and "1 phrases" in banc.phrases(2, 3)("Un.")
     assert banc.phrases(2, 3)("Un ! Deux ? Trois… Quatre. Cinq.")
 
