@@ -96,6 +96,10 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 .saisie { display: flex; gap: 8px; margin-top: 8px; }
 .saisie input { flex: 1; }
 .saisie button { margin: 0; }
+.choix-du-joueur { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.choix-du-joueur button { margin: 0; text-align: left; }
+.choix-du-joueur button[disabled] { opacity: .55; cursor: not-allowed; }
+.choix-du-joueur .raison { color: var(--texte-2); font-size: .9em; }
 .commandes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
 .commandes button { margin: 0; padding: 4px 12px; }
 .statut.erreur { color: var(--rouge); }

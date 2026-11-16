@@ -12,14 +12,17 @@ from enum import Enum
 
 from aria.combat import (
     ActionImpossible,
+    BonusMajeure,
     Combat,
     Combattant,
     Couvert,
     Decor,
+    Defense,
     FichePnj,
     Moral,
     RapportAttaque,
     RapportMoral,
+    RapportSauvegarde,
     TypeAction,
 )
 from aria.equipement import Recharge
@@ -200,7 +203,20 @@ def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
     return Action(Geste.ATTAQUER, cible) if cible else None
 
 
-def executer(combat: Combat, combattant: Combattant, action: Action) -> RapportAttaque | None:
+class Reactions:
+    """Ce que le joueur tranche lui-même pendant les actions des autres : sa défense au corps à corps, et le bonus de
+    ses réussites majeures. Par défaut, rien : le code décide (la meilleure défense, +1 dé)."""
+
+    def defense(self, attaquant: Combattant, cible: Combattant) -> Defense | None:
+        """None : le code choisit."""
+        return None
+
+    def bonus_majeure(self, source: Combattant, victime: Combattant, options: list[BonusMajeure]) -> BonusMajeure:
+        return BonusMajeure.DE_SUPPLEMENTAIRE
+
+
+def executer(combat: Combat, combattant: Combattant, action: Action,
+             reactions: Reactions | None = None) -> RapportAttaque | None:
     """Fait faire l'action par le moteur, qui peut la refuser (ActionImpossible). Renvoie le rapport d'une attaque."""
     geste = action.geste
     if geste is Geste.FUIR:
@@ -216,7 +232,12 @@ def executer(combat: Combat, combattant: Combattant, action: Action) -> RapportA
     elif geste is Geste.VISER:
         combat.viser(combattant)
     else:
-        return combat.attaquer(combattant, action.cible, defense=Combat.defense_par_defaut(action.cible))
+        cible = action.cible
+        defense = None
+        if reactions and combattant.arme_en_main.corps_a_corps and combat.peut_se_defendre(cible):
+            defense = reactions.defense(combattant, cible)
+        return combat.attaquer(combattant, cible, defense=defense or Combat.defense_par_defaut(cible),
+                               bonus_majeure=reactions.bonus_majeure if reactions else BonusMajeure.DE_SUPPLEMENTAIRE)
     return None
 
 
@@ -244,6 +265,7 @@ class RapportTour:
     moral: RapportMoral | None = None
     evenements: list[Evenement] = field(default_factory=list)
     mourants: list[tuple[str, Resultat]] = field(default_factory=list)  # les tests de la fin du round, s'il se clôt
+    sauvegardes: list[RapportSauvegarde] = field(default_factory=list)  # les effets persistants du tour suivant
 
     @property
     def passe(self) -> bool:
@@ -259,9 +281,11 @@ class CombatAuto:
     """La boucle d'un combat à pied. `mene` dit quels combattants l'IA joue : les PNJ par défaut, le joueur
     jouant son tour lui-même ; le simulateur lui confie tout le monde."""
 
-    def __init__(self, combat: Combat, mene: Callable[[Combattant], bool] = _est_pnj):
+    def __init__(self, combat: Combat, mene: Callable[[Combattant], bool] = _est_pnj,
+                 reactions: Reactions | None = None):
         self.combat = combat
         self.mene = mene
+        self.reactions = reactions
         self.registre = Registre()
 
     def fin(self) -> Fin:
@@ -286,23 +310,32 @@ class CombatAuto:
             if action is None:
                 break
             try:
-                attaque = executer(combat, combattant, action)
+                attaque = executer(combat, combattant, action, self.reactions)
             except ActionImpossible:
                 interdits.add(action.geste)  # le moteur refuse : l'IA cherche autre chose
                 continue
             if attaque:
                 self.registre.noter(combattant, action.cible, attaque)
             rapport.evenements.append(Evenement(action, attaque))
-        rapport.mourants = combat.fin_de_tour()
+        rapport.mourants, rapport.sauvegardes = self.finir_le_tour()
         return rapport
 
-    def avancer(self) -> list[RapportTour]:
+    def finir_le_tour(self) -> tuple[list[tuple[str, Resultat]], list[RapportSauvegarde]]:
+        """Passe la main : renvoie les tests des mourants si le round se clôt, et les effets persistants qui
+        mordent au début du tour suivant."""
+        mourants = self.combat.fin_de_tour()
+        sauvegardes, self.combat.sauvegardes = self.combat.sauvegardes, []
+        return mourants, sauvegardes
+
+    def avancer(self, apres_chaque_tour: Callable[[RapportTour], None] | None = None) -> list[RapportTour]:
         """Joue les tours que l'IA mène, jusqu'au tour de quelqu'un qu'elle ne mène pas (le joueur) ou la fin du
-        combat."""
+        combat. `apres_chaque_tour` : appelée avec le rapport de chaque tour dès qu'il est joué."""
         rapports = []
         while self.fin() is Fin.EN_COURS:
             combattant = self.combat.au_tour_de
             if combattant is None or not self.mene(combattant):
                 break
             rapports.append(self.jouer_le_tour())
+            if apres_chaque_tour:
+                apres_chaque_tour(rapports[-1])
         return rapports
