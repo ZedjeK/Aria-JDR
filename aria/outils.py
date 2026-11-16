@@ -39,6 +39,7 @@ from aria.combat import (
     laisser_pour_mort,
     tester_embuscade,
 )
+from aria.combat_auto import ModeCombat, choisir_mode
 from aria.des import Des
 from aria import inventaire as inventaire_
 from aria.inventaire import Inventaire, ReservePnj
@@ -156,6 +157,7 @@ class Session:
     engins: dict[str, vehicules_.Engin] = field(default_factory=dict)  # les véhicules des PNJ
     poursuite: poursuite_.Poursuite | None = None
     combat: Combat | None = None
+    mode_combat: ModeCombat | None = None  # qui mène le combat en cours, choisi à son ouverture (REGLES.md 7.8)
     dernier_test: dict | None = None
     journal: list[dict] = field(default_factory=list)
     campagne: Campagne | None = None  # None : rien n'est écrit sur le disque (le banc d'essai)
@@ -973,6 +975,7 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors:
     else:
         surpris_liste = []
     session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste, tour_par_tour=True)
+    session.mode_combat = choisir_mode(participants, any(i in session.engins for i in pnj))
     session.rounds, session.debut_round = [], len(session.journal) + 1  # + 1 : cet appel-ci
     meteo = {}
     if dehors:
@@ -2341,7 +2344,7 @@ def fin_combat(session: Session, moments_forts: str) -> dict:
         raise ErreurOutil(f"Le souvenir n'a pas pu être écrit ({erreur}) : le combat reste ouvert.") from erreur
     if session.campagne:
         session.campagne.effacer_combat()
-    session.combat, session.rounds = None, []
+    session.combat, session.mode_combat, session.rounds = None, None, []
     session.oublier_les_effets()
     for combattant in [session.joueur, *session.pnj.values()]:
         combattant.surpris = combattant.vise = combattant.a_vise = combattant.sursis = False
