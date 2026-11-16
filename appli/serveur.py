@@ -36,7 +36,8 @@ def creer_app(jeton: str, port: int, racine: Path | None = None, arreter: Callab
 
     @app.put("/api/reglages")
     def ecrire_reglages(brut: dict = Body(...)):
-        nouveaux = donnees.Reglages.depuis_dict(brut)
+        # Ce que le formulaire n'envoie pas reste comme il est : enregistrer le fond ne remet pas le reste à zéro
+        nouveaux = donnees.Reglages.depuis_dict({**donnees.charger_reglages(racine).en_dict(), **brut})
         fichier = (Path(racine) if racine is not None else identite.dossier_donnees()) / donnees.FICHIER_REGLAGES
         try:
             if fichier.is_file():

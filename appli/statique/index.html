@@ -132,6 +132,16 @@
         <label class="ligne">et au plus
           <input type="number" id="fond-maximum" min="1" max="12">
         </label>
+        <h3>Combat</h3>
+        <label class="ligne">Récit du MJ
+          <select id="combat-recit">
+            <option value="round">À chaque round</option>
+            <option value="fin">À la fin du combat seulement</option>
+            <option value="aucun">Aucun</option>
+          </select>
+        </label>
+        <label class="ligne"><input type="checkbox" id="combat-pv"> Voir les PV exacts des ennemis</label>
+        <label class="ligne"><input type="checkbox" id="combat-defense"> Je choisis ma défense (esquiver ou riposter)</label>
         <button type="submit">Enregistrer</button>
         <p id="message" role="status"></p>
       </form>

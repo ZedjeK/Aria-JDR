@@ -17,6 +17,7 @@ import time
 from dataclasses import dataclass, field
 
 from aria import familles, llm, meteo, mj, noms, optimiseur, trame
+from aria.combat_auto import ModeCombat
 from aria.compte_rendu import decrire
 from aria.outils import Session
 
@@ -24,6 +25,7 @@ TOURS_MAX = 8  # allers-retours avec le modèle pour une seule action du joueur
 RESERVE_TOUR = 2500  # jetons laissés libres pour les appels d'outils et les résultats d'un tour
 FIL_MAX = 2000  # caractères du fil des échanges oubliés, environ 600 jetons
 PHRASE_MAX = 120  # caractères gardés d'une phrase du joueur
+BUDGET_RECIT = 128  # réflexion d'un récit de combat : les faits sont donnés, il n'y a rien à décider
 OUVERTURE = "[Début de la partie] Présente la scène d'ouverture au joueur, puis rends-lui la main."
 REPRISE = ("[Reprise de la partie] Rappelle au joueur en deux phrases où on en était, d'après ta mémoire, "
            "puis rends-lui la main.")
@@ -110,13 +112,32 @@ class Table:
         tour.duree = round(time.time() - debut, 1)
         return tour
 
+    def raconter_le_combat(self, message: str, resume: str) -> str:
+        """Le MJ raconte ce que le code vient de jouer : sans outils, avec une courte réflexion (REGLES.md 7.8).
+        Une fois le récit écrit, le message de faits est remplacé par `resume` dans la conversation. Renvoie une
+        chaîne vide si le serveur ne répond pas : le combat continue avec les seules lignes du moteur."""
+        self._elaguer()
+        self.messages.append({"role": "user", "content": message})
+        position = len(self.messages) - 1
+        try:
+            narration = (self._demander(Tour(""), avec_outils=False, budget=BUDGET_RECIT).get("content") or "").strip()
+        except llm.ErreurLLM:
+            narration = ""
+        if not narration:
+            del self.messages[position:]  # rien à garder : ni les faits, ni un récit vide
+            return ""
+        self.messages[position]["content"] = resume
+        return narration
+
     def _systeme(self) -> str:
         s = self.session
         fil = "\n".join((["- (…)"] if self._fil_coupe else []) + self.fil)
         memoire = "\n".join(bloc for bloc in (s.memoire.bloc(), trame.bloc(s.monde),
                                               meteo.bloc(s.monde, s.univers.nom_affiche)) if bloc)
+        # Quand le code mène les combats à pied, le MJ n'a les lignes de pilotage que si le combat en cours est classique
+        classique = not s.combat_par_le_code or s.mode_combat is ModeCombat.CLASSIQUE
         return mj.prompt_systeme(s.univers, s.personnage, self.scene, memoire, fil, monde=s.monde is not None,
-                                 aleatoire=noms.actifs(s.monde),
+                                 aleatoire=noms.actifs(s.monde), combat_classique=classique,
                                  familles=(s.familles_ouvertes(), {f: familles.resume(f) for f in s.familles_fermees()})
                                  if s.familles else None)
 
@@ -129,9 +150,10 @@ class Table:
             if nombre:
                 self._mesure = (jetons + (len(nouveau) - len(ancien)) // 3, nombre)
 
-    def _demander(self, tour: Tour, avec_outils: bool) -> dict:
+    def _demander(self, tour: Tour, avec_outils: bool, budget: int | None = None) -> dict:
         self._rafraichir_systeme()
-        reponse = self.serveur.discuter(self.messages, self.session.schemas() if avec_outils else None, self.budget)
+        reponse = self.serveur.discuter(self.messages, self.session.schemas() if avec_outils else None,
+                                        self.budget if budget is None else budget)
         message = reponse["choices"][0]["message"]
         usage = reponse.get("usage", {})
         tour.jetons += usage.get("completion_tokens", 0)

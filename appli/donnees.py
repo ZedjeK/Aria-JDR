@@ -21,6 +21,7 @@ DOSSIER_SECRETS = "secrets"  # chiffrés par DPAPI pour le compte de l'utilisate
 JOURNAL_MAX = 500
 ELEMENTS_MIN, ELEMENTS_MAX = 1, 12
 VITESSES = ("lente", "normale", "rapide")
+RECITS = ("round", "fin", "aucun")  # quand le MJ raconte un combat : à chaque round, à la fin, jamais
 
 
 def _racine(racine: Path | None) -> Path:
@@ -66,21 +67,38 @@ class Fond:
 
 
 @dataclass
+class Combat:
+    """Les réglages du combat à pied : le récit du MJ, les PV des ennemis, le choix de sa défense."""
+
+    recit: str = "round"
+    pv_exacts: bool = False
+    choisir_sa_defense: bool = False
+
+    def assaini(self) -> "Combat":
+        recit = self.recit if isinstance(self.recit, str) and self.recit in RECITS else "round"
+        return Combat(recit, self.pv_exacts is True, self.choisir_sa_defense is True)
+
+
+@dataclass
 class Reglages:
     """Les réglages de l'appli, enregistrés dans reglages.json. Jamais de secret ici : voir appli.coffre."""
 
     fond: Fond = field(default_factory=Fond)
+    combat: Combat = field(default_factory=Combat)
     proposer_installation: bool = True  # sans effet tant que l'exe ne s'installe pas
     chercher_mises_a_jour: bool = True  # sans effet tant que les mises à jour ne sont pas là
 
     def assaini(self) -> "Reglages":
         return Reglages(fond=(self.fond if isinstance(self.fond, Fond) else Fond()).assaini(),
+                        combat=(self.combat if isinstance(self.combat, Combat) else Combat()).assaini(),
                         proposer_installation=self.proposer_installation is not False,
                         chercher_mises_a_jour=self.chercher_mises_a_jour is not False)
 
     def en_dict(self) -> dict:
-        return {"fond": asdict(self.fond), "proposerInstallation": self.proposer_installation,
-                "chercherMisesAJour": self.chercher_mises_a_jour}
+        return {"fond": asdict(self.fond),
+                "combat": {"recit": self.combat.recit, "pvExacts": self.combat.pv_exacts,
+                           "choisirSaDefense": self.combat.choisir_sa_defense},
+                "proposerInstallation": self.proposer_installation, "chercherMisesAJour": self.chercher_mises_a_jour}
 
     @staticmethod
     def depuis_dict(brut) -> "Reglages":
@@ -89,9 +107,13 @@ class Reglages:
             return Reglages()
         fond = brut.get("fond")
         fond = fond if isinstance(fond, dict) else {}
+        combat = brut.get("combat")
+        combat = combat if isinstance(combat, dict) else {}
         return Reglages(
             fond=Fond(actif=fond.get("actif", True), vitesse=fond.get("vitesse", "normale"),
                       minimum=fond.get("minimum", 2), maximum=fond.get("maximum", 5)),
+            combat=Combat(recit=combat.get("recit", "round"), pv_exacts=combat.get("pvExacts", False),
+                          choisir_sa_defense=combat.get("choisirSaDefense", False)),
             proposer_installation=brut.get("proposerInstallation", True),
             chercher_mises_a_jour=brut.get("chercherMisesAJour", True)).assaini()
 

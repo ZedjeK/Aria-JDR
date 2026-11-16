@@ -115,6 +115,9 @@ function afficher(reglages) {
   champ("fond-vitesse").value = reglages.fond.vitesse;
   champ("fond-minimum").value = reglages.fond.minimum;
   champ("fond-maximum").value = reglages.fond.maximum;
+  champ("combat-recit").value = reglages.combat.recit;
+  champ("combat-pv").checked = reglages.combat.pvExacts;
+  champ("combat-defense").checked = reglages.combat.choisirSaDefense;
 }
 
 champ("formulaire").addEventListener("submit", async (evenement) => {
@@ -130,6 +133,11 @@ champ("formulaire").addEventListener("submit", async (evenement) => {
           vitesse: champ("fond-vitesse").value,
           minimum: Number(champ("fond-minimum").value),
           maximum: Number(champ("fond-maximum").value),
+        },
+        combat: {
+          recit: champ("combat-recit").value,
+          pvExacts: champ("combat-pv").checked,
+          choisirSaDefense: champ("combat-defense").checked,
         },
       }),
     });

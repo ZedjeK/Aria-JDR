@@ -8,7 +8,7 @@ sauf si le joueur le demande. « Parler » et « Autre action » rendent la main
 
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 
 from aria import magie
@@ -56,6 +56,15 @@ class Ecran:
     choisir_sa_defense: bool = False  # « Je choisis ma défense » : esquiver ou riposter, au lieu du code
     pause: Callable[[float], None] = time.sleep
     delai: float = PAUSE_ENTRE_LES_ACTIONS
+    faits: list[str] = field(default_factory=list)  # ce qui s'est passé depuis le dernier récit du MJ
+
+    def fait(self, produire: Callable[["Ecran"], list[str]], titre: str = "") -> None:
+        """Montre ce qui vient de se passer, et le garde pour le récit. Le MJ ne reçoit jamais les PV exacts des
+        ennemis, même si le joueur les voit."""
+        lignes = produire(self)
+        if lignes:
+            self.dire("\n".join(([titre] if titre else []) + lignes))
+        self.faits.extend(produire(replace(self, pv_exacts=False)) if self.pv_exacts else lignes)
 
 
 def jet(resultat: Resultat) -> str:
@@ -359,7 +368,7 @@ class TourDuJoueur:
     def _attaque_de(self, attaquant: Combattant, cible: Combattant):
         rapport = executer(self.combat, attaquant, Action(Geste.ATTAQUER, cible), self.auto.reactions)
         self.auto.registre.noter(attaquant, cible, rapport)
-        self.ecran.dire("\n".join(lignes_de_l_attaque(rapport, self.combat, self.ecran)))
+        self.ecran.fait(lambda ecran: lignes_de_l_attaque(rapport, self.combat, ecran))
 
     def _viser(self) -> Entree:
         j, arme = self.joueur, self.joueur.arme_en_main
@@ -397,7 +406,7 @@ class TourDuJoueur:
 
     def _action(self, faire: Callable[[], object], texte: str) -> None:
         if self._essayer(faire):
-            self.ecran.dire(texte)
+            self.ecran.fait(lambda _: [texte])
 
     # -- Changer d'arme, se mettre à couvert
 
@@ -485,7 +494,7 @@ class TourDuJoueur:
         for sur in rapport.cibles:
             if sur.attaque:
                 self.auto.registre.noter(self.joueur, cible, sur.attaque)
-        self.ecran.dire("\n".join(lignes_du_sort(rapport, self.combat, self.ecran)))
+        self.ecran.fait(lambda ecran: lignes_du_sort(rapport, self.combat, ecran))
 
     def _stabiliser(self) -> Entree:
         j = self.joueur
@@ -506,7 +515,8 @@ class TourDuJoueur:
 
     def _stabilisation_de(self, mourant: Combattant):
         test = self.combat.stabiliser(self.joueur, mourant)
-        self.ecran.dire(f"  Tu tentes de stabiliser {mourant.nom} : {jet(test)}." + (" Il est stabilisé." if test.reussi else ""))
+        self.ecran.fait(lambda _: [f"  Tu tentes de stabiliser {mourant.nom} : {jet(test)}."
+                                   + (" Il est stabilisé." if test.reussi else "")])
 
     # -- Rendre la main au MJ, fuir
 
@@ -563,34 +573,47 @@ def ouvrir_le_combat(session, ecran: Ecran) -> CombatAuto:
 def jouer_les_pnj(auto: CombatAuto, ecran: Ecran) -> list[RapportTour]:
     """Les tours des PNJ jusqu'à celui du joueur, montrés un à un, avec une courte pause entre eux."""
     def montrer(rapport: RapportTour):
-        lignes = lignes_du_tour(rapport, auto.combat, ecran)
-        if lignes:
-            ecran.dire(f"\n{rapport.qui.nom} :\n" + "\n".join(lignes))
+        ecran.fait(lambda e: lignes_du_tour(rapport, auto.combat, e), titre=f"\n{rapport.qui.nom} :")
+        if rapport.evenements or rapport.moral:
             ecran.pause(ecran.delai)
 
     return auto.avancer(montrer)
 
 
-def mener_le_combat(session, auto: CombatAuto, ecran: Ecran) -> "Sortie | Fin":
+def mener_le_combat(session, auto: CombatAuto, ecran: Ecran,
+                    recit: Callable[[Fin], None] | None = None) -> "Sortie | Fin":
     """Mène le combat jusqu'à sa fin (une `Fin`) ou jusqu'à ce que le MJ doive reprendre la main (une `Sortie` :
-    parler, autre action, fuite). Rappelée après le MJ, elle reprend le tour du joueur là où il en était."""
+    parler, autre action, fuite). Rappelée après le MJ, elle reprend le tour du joueur là où il en était.
+    `recit(fin)` : appelée juste avant chaque menu du joueur (avec `Fin.EN_COURS`) et à la fin du combat, pour que le
+    MJ raconte ce qu'`ecran.faits` a gardé depuis le dernier récit."""
     combat = auto.combat
     while True:
         jouer_les_pnj(auto, ecran)
         fin = auto.fin()
         if fin is not Fin.EN_COURS:
+            if recit:
+                recit(fin)
             return fin
         if combat.au_tour_de is not session.joueur:
             raise ActionImpossible("Plus personne ne peut agir.")
+        if recit:
+            recit(Fin.EN_COURS)
         sortie = TourDuJoueur(session, auto, ecran).jouer()
         if sortie.nature in (Nature.PARLER, Nature.AUTRE_ACTION, Nature.FUITE):
             return sortie
+        fin = auto.fin()
+        if fin is not Fin.EN_COURS:  # son action a fini le combat : le round ne se clôt pas
+            if recit:
+                recit(fin)
+            return fin
         mourants, sauvegardes = auto.finir_le_tour()
-        for ligne in lignes_de_fin_de_tour(RapportTour(session.joueur, combat.round, mourants=mourants,
-                                                       sauvegardes=sauvegardes)):
-            ecran.dire(ligne)
-        if auto.fin() is not Fin.EN_COURS:
-            return auto.fin()
+        ecran.fait(lambda _: lignes_de_fin_de_tour(RapportTour(session.joueur, combat.round, mourants=mourants,
+                                                               sauvegardes=sauvegardes)))
+        fin = auto.fin()
+        if fin is not Fin.EN_COURS:
+            if recit:
+                recit(fin)
+            return fin
 
 
 def lignes_de_fin(fin: Fin) -> list[str]:

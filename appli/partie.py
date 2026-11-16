@@ -189,6 +189,14 @@ def options_de_creation() -> dict:
     }
 
 
+def reglages_de_combat(partie: "Partie"):
+    """Les réglages du combat à pied, tels que l'utilisateur les a enregistrés."""
+    from dataclasses import asdict
+
+    from aria.combat_partie import ReglagesDeCombat
+    return ReglagesDeCombat.depuis_dict(asdict(donnees.charger_reglages(partie._racine).combat))
+
+
 def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Callable[[], Path]) -> APIRouter:
     api = APIRouter(prefix="/api")
 
@@ -222,7 +230,8 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         _verifier_le_mj(profil_valide, moteur)
         return lancer("campagne", f"Campagne « {nom} »", nom,
                       lambda entree, sortie: jeu.lancer(campagne.Campagne.nommee(nom), entree=entree, sortie=sortie,
-                                                        choisir=partie.choisir))
+                                                        choisir=partie.choisir,
+                                                        reglages_combat=reglages_de_combat(partie)))
 
     @api.post("/partie/nouvelle")
     def nouvelle(corps: dict = Body(...)):
@@ -280,7 +289,7 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         def travail(entree, sortie):
             trame.ecrire_format(campagne.Campagne.nommee(nom), trame.Format(type_, cran))
             jeu.lancer(campagne.Campagne.nommee(nom), choix, surprends_moi, predefini=predefini, entree=entree, sortie=sortie,
-                       choisir=partie.choisir)
+                       choisir=partie.choisir, reglages_combat=reglages_de_combat(partie))
 
         return lancer("campagne", f"Nouvelle campagne « {nom} »", nom, travail)
 

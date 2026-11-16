@@ -68,3 +68,18 @@ def test_sauvegarder_copie_sans_jamais_ecraser(tmp_path):
 def test_sauvegarder_un_fichier_absent_leve_une_erreur(tmp_path):
     with pytest.raises(FileNotFoundError):
         donnees.sauvegarder(tmp_path / "absent.json", tmp_path)
+
+
+def test_les_reglages_de_combat_ont_leurs_valeurs_par_defaut_et_font_l_aller_retour(tmp_path):
+    assert donnees.charger_reglages(tmp_path).combat == donnees.Combat("round", False, False)
+    r = donnees.Reglages(combat=donnees.Combat("fin", True, True))
+    donnees.enregistrer_reglages(r, tmp_path)
+    brut = json.loads((tmp_path / donnees.FICHIER_REGLAGES).read_text(encoding="utf-8"))
+    assert brut["combat"] == {"recit": "fin", "pvExacts": True, "choisirSaDefense": True}
+    assert donnees.charger_reglages(tmp_path) == r
+
+
+@pytest.mark.parametrize("combat", [None, "x", {"recit": "jamais", "pvExacts": "oui", "choisirSaDefense": 1}])
+def test_des_reglages_de_combat_illisibles_prennent_leur_valeur_par_defaut(tmp_path, combat):
+    (tmp_path / donnees.FICHIER_REGLAGES).write_text(json.dumps({"combat": combat}), encoding="utf-8")
+    assert donnees.charger_reglages(tmp_path).combat == donnees.Combat()
