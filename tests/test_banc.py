@@ -35,11 +35,11 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_quatre_vingts_situations_dont_vingt_et_un_pieges():
-    assert len(SITUATIONS) == 80
-    assert sum(s.piege for s in SITUATIONS) == 21
-    assert len({s.nom for s in SITUATIONS}) == 80
-    assert len({s.joueur for s in SITUATIONS}) == 80  # le faux serveur les reconnaît à la phrase du joueur
+def test_quatre_vingt_trois_situations_dont_vingt_trois_pieges():
+    assert len(SITUATIONS) == 83
+    assert sum(s.piege for s in SITUATIONS) == 23
+    assert len({s.nom for s in SITUATIONS}) == 83
+    assert len({s.joueur for s in SITUATIONS}) == 83  # le faux serveur les reconnaît à la phrase du joueur
     assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 6
 
 
@@ -109,20 +109,6 @@ def test_un_budget_qualifie(monkeypatch):
     essai = essayer_budget(serveur, budget=128, afficher=lambda *_: None)
     assert essai.reussi and (essai.normales, essai.pieges) == ("1/2", "1/1")
     assert [p.situation for p in essai.parties] == ["ramen", "ramen", "porte", "porte", "mur"]
-
-
-def test_le_piege_de_l_enchainement():
-    tir = ("attaquer", {"attaquant": "joueur", "cible": "tireur"})
-    riposte = ("attaquer", {"attaquant": "tireur", "cible": "joueur"})
-    bon = [tir, ("fin_de_tour", {}), riposte, ("fin_de_tour", {})]
-    assert jouer(FauxServeur({"enchainer": bon}), situation("enchainer"), budget=0, graine=1).reussie
-    saute = [tir, ("fin_de_tour", {}), ("fin_de_tour", {}), ("fin_de_tour", {"passe": True})]
-    partie = jouer(FauxServeur({"enchainer": saute}), situation("enchainer"), budget=0, graine=1)
-    assert partie.raisons == ["interdit : fin_de_tour (tour du joueur sauté)"]
-    # Tirer encore sans fin_de_tour : le moteur refuse (budget), l'appel raté ne compte pas
-    double = [tir, tir]
-    partie = jouer(FauxServeur({"enchainer": double}), situation("enchainer"), budget=0, graine=1)
-    assert partie.reussie and "erreur" in partie.appels[1]
 
 
 def test_le_piege_encore_montre_le_vrai_test_au_mj():
@@ -207,3 +193,118 @@ def test_pas_assez_de_vram_le_banc_dit_combien_il_en_faut():
     assert not compte_rendu["reussi"]
     assert compte_rendu["raison"] == "pas assez de VRAM libre : il en faut 13.6 Gio, 13.0 Gio libres"
     assert "aucune carte NVIDIA" in banc.qualifier_modele(modele, None)["raison"]
+
+
+# --- Le combat à pied que le code mène ---------------------------------------------------------------------
+
+class FauxRecit(FauxServeur):
+    """Un faux serveur qui raconte ce qu'on lui donne : la narration écrite pour chaque situation de récit."""
+
+    def __init__(self, narrations: dict[str, str], scenarios=None):
+        super().__init__(scenarios or {})
+        self.narrations, self.outils_recus = narrations, []
+
+    def discuter(self, messages, outils=None, budget=None, **options):
+        self.outils_recus.append(outils)
+        reponse = super().discuter(messages, outils, budget)
+        joueur = next(m["content"] for m in reversed(messages) if m["role"] == "user")
+        nom = next(s.nom for s in SITUATIONS if s.joueur == joueur)
+        if nom in self.narrations and not reponse["choices"][0]["message"].get("tool_calls"):
+            reponse["choices"][0]["message"]["content"] = self.narrations[nom]
+        return reponse
+
+
+BIEN = {
+    "recit_rien": "Le ganger fonce, mais Kaito s'écarte d'un pas. Un deuxième ganger se plante derrière un abri et tire à côté.",
+    "recit_chute": "Le tir de Kaito part, sec et net. Le ganger lâche un râle et s'effondre sur le bitume.",
+    "recit_fuite": "Le ganger blêmit, regarde ses compagnons, puis détale vers la sortie sans demander son reste. Ses pas claquent un instant, puis le silence revient.",
+    "recit_blessure": "La lame file et entaille Kaito au flanc. La douleur monte, vive, mais il tient debout.",
+    "recit_joueur": "Kaito plonge derrière un abri. Le ganger tire, et la balle claque contre le métal.",
+    "recit_arme": "Le ganger s'élance trop vite, son pied glisse. Le couteau lui échappe des doigts et tinte au sol.",
+}
+
+
+@pytest.mark.parametrize("nom", list(BIEN))
+def test_un_bon_recit_passe_ses_pieges(nom):
+    partie = jouer(FauxRecit(BIEN), situation(nom), budget=0, graine=1)
+    assert partie.reussie, partie.raisons
+    assert partie.appels == [] and partie.narration == BIEN[nom]
+
+
+def test_le_recit_se_joue_sans_outils_et_avec_une_reflexion_courte():
+    serveur = FauxRecit(BIEN)
+    jouer(serveur, situation("recit_rien"), budget=512, graine=1)
+    assert serveur.outils_recus == [None] and serveur.budgets == [128]
+
+
+@pytest.mark.parametrize("nom, narration, raison", [
+    ("recit_rien", "Le ganger frappe, il perd 4 PV.", "des chiffres dans le récit"),
+    ("recit_rien", "Le ganger s'effondre, mort sur le coup. Kaito soupire.", "interdit dans le récit"),
+    ("recit_rien", "Un ganger sort un fusil d'assaut. Kaito recule. Il tire.", "interdit dans le récit"),
+    ("recit_chute", "Le ganger vacille. Il serre son couteau. Kaito le tient en joue.", "le récit oublie un fait"),
+    ("recit_fuite", "Le ganger hésite. Il regarde Kaito. Il serre les dents.", "le récit oublie un fait"),
+    ("recit_blessure", "Kaito est touché, 4 dégâts. Il serre les dents.", "des chiffres dans le récit"),
+    ("recit_joueur", "Kaito se met à couvert. Puis Kaito tire sur le ganger. Le ganger tombe.", "interdit dans le récit"),
+    ("recit_arme", "Le ganger rate. Il sort alors un pistolet. Kaito esquive.", "interdit dans le récit"),
+    ("recit_rien", "Un seul mot.", "phrases au lieu de 2 à 7"),
+])
+def test_un_mauvais_recit_echoue_au_piege_qu_il_rate(nom, narration, raison):
+    partie = jouer(FauxRecit({nom: narration}), situation(nom), budget=0, graine=1)
+    assert not partie.reussie and any(raison in r for r in partie.raisons), partie.raisons
+
+
+def test_un_serveur_muet_donne_un_recit_raté():
+    class Muet(FauxServeur):
+        def discuter(self, messages, outils=None, budget=None, **options):
+            from aria import llm
+            raise llm.ErreurLLM("muet")
+
+    partie = jouer(Muet({}), situation("recit_fuite"), budget=0, graine=1)
+    assert not partie.reussie and partie.raisons == ["aucun récit"]
+
+
+def test_les_verifications_de_narration():
+    assert banc.sans_chiffre("Rien à signaler.") is None and "chiffres" in banc.sans_chiffre("4 dégâts")
+    assert banc.sans("mort")("Il vit.") is None and "mort" in banc.sans("mort")("Il est MORT.")
+    assert banc.avec_un_de("tombe")("Il tombe.") is None and banc.avec_un_de("tombe")("Il rit.")
+    assert banc.phrases(2, 3)("Un. Deux.") is None and "1 phrases" in banc.phrases(2, 3)("Un.")
+    assert banc.phrases(2, 3)("Un ! Deux ? Trois… Quatre. Cinq.")
+
+
+def test_le_declenchement_d_un_combat_se_joue_avec_les_outils_d_un_combat_a_pied():
+    serveur = FauxServeur({"ganger": [("creer_pnj", {"identifiant": "ganger", "nom": "Ganger", "camp": "ennemis",
+                                                      "combat": 45, "pv": 10, "arme": "Couteau", "dexterite": 50}),
+                                      ("debut_combat", {"pnj": ["ganger"]})]})
+    partie = jouer(serveur, situation("ganger"), budget=0, graine=1)
+    assert partie.reussie, partie.raisons
+    assert not any("erreur" in trace for trace in partie.appels)
+
+
+def test_parler_et_autre_action_veulent_un_jet_de_base():
+    jet = ("test_competence", {"competence": "Arnaque", "difficulte": "normale"})
+    assert jouer(FauxServeur({"parler": [jet]}), situation("parler"), budget=0, graine=1).reussie
+    sans_jet = jouer(FauxServeur({}), situation("benne"), budget=0, graine=1)
+    assert not sans_jet.reussie and "attendu" in sans_jet.raisons[0]
+
+
+def test_aucun_outil_d_attaque_pendant_parler():
+    jouee = jouer(FauxServeur({"parler": [("attaquer", {"attaquant": "joueur", "cible": "ganger"})]}),
+                  situation("parler"), budget=0, graine=1)
+    assert not jouee.reussie and any("Le code mène ce combat" in trace for trace in jouee.appels)
+
+
+def test_la_fuite_demande_fin_combat_puis_la_poursuite_du_joueur_par_le_ganger():
+    fin = ("fin_combat", {"moments_forts": "Kaito s'enfuit."})
+    poursuite = ("debut_poursuite", {"fuyard": "joueur", "poursuivants": ["ganger"], "zone": "Centre-ville"})
+    assert jouer(FauxServeur({"fuite": [fin, poursuite]}), situation("fuite"), budget=0, graine=1).reussie
+    sans_fin = jouer(FauxServeur({"fuite": [poursuite]}), situation("fuite"), budget=0, graine=1)
+    assert not sans_fin.reussie and any("avant fin_combat" in r or "attendu" in r for r in sans_fin.raisons)
+    mal = ("debut_poursuite", {"fuyard": "joueur", "poursuivants": ["autre"], "zone": "Centre-ville"})
+    assert not jouer(FauxServeur({"fuite": [fin, mal]}), situation("fuite"), budget=0, graine=1).reussie
+
+
+def test_les_situations_de_combat_a_pied_sont_jouees_dans_le_mode_du_jeu_reel():
+    a_pied = {s.nom for s in SITUATIONS if s.par_le_code}
+    assert {"ganger", "embuscade", "racket", "patronne", "croisee", "tirs", "parler", "benne", "fuite"} <= a_pied
+    assert {s.nom for s in SITUATIONS if s.recit} == {n for n in BIEN}
+    assert "grenade" not in a_pied and "drone" not in a_pied  # zones et drones : combat classique

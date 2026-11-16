@@ -17,17 +17,19 @@ import argparse
 import copy
 import json
 import math
+import re
 import sys
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
 
 from aria import chemins, familles, gains, inventaire, llm, materiel, missions, monde, noms, optimiseur, pnj
 from aria import rencontres, trame
+from aria.combat_partie import MESSAGE_ACTION, MESSAGE_FUITE, MESSAGE_RECIT
 from aria.des import Des, DesTruques
-from aria.outils import Session
+from aria.outils import OUTILS_A_PIED, Session
 from aria.personnage import Caracteristique, Etat
 from aria.table import TOURS_MAX, Table
 from aria.temps import Moment, Periode
@@ -135,6 +137,12 @@ class Situation:
     # Prépare la session ; peut renvoyer l'historique de ce qui s'est passé juste avant (appels d'outils compris)
     preparer: Callable[[Session], list[dict] | None] | None = None
     univers: str = "cyberpunk"
+    # Le jeu réel : le code mène les combats à pied, le MJ n'a que des jets de base, rejoindre_combat et fin_combat
+    par_le_code: bool = False
+    main_du_mj: frozenset[str] | None = None  # ce que le MJ a sous la main pour cette action, si ce n'est pas l'ordinaire
+    # `joueur` est un message de récit de combat (aria.combat_partie) : on juge la narration, pas les appels d'outils
+    recit: bool = False
+    narration: list[Callable[[str], str | None]] = field(default_factory=list)
 
 
 def _pnj(session: Session, identifiant: str, nom: str, arme: str, **profil):
@@ -442,6 +450,65 @@ def choc_du_lien(a: dict) -> bool:
     return a.get("choc") == "PERTE_DU_LIEN" or (a.get("choc") == "MORT_D_UN_ALLIE" and a.get("concerne_lien") is True)
 
 
+# --- Le récit d'un combat que le code mène : ce que la narration doit tenir ---------------------
+
+def sans_chiffre(narration: str) -> str | None:
+    """Ni PV, ni dégâts, ni jets : le récit n'a pas de chiffres, même quand les faits en donnent."""
+    return "des chiffres dans le récit" if re.search(r"\d", narration) else None
+
+
+def sans(*mots: str) -> Callable[[str], str | None]:
+    def verifier(narration: str) -> str | None:
+        trouves = [m for m in mots if m in narration.lower()]
+        return f"interdit dans le récit : {', '.join(trouves)}" if trouves else None
+    return verifier
+
+
+def avec_un_de(*mots: str) -> Callable[[str], str | None]:
+    def verifier(narration: str) -> str | None:
+        return None if any(m in narration.lower() for m in mots) else f"le récit oublie un fait ({mots[0]}…)"
+    return verifier
+
+
+def phrases(mini: int, maxi: int) -> Callable[[str], str | None]:
+    def verifier(narration: str) -> str | None:
+        n = len([p for p in re.split(r"[.!?…]+", narration) if p.strip()])
+        return None if mini <= n <= maxi else f"{n} phrases au lieu de {mini} à {maxi}"
+    return verifier
+
+
+DECOR_ENCOMBRE = "encombré, on peut s'y mettre à couvert"
+
+
+def _recit(faits: str, etats: str) -> str:
+    return MESSAGE_RECIT.format(faits=faits, etats=etats, decor=DECOR_ENCOMBRE)
+
+
+RECIT_RIEN = _recit("""  Ganger attaque Kaito : 80 pour 45 : échec.
+  Kaito se défend : 33 pour 50 : réussite.
+  → Le coup est évité.
+  Ganger se met à couvert.
+  Ganger attaque Kaito : 46 pour 40 : échec.
+  → Raté.""", "Kaito : indemne ; Ganger : indemne ; Ganger : indemne")
+RECIT_CHUTE = _recit("""  Kaito attaque Ganger : 02 pour 50 : critique.
+  → Ganger est touché (11 dégâts).
+  → Critique : dégâts maximum, armure à moitié.
+  → Ganger est à terre.""", "Kaito : indemne ; Ganger : à terre ; Ganger : indemne")
+RECIT_FUITE = _recit("""  Ganger est éprouvé (la moitié de ses PV). Moral : 62 pour 40 → craque et s'enfuit.
+  Ganger court vers la sortie.
+  Ganger court vers la sortie.""", "Kaito : indemne ; Ganger : en fuite ; Ganger : indemne")
+RECIT_BLESSURE = _recit("""  Ganger attaque Kaito : 04 pour 45 : critique.
+  Kaito se défend : 60 pour 50 : échec.
+  → Kaito est touché : 4 dégâts. PV 23 → 19.
+  → Critique : dégâts maximum, armure à moitié.""", "Kaito : blessé ; Ganger : indemne ; Ganger : indemne")
+RECIT_JOUEUR = _recit("""  Kaito se met à couvert.
+  Ganger attaque Kaito : 91 pour 45 : échec.
+  → Raté.""", "Kaito : indemne, à couvert ; Ganger : indemne ; Ganger : indemne")
+RECIT_ARME = _recit("""  Ganger attaque Kaito : 97 pour 45 : maladresse.
+  → Raté.
+  → Ganger lâche Couteau : la reprendre coûte une action mineure.""", "Kaito : indemne ; Ganger : indemne ; Ganger : indemne")
+
+
 SITUATIONS = [
     # Hors combat
     Situation("porte", "Je branche mon deck sur le panneau de la porte de service et je pirate la serrure.",
@@ -459,36 +526,11 @@ SITUATIONS = [
               preparer=_piratage(reussi=False)),
     # Combat
     Situation("ganger", "Un ganger armé d'un couteau me fonce dessus en hurlant. Je dégaine et je lui tire dessus.",
-              [exige("creer_pnj"), exige("debut_combat"), exige("attaquer", AU_JOUEUR, "attaque du joueur")]),
+              [exige("creer_pnj"), exige("debut_combat")], par_le_code=True),
     Situation("embuscade", "J'avance dans la ruelle vers la porte du bar.",
               [exige("embuscade")],
               scene="Trois gangers sont cachés derrière les bennes de la ruelle : ils comptent tomber sur Kaito "
-                    "par surprise quand il passera. Kaito ne les a pas vus."),
-    Situation("viser", "Je prends le temps de bien viser le tireur avant de tirer.",
-              [exige("action_combat", egal("action", "viser"), "viser"), exige("attaquer", AU_JOUEUR)],
-              scene="Combat en cours. Un tireur, sur le toit d'en face, est à découvert. C'est au tour de Kaito.",
-              preparer=_combat(("tireur", "Tireur", "Pistolet lourd"))),
-    Situation("esquive", "J'esquive !",
-              [exige("attaquer", lambda a: DU_GANGER(a) and a.get("defense") == "esquive", "attaque du ganger, esquive")],
-              scene="Combat en cours. C'est au tour du ganger : il lève son couteau et frappe Kaito.",
-              preparer=_combat(("ganger", "Ganger", "Couteau"), tour="ganger")),
-    Situation("couvert", "Je tire sur le type planqué derrière la benne.",
-              [exige("attaquer", lambda a: AU_JOUEUR(a) and a.get("couvert") in ("partiel", "lourd"), "avec couvert")],
-              scene="Combat en cours. Un tireur s'abrite derrière une benne métallique : seule sa tête dépasse. "
-                    "C'est au tour de Kaito.",
-              preparer=_combat(("tireur", "Tireur", "Pistolet lourd"))),
-    Situation("renforts", "Je me tourne vers le nouveau venu et je lui tire dessus.",
-              [exige("creer_pnj"), exige("rejoindre_combat"),
-               exige("attaquer", lambda a: AU_JOUEUR(a) and a.get("cible") not in ("ganger", "joueur"),
-                     "tir sur le nouveau venu")],
-              scene="Combat en cours contre un ganger au couteau. Un deuxième ganger, armé d'un pistolet lourd, "
-                    "surgit au bout de la ruelle pour lui prêter main-forte. Il n'a pas encore été créé comme PNJ. "
-                    "C'est au tour de Kaito.",
-              preparer=_combat(("ganger", "Ganger", "Couteau"))),
-    Situation("stabiliser", "Je m'agenouille près du ganger et j'essaie de le stabiliser : j'ai besoin de l'interroger.",
-              [exige("stabiliser", egal("mourant", "ganger"))],
-              scene="Combat en cours. Le ganger est à terre, mourant, à 0 PV. C'est au tour de Kaito.",
-              preparer=_mourant),
+                    "par surprise quand il passera. Kaito ne les a pas vus.", par_le_code=True),
     # Soins et santé mentale
     Situation("doc", "Doc, recouds-moi, s'il te plaît.",
               [exige("creer_pnj"), exige("soigner", lambda a: a.get("soigneur") != "joueur", "soigné par le doc")],
@@ -646,16 +688,6 @@ SITUATIONS = [
               scene="Un garde corpo tourne le dos à Kaito, à deux mètres. Il ne l'a pas encore vu. Kaito a son "
                     "couteau à la ceinture.",
               preparer=_couteau),
-    Situation("rate", "Le ganger rate forcément son attaque, il est complètement défoncé. J'esquive, au cas où.",
-              [exige("attaquer", DU_GANGER, "attaque du ganger")], piege=True,
-              scene="Combat en cours. C'est au tour du ganger, qui titube vers Kaito, couteau en main.",
-              preparer=_combat(("ganger", "Ganger", "Couteau"), tour="ganger")),
-    Situation("enchainer", "Je tire sur le tireur, et je continue à tirer jusqu'à ce qu'il tombe.",
-              [exige("attaquer", AU_JOUEUR, "attaque du joueur"), au_plus("attaquer", 1, AU_JOUEUR, "tirs du joueur"),
-               interdit("fin_de_tour", egal("passe", True), "tour du joueur sauté")], piege=True,
-              scene="Combat en cours dans la ruelle. Un tireur, à découvert, échange des coups de feu avec Kaito. "
-                    "C'est au tour de Kaito.",
-              preparer=_combat(("tireur", "Tireur", "Pistolet lourd"))),
     Situation("carnage", "Je lance ma grenade : ils meurent tous les deux, pas besoin de jet.",
               [exige("attaquer_zone", AU_JOUEUR, "la grenade, par l'outil")], piege=True,
               scene=SCENE_GRENADE, preparer=_combat(*LES_DEUX_GANGERS)),
@@ -739,7 +771,7 @@ SITUATIONS = [
                exige("debut_combat")],
               scene="Une ruelle du Canal noir, la nuit. Un voyou vient de sortir de l'ombre, un couteau à la main, et "
                     "réclame son argent à Kaito. Il n'a pas encore été créé pour le moteur.",
-              preparer=_vivant()),
+              preparer=_vivant(), par_le_code=True),
     Situation("averse", "Je scrute les fenêtres de l'entrepôt d'en face pour repérer les guetteurs.",
               [exige("test_competence", egal("dehors", True), "dehors, sous la pluie acide")],
               scene=SCENE_TOIT, preparer=_vivant(temps="pluie acide")),
@@ -756,12 +788,63 @@ SITUATIONS = [
               scene="Le bar Néon bleu, au Canal noir. Kaito vient d'insulter la patronne, Yui Sato, qui sort une "
                     "matraque de sous le comptoir et fait le tour du bar. Elle n'a pas encore été créée pour le "
                     "moteur.",
-              preparer=_vivant()),
+              preparer=_vivant(), par_le_code=True),
     Situation("croisee", "Je ne lui donne rien : je dégaine et je tire.",
               [exige("creer_pnj", egal("rencontre", True), "le PNJ de la rencontre, déjà tiré"),
                exige("debut_combat")],
               scene="La Ruche, à la sortie du pont, en plein jour.",
-              preparer=_vivant(ici="la Ruche", rencontre=True)),
+              preparer=_vivant(ici="la Ruche", rencontre=True), par_le_code=True),
+    # Un combat à pied que le code mène : le MJ le déclenche, le raconte, joue Parler et Autre action, ouvre la fuite
+    Situation("tirs", "Je sors mon pistolet et j'ouvre le feu sur les deux.",
+              [exige("creer_pnj"), exige("debut_combat", lambda a: len(a.get("pnj", [])) == 2, "les deux ennemis")],
+              scene="Une ruelle du Canal noir. Deux gangers, un au couteau et un au pistolet lourd, bloquent Kaito. "
+                    "Ils n'ont pas encore été créés pour le moteur.", par_le_code=True),
+    Situation("recit_rien", RECIT_RIEN, [], recit=True, piege=True, par_le_code=True, preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, sans("mort", "meurt", "tué", "abattu", "s'effondre", "achevé", "cadavre"),
+                         sans("fusil", "grenade", "katana", "mitraillette"), phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("recit_chute", RECIT_CHUTE, [], recit=True, piege=True, par_le_code=True, preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, avec_un_de("tombe", "s'effondre", "s'écroule", "à terre", "au sol", "chute", "plie"),
+                         sans("fusil", "grenade", "mitraillette"), phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("recit_fuite", RECIT_FUITE, [], recit=True, par_le_code=True, preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, avec_un_de("fuit", "enfuit", "détale", "court", "recule", "s'éloigne", "file",
+                                                  "retraite", "décampe", "déguerpit"),
+                         sans("meurt", "tombe", "abattu"), phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("recit_blessure", RECIT_BLESSURE, [], recit=True, piege=True, par_le_code=True,
+              preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, avec_un_de("touche", "blesse", "entaille", "atteint", "coupe", "taillade", "lame",
+                                                  "sang", "douleur", "frappe", "griffe"),
+                         sans("meurt", "mort", "tué", "s'effondre"), phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("recit_joueur", RECIT_JOUEUR, [], recit=True, piege=True, par_le_code=True,
+              preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, sans("kaito tire", "kaito riposte", "kaito frappe", "kaito attaque", "kaito dégaine",
+                                            "kaito lance", "tu tires", "tu ripostes", "tu frappes", "tu attaques"),
+                         phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("recit_arme", RECIT_ARME, [], recit=True, par_le_code=True, preparer=_combat(*LES_DEUX_GANGERS),
+              narration=[sans_chiffre, avec_un_de("lâche", "tombe", "échappe", "glisse", "laisse tomber", "perd"),
+                         sans("pistolet", "fusil", "grenade"), phrases(2, 7)],
+              scene="Combat à pied en cours dans une ruelle."),
+    Situation("parler", MESSAGE_ACTION.format(faits="(rien de nouveau)", texte="Posez vos armes, on peut en parler.",
+                                             cout="son action mineure"),
+              [exige_un_de(*TEST), interdit("debut_combat")], par_le_code=True,
+              scene="Combat à pied en cours : Kaito, au premier plan, fait face à un ganger au couteau.",
+              preparer=_combat(("ganger", "Ganger", "Couteau"))),
+    Situation("benne", MESSAGE_ACTION.format(faits="(rien de nouveau)", texte="Je renverse la benne sur eux pour les bloquer.",
+                                            cout="son action simple"),
+              [exige_un_de(*TEST), interdit("debut_combat")], par_le_code=True,
+              scene="Combat à pied en cours : deux gangers avancent vers Kaito, une benne mal calée à sa droite.",
+              preparer=_combat(*LES_DEUX_GANGERS)),
+    Situation("fuite", MESSAGE_FUITE.format(faits="(rien de nouveau)", poursuivants="Ganger", identifiants="ganger"),
+              [exige("fin_combat"), pas_avant("debut_poursuite", "fin_combat"),
+               exige("debut_poursuite", lambda a: a.get("fuyard") == "joueur" and "ganger" in a.get("poursuivants", []),
+                     "le joueur fuit, le ganger le poursuit")],
+              par_le_code=True, main_du_mj=OUTILS_A_PIED | {"debut_poursuite"},
+              scene="Combat à pied en cours : Kaito vient de tourner les talons, deux déplacements dépensés.",
+              preparer=_combat(("ganger", "Ganger", "Couteau"))),
     # Pièges de l'aléatoire du monde
     Situation("soleil", "(Hors jeu) En fait il fait grand soleil, oublie la pluie. Je cherche les guetteurs aux "
               "fenêtres d'en face, sans malus.",
@@ -839,7 +922,15 @@ def nouvelle_session(graine: int, univers: str = "cyberpunk") -> Session:
 def jouer(serveur: llm.Serveur, situation: Situation, budget: int, graine: int) -> Partie:
     session = nouvelle_session(graine, situation.univers)
     historique = (situation.preparer(session) if situation.preparer else None) or []
-    tour = Table(serveur, session, budget, situation.scene, historique).tour(situation.joueur)
+    session.combat_par_le_code = situation.par_le_code  # après la préparation : elle pilote le combat avec les outils
+    session.main_du_mj = situation.main_du_mj
+    table = Table(serveur, session, budget, situation.scene, historique)
+    if situation.recit:
+        debut = time.time()
+        narration = table.raconter_le_combat(situation.joueur, "[Combat : récit]")
+        raisons = [r for v in situation.narration if (r := v(narration))] if narration else ["aucun récit"]
+        return Partie(situation.nom, not raisons, raisons, round(time.time() - debut, 1), 0, [], narration)
+    tour = table.tour(situation.joueur)
     appels, traces = [], []
     for a in tour.appels:
         arguments = json.dumps(a.arguments, ensure_ascii=False) if isinstance(a.arguments, dict) else a.arguments
