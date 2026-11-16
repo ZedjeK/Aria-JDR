@@ -1,5 +1,6 @@
 """`jeu.lancer` et `personnages.creer` passent l'entrée et la sortie qu'on leur donne : la console par défaut, l'interface web."""
 
+import io
 from contextlib import contextmanager
 from types import SimpleNamespace
 
@@ -109,3 +110,43 @@ def test_le_moteur_dit_qu_il_cree_l_univers_avant_la_longue_attente(tmp_path, mo
     except Arrete:
         pass
     assert len(dits) == 1 and "crée l'univers" in dits[0] and "minutes" in dits[0]
+
+
+def _lancer_avec_un_faux_jeu(tmp_path, monkeypatch, **options) -> dict:
+    monkeypatch.setattr(chemins, "DONNEES", tmp_path / ".Aria-JDR")
+    recus = {}
+
+    @contextmanager
+    def faux_mj(sortie=print):
+        yield "serveur", {"budget_reflexion": 512}, SimpleNamespace(contexte=16384)
+
+    class FauxJeu:
+        def __init__(self, serveur, budget, contexte, **kwargs):
+            recus.update(kwargs)
+
+        def jouer(self):
+            pass
+
+    monkeypatch.setattr(jeu, "mj_charge", faux_mj)
+    monkeypatch.setattr(jeu, "Jeu", FauxJeu)
+    jeu.lancer(campagne.Campagne.nommee("essai"), **options)
+    return recus
+
+
+def test_lancer_donne_le_choix_du_joueur_qu_on_lui_passe(tmp_path, monkeypatch):
+    choisir = lambda titre, options: 0  # noqa: E731
+    recus = _lancer_avec_un_faux_jeu(tmp_path, monkeypatch, entree=lambda invite="": "", sortie=print, choisir=choisir)
+    assert recus["choisir"] is choisir
+
+
+def test_lancer_sans_entree_donnee_choisit_en_console(tmp_path, monkeypatch):
+    dits = []
+    monkeypatch.setattr("sys.stdin", io.StringIO("2\n"))  # la console réelle : `input` lit l'entrée standard
+    recus = _lancer_avec_un_faux_jeu(tmp_path, monkeypatch, sortie=dits.append)
+    from aria.choix import Option
+    assert recus["choisir"]("Que fais-tu ?", [Option("Tirer"), Option("Fuir")]) == 1
+
+
+def test_lancer_avec_une_autre_entree_laisse_le_mj_mener_le_combat(tmp_path, monkeypatch):
+    recus = _lancer_avec_un_faux_jeu(tmp_path, monkeypatch, entree=lambda invite="": "", sortie=print)
+    assert recus["choisir"] is None

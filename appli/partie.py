@@ -1,10 +1,11 @@
 """La partie en cours : le moteur tourne dans un fil de travail, ses sorties s'ajoutent à une liste d'événements que la
 page lit, et ses questions attendent la réponse du joueur.
 
-Le moteur parle par deux fonctions qu'on lui donne, `entree(invite)` et `sortie(texte)` : la console par défaut,
-cette session ici. Une seule partie à la fois : elle tient le serveur du MJ (la carte graphique) du début à la fin.
+Le moteur parle par trois fonctions qu'on lui donne, `entree(invite)`, `sortie(texte)` et `choisir(titre, options)` :
+la console par défaut, cette session ici (le choix devient des boutons sur la page). Une seule partie à la fois : elle tient le serveur du MJ (la carte graphique) du début à la fin.
 """
 
+import json
 import threading
 import traceback
 from collections.abc import Callable
@@ -13,6 +14,7 @@ from pathlib import Path
 from fastapi import APIRouter, Body, HTTPException, Query
 
 from appli import donnees
+from aria.choix import Option
 
 EVENEMENTS_MAX = 4000  # on garde les derniers : la page reprend le fil après un rechargement
 
@@ -48,17 +50,32 @@ class Partie:
 
     def entree(self, invite: str = "") -> str:
         """Pose la question et attend la réponse. Si on arrête la partie, lève EOFError : le moteur la ferme proprement."""
+        reponse = self._attendre("invite", invite, invite)
+        self._ajouter("joueur", reponse)
+        return reponse
+
+    def choisir(self, titre: str, options: list[Option]) -> int:
+        """Pose un choix : la page en fait des boutons (les options grisées disent pourquoi) et renvoie le numéro
+        cliqué, à partir de 1. Renvoie l'indice de l'option. Même arrêt que `entree`."""
+        menu = json.dumps({"titre": titre, "options": [{"libelle": o.libelle, "raison": o.raison} for o in options]},
+                          ensure_ascii=False)
+        while True:
+            reponse = self._attendre("menu", menu, titre).strip()
+            if reponse.isdigit() and 1 <= int(reponse) <= len(options) and options[int(reponse) - 1].active:
+                self._ajouter("joueur", options[int(reponse) - 1].libelle)
+                return int(reponse) - 1
+
+    def _attendre(self, type_: str, texte: str, attend: str) -> str:
         with self._verrou:
             self._reponse = None
-            self.attend = invite
-            self._ajouter("invite", invite, deja_verrouille=True)
+            self.attend = attend
+            self._ajouter(type_, texte, deja_verrouille=True)
             while self._reponse is None and not self.arret:
                 self._verrou.wait()
             self.attend = None
             if self.arret:
                 raise EOFError
             reponse, self._reponse = self._reponse, None
-        self._ajouter("joueur", reponse)
         return reponse
 
     # --- Ce que les routes utilisent
@@ -204,7 +221,8 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
             raise HTTPException(409, "Une partie ou un banc est déjà en cours : termine-le d'abord.")
         _verifier_le_mj(profil_valide, moteur)
         return lancer("campagne", f"Campagne « {nom} »", nom,
-                      lambda entree, sortie: jeu.lancer(campagne.Campagne.nommee(nom), entree=entree, sortie=sortie))
+                      lambda entree, sortie: jeu.lancer(campagne.Campagne.nommee(nom), entree=entree, sortie=sortie,
+                                                        choisir=partie.choisir))
 
     @api.post("/partie/nouvelle")
     def nouvelle(corps: dict = Body(...)):
@@ -261,7 +279,8 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
 
         def travail(entree, sortie):
             trame.ecrire_format(campagne.Campagne.nommee(nom), trame.Format(type_, cran))
-            jeu.lancer(campagne.Campagne.nommee(nom), choix, surprends_moi, predefini=predefini, entree=entree, sortie=sortie)
+            jeu.lancer(campagne.Campagne.nommee(nom), choix, surprends_moi, predefini=predefini, entree=entree, sortie=sortie,
+                       choisir=partie.choisir)
 
         return lancer("campagne", f"Nouvelle campagne « {nom} »", nom, travail)
 

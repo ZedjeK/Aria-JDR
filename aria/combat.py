@@ -4,6 +4,7 @@ Référence : REGLES.md section 7. Le moteur lance tous les dés, y compris ceux
 ennemis ; le MJ choisit seulement les actions et raconte les rapports renvoyés.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -373,6 +374,10 @@ class RapportAttaque:
     effets: list[str] = field(default_factory=list)
 
 
+# Qui choisit le bonus d'une réussite majeure, une fois qu'elle est tombée : (celui qui frappe, sa victime, les options)
+ChoixDeBonus = Callable[["Combattant", "Combattant", list[BonusMajeure]], BonusMajeure]
+
+
 def _valeur_ou_zero(combattant: Combattant, competence: str) -> int:
     try:
         return combattant.valeur(competence)
@@ -679,7 +684,7 @@ class Combat:
         cible: Combattant,
         defense: Defense | None = None,
         couvert: Couvert = Couvert.AUCUN,
-        bonus_majeure: BonusMajeure = BonusMajeure.DE_SUPPLEMENTAIRE,
+        bonus_majeure: "BonusMajeure | ChoixDeBonus" = BonusMajeure.DE_SUPPLEMENTAIRE,
         difficulte: Difficulte | None = None,
         tireur: str = "à pied",
     ) -> RapportAttaque:
@@ -726,20 +731,11 @@ class Combat:
         resultat_defense = None
         peut_defendre = arme.corps_a_corps and defense and cible.conscient and not (cible.surpris and self.round == 1)
         if peut_defendre:
-            malus = MALUS_DEFENSE_SUPPLEMENTAIRE * cible.defenses_ce_round
+            valeur_defense = self.valeur_de_defense(cible, defense)
             cible.defenses_ce_round += 1
-            if cible.desequilibre:
-                malus += MALUS_DESEQUILIBRE
-                cible.desequilibre = False
-            if defense is Defense.ESQUIVE:
-                competence_defense = "Esquive"
-                resultat_defense = tester(self.des, cible.valeur("Esquive"), combat=True, modificateur=malus)
-            else:
-                competence_defense = CORPS_A_CORPS
-                arme_riposte = cible.arme_de_melee
-                resultat_defense = tester(
-                    self.des, cible.valeur(CORPS_A_CORPS), combat=True, modificateur=malus + arme_riposte.bonus.jet
-                )
+            cible.desequilibre = False
+            competence_defense = "Esquive" if defense is Defense.ESQUIVE else CORPS_A_CORPS
+            resultat_defense = tester(self.des, valeur_defense, combat=True)
             cible.cocher(competence_defense, resultat_defense)
             issue = opposer(attaque, resultat_defense, esquive=defense is Defense.ESQUIVE)
         else:
@@ -786,6 +782,15 @@ class Combat:
     def difficulte_contre(self, cible: Combattant) -> Difficulte:
         """Facile contre une cible qui ne peut pas se défendre, Normale sinon."""
         return Difficulte.NORMALE if self.peut_se_defendre(cible) else Difficulte.FACILE
+
+    @staticmethod
+    def valeur_de_defense(cible: Combattant, defense: Defense) -> int:
+        """La valeur contre laquelle un jet de défense se lancerait maintenant : la compétence, −20 par défense déjà
+        faite ce round, −20 de déséquilibre, et le bonus de l'arme pour une riposte (REGLES.md 7.3)."""
+        malus = MALUS_DEFENSE_SUPPLEMENTAIRE * cible.defenses_ce_round + (MALUS_DESEQUILIBRE if cible.desequilibre else 0)
+        if defense is Defense.ESQUIVE:
+            return cible.valeur("Esquive") + malus
+        return cible.valeur(CORPS_A_CORPS) + cible.arme_de_melee.bonus.jet + malus
 
     @staticmethod
     def defense_par_defaut(defenseur: Combattant) -> Defense:
@@ -1086,7 +1091,7 @@ class Combat:
         return r
 
     def _infliger(self, source: Combattant, arme: Arme, degre: Degre, victime: Combattant,
-                  bonus_majeure: BonusMajeure, rapport: RapportAttaque):
+                  bonus_majeure: "BonusMajeure | ChoixDeBonus", rapport: RapportAttaque):
         formule = formule_degats(arme, source.force)
         protection = victime.protection
         if arme.a(Propriete.PERFORANTE) or degre is Degre.CRITIQUE:
@@ -1097,6 +1102,9 @@ class Combat:
         else:
             brut = self.des.jet(formule)
             if degre is Degre.MAJEURE:
+                if callable(bonus_majeure):  # le choix se fait maintenant, quand la majeure est tombée
+                    options = self.options_majeure(source, victime)
+                    bonus_majeure = bonus_majeure(source, victime, options) if len(options) > 1 else options[0]
                 if bonus_majeure is BonusMajeure.DE_SUPPLEMENTAIRE:
                     faces = next((t.faces for t in formule.termes if t.faces), 0)
                     if faces:

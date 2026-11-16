@@ -1,5 +1,6 @@
 """La partie dans l'interface : la session (fil, événements, réponses) et ses routes (appli.partie)."""
 
+import json
 import time
 from contextlib import contextmanager
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from appli import donnees, partie, serveur
 from aria import campagne, chemins, jeu, personnages
+from aria.choix import Option
 
 PORT, JETON = 8765, "jeton-de-test"
 
@@ -55,6 +57,50 @@ def test_on_ne_repond_que_quand_une_question_attend(tmp_path):
     attendre(lambda: not p.etat()["actif"])
     with pytest.raises(ValueError):
         p.repondre("trop tard")
+
+
+def test_un_choix_devient_un_evenement_menu_et_la_reponse_est_un_numero(tmp_path):
+    choisi = []
+
+    def jeu_a_choix(entree, sortie, choisir=None):
+        choisi.append(p.choisir("Que fais-tu ?", [Option("Tirer"), Option("Recharger", "le chargeur est plein"), Option("Fuir")]))
+
+    p = partie.Partie(tmp_path)
+    p.demarrer("campagne", "Essai", "essai", jeu_a_choix)
+    assert attendre(lambda: p.etat()["attend"] == "Que fais-tu ?")
+    menu = [e for e in p.evenements(0)["evenements"] if e["type"] == "menu"][0]
+    assert json.loads(menu["texte"]) == {"titre": "Que fais-tu ?", "options": [
+        {"libelle": "Tirer", "raison": ""}, {"libelle": "Recharger", "raison": "le chargeur est plein"},
+        {"libelle": "Fuir", "raison": ""}]}
+    p.repondre("3")
+    assert attendre(lambda: not p.etat()["actif"])
+    assert choisi == [2]  # l'indice de « Fuir »
+    assert [e["texte"] for e in p.evenements(0)["evenements"] if e["type"] == "joueur"] == ["Fuir"]
+
+
+def test_un_choix_grise_ou_hors_liste_est_redemande(tmp_path):
+    choisi = []
+
+    def jeu_a_choix(entree, sortie):
+        choisi.append(p.choisir("Que fais-tu ?", [Option("Recharger", "le chargeur est plein"), Option("Tirer")]))
+
+    p = partie.Partie(tmp_path)
+    p.demarrer("campagne", "Essai", "essai", jeu_a_choix)
+    for mauvaise in ("1", "9", "x"):  # grisée, hors liste, pas un nombre : le moteur repose la question
+        assert attendre(lambda: p.etat()["attend"] == "Que fais-tu ?")
+        p.repondre(mauvaise)
+    assert attendre(lambda: p.etat()["attend"] == "Que fais-tu ?" and p.etat()["dernier"] >= 4)
+    p.repondre("2")
+    assert attendre(lambda: not p.etat()["actif"])
+    assert choisi == [1]
+
+
+def test_arreter_la_partie_pendant_un_choix_ferme_le_moteur(tmp_path):
+    p = partie.Partie(tmp_path)
+    p.demarrer("campagne", "Essai", "essai", lambda entree, sortie: p.choisir("Que fais-tu ?", [Option("Tirer")]))
+    assert attendre(lambda: p.etat()["attend"])
+    p.arreter()
+    assert p.attendre_la_fin(5)
 
 
 def test_une_seule_partie_a_la_fois(tmp_path):
@@ -223,7 +269,7 @@ def test_une_campagne_qui_existe_deja_n_est_pas_ecrasee(donnees_jeu, mj_pret):
 def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choix(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
 
-    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None):
+    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None):
         recus.update(nom=camp.dossier.name, choix=choix, surprends_moi=surprends_moi, predefini=predefini)
         sortie("Univers créé.")
 
@@ -239,7 +285,7 @@ def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choi
 
 def test_le_mj_qui_propose_le_cadre_passe_par_surprends_moi(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
-    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None:
+    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None:
                         recus.update(surprends_moi=surprends_moi, nom=choix.nom))
     client = ouvrir(donnees_jeu, mj_pret)
     client.post("/api/partie/nouvelle", json={**NOUVELLE, "surprends_moi": True})

@@ -291,6 +291,8 @@ const Partie = (() => {
   let etat = { actif: false, nature: "" };
   let depuis = Date.now();  // le dernier signe de vie du jeu : un événement, ou le départ
   let attente = null;  // ce que dit la page pendant que le jeu travaille, avec le temps écoulé
+  let menuEnAttente = null;  // le choix que le jeu pose au joueur, tant qu'il n'a pas répondu
+  let menuAffiche = null;
   let minuteur = null;
 
   const duree = (ms) => {
@@ -312,14 +314,44 @@ const Partie = (() => {
     if (evenement.type === "texte") ecrire("l-texte", evenement.texte);
     else if (evenement.type === "joueur") ecrire("l-joueur", `> ${evenement.texte}`);
     else if (evenement.type === "invite" && evenement.texte.trim() !== ">") ecrire("l-invite", evenement.texte.trim());
+    else if (evenement.type === "menu") {
+      menuEnAttente = JSON.parse(evenement.texte);
+      ecrire("l-invite", menuEnAttente.titre);
+    }
+    if (evenement.type === "joueur") menuEnAttente = null;  // une réponse est partie : le choix est tranché
+  }
+
+  async function repondreAuMenu(numero) {
+    champ("choix").hidden = true;
+    menuEnAttente = menuAffiche = null;
+    try { await envoyer("/api/partie/saisie", { texte: String(numero) }); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
+  }
+
+  function montrerLeMenu(menu) {
+    if (menu === menuAffiche) return;
+    menuAffiche = menu;
+    champ("choix").replaceChildren(...menu.options.map((option, i) => {
+      const bouton = el("button", "secondaire", `${i + 1}. ${option.libelle}`);
+      bouton.type = "button";
+      if (option.raison) {
+        bouton.disabled = true;
+        bouton.title = option.raison;
+        bouton.append(" ", el("span", "raison", `(impossible : ${option.raison})`));
+      } else bouton.addEventListener("click", () => repondreAuMenu(i + 1));
+      return bouton;
+    }));
+    champ("choix").hidden = false;
   }
 
   function controles(actif, attend) {
     const pret = attend !== null && attend !== undefined;
+    const choix = pret && menuEnAttente !== null;  // un choix à faire : des boutons, pas de saisie
+    if (choix) montrerLeMenu(menuEnAttente);
+    else { champ("choix").hidden = true; menuAffiche = null; }
     const texte = champ("saisie-texte");
-    texte.disabled = champ("saisie-envoyer").disabled = !pret;
-    texte.placeholder = !pret ? "" : attend.trim() === ">" ? "Écris ce que fait ton personnage" : attend.trim();
-    if (pret) texte.focus({ preventScroll: true });
+    texte.disabled = champ("saisie-envoyer").disabled = !pret || choix;
+    texte.placeholder = !pret || choix ? "" : attend.trim() === ">" ? "Écris ce que fait ton personnage" : attend.trim();
+    if (pret && !choix) texte.focus({ preventScroll: true });
     champ("commandes").hidden = !(actif && pret && attend.trim() === ">" && etat.nature === "campagne");
     champ("interrompre").hidden = !actif;
     const travaille = actif && !pret;
@@ -329,7 +361,8 @@ const Partie = (() => {
     if (travaille && minuteur === null) minuteur = setInterval(majAttente, 1000);
     if (!travaille && minuteur !== null) { clearInterval(minuteur); minuteur = null; }
     if (travaille) majAttente();
-    else champ("partie-etat").textContent = !actif ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.") : "À toi de jouer.";
+    else champ("partie-etat").textContent = !actif ? (dernier ? "Partie terminée." : "Aucune partie n'est ouverte.")
+      : choix ? "À toi de jouer : choisis une action (touches 1 à 9)." : "À toi de jouer.";
   }
 
   async function suivre() {
@@ -385,6 +418,14 @@ const Partie = (() => {
   return { demarrer, reprendreAffichage };
 })();
 const demarrer = Partie.demarrer;
+
+document.addEventListener("keydown", (evenement) => {
+  const menu = champ("choix");
+  if (menu.hidden || evenement.ctrlKey || evenement.metaKey || evenement.altKey) return;
+  if (!/^[1-9]$/.test(evenement.key)) return;
+  const bouton = menu.children[Number(evenement.key) - 1];
+  if (bouton && !bouton.disabled) bouton.click();
+});
 
 champ("saisie").addEventListener("submit", async (evenement) => {
   evenement.preventDefault();
