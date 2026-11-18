@@ -363,6 +363,7 @@ Les gains d'XP sont des montants fixes déclenchés par des **jalons** enregistr
 - **Se mettre à couvert** coûte un déplacement. Le couvert est **partiel** (−20 au tireur) dans un décor encombré, **lourd** (−40) dans un décor fortifié, et **refusé** dans un décor dégagé.
 - On garde son couvert jusqu'à ce qu'on se déplace autrement ou qu'on passe au corps à corps. Tirer ne le fait pas perdre.
 - Le couvert protège des armes à distance seulement. Un tireur adverse se met à couvert de lui-même quand il le peut.
+- Dans un combat à pied, le couvert vient de la carte (7.11) : le décor ne règle plus que la densité d'obstacles, et « se mettre à couvert » n'est plus une action, on se place derrière un obstacle en se déplaçant.
 
 ### 7.3 L'attaque
 
@@ -515,11 +516,11 @@ Un point de destin permet de **relancer un jet**, ou de transformer une mort (ou
 
 Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposter), des PV, une armure, une arme. Le code choisit leurs actions et lance leurs dés ; un choix du LLM, dans une liste fermée, ne peut venir qu'en plus, avec le code en repli.
 
-**Le périmètre** : ces règles mènent le **combat à pied**, avec des armes et des sorts à une seule cible. Les zones (7.9), les drones, les sorts de zone et les véhicules restent en combat classique : le MJ pilote alors avec les outils du moteur. Le moteur choisit le mode à l'ouverture du combat.
+**Le périmètre** : ces règles mènent le **combat à pied**, sur une carte (7.11), avec des armes et des sorts à une seule cible. Les zones (7.9), les drones, les sorts de zone et les véhicules restent en combat classique : le MJ pilote alors avec les outils du moteur. Le moteur choisit le mode à l'ouverture du combat.
 
 **Le profil d'un ennemi** se déduit de son arme (mêlée : bretteur ; poing ou arme longue : tireur) et de sa menace (faible, moyenne, forte, élite).
 
-**Son tour**, dans cet ordre : le moral ; l'état de son arme (dégainer, débloquer, recharger) ; le couvert, pour un tireur ; la visée, s'il est à couvert sans avoir bougé ; l'attaque ; sinon, il passe.
+**Son tour**, dans cet ordre : le moral ; l'état de son arme (dégainer, débloquer, recharger) ; se placer sur la carte (7.11) ; la visée, pour un tireur qui n'a pas bougé ; l'attaque ; sinon, il passe.
 
 **Sa cible** est tirée au sort, pondérée : 1 par cible consciente, +2 si elle est sous la moitié de ses PV, +1 si elle l'a blessé au round précédent. Pas plus de 2 attaquants par cible et par round : une cible déjà prise à deux n'est plus choisie, sauf s'il ne reste que des cibles prises à deux, ou une seule. Aucun acharnement sur un inconscient tant qu'un adversaire actif reste.
 
@@ -527,9 +528,9 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 
 **La fin du combat** est détectée par le code. **Victoire** : plus aucun ennemi en lice, c'est-à-dire à terre, rendu ou parti ; un ennemi qui fuit compte jusqu'à ce qu'il parte. **Défaite** : plus personne en lice du côté du joueur, lui et ses alliés. **Essoufflement** : au-delà de 30 rounds sans issue, les combattants se séparent. Le MJ en raconte les suites ; quand le joueur tombe, c'est lui qui décide de la suite dans les règles existantes.
 
-**Le tour du joueur** : à son tour, le joueur choisit dans un menu : attaquer, viser, recharger, débloquer son arme, changer d'arme, se mettre à couvert, lancer un sort à une cible, stabiliser un blessé, parler, tenter autre chose, fuir, terminer son tour. Une option impossible est grisée, avec sa raison. « Parler » et « Autre action » se jouent avec les règles ordinaires (un jet de compétence), « Fuir » ouvre une poursuite : le MJ reprend la main le temps de cette action seulement. Quand le joueur est attaqué au corps à corps, il peut choisir sa défense, et le bonus d'une réussite majeure, si ses réglages le prévoient ; sinon le code prend sa meilleure défense (à égalité, l'esquive) et le dé supplémentaire.
+**Le tour du joueur** : à son tour, le joueur choisit dans un menu : attaquer, viser, recharger, débloquer son arme, changer d'arme, se déplacer, lancer un sort à une cible, stabiliser un blessé, parler, tenter autre chose, fuir, terminer son tour. Une option impossible est grisée, avec sa raison. « Parler » et « Autre action » se jouent avec les règles ordinaires (un jet de compétence), « Fuir » ouvre une poursuite : le MJ reprend la main le temps de cette action seulement. Quand le joueur est attaqué au corps à corps, il peut choisir sa défense, et le bonus d'une réussite majeure, si ses réglages le prévoient ; sinon le code prend sa meilleure défense (à égalité, l'esquive) et le dé supplémentaire.
 
-**Le récit** : le code tire tous les dés, le MJ raconte. Pour chaque round, il reçoit les faits (qui agit, ce qui touche ou rate, qui tombe, qui fuit) et écrit un récit court, sans outil, sans chiffre, sans fait inventé et sans rien décider à la place du joueur. Le joueur règle dans les Réglages quand il raconte (à chaque round, à la fin seulement, ou jamais) et s'il voit les PV exacts des ennemis ; le MJ ne les reçoit jamais, même si le joueur les voit. À la fin, le MJ écrit les moments forts et clôt le combat ; s'il se tait, le code le fait à sa place.
+**Le récit** : le code tire tous les dés, le MJ raconte. Pour chaque round, il reçoit les faits (qui agit, ce qui touche ou rate, qui tombe, qui fuit) et écrit un récit court, sans outil, sans chiffre, sans fait inventé et sans rien décider à la place du joueur. Le joueur règle dans les Réglages quand il raconte (à chaque round, à la fin seulement, ou jamais) et s'il voit les PV exacts des ennemis ; le MJ ne les reçoit jamais, même si le joueur les voit. À la fin, le MJ écrit les moments forts et clôt le combat ; s'il se tait, le code le fait à sa place. Sur la carte, il reçoit aussi les positions, en mots (7.11).
 
 **Le plan du round par le MJ, un essai** : le MJ peut aussi choisir pour les ennemis, mais seulement si le joueur l'a allumé (éteint par défaut). Au premier tour d'un ennemi de chaque round, le code lui demande un plan : pour chaque ennemi, une intention de la liste fermée (attaquer, s'abriter, viser, fuir, se rendre) et, au besoin, une cible, en 25 secondes au plus. L'état de l'arme passe avant le plan. Une intention qui ne peut pas se jouer (cible tombée, déjà prise à deux, pas d'abri) laisse l'IA décider. Fuir ou se rendre ne sont permis qu'à un ennemi dont un déclencheur de moral est vrai, et le plan ne peut jamais retenir un ennemi que le test de moral a fait craquer. Si le MJ répond de travers deux rounds de suite, le code cesse de lui demander pour ce combat.
 
@@ -540,7 +541,7 @@ Profil simplifié : un pourcentage de combat (pour attaquer, esquiver et riposte
 
 ### 7.9 Les armes de zone
 
-Une grenade, une roquette ou un obus touche une **zone**, pas une cible. Le combat n'a pas de carte : les zones sont abstraites, comme la propriété « zone » des sorts.
+Une grenade, une roquette ou un obus touche une **zone**, pas une cible. Un combat avec des zones se joue en combat classique, sans carte : les zones sont abstraites, comme la propriété « zone » des sorts.
 
 | Zone | Cibles au plus | Exemples |
 |---|---|---|
@@ -590,6 +591,31 @@ Une impulsion électromagnétique (grenade, mine, charge, drone brouilleur) touc
 
 - Un implant ne grille jamais : il est seulement coupé.
 - Le **blindage IEM** est une modification (pour un implant, un drone, une arme intelligente, une petite électronique) ou un système défensif (pour un véhicule). Le **pare-feu**, lui, protège du piratage, pas de l'IEM.
+
+### 7.11 La carte de combat
+
+Un combat à pied se joue sur une carte. Le code la génère et en tient les distances ; le MJ la raconte, rien n'est dessiné à la main.
+
+**La grille** : la carte est faite de **cases hexagonales** de 1,5 m (d'un côté plat au côté opposé). Chaque case a six voisines. La distance entre deux cases est le plus petit nombre de pas pour aller de l'une à l'autre, chaque pas passant à une case voisine. Un déplacement fait **6 cases** (9 m) ; deux déplacements, 12 cases. Une case ne porte qu'un combattant. On traverse un allié sans s'y arrêter, jamais un ennemi. Un obstacle bloque le passage ; un terrain difficile (décombres, boue, eau basse) coûte 2 cases par case.
+
+**La portée** : la portée d'une arme (7.5) est sa portée maximale. **Contact** : une case voisine. **Courte** : 8 cases. **Moyenne** : 20 cases. **Longue** : 40 cases. Au-delà, on ne peut pas attaquer. Dans la portée, la distance ne change pas le jet. Une arme de mêlée exige le contact : il faut s'approcher, ce qui coûte des déplacements. Un tir contre une cible au contact n'a pas de malus.
+
+**Le couvert et la ligne de vue** : le tir suit la ligne droite entre le centre des deux cases, et les cases qu'elle traverse comptent ; si elle passe entre deux cases, c'est celle qui protège le plus la cible qui compte. Un **obstacle bas** (caisse, muret, véhicule) sur cette ligne donne un **couvert partiel** (−20 au tireur) ; un obstacle **blindé** (véhicule blindé, barricade renforcée), un **couvert lourd** (−40) ; un obstacle **plein** (mur) coupe la ligne : pas de tir. S'il y a plusieurs obstacles sur la ligne, c'est le plus protecteur qui compte. Le couvert protège des armes à distance seulement. La fumée (7.9) garde son effet.
+
+**La carte** : le code la génère à l'ouverture du combat, à partir d'un **gabarit** de lieu : ruelle, entrepôt, bar, toit, parking, couloir. Le MJ ne choisit que le gabarit, dans cette liste fermée, d'après la scène ; il ne place rien. Le décor (dégagé, encombré, fortifié ; voir 7.2) règle la densité d'obstacles. La carte fait de 16 à 36 cases de large selon le gabarit et reste la même jusqu'à la fin du combat. Les deux camps commencent à **12 cases au moins** l'un de l'autre. En embuscade, le camp qui surprend commence à 6 cases de l'autre ; dans un lieu exigu (couloir, bar), la distance de départ est de 8 cases.
+
+**Les ennemis sur la carte** : un **bretteur** avance vers sa cible jusqu'au contact. Un **tireur** cherche un obstacle bas à portée de sa cible, s'y met à couvert et ne bouge plus tant qu'il tire ; sans obstacle, il garde la portée de son arme. Il ne vise que s'il n'a pas bougé (7.2).
+
+**Ce que dit le MJ** : il reçoit les positions en mots (« à 4 cases », « derrière une caisse », « au contact »), jamais des coordonnées. Il ne déplace rien : les déplacements sont ceux du code et du joueur.
+
+**Ce que cette version ne fait pas** :
+
+- Les zones (7.9), les drones, les véhicules et la poursuite (12) restent sans carte.
+- Pas d'attaque d'opportunité quand on quitte le contact.
+- Pas de brouillard de guerre ni de vision.
+- Pas de dénivelé : un toit est une carte à part.
+
+*Les distances de cette section (déplacement, portées, distances de départ) sont de premières estimations, à régler au simulateur de combats avant leur mise en code.*
 
 ---
 
