@@ -38,8 +38,13 @@ class Partie:
         self.attend: str | None = None  # la question posée au joueur, tant qu'elle attend sa réponse
         self.arret = False
         self.erreur: str | None = None
+        self._carte: dict | None = None  # la carte de la campagne, posée par le moteur avant chaque saisie du joueur
 
     # --- Ce que le moteur utilise (depuis le fil de travail)
+
+    def poser_la_carte(self, vue: dict | None) -> None:
+        with self._verrou:
+            self._carte = vue
 
     def sortie(self, texte: str = "") -> None:
         # Un banc ne pose aucune question : c'est sa sortie, une ligne par situation, qui lui apprend qu'on l'interrompt.
@@ -86,6 +91,7 @@ class Partie:
                 raise PartieEnCours
             self._evenements, self._numero = [], 0
             self._reponse, self.attend, self.arret, self.erreur = None, None, False, None
+            self._carte = None
             self.actif, self.nature, self.titre, self.campagne = True, nature, titre, campagne
             self._fil = threading.Thread(target=self._courir, args=(travail,), name="partie", daemon=True)
             self._fil.start()
@@ -114,6 +120,11 @@ class Partie:
         with self._verrou:
             return {"actif": self.actif, "nature": self.nature, "titre": self.titre, "campagne": self.campagne,
                     "attend": self.attend, "arret": self.arret, "erreur": self.erreur, "dernier": self._numero}
+
+    def carte(self) -> dict | None:
+        """La carte de la campagne en cours, telle que le moteur l'a posée ; None : pas de partie, ou pas de monde."""
+        with self._verrou:
+            return self._carte
 
     def evenements(self, apres: int, attente: float = 0.0) -> dict:
         """Les événements numérotés après `apres` ; attend jusqu'à `attente` secondes s'il n'y en a pas encore."""
@@ -208,6 +219,10 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
     def etat():
         return partie.etat()
 
+    @api.get("/carte")
+    def carte():
+        return {"carte": partie.carte()}
+
     @api.get("/partie/evenements")
     def evenements(apres: int = Query(0, ge=0), attente: float = Query(0.0, ge=0.0, le=30.0)):
         return partie.evenements(apres, attente)
@@ -231,7 +246,8 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         return lancer("campagne", f"Campagne « {nom} »", nom,
                       lambda entree, sortie: jeu.lancer(campagne.Campagne.nommee(nom), entree=entree, sortie=sortie,
                                                         choisir=partie.choisir,
-                                                        reglages_combat=reglages_de_combat(partie)))
+                                                        reglages_combat=reglages_de_combat(partie),
+                                                        publier_la_carte=partie.poser_la_carte))
 
     @api.post("/partie/nouvelle")
     def nouvelle(corps: dict = Body(...)):
@@ -289,7 +305,8 @@ def routeur(partie: Partie, profil_valide: Callable[[], dict | None], moteur: Ca
         def travail(entree, sortie):
             trame.ecrire_format(campagne.Campagne.nommee(nom), trame.Format(type_, cran))
             jeu.lancer(campagne.Campagne.nommee(nom), choix, surprends_moi, predefini=predefini, entree=entree, sortie=sortie,
-                       choisir=partie.choisir, reglages_combat=reglages_de_combat(partie))
+                       choisir=partie.choisir, reglages_combat=reglages_de_combat(partie),
+                       publier_la_carte=partie.poser_la_carte)
 
         return lancer("campagne", f"Nouvelle campagne « {nom} »", nom, travail)
 

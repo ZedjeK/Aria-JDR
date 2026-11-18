@@ -107,7 +107,30 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 #message { min-height: 1.5em; color: var(--texte-2); }
 #message.erreur { color: var(--rouge); }
 
+/* La carte de la campagne */
+.carte-corps { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 16px; margin-top: 8px; }
+#carte-svg { width: 100%; height: auto; aspect-ratio: 1; background: var(--fond); border: 1px solid var(--ligne); }
+.carte-lien { stroke: var(--ligne); stroke-width: 0.45; }
+.carte-district { fill: var(--texte-2); font-size: 2.6px; letter-spacing: .08em; text-transform: uppercase; }
+.carte-district.guerre { fill: var(--orange); }
+.carte-nom { fill: var(--texte); font-size: 2.4px; paint-order: stroke; stroke: var(--fond); stroke-width: 0.7px; }
+.carte-quartier { cursor: pointer; }
+.carte-quartier:hover .carte-point, .carte-quartier.choisi .carte-point { stroke: var(--texte); stroke-width: 0.5; }
+.carte-quartier:focus-visible { outline: none; }
+.carte-quartier:focus-visible .carte-point { stroke: var(--ambre); stroke-width: 0.8; }
+.carte-ici { fill: none; stroke: var(--cyan); stroke-width: 0.5; }
+.carte-dispute { fill: none; stroke: var(--orange); stroke-width: 0.5; stroke-dasharray: 1 0.8; animation: carte-tourne 6s linear infinite; }
+@keyframes carte-tourne { to { stroke-dashoffset: -7.2; } }
+@media (prefers-reduced-motion: reduce) { .carte-dispute { animation: none; } }
+.carte-fiche { background: var(--fond); border: 1px solid var(--ligne); padding: 10px 14px; }
+.carte-fiche h3 { margin: 0 0 6px; color: var(--cyan); }
+.carte-fiche p { margin: 4px 0; }
+.carte-factions { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.carte-factions li { display: flex; align-items: baseline; gap: 8px; }
+.pastille { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+
 @media (max-width: 720px) {
+  .carte-corps { grid-template-columns: 1fr; }
   body { grid-template-columns: 1fr; }
   #fond { inset: 0; width: 100%; }
 }

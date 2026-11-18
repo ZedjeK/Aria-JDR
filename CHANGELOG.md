@@ -3,6 +3,12 @@
 Un bloc par version, le plus récent en haut. Les notes complètes d'une version
 sont dans `docs/releases/`.
 
+## Non publié
+
+### Ajouté
+
+- La carte de la campagne dans l'interface (onglet Carte) : les quartiers placés par le moteur (`aria/carte.py`), colorés par faction, avec les districts, le quartier du joueur, les quartiers disputés, une fiche au clic (contrôle, réputation, lieux connus) et « S'y rendre » pour un quartier voisin. Route `GET /api/carte`.
+
 ## 0.2.0
 
 ### Ajouté
