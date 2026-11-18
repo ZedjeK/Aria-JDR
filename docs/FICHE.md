@@ -12,7 +12,8 @@ jour quand l'appli change.
 | Stack | Python 3.11 ou plus, FastAPI et uvicorn : interface web locale ouverte dans le navigateur par défaut, exe PyInstaller en un seul fichier sans console (stack `python-fastapi` du modèle) |
 | Droits administrateur | non |
 | Démarrage automatique | non |
-| Installation par l'exe | non : exe portable, ni installation ni mise à jour automatique |
+| Installation par l'exe | non : exe portable |
+| Mises à jour intégrées | pas encore : obligatoires pour toute appli Aria, elles arriveront avec la stack `python-fastapi` du modèle, qui ne les fournit pas encore. D'ici là, pas de nouvelle release publique |
 | Port local (interface web) | `8420`, sur `127.0.0.1` seulement. Le serveur llama, lancé par le jeu, écoute en plus sur `127.0.0.1:8080` |
 | Données de l'utilisateur | `%USERPROFILE%\.Aria-JDR` ; secrètes : le port et le jeton de l'instance en cours, chiffrés par DPAPI (`secrets\instance.dpapi`) et effacés à l'arrêt |
 | Écritures hors du dossier de données | aucune : l'exe se décompresse dans `cache\` du dossier de données (PyInstaller, un seul fichier, `--runtime-tmpdir`), effacée à la fermeture ; ni démarrage automatique ni raccourci |
