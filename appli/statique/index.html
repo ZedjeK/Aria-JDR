@@ -17,6 +17,7 @@
       <a href="#campagnes">Campagnes</a>
       <a href="#personnages">Personnages</a>
       <a href="#partie">Partie</a>
+      <a href="#carte">Carte</a>
       <a href="#reglages">Réglages</a>
     </nav>
     <p class="version" id="version"></p>
@@ -104,6 +105,20 @@
         <button type="button" class="secondaire" data-commande="quitter">Quitter la session</button>
       </div>
       <button type="button" class="secondaire" id="interrompre" hidden>Interrompre</button>
+    </section>
+
+    <section class="panneau large" id="carte">
+      <h2>Carte</h2>
+      <p class="note" id="carte-vide">Ouvre une partie dans <em>Campagnes</em> : la carte du monde s'affiche ici. Une campagne créée avant le monde n'a pas de carte.</p>
+      <div class="carte-corps" id="carte-corps" hidden>
+        <svg id="carte-svg" viewBox="-2 -2 104 104" role="group" aria-label="Carte des quartiers de la campagne"></svg>
+        <div class="carte-cote">
+          <div id="carte-fiche" class="carte-fiche" aria-live="polite"></div>
+          <h3>Les factions</h3>
+          <ul class="carte-factions" id="carte-factions"></ul>
+          <p class="note">Anneau cyan : tu es ici. Anneau orange : quartier disputé, un voisin hostile peut l'attaquer. Nom de district en orange : guerre ouverte. Plus le point est gros, plus le contrôle est solide.</p>
+        </div>
+      </div>
     </section>
 
     <section class="panneau" id="reglages">

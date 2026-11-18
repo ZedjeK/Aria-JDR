@@ -163,10 +163,12 @@ champ("quitter").addEventListener("click", async () => {
 });
 
 // --- Menu : la section affichée suit l'ancre ---
+let surCarte = () => {};  // posé par la carte, plus bas : relit la carte quand on ouvre sa section
 function section() {
   const cible = location.hash || "#accueil";
   for (const lien of document.querySelectorAll(".menu nav a")) lien.classList.toggle("actif", lien.hash === cible);
   for (const panneau of document.querySelectorAll(".panneau")) panneau.hidden = `#${panneau.id}` !== cible;
+  if (cible === "#carte") surCarte();
 }
 window.addEventListener("hashchange", section);
 section();
@@ -302,6 +304,7 @@ const Partie = (() => {
   let depuis = Date.now();  // le dernier signe de vie du jeu : un événement, ou le départ
   let attente = null;  // ce que dit la page pendant que le jeu travaille, avec le temps écoulé
   let menuEnAttente = null;  // le choix que le jeu pose au joueur, tant qu'il n'a pas répondu
+  let attend = null;  // la question posée par le jeu, tant qu'elle attend une réponse
   let menuAffiche = null;
   let minuteur = null;
 
@@ -385,7 +388,9 @@ const Partie = (() => {
         if (lot.evenements.length) depuis = Date.now();
         dernier = lot.dernier;
         etat = { ...etat, actif: lot.actif };
+        attend = lot.attend;
         controles(lot.actif, lot.attend);
+        if (!champ("carte").hidden) surCarte();  // la carte ouverte suit la partie
         if (!lot.actif) break;
       }
     } catch (erreur) {
@@ -425,9 +430,168 @@ const Partie = (() => {
     }
   }
 
-  return { demarrer, reprendreAffichage };
+  // Écrire une action au nom du joueur (la carte s'en sert pour « S'y rendre ») : seulement quand le jeu attend une action libre
+  const peutEcrire = () => etat.actif && typeof attend === "string" && attend.trim() === ">" && menuEnAttente === null;
+  async function agirAuNomDuJoueur(texte) {
+    attend = null;
+    try { await envoyer("/api/partie/saisie", { texte }); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
+  }
+
+  return { demarrer, reprendreAffichage, peutEcrire, agirAuNomDuJoueur };
 })();
 const demarrer = Partie.demarrer;
+
+// --- La carte de la campagne : le moteur la calcule (aria/carte.py), la page la dessine en SVG ---
+// Rien de ce que le MJ ou le joueur ont écrit n'entre dans du HTML : textContent et attributs seulement.
+const Carte = (() => {
+  const SVG = "http://www.w3.org/2000/svg";
+  const COULEURS = ["#7df9ff", "#5c8bff", "#ff8a1f", "#ff5c7a", "#ffd166", "#b48cff", "#5df0a8", "#ff9ecb"];
+  let vue = null;
+  let choisi = null;
+
+  const noeud = (balise, attributs, texte) => {
+    const n = document.createElementNS(SVG, balise);
+    for (const [cle, valeur] of Object.entries(attributs || {})) n.setAttribute(cle, valeur);
+    if (texte !== undefined) n.textContent = texte;
+    return n;
+  };
+
+  const couleurs = () => {
+    const noms = Object.keys(vue.factions).sort();
+    return Object.fromEntries(noms.map((nom, i) => [nom, COULEURS[i % COULEURS.length]]));
+  };
+
+  function halos(dessin, teinte) {
+    for (const district of vue.districts) {
+      const points = district.quartiers.map((q) => vue.quartiers[q]);
+      const x = points.reduce((s, p) => s + p.x, 0) / points.length;
+      const y = points.reduce((s, p) => s + p.y, 0) / points.length;
+      const rayon = Math.max(...points.map((p) => Math.hypot(p.x - x, p.y - y))) + 7;
+      const couleur = district.dominant ? teinte[district.dominant] : "#93a8c8";
+      dessin.append(noeud("circle", { cx: x, cy: y, r: rayon, fill: couleur, "fill-opacity": 0.07, stroke: couleur,
+                                      "stroke-opacity": 0.35, "stroke-dasharray": "1.5 1.5", "stroke-width": 0.3 }));
+      const bord = x < 22 ? "start" : x > 78 ? "end" : "middle";
+      dessin.append(noeud("text", { x: bord === "start" ? 1 : bord === "end" ? 99 : x, y: Math.max(3, y - rayon - 0.8),
+                                      class: "carte-district" + (district.dominant ? "" : " guerre"), "text-anchor": bord },
+                          district.nom));
+    }
+  }
+
+  function liens(dessin) {
+    const vus = new Set();
+    for (const [nom, q] of Object.entries(vue.quartiers)) {
+      for (const voisin of q.voisins) {
+        const cle = [nom, voisin].sort().join("|");
+        if (vus.has(cle) || !vue.quartiers[voisin]) continue;
+        vus.add(cle);
+        const v = vue.quartiers[voisin];
+        dessin.append(noeud("line", { x1: q.x, y1: q.y, x2: v.x, y2: v.y, class: "carte-lien" }));
+      }
+    }
+  }
+
+  function points(dessin, teinte) {
+    for (const [nom, q] of Object.entries(vue.quartiers)) {
+      const rayon = 2.4 + q.controle * 0.12;
+      const groupe = noeud("g", { class: "carte-quartier" + (nom === choisi ? " choisi" : ""), tabindex: 0, role: "button",
+                                  "aria-label": `${nom}, tenu par ${q.maitre}${q.dispute ? ", disputé" : ""}${nom === vue.ici ? ", tu es ici" : ""}` });
+      if (nom === vue.ici) groupe.append(noeud("circle", { cx: q.x, cy: q.y, r: rayon + 2.3, class: "carte-ici" }));
+      if (q.dispute) groupe.append(noeud("circle", { cx: q.x, cy: q.y, r: rayon + 1.2, class: "carte-dispute" }));
+      groupe.append(noeud("circle", { cx: q.x, cy: q.y, r: rayon, fill: teinte[q.maitre] || "#93a8c8", class: "carte-point" }));
+      const court = nom.length > 15 && nom !== choisi ? `${nom.slice(0, 14)}…` : nom;
+      groupe.append(noeud("text", { x: q.x, y: q.y + rayon + 3.2, class: "carte-nom", "text-anchor": "middle" }, court));
+      groupe.append(noeud("title", {}, `${nom} : ${q.maitre}`));
+      groupe.addEventListener("click", () => choisir(nom));
+      groupe.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choisir(nom); }
+      });
+      dessin.append(groupe);
+    }
+  }
+
+  function legende(teinte) {
+    const liste = champ("carte-factions");
+    liste.replaceChildren(...Object.entries(vue.factions).sort(([a], [b]) => a.localeCompare(b)).map(([nom, f]) => {
+      const li = el("li");
+      const pastille = el("span", "pastille");
+      pastille.style.background = teinte[nom];
+      const texte = el("span", "", `${nom} (${f.type}, ${f.quartiers} quartier${f.quartiers > 1 ? "s" : ""}) : ${f.reputation}`);
+      li.append(pastille, texte);
+      return li;
+    }));
+  }
+
+  function fiche() {
+    const boite = champ("carte-fiche");
+    const q = vue.quartiers[choisi];
+    if (!q) { boite.replaceChildren(el("p", "note", "Clique sur un quartier.")); return; }
+    const f = vue.factions[q.maitre];
+    const lignes = [
+      el("h3", "", choisi),
+      el("p", "", `${q.district}${nom_ici(choisi)}`),
+      el("p", "", `Tenu par ${q.maitre} (${f.type}), chef : ${f.chef}. Contrôle ${q.controle}/10${q.dispute ? ", disputé" : ""}.`),
+      el("p", "", `Toi : ${f.reputation}.`),
+      el("p", "", "Voisins : " + q.voisins.join(", ") + "."),
+    ];
+    if (q.visite) {
+      lignes.push(el("p", "", q.lieux.length ? "Lieux : " + q.lieux.map((l) => `${l.nom} (${l.tenancier})`).join(", ") + "."
+        : "Aucun lieu connu ici."));
+    } else lignes.push(el("p", "note", "Tu n'es pas encore passé par là."));
+    const bouton = el("button", "", "S'y rendre");
+    bouton.type = "button";
+    const raison = choisi === vue.ici ? "Tu es déjà ici."
+      : !vue.quartiers[vue.ici].voisins.includes(choisi) ? "Ce n'est pas un voisin : passe par un quartier voisin."
+      : !Partie.peutEcrire() ? "Le jeu n'attend pas d'action pour l'instant." : "";
+    if (raison) { bouton.disabled = true; bouton.title = raison; lignes.push(bouton, el("p", "note", raison)); }
+    else {
+      bouton.addEventListener("click", async () => {
+        bouton.disabled = true;
+        location.hash = "#partie";
+        await Partie.agirAuNomDuJoueur(`Je me rends ${q.pour_y_aller}.`);
+      });
+      lignes.push(bouton);
+    }
+    boite.replaceChildren(...lignes);
+  }
+
+  const nom_ici = (nom) => (nom === vue.ici ? " — tu es ici" : "");
+
+  function choisir(nom) {
+    choisi = nom;
+    dessiner();
+  }
+
+  function dessiner() {
+    const vide = vue === null;
+    champ("carte-vide").hidden = !vide;
+    champ("carte-corps").hidden = vide;
+    if (vide) return;
+    if (!vue.quartiers[choisi]) choisi = vue.ici;
+    const teinte = couleurs();
+    const dessin = champ("carte-svg");
+    dessin.replaceChildren();
+    halos(dessin, teinte);
+    liens(dessin);
+    points(dessin, teinte);
+    legende(teinte);
+    fiche();
+  }
+
+  async function rafraichir() {
+    try {
+      const nouvelle = (await api("/api/carte")).carte;
+      if (JSON.stringify(nouvelle) !== JSON.stringify(vue)) {
+        const iciAvant = vue && vue.ici;
+        vue = nouvelle;
+        if (vue && vue.ici !== iciAvant) choisi = vue.ici;  // le joueur a bougé : la carte le suit
+        dessiner();
+      } else if (vue) fiche();  // l'état du jeu a pu changer : le bouton « S'y rendre » en dépend
+    } catch (_) { /* la carte attend la prochaine lecture */ }
+  }
+
+  return { rafraichir };
+})();
+surCarte = Carte.rafraichir;
 
 document.addEventListener("keydown", (evenement) => {
   const menu = champ("choix");

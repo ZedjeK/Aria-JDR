@@ -269,7 +269,7 @@ def test_une_campagne_qui_existe_deja_n_est_pas_ecrasee(donnees_jeu, mj_pret):
 def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choix(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
 
-    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None):
+    def faux_lancer(camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None, publier_la_carte=None):
         recus.update(nom=camp.dossier.name, choix=choix, surprends_moi=surprends_moi, predefini=predefini)
         sortie("Univers créé.")
 
@@ -285,7 +285,7 @@ def test_une_nouvelle_campagne_ecrit_son_format_et_lance_le_moteur_avec_les_choi
 
 def test_le_mj_qui_propose_le_cadre_passe_par_surprends_moi(donnees_jeu, mj_pret, monkeypatch):
     recus = {}
-    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None:
+    monkeypatch.setattr(jeu, "lancer", lambda camp, choix, surprends_moi, predefini=None, entree=None, sortie=None, choisir=None, reglages_combat=None, publier_la_carte=None:
                         recus.update(surprends_moi=surprends_moi, nom=choix.nom))
     client = ouvrir(donnees_jeu, mj_pret)
     client.post("/api/partie/nouvelle", json={**NOUVELLE, "surprends_moi": True})
@@ -441,3 +441,29 @@ def test_les_reglages_de_combat_enregistres_partent_avec_la_partie(donnees_jeu, 
     client.post("/api/partie/reprendre", json={"nom": "neo-tokyo"})
     assert attendre(lambda: recus)
     assert recus == [ReglagesDeCombat(Recit.A_LA_FIN, True, True)]
+
+
+def test_la_route_carte_donne_la_carte_posee_par_le_moteur(donnees_jeu, mj_pret, monkeypatch):
+    fausse_campagne("neo-tokyo")
+    vue = {"ici": "A", "districts": [], "quartiers": {}, "factions": {}}
+
+    def faux_lancer(camp, *args, entree, sortie, publier_la_carte=None, **kwargs):
+        publier_la_carte(vue)
+        entree("> ")
+
+    monkeypatch.setattr(jeu, "lancer", faux_lancer)
+    client = ouvrir(donnees_jeu, mj_pret)
+    assert client.get("/api/carte").json() == {"carte": None}  # pas de partie : pas de carte
+    client.post("/api/partie/reprendre", json={"nom": "neo-tokyo"})
+    assert attendre(lambda: client.get("/api/carte").json()["carte"] == vue)
+    client.post("/api/partie/arreter")
+    assert attendre(lambda: not client.get("/api/partie").json()["actif"])
+
+
+def test_une_nouvelle_partie_efface_la_carte_de_la_precedente(tmp_path):
+    p = partie.Partie(tmp_path)
+    p.poser_la_carte({"ici": "A"})
+    p.demarrer("campagne", "Essai", None, jeu_scripte)
+    assert p.carte() is None
+    p.arreter()
+    p.attendre_la_fin(5)

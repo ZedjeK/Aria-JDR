@@ -21,7 +21,7 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
-from aria import lieux, meteo, monde, noms, pnj, rencontres, trame
+from aria import carte, lieux, meteo, monde, noms, pnj, rencontres, trame
 from aria.campagne import Campagne
 from aria.choix import choisir_console
 from aria.combat_partie import CombatDePartie, ReglagesDeCombat
@@ -80,7 +80,7 @@ class Jeu:
                  des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
                  choix: "generateur.Choix | None" = None, budget_generation: int | None = None,
                  creer: bool = False, predefini: "personnages.Predefini | None" = None, choisir=None,
-                 reglages_combat: ReglagesDeCombat | None = None):
+                 reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None):
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
         encore d'univers prend Néo-Tokyo, l'univers étalon du banc. `creer` : le joueur crée son personnage
         (sinon, c'est Kaito, le Netrunner de la démo) ; avec `predefini`, il prend ce personnage préparé à
@@ -88,6 +88,7 @@ class Jeu:
         self.entree, self.dire, self.hasard = entree, sortie, random.Random()
         self.choisir = choisir  # poser un choix au joueur (aria.choix) ; None : le MJ mène le combat, comme avant
         self.reglages_combat = reglages_combat or ReglagesDeCombat()
+        self.publier_la_carte = publier_la_carte  # reçoit la carte (aria.carte.vue) avant chaque saisie du joueur
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
         self.format = trame.lire_format(self.campagne)
@@ -242,6 +243,7 @@ class Jeu:
         self.session.combat_par_le_code = self.choisir is not None  # sans menu à poser, le MJ mène le combat
         self.raconter(lambda: self.table.ouvrir(reprise=self.reprise))
         while True:
+            self.publier()
             phrase = self.entree("\n> ").strip()
             if not phrase:
                 continue
@@ -272,6 +274,16 @@ class Jeu:
             if self.apres_la_fin():
                 return
         self.fin_de_session()
+
+    def publier(self):
+        """Donne la carte à jour à celui qui l'affiche. Une sauvegarde étrange ne doit jamais arrêter la partie."""
+        if self.publier_la_carte is None:
+            return
+        try:
+            vue = carte.vue(self.session.monde)
+        except (KeyError, TypeError, ValueError):
+            vue = None
+        self.publier_la_carte(vue)
 
     def combattre_a_pied(self):
         """Le MJ vient d'ouvrir un combat à pied : le code le mène, le joueur par son menu, le MJ en fait le récit."""
@@ -493,7 +505,7 @@ def mj_charge(sortie=print):
 
 def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprends_moi: bool = False,
            predefini: "personnages.Predefini | None" = None, entree=input, sortie=print, choisir=None,
-           reglages_combat: ReglagesDeCombat | None = None):
+           reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None):
     """Charge le MJ et joue la campagne : nouvelle si `choix` est donné, reprise sinon. Le menu, la ligne
     de commande et l'interface web passent tous par ici ; `entree` et `sortie` sont la console par défaut, et
     `choisir` (aria.choix) en est la liste numérotée tant qu'on ne lui en donne pas une autre."""
@@ -513,7 +525,7 @@ def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprend
             Jeu(serveur, profil["budget_reflexion"], reglages.contexte, entree=entree, sortie=sortie, campagne=campagne,
                 choix=choix, budget_generation=banc_generateur.budget_generateur(profil),
                 creer=choix is not None or a_creer, predefini=predefini if choix is not None else None,
-                choisir=choisir, reglages_combat=reglages_combat).jouer()
+                choisir=choisir, reglages_combat=reglages_combat, publier_la_carte=publier_la_carte).jouer()
         except SansPersonnage as erreur:
             sortie(str(erreur))
         except creation_texte.Abandon:
