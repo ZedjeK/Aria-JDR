@@ -11,7 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from enum import Enum
 
-from aria import magie
+from aria import deplacements, magie
 from aria.choix import Choisir, Option
 from aria.combat import (
     ActionImpossible,
@@ -37,6 +37,7 @@ from aria.combat_auto import (
     executer,
 )
 from aria.equipement import Arme, Recharge
+from aria.grille import Abri, distance
 from aria.personnage import Etat, Personnage
 from aria.resolution import Resultat, chance_de_reussite
 
@@ -123,12 +124,36 @@ def ecran_du_combat(combat: Combat, joueur: Combattant, ecran: Ecran) -> list[st
     """L'écran du joueur : le round, le décor, l'initiative, chacun avec son état, et ce qu'il a en main."""
     ordre = [f"{'→ ' if c is combat.au_tour_de else ''}{c.nom} ({_etat_chiffre(c, ecran)})" for c in combat.ordre
              if _cote(c) is not None]
-    lignes = [f"— Round {combat.round} — décor {combat.decor.value} —", "Initiative : " + " ; ".join(ordre)]
+    lieu = f"{combat.carte.lieu} ({combat.decor.value})" if combat.carte is not None else f"décor {combat.decor.value}"
+    lignes = [f"— Round {combat.round} — {lieu} —", "Initiative : " + " ; ".join(ordre)]
     couvert = ", à couvert" if joueur.couvert is not Couvert.AUCUN else ""
     lignes.append(f"Toi : {_etat_chiffre(joueur, ecran)}{couvert} ; {_arme_et_munitions(joueur)}")
     if isinstance(joueur.fiche, Personnage) and joueur.fiche.pm_max:
         lignes[-1] += f" ; {joueur.fiche.pm}/{joueur.fiche.pm_max} PM"
+    if combat.carte is not None and joueur in combat.carte.positions:
+        autres = [c for c in combat.ordre if c is not joueur and c in combat.carte.positions and c.conscient
+                  and not c.hors_combat]
+        if autres:
+            lignes.append("Positions : " + " ; ".join(f"{c.nom} {position(combat, c, joueur)}" for c in autres))
     return lignes
+
+
+def position(combat: Combat, qui: Combattant, joueur: Combattant, ou: tuple[int, int] | None = None) -> str:
+    """Où est quelqu'un par rapport au joueur, en mots (REGLES.md 7.11) : la distance, et ce qui le protège de toi.
+    `ou` : une case où il est passé (un déplacement du journal), au lieu de celle où il est maintenant."""
+    ici, chez_toi = ou or combat.carte.position(qui), combat.carte.position(joueur)
+    ecart = distance(ici, chez_toi)
+    texte = "au contact" if ecart == 1 else f"à {ecart} cases"
+    abri = combat.carte.abri_entre(chez_toi, ici)
+    if abri is Abri.COUPE:
+        texte += ", hors de ta ligne de tir"
+    elif abri is not Abri.AUCUN and ecart > 1:
+        texte += ", à couvert" + (" lourd" if abri is Abri.LOURD else "")
+    return texte
+
+
+def _le_joueur(combat: Combat) -> Combattant | None:
+    return next((c for c in combat.ordre if isinstance(c.fiche, Personnage)), None)
 
 
 # --- Le journal des jets ---------------------------------------------------------------------
@@ -173,6 +198,7 @@ _TEXTE_DU_GESTE = {
     Geste.RECHARGER: "{qui} recharge.",
     Geste.COUVERT: "{qui} se met à couvert.",
     Geste.VISER: "{qui} prend le temps de viser.",
+    Geste.SE_DEPLACER: "{qui} se déplace.",
 }
 
 
@@ -193,6 +219,12 @@ def lignes_du_tour(rapport: RapportTour, combat: Combat, ecran: Ecran) -> list[s
             lignes += lignes_de_l_attaque(evenement.attaque, combat, ecran)
         elif evenement.action.geste in _TEXTE_DU_GESTE:
             lignes.append("  " + _TEXTE_DU_GESTE[evenement.action.geste].format(qui=qui))
+            joueur = _le_joueur(combat)
+            if (evenement.action.geste is Geste.SE_DEPLACER and combat.carte is not None and joueur is not None
+                    and joueur is not rapport.qui and evenement.action.vers is not None
+                    and joueur in combat.carte.positions):
+                ou = position(combat, rapport.qui, joueur, evenement.action.vers)
+                lignes[-1] = f"  {qui} se déplace : le voilà {ou}."
     if rapport.passe and not rapport.moral:
         lignes.append(f"  {qui} ne fait rien.")
     return lignes + lignes_de_fin_de_tour(rapport)
@@ -314,7 +346,8 @@ class TourDuJoueur:
         entrees = [self._attaquer(), self._viser(), self._recharger()]
         if self.joueur.arme_enrayee is not None and self.joueur.arme_enrayee is self.joueur.arme:
             entrees.append(self._debloquer())
-        entrees += [self._changer_d_arme(), self._se_mettre_a_couvert()]
+        entrees += [self._changer_d_arme(),
+                    self._se_deplacer() if self.combat.carte is not None else self._se_mettre_a_couvert()]
         if self.session.a_la_magie and self.session.sorts_connus(self.joueur):
             entrees.append(self._lancer_un_sort())
         if any(a is not self.joueur for a in self.combat.ordre if _du_cote_du_joueur(a)):
@@ -361,9 +394,16 @@ class TourDuJoueur:
         j, adversaires = self.joueur, self._adversaires()
         options = []
         for cible in adversaires:
-            chance = self.combat.chance_de_toucher(j, cible)
-            couvert = ", à couvert" if cible.couvert is not Couvert.AUCUN and not j.arme_en_main.corps_a_corps else ""
-            options.append(Option(f"{cible.nom} ({etat_visible(cible)}{couvert}) — {chance} % de toucher"))
+            raison = self.combat.raison_de_ne_pas_attaquer(j, cible)
+            if self.combat.carte is not None:
+                ou = position(self.combat, cible, j) if cible in self.combat.carte.positions else "hors de la carte"
+                libelle = f"{cible.nom} ({etat_visible(cible)}, {ou})"
+            else:
+                couvert = ", à couvert" if cible.couvert is not Couvert.AUCUN and not j.arme_en_main.corps_a_corps else ""
+                libelle = f"{cible.nom} ({etat_visible(cible)}{couvert})"
+            if not raison:
+                libelle += f" — {self.combat.chance_de_toucher(j, cible)} % de toucher"
+            options.append(Option(libelle, raison or ""))
         choix = self._sous_menu("Qui attaques-tu ?", options)
         if choix is not None:
             self._essayer(lambda: self._attaque_de(j, adversaires[choix]))
@@ -462,6 +502,58 @@ class TourDuJoueur:
         return Entree(Option(f"Se mettre à couvert (les tireurs auront {gain})", raison),
                       None if raison else lambda: self._action(lambda: c.se_mettre_a_couvert(j), "  Tu te mets à couvert."))
 
+    def _se_deplacer(self) -> Entree:
+        j = self.joueur
+        raison = "tu as visé : tu ne peux plus bouger ce round" if j.a_vise else _raison_du_budget(j, TypeAction.DEPLACEMENT)
+        if not raison and not self._destinations():
+            raison = "aucune case utile à portée d'un déplacement"
+        return Entree(Option("Se déplacer…", raison), None if raison else self._choisir_ou_aller)
+
+    def _destinations(self) -> list[tuple[str, tuple[int, int]]]:
+        """Où le menu propose d'aller (REGLES.md 7.11) : au contact ou au plus près d'un ennemi, à couvert de lui,
+        loin de lui, près d'un allié. Chaque destination tient en un déplacement."""
+        c, j, vues, sortie = self.combat, self.joueur, set(), []
+
+        def ajouter(libelle, vers):
+            if vers is not None and vers not in vues:
+                vues.add(vers)
+                sortie.append((libelle, vers))
+
+        tireur = not j.arme_en_main.corps_a_corps
+        for ennemi in [e for e in self._adversaires() if e in c.carte.positions]:
+            contact = deplacements.vers_le_contact(c, j, ennemi)
+            if contact is not None:
+                ajouter(f"Aller au contact de {ennemi.nom}", contact)
+            elif c.carte.ecart(j, ennemi) > 1:
+                ajouter(f"Approcher de {ennemi.nom}", deplacements.au_plus_pres(c, j, ennemi))
+            garder = ennemi if tireur and c.raison_de_ne_pas_attaquer(j, ennemi) is None else None
+            abri = deplacements.a_couvert_contre(c, j, ennemi, garder=garder) or deplacements.a_couvert_contre(c, j, ennemi)
+            ajouter(f"Te mettre à couvert de {ennemi.nom}", abri)
+            ajouter(f"T'éloigner de {ennemi.nom}", deplacements.loin_de(c, j, ennemi))
+        for allie in [a for a in c.ordre if a is not j and _du_cote_du_joueur(a) and a in c.carte.positions]:
+            if c.carte.ecart(j, allie) > 1:
+                ajouter(f"Rejoindre {allie.nom}", deplacements.rejoindre(c, j, allie))
+        return sortie
+
+    def _apres(self, vers: tuple[int, int]) -> str:
+        """Ce que donnerait cette case : la distance et le couvert face à chaque ennemi."""
+        c, morceaux = self.combat, []
+        for ennemi in [e for e in self._adversaires() if e in c.carte.positions]:
+            ecart = distance(vers, c.carte.position(ennemi))
+            abri = deplacements.abri_contre(c, vers, ennemi)
+            mot = {Abri.PARTIEL: ", à couvert", Abri.LOURD: ", à couvert lourd", Abri.COUPE: ", hors de sa vue"}.get(abri, "")
+            morceaux.append(f"{ennemi.nom} {'au contact' if ecart == 1 else f'à {ecart} cases'}{mot}")
+        return " ; ".join(morceaux)
+
+    def _choisir_ou_aller(self) -> Sortie | None:
+        destinations = self._destinations()
+        options = [Option(f"{libelle} ({self._apres(vers)})") for libelle, vers in destinations]
+        choix = self._sous_menu("Où vas-tu ?", options)
+        if choix is not None:
+            _, vers = destinations[choix]
+            self._action(lambda: self.combat.deplacer(self.joueur, vers), f"  Tu te déplaces : {self._apres(vers)}.")
+        return None
+
     # -- Lancer un sort, stabiliser
 
     def _sorts_a_une_cible(self) -> list[magie.Sort]:
@@ -484,7 +576,8 @@ class TourDuJoueur:
         sort = sorts[choix]
         cibles = self._adversaires() if sort.effet.nocif else [c for c in self.combat.ordre
                                                                if _du_cote_du_joueur(c) and c.conscient]
-        options = [Option("Toi" if c is self.joueur else f"{c.nom} ({_etat_chiffre(c, self.ecran)})") for c in cibles]
+        options = [Option("Toi" if c is self.joueur else f"{c.nom} ({_etat_chiffre(c, self.ecran)})",
+                          self.combat.raison_de_ne_pas_lancer(self.joueur, c) or "") for c in cibles]
         choix = self._sous_menu(f"{sort.nom} : sur qui ?", options)
         if choix is not None:
             self._essayer(lambda: self._sort_sur(sort, cibles[choix]))
@@ -493,7 +586,8 @@ class TourDuJoueur:
     def _sort_sur(self, sort: magie.Sort, cible: Combattant):
         s = self.session
         rapport = magie.lancer(s.des, self.joueur, sort, [cible], self.combat,
-                               cible.couvert if sort.effet is magie.Effet.ATTAQUE else Couvert.AUCUN, s.moment,
+                               self.combat.couvert_du_sort(self.joueur, cible) if sort.effet is magie.Effet.ATTAQUE
+                               else Couvert.AUCUN, s.moment,
                                coute_sm=s.univers.genre == "Horreur")
         for sur in rapport.cibles:
             if sur.attaque:
@@ -563,7 +657,12 @@ class TourDuJoueur:
         if choix == 1:
             return None
         for _ in range(2):
-            self.combat.deplacer(self.joueur)
+            if self.combat.carte is None:
+                self.combat.deplacer(self.joueur)
+                continue
+            vers = deplacements.vers_le_bord(self.combat, self.joueur)  # le bord le plus proche (REGLES.md 7.11)
+            if vers is not None:
+                self.combat.deplacer(self.joueur, vers)
         return Sortie(Nature.FUITE, poursuivants=poursuivants)
 
 

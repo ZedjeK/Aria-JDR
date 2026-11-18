@@ -896,6 +896,29 @@ class Combat:
             return f"Un obstacle plein coupe la ligne de tir vers {cible.nom}."
         return None
 
+    def raison_de_ne_pas_lancer(self, lanceur: Combattant, cible: Combattant) -> str | None:
+        """Sur la carte, ce qui empêche un sort à une cible de l'atteindre : il porte comme une arme de portée
+        moyenne, avec la même ligne de tir (REGLES.md 7.11). None : rien ne l'empêche (et toujours None sans carte)."""
+        if self.carte is None or lanceur is cible:
+            return None
+        for qui in (lanceur, cible):
+            if qui not in self.carte.positions:
+                return f"{qui.nom} n'est pas sur la carte."
+        ecart, portee = self.carte.ecart(lanceur, cible), grille.portee_en_cases(Portee.MOYENNE)
+        if ecart > portee:
+            return f"{cible.nom} est à {ecart} cases, hors de portée d'un sort ({portee} cases)."
+        if self.carte.abri(lanceur, cible) is grille.Abri.COUPE:
+            return f"Un obstacle plein coupe la ligne vers {cible.nom}."
+        return None
+
+    def couvert_du_sort(self, lanceur: Combattant, cible: Combattant) -> Couvert:
+        """Le couvert de la cible contre un sort d'attaque : celui qu'elle a pris, ou celui de la carte."""
+        if self.carte is None:
+            return cible.couvert
+        if lanceur is cible or lanceur not in self.carte.positions or cible not in self.carte.positions:
+            return Couvert.AUCUN
+        return COUVERT_DE_L_ABRI.get(self.carte.abri(lanceur, cible), Couvert.AUCUN)
+
     def couvert_sur_la_carte(self, attaquant: Combattant, cible: Combattant) -> Couvert:
         """Le couvert que les obstacles de la carte donnent à la cible contre ce tir (aucun sans carte, ou au contact)."""
         if self.carte is None or attaquant.arme_en_main.corps_a_corps:

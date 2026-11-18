@@ -26,7 +26,9 @@ from aria.combat import (
     TOURS_AVANT_DE_FUIR,
     TypeAction,
 )
+from aria import deplacements
 from aria.equipement import Recharge
+from aria.grille import Abri
 from aria.resolution import Resultat
 
 ROUNDS_MAX = 30  # au-delà, le combat s'essouffle : personne n'arrive à finir l'autre
@@ -119,12 +121,14 @@ class Geste(Enum):
     COUVERT = "se mettre à couvert"
     VISER = "viser"
     ATTAQUER = "attaquer"
+    SE_DEPLACER = "se déplacer"  # sur la carte (REGLES.md 7.11)
 
 
 @dataclass(frozen=True)
 class Action:
     geste: Geste
     cible: Combattant | None = None
+    vers: tuple[int, int] | None = None  # sur la carte : la case où il va (se déplacer, fuir)
 
 
 class Intention(Enum):
@@ -198,6 +202,16 @@ def _suivre_le_choix(combat: Combat, combattant: Combattant, registre: Registre,
 
     if intention in (Intention.FUIR, Intention.SE_RENDRE):
         return INAPPLICABLE
+    if intention is Intention.S_ABRITER and combat.carte is not None:
+        menace = _menace_la_plus_proche(combat, combattant)
+        if not tireur or menace is None:
+            return INAPPLICABLE
+        if deplacements.abri_contre(combat, combat.carte.position(combattant), menace) is not Abri.AUCUN:
+            return None  # déjà à couvert d'elle : l'intention est accomplie
+        if combattant.a_vise or not possible(Geste.SE_DEPLACER, TypeAction.DEPLACEMENT):
+            return INAPPLICABLE
+        vers = deplacements.a_couvert_contre(combat, combattant, menace)
+        return Action(Geste.SE_DEPLACER, vers=vers) if vers else INAPPLICABLE
     if intention is Intention.S_ABRITER:
         if not tireur or combat.decor is Decor.DEGAGE:
             return INAPPLICABLE
@@ -207,6 +221,8 @@ def _suivre_le_choix(combat: Combat, combattant: Combattant, registre: Registre,
     # Attaquer ou viser : la cible choisie, si elle est encore légale (en lice, et pas déjà prise à deux attaquants)
     cible = choix.cible
     if cible is None or cible not in {c for c, _ in poids_des_cibles(combat, combattant, registre)}:
+        return INAPPLICABLE
+    if combat.raison_de_ne_pas_attaquer(combattant, cible):  # sur la carte : hors de portée ou sans ligne de tir
         return INAPPLICABLE
     if intention is Intention.VISER:
         if not tireur:
@@ -234,7 +250,12 @@ def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
         return geste not in interdits and budget.peut(type_action)
 
     if combattant.moral is Moral.EN_FUITE:
-        return Action(Geste.FUIR) if possible(Geste.FUIR, TypeAction.DEPLACEMENT) else None
+        if not possible(Geste.FUIR, TypeAction.DEPLACEMENT):
+            return None
+        if combat.carte is None:
+            return Action(Geste.FUIR)
+        vers = deplacements.vers_le_bord(combat, combattant)  # il gagne le bord de la carte (REGLES.md 7.11)
+        return Action(Geste.FUIR, vers=vers) if vers else None
 
     arme = combattant.arme
     if arme is None and combattant.arme_lachee:
@@ -251,6 +272,8 @@ def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
         suite = _suivre_le_choix(combat, combattant, registre, choix, interdits, tireur)
         if suite is not INAPPLICABLE:
             return suite
+    if combat.carte is not None:
+        return _sur_la_carte(combat, combattant, registre, tireur, possible)
     if not possible(Geste.ATTAQUER, TypeAction.SIMPLE):
         return None
     if tireur:
@@ -263,6 +286,48 @@ def prochaine_action(combat: Combat, combattant: Combattant, registre: Registre,
             return Action(Geste.VISER)
     cible = tirer_la_cible(combat, poids_des_cibles(combat, combattant, registre))
     return Action(Geste.ATTAQUER, cible) if cible else None
+
+
+def _menace_la_plus_proche(combat: Combat, combattant: Combattant) -> Combattant | None:
+    adversaires = [a for a in _adversaires(combat, combattant) if a in combat.carte.positions]
+    return min(adversaires, key=lambda a: combat.carte.ecart(combattant, a), default=None)
+
+
+def _sur_la_carte(combat: Combat, combattant: Combattant, registre: Registre, tireur: bool,
+                  possible: Callable[[Geste, TypeAction], bool]) -> Action | None:
+    """L'IA sur la carte (REGLES.md 7.11), une fois l'état de son arme réglé. Une cible qu'il peut toucher d'ici :
+    un tireur se poste d'abord à couvert d'elle s'il le peut sans la perdre de vue, vise s'il n'a pas bougé, puis
+    tire ; un bretteur frappe. Sinon il se rapproche : un bretteur jusqu'au contact (deux déplacements s'il le faut),
+    un tireur jusqu'à une position de tir, à couvert si possible."""
+    poids = [(c, p) for c, p in poids_des_cibles(combat, combattant, registre) if c in combat.carte.positions]
+    if not poids:
+        return None
+    budget = combattant.budget
+    peut_bouger = not combattant.a_vise and possible(Geste.SE_DEPLACER, TypeAction.DEPLACEMENT)
+    a_portee = [(c, p) for c, p in poids if combat.raison_de_ne_pas_attaquer(combattant, c) is None]
+    if a_portee and not possible(Geste.ATTAQUER, TypeAction.SIMPLE):
+        return None  # il a déjà frappé et quelqu'un reste à sa portée : il garde sa place
+    if a_portee:
+        cible = tirer_la_cible(combat, a_portee)
+        if tireur:
+            ici = combat.carte.position(combattant)
+            a_couvert = deplacements.abri_contre(combat, ici, cible) is not Abri.AUCUN
+            if not a_couvert and peut_bouger and not budget.utilise[TypeAction.DEPLACEMENT]:
+                vers = deplacements.a_couvert_contre(combat, combattant, cible, garder=cible)
+                if vers:
+                    return Action(Geste.SE_DEPLACER, vers=vers)
+            if (a_couvert and not budget.utilise[TypeAction.DEPLACEMENT] and not combattant.vise
+                    and possible(Geste.VISER, TypeAction.MINEURE)):
+                return Action(Geste.VISER)
+        return Action(Geste.ATTAQUER, cible)
+    if not peut_bouger:
+        return None
+    cible = tirer_la_cible(combat, poids)
+    if tireur:
+        vers = deplacements.position_de_tir(combat, combattant, cible) or deplacements.au_plus_pres(combat, combattant, cible)
+    else:
+        vers = deplacements.vers_le_contact(combat, combattant, cible) or deplacements.au_plus_pres(combat, combattant, cible)
+    return Action(Geste.SE_DEPLACER, vers=vers) if vers else None
 
 
 class Reactions:
@@ -281,8 +346,8 @@ def executer(combat: Combat, combattant: Combattant, action: Action,
              reactions: Reactions | None = None) -> RapportAttaque | None:
     """Fait faire l'action par le moteur, qui peut la refuser (ActionImpossible). Renvoie le rapport d'une attaque."""
     geste = action.geste
-    if geste is Geste.FUIR:
-        combat.deplacer(combattant)
+    if geste in (Geste.FUIR, Geste.SE_DEPLACER):
+        combat.deplacer(combattant, action.vers)  # sans carte, vers est None : un déplacement sans destination
     elif geste is Geste.RAMASSER:
         combat.degainer(combattant, combattant.arme_lachee)
     elif geste is Geste.DEBLOQUER:
