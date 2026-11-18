@@ -8,6 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 
+from aria import grille
 from aria.des import Des
 from aria.equipement import ARMES_A_DISTANCE, CORPS_A_CORPS, Arme, Armure, Portee, Propriete, Recharge, formule_degats
 from aria.inventaire import BONUS_ACTION_MINEURE, InventaireImpossible, a_chargeur, cadence
@@ -470,6 +471,30 @@ def tester_embuscade(des: Des, perception_victimes: int, discretion_agresseurs: 
     return RapportEmbuscade(discretion, perception, opposer(discretion, perception, esquive=True) is Issue.ATTAQUANT)
 
 
+def _cote(camp: str) -> str | None:
+    """Deux côtés : les ennemis contre le joueur et ses alliés ; les neutres ne sont du côté de personne."""
+    if camp == "neutres":
+        return None
+    return "ennemis" if camp == "ennemis" else "joueurs"
+
+
+def meme_cote(a: Combattant, b: Combattant) -> bool:
+    """Deux combattants du même côté : sur la carte, l'un traverse la case de l'autre (REGLES.md 7.11)."""
+    return _cote(a.camp) is not None and _cote(a.camp) == _cote(b.camp)
+
+
+def debout(combattant: Combattant) -> bool:
+    """Il bloque encore le passage : conscient, et ni parti ni rendu."""
+    return combattant.conscient and not combattant.hors_combat
+
+
+COUVERT_DE_L_ABRI = {grille.Abri.PARTIEL: Couvert.PARTIEL, grille.Abri.LOURD: Couvert.LOURD}
+
+
+def _plus_protecteur(a: Couvert, b: Couvert) -> Couvert:
+    return a if a.value <= b.value else b
+
+
 def _initiative(combattant: Combattant) -> tuple[int, int]:
     """Initiative : Dextérité décroissante, Perception pour départager (REGLES.md 7.1)."""
     return combattant.fiche.carac(Caracteristique.DEXTERITE), combattant.fiche.competence("Perception")
@@ -479,12 +504,15 @@ class Combat:
     """Un combat en cours. Les méthodes renvoient des rapports que le MJ raconte."""
 
     def __init__(self, des: Des, combattants: list[Combattant], curseur: Curseur = Curseur.STANDARD,
-                 surpris: list[Combattant] = (), tour_par_tour: bool = False, decor: Decor = Decor.ENCOMBRE):
+                 surpris: list[Combattant] = (), tour_par_tour: bool = False, decor: Decor = Decor.ENCOMBRE,
+                 carte: "grille.Carte | None" = None):
         """`tour_par_tour` : le moteur fait respecter l'ordre d'initiative (seul celui dont c'est le tour
-        agit, puis fin_de_tour passe au suivant). La démo v1 et les tests de mécanique s'en passent."""
+        agit, puis fin_de_tour passe au suivant). La démo v1 et les tests de mécanique s'en passent.
+        `carte` : le combat se joue sur une carte en cases hexagonales (REGLES.md 7.11) ; sans carte, comme avant."""
         self.des = des
         self.curseur = curseur
         self.decor = decor
+        self.carte = carte
         self.round = 1
         self.tour_par_tour = tour_par_tour
         self.ordre = sorted(combattants, key=_initiative, reverse=True)
@@ -531,13 +559,14 @@ class Combat:
             if self.actif is None or self._debut_de_tour(self.ordre[self.actif]):
                 return tests
 
-    @staticmethod
-    def _fin_du_tour(combattant: Combattant):
-        """Un ennemi en fuite part à la fin de son prochain tour (REGLES.md 7.8)."""
+    def _fin_du_tour(self, combattant: Combattant):
+        """Un ennemi en fuite part à la fin de son prochain tour (REGLES.md 7.8) : il quitte aussi la carte."""
         if combattant.moral is Moral.EN_FUITE:
             combattant.tours_avant_de_partir -= 1
             if combattant.tours_avant_de_partir <= 0:
                 combattant.moral = Moral.PARTI
+                if self.carte is not None:
+                    self.carte.retirer(combattant)
 
     def _debut_de_tour(self, combattant: Combattant) -> bool:
         """Un jet de sauvegarde par effet persistant : Constitution contre une brûlure, Volonté contre
@@ -581,16 +610,35 @@ class Combat:
             raise ActionImpossible(f"Ce n'est pas le tour de {combattant.nom} : c'est au tour de {qui}.")
         combattant.budget.utiliser(action)
 
-    def deplacer(self, combattant: Combattant):
+    def deplacer(self, combattant: Combattant, vers: "grille.Case | None" = None) -> int | None:
+        """Un déplacement. Sur la carte (REGLES.md 7.11), il dit où il va : 6 cases au plus, 2 par case de terrain
+        difficile, sans traverser d'obstacle ni d'ennemi debout. Un déplacement entamé est consommé en entier.
+        Renvoie les cases parcourues sur la carte, None sans carte."""
         if combattant.a_vise:
             raise ActionImpossible(f"{combattant.nom} a visé : il ne peut plus se déplacer ce round.")
+        possibles = None
+        if self.carte is not None:
+            if vers is None:
+                raise ActionImpossible("Sur la carte, un déplacement dit où il va.")
+            if combattant not in self.carte.positions:
+                raise ActionImpossible(f"{combattant.nom} n'est pas sur la carte.")
+            possibles = self.carte.atteignables(combattant, meme_cote, debout)
+            if vers not in possibles:
+                raise ActionImpossible(f"{combattant.nom} ne peut pas atteindre cette case en un déplacement "
+                                       f"({grille.CASES_PAR_DEPLACEMENT} cases au plus, sans traverser d'obstacle ni d'ennemi).")
         self._agir(combattant, TypeAction.DEPLACEMENT)
         combattant.couvert = Couvert.AUCUN  # il bouge : il quitte son couvert
+        if possibles is None:
+            return None
+        self.carte.positions[combattant] = vers
+        return possibles[vers]
 
     def se_mettre_a_couvert(self, combattant: Combattant) -> Couvert:
         """Un déplacement pour gagner le couvert du décor (REGLES.md 7.2) : partiel si le décor est encombré,
         lourd s'il est fortifié, refusé s'il est dégagé. Il le garde jusqu'à son prochain autre déplacement ou
-        jusqu'au corps à corps ; tirer ne le fait pas perdre."""
+        jusqu'au corps à corps ; tirer ne le fait pas perdre. Sur la carte, ce n'est plus une action (7.11)."""
+        if self.carte is not None:
+            raise ActionImpossible("Sur la carte, on se met à couvert en se plaçant derrière un obstacle.")
         couvert = COUVERT_DU_DECOR[self.decor]
         if couvert is Couvert.AUCUN:
             raise ActionImpossible("Le décor est dégagé : il n'y a rien pour se mettre à couvert.")
@@ -704,6 +752,10 @@ class Combat:
             raise ActionImpossible(f"{arme.nom} est une arme de zone : elle se joue avec l'attaque de zone (attaquer_zone).")
         self._verifier_arme_utilisable(attaquant, arme)
         self._verifier_tireur(arme, tireur)
+        raison = self.raison_de_ne_pas_attaquer(attaquant, cible)
+        if raison:
+            raise ActionImpossible(raison)
+        couvert = _plus_protecteur(couvert, self.couvert_sur_la_carte(attaquant, cible))
         self._agir(attaquant, TypeAction.SIMPLE)
 
         if difficulte is None:
@@ -815,10 +867,53 @@ class Combat:
                           tireur: str = "à pied") -> int:
         """Le pourcentage de chances de réussir son jet d'attaque, pour le menu du joueur. Il ne compte pas la
         défense de la cible au corps à corps : c'est le jet contre lequel elle oppose le sien."""
+        if self.raison_de_ne_pas_attaquer(attaquant, cible):
+            return 0
+        couvert = _plus_protecteur(couvert, self.couvert_sur_la_carte(attaquant, cible))
         arme = attaquant.arme_en_main
         valeur = attaquant.valeur(arme.competence) + self.difficulte_contre(cible).modificateur
         valeur += self._modificateur_d_attaque(attaquant, arme, cible, couvert, tireur)
         return chance_de_reussite(valeur)
+
+    # --- La carte (REGLES.md 7.11) -------------------------------------------------------
+
+    def raison_de_ne_pas_attaquer(self, attaquant: Combattant, cible: Combattant) -> str | None:
+        """Sur la carte, ce qui empêche d'attaquer cette cible avec l'arme en main : le contact pour la mêlée, la
+        portée et la ligne de tir pour une arme à distance. None : rien ne l'empêche (et toujours None sans carte)."""
+        if self.carte is None:
+            return None
+        for qui in (attaquant, cible):
+            if qui not in self.carte.positions:
+                return f"{qui.nom} n'est pas sur la carte."
+        arme = attaquant.arme_en_main
+        ecart = self.carte.ecart(attaquant, cible)
+        if arme.corps_a_corps:
+            return None if ecart == 1 else f"{cible.nom} est à {ecart} cases : il faut être au contact."
+        portee = grille.portee_en_cases(arme.portee)
+        if ecart > portee:
+            return f"{cible.nom} est à {ecart} cases, hors de portée ({arme.nom} : {portee} cases)."
+        if self.carte.abri(attaquant, cible) is grille.Abri.COUPE:
+            return f"Un obstacle plein coupe la ligne de tir vers {cible.nom}."
+        return None
+
+    def couvert_sur_la_carte(self, attaquant: Combattant, cible: Combattant) -> Couvert:
+        """Le couvert que les obstacles de la carte donnent à la cible contre ce tir (aucun sans carte, ou au contact)."""
+        if self.carte is None or attaquant.arme_en_main.corps_a_corps:
+            return Couvert.AUCUN
+        if attaquant not in self.carte.positions or cible not in self.carte.positions:
+            return Couvert.AUCUN
+        return COUVERT_DE_L_ABRI.get(self.carte.abri(attaquant, cible), Couvert.AUCUN)
+
+    def _repousser(self, source: Combattant, victime: Combattant) -> str:
+        """Le bonus « repousser » sur la carte : la victime recule d'une case, à l'opposé de celui qui la frappe, si
+        cette case est libre et praticable ; sinon elle ne bouge pas."""
+        derriere = None
+        if source in self.carte.positions and victime in self.carte.positions:
+            derriere = self.carte.derriere(source, victime)
+        if derriere is not None and self.carte.praticable(derriere) and not self.carte.occupants(derriere):
+            self.carte.positions[victime] = derriere
+            return f"{victime.nom} recule d'une case."
+        return f"{victime.nom} ne peut pas reculer : la case derrière lui est prise."
 
     # --- Le moral des ennemis (REGLES.md 7.8) -------------------------------------------
 
@@ -1113,6 +1208,8 @@ class Combat:
                 elif bonus_majeure is BonusMajeure.DESARMER and victime.arme:
                     rapport.effets.append(f"{victime.nom} est désarmé ({victime.arme.nom}).")
                     victime.arme = None
+                elif bonus_majeure is BonusMajeure.REPOUSSER and self.carte is not None:
+                    rapport.effets.append(self._repousser(source, victime))
                 rapport.effets.append(f"Réussite majeure : {bonus_majeure.value}.")
         rapport.touche = victime.nom
         rapport.degats_bruts = brut
