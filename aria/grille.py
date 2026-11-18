@@ -111,6 +111,29 @@ class Carte:
     hauteur: int
     terrain: dict[Case, Terrain] = field(default_factory=dict)
     positions: dict = field(default_factory=dict)  # Combattant -> Case
+    lieu: str = ""  # le gabarit dont elle vient (aria.carte_combat)
+    bords: dict[str, int] = field(default_factory=dict)  # le côté (« joueurs », « ennemis ») -> la colonne de son bord
+
+    def cases(self) -> list[Case]:
+        return [case(colonne, rang) for rang in range(self.hauteur) for colonne in range(self.largeur)]
+
+    def libres(self) -> list[Case]:
+        """Les cases praticables où personne ne se tient."""
+        prises = set(self.positions.values())
+        return [c for c in self.cases() if self.praticable(c) and c not in prises]
+
+    def relie(self, a: Case, b: Case) -> bool:
+        """On peut aller de a à b à pied, sans compter les combattants (le terrain difficile ralentit, il ne bloque pas)."""
+        vus, pile = {a}, [a]
+        while pile:
+            c = pile.pop()
+            if c == b:
+                return True
+            for v in voisins(c):
+                if v not in vus and self.praticable(v):
+                    vus.add(v)
+                    pile.append(v)
+        return False
 
     def dans(self, c: Case) -> bool:
         colonne, rang = colonne_ligne(c)
