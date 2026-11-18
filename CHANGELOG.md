@@ -8,6 +8,7 @@ sont dans `docs/releases/`.
 ### Ajouté
 
 - La carte de la campagne dans l'interface (onglet Carte) : les quartiers placés par le moteur (`aria/carte.py`), colorés par faction, avec les districts, le quartier du joueur, les quartiers disputés, une fiche au clic (contrôle, réputation, lieux connus) et « S'y rendre » pour un quartier voisin. Route `GET /api/carte`.
+- Le moteur de la carte de combat en cases hexagonales (`aria/grille.py`, REGLES.md 7.11) : distances, déplacements (obstacles, terrain difficile, alliés traversables), ligne de tir et couvert, portées en cases. Un `Combat` peut porter une carte : la portée, le contact, la ligne de tir et le couvert y sont vérifiés, « repousser » fait reculer d'une case. Aucune partie ne crée encore de carte : le combat se joue comme avant.
 
 ## 0.2.0
 
