@@ -117,6 +117,7 @@ def test_le_jeu_publie_la_carte_avant_chaque_saisie(tmp_path):
     partie.jouer()
     assert len(publiees) == 2  # avant la première saisie, puis après l'action du joueur
     assert all(v is None or "quartiers" in v for v in publiees)
+    assert all(v is None or v["habillage"] == "neon" for v in publiees)  # Néo-Tokyo : du Cyberpunk
 
 
 def test_une_sauvegarde_etrange_ne_arrete_pas_la_partie(tmp_path):

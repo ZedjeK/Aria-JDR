@@ -93,7 +93,7 @@
         <p class="combat-titre" id="combat-titre"></p>
         <div class="combat-defile"><svg id="combat-svg" role="group" aria-label="Carte du combat"></svg></div>
         <ul class="combat-liste" id="combat-liste" aria-label="Les combattants"></ul>
-        <p class="note">En cyan : où tu peux aller d'un déplacement. Dans « Se déplacer… », clique sur une case numérotée pour y aller. Survole une case ou un pion pour le détail.</p>
+        <p class="note">En surbrillance : où tu peux aller d'un déplacement. Dans « Se déplacer… », clique sur une case numérotée pour y aller. Survole une case ou un pion pour le détail.</p>
       </div>
       <div id="journal" class="journal" role="log" aria-live="polite" tabindex="0"></div>
       <p class="statut" id="partie-etat" role="status">Aucune partie n'est ouverte.</p>
@@ -164,6 +164,17 @@
         <label class="ligne"><input type="checkbox" id="combat-pv"> Voir les PV exacts des ennemis</label>
         <label class="ligne"><input type="checkbox" id="combat-defense"> Je choisis ma défense (esquiver ou riposter)</label>
         <label class="ligne"><input type="checkbox" id="combat-llm"> Les ennemis sont choisis par le MJ (essai : plus lent)</label>
+        <h3>Cartes</h3>
+        <label class="ligne">Habillage
+          <select id="cartes-habillage">
+            <option value="genre">Selon le genre de la campagne</option>
+            <option value="neon">Néon (Cyberpunk, Science-fiction)</option>
+            <option value="parchemin">Parchemin (Fantasy)</option>
+            <option value="gothique">Gothique (Dark fantasy, Horreur)</option>
+            <option value="etat-major">État-major (Militaire, Contemporain)</option>
+            <option value="rouille">Rouille (Post-apo)</option>
+          </select>
+        </label>
         <button type="submit">Enregistrer</button>
         <p id="message" role="status"></p>
       </form>

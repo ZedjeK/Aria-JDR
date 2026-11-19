@@ -21,7 +21,7 @@ import sys
 
 from aria import (amorce, banc, banc_generateur, chemins, creation_texte, economie, generateur, llm, optimiseur, outils,
                   personnages, progression)
-from aria import carte, lieux, meteo, monde, noms, pnj, rencontres, trame
+from aria import carte, habillages, lieux, meteo, monde, noms, pnj, rencontres, trame
 from aria.campagne import Campagne
 from aria.choix import choisir_console
 from aria.combat_partie import CombatDePartie, ReglagesDeCombat
@@ -284,14 +284,19 @@ class Jeu:
             vue = carte.vue(self.session.monde)
         except (KeyError, TypeError, ValueError):
             vue = None
-        self.publier_la_carte(vue)
+        self.publier_la_carte(self._habiller(vue))
+
+    def _habiller(self, vue: dict | None) -> dict | None:
+        """Ajoute à une carte l'habillage du genre de la campagne (aria.habillages) : la page en a besoin pour la dessiner."""
+        return None if vue is None else vue | {"habillage": habillages.du_genre(self.session.univers.genre)}
 
     def combattre_a_pied(self):
         """Le MJ vient d'ouvrir un combat à pied : le code le mène, le joueur par son menu, le MJ en fait le récit."""
         s = self.session
         if s.a_pied:
-            CombatDePartie(s, self.table, self.dire, self.choisir, self.entree, self.raconter,
-                           self.reglages_combat, self.publier_le_combat).jouer()
+            publier = self.publier_le_combat
+            CombatDePartie(s, self.table, self.dire, self.choisir, self.entree, self.raconter, self.reglages_combat,
+                           None if publier is None else lambda vue: publier(self._habiller(vue))).jouer()
 
     def raconter(self, jouer_tour, attente="… le MJ réfléchit", narrer=True):
         self.dire("\n" + attente)
