@@ -110,7 +110,15 @@ const Fond = (() => {
 const champ = (id) => document.getElementById(id);
 const message = champ("message");
 
+// L'habillage des cartes : « genre » prend celui que le moteur donne avec chaque carte (aria/habillages.py)
+let habillageChoisi = "genre";
+const habillageDe = (vue) => (habillageChoisi !== "genre" ? habillageChoisi : (vue && vue.habillage) || "neon");
+
 function afficher(reglages) {
+  habillageChoisi = reglages.cartes.habillage;
+  champ("cartes-habillage").value = habillageChoisi;
+  surCarte();
+  surCombat();
   champ("fond-actif").checked = reglages.fond.actif;
   champ("fond-vitesse").value = reglages.fond.vitesse;
   champ("fond-minimum").value = reglages.fond.minimum;
@@ -141,6 +149,7 @@ champ("formulaire").addEventListener("submit", async (evenement) => {
           choisirSaDefense: champ("combat-defense").checked,
           pnjParLeLlm: champ("combat-llm").checked,
         },
+        cartes: { habillage: champ("cartes-habillage").value },
       }),
     });
     afficher(enregistres);
@@ -455,9 +464,16 @@ const demarrer = Partie.demarrer;
 // Rien de ce que le MJ ou le joueur ont écrit n'entre dans du HTML : textContent et attributs seulement.
 const Carte = (() => {
   const SVG = "http://www.w3.org/2000/svg";
-  const COULEURS = ["#7df9ff", "#5c8bff", "#ff8a1f", "#ff5c7a", "#ffd166", "#b48cff", "#5df0a8", "#ff9ecb"];
+  const PALETTES = {  // les couleurs des factions, par habillage (le reste est dans app.css)
+    neon: ["#7df9ff", "#5c8bff", "#ff8a1f", "#ff5c7a", "#ffd166", "#b48cff", "#5df0a8", "#ff9ecb"],
+    parchemin: ["#9b2d20", "#2f5d8a", "#3f7d3a", "#b8860b", "#6b3fa0", "#a0522d", "#2a7f7f", "#8b3a62"],
+    gothique: ["#c0392b", "#8e7cc3", "#c9a227", "#6aa17a", "#c27c4e", "#7aa7c7", "#b85c8a", "#a3a3a3"],
+    "etat-major": ["#2f5da8", "#b3261e", "#2e7d32", "#b08900", "#6a1b9a", "#00838f", "#ad1457", "#4e342e"],
+    rouille: ["#d4442a", "#2b7a9b", "#e0a526", "#6b8e23", "#8b4a9c", "#d77a3a", "#2a2a2a", "#c2527a"],
+  };
   let vue = null;
   let choisi = null;
+  let habille = "";
 
   const noeud = (balise, attributs, texte) => {
     const n = document.createElementNS(SVG, balise);
@@ -468,7 +484,8 @@ const Carte = (() => {
 
   const couleurs = () => {
     const noms = Object.keys(vue.factions).sort();
-    return Object.fromEntries(noms.map((nom, i) => [nom, COULEURS[i % COULEURS.length]]));
+    const palette = PALETTES[habillageDe(vue)] || PALETTES.neon;
+    return Object.fromEntries(noms.map((nom, i) => [nom, palette[i % palette.length]]));
   };
 
   function halos(dessin, teinte) {
@@ -577,6 +594,8 @@ const Carte = (() => {
     champ("carte-corps").hidden = vide;
     if (vide) return;
     if (!vue.quartiers[choisi]) choisi = vue.ici;
+    habille = habillageDe(vue);
+    champ("carte-corps").dataset.habillage = habille;
     const teinte = couleurs();
     const dessin = champ("carte-svg");
     dessin.replaceChildren();
@@ -590,7 +609,7 @@ const Carte = (() => {
   async function rafraichir() {
     try {
       const nouvelle = (await api("/api/carte")).carte;
-      if (JSON.stringify(nouvelle) !== JSON.stringify(vue)) {
+      if (JSON.stringify(nouvelle) !== JSON.stringify(vue) || (nouvelle && habillageDe(nouvelle) !== habille)) {
         const iciAvant = vue && vue.ici;
         vue = nouvelle;
         if (vue && vue.ici !== iciAvant) choisi = vue.ici;  // le joueur a bougé : la carte le suit
@@ -666,12 +685,23 @@ const CarteDuCombat = (() => {
     }
   }
 
+  // La forme d'un pion selon l'habillage : un hexagone en Néon ; en État-major, les unités amies en rectangle et les
+  // ennemies en losange, comme sur une carte militaire ; un rond ailleurs.
+  const polygone = (x, y, rayon, angles) =>
+    angles.map((a) => `${(x + rayon * Math.cos((a * Math.PI) / 180)).toFixed(3)},${(y + rayon * Math.sin((a * Math.PI) / 180)).toFixed(3)}`).join(" ");
+  function pion(x, y, camp, habillage) {
+    if (habillage === "neon") return noeud("polygon", { points: polygone(x, y, 0.78, [30, 90, 150, 210, 270, 330]), class: "combat-pion" });
+    if (habillage === "etat-major" && camp === "ennemi") return noeud("polygon", { points: polygone(x, y, 0.84, [0, 90, 180, 270]), class: "combat-pion" });
+    if (habillage === "etat-major") return noeud("rect", { x: x - 0.72, y: y - 0.52, width: 1.44, height: 1.04, class: "combat-pion" });
+    return noeud("circle", { cx: x, cy: y, r: 0.74, class: "combat-pion" });
+  }
+
   function jetons(dessin) {
     for (const c of vue.combattants) {
       const [x, y] = centre(c.colonne, c.ligne);
       const groupe = noeud("g", { class: `combat-jeton ${c.camp}` + (c.debout ? "" : " a-terre") + (c.actif ? " actif" : "") });
       if (c.actif) groupe.append(noeud("circle", { cx: x, cy: y, r: 0.9, class: "combat-actif" }));
-      groupe.append(noeud("circle", { cx: x, cy: y, r: 0.74, class: "combat-pion" }),
+      groupe.append(pion(x, y, c.camp, habillageDe(vue)),
                     noeud("text", { x, y: y + 0.26, "text-anchor": "middle", class: "combat-initiales" }, initiales(c.nom)),
                     noeud("title", {}, `${c.nom} : ${c.pv ? `${c.pv} PV, ` : ""}${c.etat}`));
       dessin.append(groupe);
@@ -692,6 +722,7 @@ const CarteDuCombat = (() => {
     bloc.hidden = vue === null;
     champ("partie").classList.toggle("en-combat", vue !== null);
     if (vue === null) return;
+    bloc.dataset.habillage = habillageDe(vue);
     champ("combat-titre").textContent = `Round ${vue.round} : ${vue.lieu || "combat"} (${vue.decor})`;
     const dessin = champ("combat-svg");
     dessin.setAttribute("viewBox", `-0.2 -0.2 ${(L * (vue.largeur + 0.5) + 0.4).toFixed(3)} ${(R * (1.5 * vue.hauteur + 0.5) + 0.4).toFixed(3)}`);
@@ -706,7 +737,8 @@ const CarteDuCombat = (() => {
     try {
       const nouvelle = (await api("/api/combat")).combat;
       const menu = Partie.menuOuvert();
-      const nouvelleSignature = JSON.stringify([nouvelle, menu && menu.titre]);  // le menu rend les destinations cliquables
+      // le menu rend les destinations cliquables ; un autre habillage change le dessin
+      const nouvelleSignature = JSON.stringify([nouvelle, menu && menu.titre, habillageDe(nouvelle)]);
       if (nouvelleSignature === signature) return;
       signature = nouvelleSignature;
       vue = nouvelle;

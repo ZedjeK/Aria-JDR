@@ -83,3 +83,17 @@ def test_les_reglages_de_combat_ont_leurs_valeurs_par_defaut_et_font_l_aller_ret
 def test_des_reglages_de_combat_illisibles_prennent_leur_valeur_par_defaut(tmp_path, combat):
     (tmp_path / donnees.FICHIER_REGLAGES).write_text(json.dumps({"combat": combat}), encoding="utf-8")
     assert donnees.charger_reglages(tmp_path).combat == donnees.Combat()
+
+
+def test_l_habillage_des_cartes_suit_le_genre_par_defaut_et_fait_l_aller_retour(tmp_path):
+    assert donnees.charger_reglages(tmp_path).cartes.habillage == "genre"
+    donnees.enregistrer_reglages(donnees.Reglages(cartes=donnees.Cartes("rouille")), tmp_path)
+    brut = json.loads((tmp_path / donnees.FICHIER_REGLAGES).read_text(encoding="utf-8"))
+    assert brut["cartes"] == {"habillage": "rouille"}
+    assert donnees.charger_reglages(tmp_path).cartes.habillage == "rouille"
+
+
+@pytest.mark.parametrize("cartes", [None, "x", {"habillage": "pastel"}, {"habillage": 3}])
+def test_un_habillage_inconnu_revient_au_genre(tmp_path, cartes):
+    (tmp_path / donnees.FICHIER_REGLAGES).write_text(json.dumps({"cartes": cartes}), encoding="utf-8")
+    assert donnees.charger_reglages(tmp_path).cartes.habillage == "genre"

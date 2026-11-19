@@ -81,17 +81,31 @@ class Combat:
 
 
 @dataclass
+class Cartes:
+    """L'habillage des cartes : « genre » (celui du genre de la campagne) ou l'un de aria.habillages.HABILLAGES."""
+
+    habillage: str = "genre"
+
+    def assaini(self) -> "Cartes":
+        from aria.habillages import HABILLAGES
+        valide = isinstance(self.habillage, str) and (self.habillage == "genre" or self.habillage in HABILLAGES)
+        return Cartes(self.habillage if valide else "genre")
+
+
+@dataclass
 class Reglages:
     """Les réglages de l'appli, enregistrés dans reglages.json. Jamais de secret ici : voir appli.coffre."""
 
     fond: Fond = field(default_factory=Fond)
     combat: Combat = field(default_factory=Combat)
+    cartes: Cartes = field(default_factory=Cartes)
     proposer_installation: bool = True  # sans effet tant que l'exe ne s'installe pas
     chercher_mises_a_jour: bool = True  # sans effet tant que les mises à jour ne sont pas là
 
     def assaini(self) -> "Reglages":
         return Reglages(fond=(self.fond if isinstance(self.fond, Fond) else Fond()).assaini(),
                         combat=(self.combat if isinstance(self.combat, Combat) else Combat()).assaini(),
+                        cartes=(self.cartes if isinstance(self.cartes, Cartes) else Cartes()).assaini(),
                         proposer_installation=self.proposer_installation is not False,
                         chercher_mises_a_jour=self.chercher_mises_a_jour is not False)
 
@@ -99,6 +113,7 @@ class Reglages:
         return {"fond": asdict(self.fond),
                 "combat": {"recit": self.combat.recit, "pvExacts": self.combat.pv_exacts,
                            "choisirSaDefense": self.combat.choisir_sa_defense, "pnjParLeLlm": self.combat.pnj_par_le_llm},
+                "cartes": {"habillage": self.cartes.habillage},
                 "proposerInstallation": self.proposer_installation, "chercherMisesAJour": self.chercher_mises_a_jour}
 
     @staticmethod
@@ -110,12 +125,15 @@ class Reglages:
         fond = fond if isinstance(fond, dict) else {}
         combat = brut.get("combat")
         combat = combat if isinstance(combat, dict) else {}
+        cartes = brut.get("cartes")
+        cartes = cartes if isinstance(cartes, dict) else {}
         return Reglages(
             fond=Fond(actif=fond.get("actif", True), vitesse=fond.get("vitesse", "normale"),
                       minimum=fond.get("minimum", 2), maximum=fond.get("maximum", 5)),
             combat=Combat(recit=combat.get("recit", "round"), pv_exacts=combat.get("pvExacts", False),
                           choisir_sa_defense=combat.get("choisirSaDefense", False),
                           pnj_par_le_llm=combat.get("pnjParLeLlm", False)),
+            cartes=Cartes(habillage=cartes.get("habillage", "genre")),
             proposer_installation=brut.get("proposerInstallation", True),
             chercher_mises_a_jour=brut.get("chercherMisesAJour", True)).assaini()
 

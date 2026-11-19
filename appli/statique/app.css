@@ -108,18 +108,22 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 #message.erreur { color: var(--rouge); }
 
 /* La carte de la campagne */
-.carte-corps { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 16px; margin-top: 8px; }
-#carte-svg { width: 100%; height: auto; aspect-ratio: 1; background: var(--fond); border: 1px solid var(--ligne); }
-.carte-lien { stroke: var(--ligne); stroke-width: 0.45; }
-.carte-district { fill: var(--texte-2); font-size: 2.6px; letter-spacing: .08em; text-transform: uppercase; }
-.carte-district.guerre { fill: var(--orange); }
-.carte-nom { fill: var(--texte); font-size: 2.4px; paint-order: stroke; stroke: var(--fond); stroke-width: 0.7px; }
+.carte-corps {
+  --k-fond: var(--fond); --k-lien: var(--ligne); --k-district: var(--texte-2); --k-guerre: var(--orange);
+  --k-nom: var(--texte); --k-ici: var(--cyan); --k-dispute: var(--orange); --k-police: "Space Grotesk", sans-serif;
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(220px, 1fr); gap: 16px; margin-top: 8px;
+}
+#carte-svg { width: 100%; height: auto; aspect-ratio: 1; background: var(--k-fond); border: 1px solid var(--ligne); font-family: var(--k-police); }
+.carte-lien { stroke: var(--k-lien); stroke-width: 0.45; }
+.carte-district { fill: var(--k-district); font-size: 2.6px; letter-spacing: .08em; text-transform: uppercase; }
+.carte-district.guerre { fill: var(--k-guerre); }
+.carte-nom { fill: var(--k-nom); font-size: 2.4px; paint-order: stroke; stroke: var(--k-fond); stroke-width: 0.7px; }
 .carte-quartier { cursor: pointer; }
-.carte-quartier:hover .carte-point, .carte-quartier.choisi .carte-point { stroke: var(--texte); stroke-width: 0.5; }
+.carte-quartier:hover .carte-point, .carte-quartier.choisi .carte-point { stroke: var(--k-nom); stroke-width: 0.5; }
 .carte-quartier:focus-visible { outline: none; }
 .carte-quartier:focus-visible .carte-point { stroke: var(--ambre); stroke-width: 0.8; }
-.carte-ici { fill: none; stroke: var(--cyan); stroke-width: 0.5; }
-.carte-dispute { fill: none; stroke: var(--orange); stroke-width: 0.5; stroke-dasharray: 1 0.8; animation: carte-tourne 6s linear infinite; }
+.carte-ici { fill: none; stroke: var(--k-ici); stroke-width: 0.5; }
+.carte-dispute { fill: none; stroke: var(--k-dispute); stroke-width: 0.5; stroke-dasharray: 1 0.8; animation: carte-tourne 6s linear infinite; }
 @keyframes carte-tourne { to { stroke-dashoffset: -7.2; } }
 @media (prefers-reduced-motion: reduce) { .carte-dispute { animation: none; } }
 .carte-fiche { background: var(--fond); border: 1px solid var(--ligne); padding: 10px 14px; }
@@ -159,7 +163,50 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 .combat-jeton.ennemi .combat-pion { fill: var(--c-ennemi); }
 .combat-jeton.a-terre { opacity: 0.45; }
 .combat-actif { fill: none; stroke: var(--c-actif); stroke-width: 0.12; }
-.combat-initiales { fill: var(--c-fond); font: 700 0.72px var(--c-police); pointer-events: none; }
+.combat-initiales { fill: var(--c-initiales, var(--c-fond)); font: 700 0.72px var(--c-police); pointer-events: none; }
+/* Néon : des pions sombres cernés de leur couleur, les initiales dans cette couleur */
+.combat[data-habillage="neon"] .combat-pion { fill: var(--c-fond); stroke-width: 0.14; }
+.combat[data-habillage="neon"] .combat-jeton.joueur .combat-pion { stroke: var(--c-joueur); }
+.combat[data-habillage="neon"] .combat-jeton.allie .combat-pion { stroke: var(--c-allie); }
+.combat[data-habillage="neon"] .combat-jeton.ennemi .combat-pion { stroke: var(--c-ennemi); }
+.combat[data-habillage="neon"] .combat-jeton.joueur .combat-initiales { fill: var(--c-joueur); }
+.combat[data-habillage="neon"] .combat-jeton.allie .combat-initiales { fill: var(--c-allie); }
+.combat[data-habillage="neon"] .combat-jeton.ennemi .combat-initiales { fill: var(--c-ennemi); }
+
+/* Les habillages des cartes (aria/habillages.py), d'après les maquettes : Néon est la valeur par défaut, au-dessus.
+   Polices : Georgia et Segoe Print sont livrées avec Windows ; ailleurs, une police de la même famille les remplace. */
+[data-habillage="parchemin"] {
+  --c-fond: #e3cf9e; --c-sol: #ead9ae; --c-trait: #b39466; --c-police: Georgia, "Times New Roman", serif;
+  --c-bas: #b9935a; --c-blinde: #7a6a58; --c-plein: #4a2f17; --c-difficile: rgba(122, 90, 50, 0.4);
+  --c-atteignable: rgba(63, 125, 58, 0.25); --c-destination: #9b2d20; --c-initiales: #f1e2b8;
+  --c-joueur: #b8860b; --c-allie: #3f7d3a; --c-ennemi: #9b2d20; --c-actif: #2e1b0b;
+  --k-fond: #e8d6a8; --k-lien: #8a6a44; --k-district: #4a2f17; --k-guerre: #8a1c14; --k-nom: #2e1b0b;
+  --k-ici: #9b2d20; --k-dispute: #b8860b; --k-police: Georgia, "Times New Roman", serif;
+}
+[data-habillage="gothique"] {
+  --c-fond: #0b0708; --c-sol: #130e0d; --c-trait: #3a2c29; --c-police: Georgia, "Times New Roman", serif;
+  --c-bas: #4e3d38; --c-blinde: #6e5d57; --c-plein: #8c7f6c; --c-difficile: rgba(122, 20, 20, 0.45);
+  --c-atteignable: rgba(201, 162, 39, 0.16); --c-destination: #c9a227; --c-initiales: #0b0708;
+  --c-joueur: #c9a227; --c-allie: #6aa17a; --c-ennemi: #c0392b; --c-actif: #d9cdb8;
+  --k-fond: #0b0708; --k-lien: #5a3b3b; --k-district: #8c7f6c; --k-guerre: #c0392b; --k-nom: #d9cdb8;
+  --k-ici: #c9a227; --k-dispute: #c0392b; --k-police: Georgia, "Times New Roman", serif;
+}
+[data-habillage="etat-major"] {
+  --c-fond: #cfd1b3; --c-sol: #c9cdb0; --c-trait: #8a8e70; --c-police: "IBM Plex Mono", ui-monospace, monospace;
+  --c-bas: #6b705a; --c-blinde: #555a45; --c-plein: #1d2014; --c-difficile: rgba(181, 159, 107, 0.7);
+  --c-atteignable: rgba(46, 125, 50, 0.25); --c-destination: #b3261e; --c-initiales: #f2f3e6;
+  --c-joueur: #2f5da8; --c-allie: #2e7d32; --c-ennemi: #b3261e; --c-actif: #1d2014;
+  --k-fond: #c9cdb0; --k-lien: #3b3f2a; --k-district: #2b2e1e; --k-guerre: #b3261e; --k-nom: #1d2014;
+  --k-ici: #1d2014; --k-dispute: #b3261e; --k-police: "IBM Plex Mono", ui-monospace, monospace;
+}
+[data-habillage="rouille"] {
+  --c-fond: #7d6a52; --c-sol: #8a7660; --c-trait: #5e4d3a; --c-police: "Segoe Print", "Bradley Hand", cursive;
+  --c-bas: #5c4836; --c-blinde: #3f4a4a; --c-plein: #2b1a0e; --c-difficile: rgba(176, 138, 74, 0.65);
+  --c-atteignable: rgba(224, 165, 38, 0.3); --c-destination: #e8dcc0; --c-initiales: #1c1006;
+  --c-joueur: #e0a526; --c-allie: #6b8e23; --c-ennemi: #d4442a; --c-actif: #e8dcc0;
+  --k-fond: #c7a56f; --k-lien: #3a2514; --k-district: #2b1a0e; --k-guerre: #9b1c1c; --k-nom: #1c1006;
+  --k-ici: #1c1006; --k-dispute: #9b1c1c; --k-police: "Segoe Print", "Bradley Hand", cursive;
+}
 .combat-liste { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--texte-2); }
 .combat-liste li { display: flex; align-items: center; gap: 6px; }
 .combat-liste li.actif { color: var(--texte); }
