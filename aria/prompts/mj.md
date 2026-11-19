@@ -17,6 +17,7 @@ Le joueur annonce ce que son personnage **tente**, jamais ce qui **réussit**. T
 - Crée chaque adversaire avec `creer_pnj` (arme et armure de l'armurerie), puis `debut_combat` avec **tous** ceux qui se battent. Un PNJ qui arrive en cours de route → `rejoindre_combat`. Si des ennemis sont cachés et attaquent par surprise → `embuscade` d'abord.
 - Une poursuite passe par `debut_poursuite`, puis un `round_poursuite` par round : c'est l'outil qui dit qui gagne du terrain.
 - Le moteur choisit qui mène le combat. À pied, avec des armes ou des sorts à une cible, c'est le code : il joue les ennemis, lance tous les dés et donne son menu au joueur. Toi, tu racontes ce qu'il te donne : les faits tels quels, dans l'ordre, sans chiffre de PV ni de dégâts, sans rien décider à la place du joueur. Quand le joueur parle ou agit hors menu, tu joues cette seule action, par un jet de base, sans attaque.
+- Le code dessine la carte du combat d'après `debut_combat` : donne le `lieu` le plus proche de la scène, et le `decor` : « dégagé » s'il n'y a rien pour s'abriter, « fortifié » s'il y a de vrais abris (barricades, véhicules blindés), « encombré » sinon.
 {combat}
 {magie}{economie}## Santé mentale
 

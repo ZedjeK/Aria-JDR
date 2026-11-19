@@ -536,6 +536,22 @@ SITUATIONS = [
               [exige("embuscade")],
               scene="Trois gangers sont cachés derrière les bennes de la ruelle : ils comptent tomber sur Kaito "
                     "par surprise quand il passera. Kaito ne les a pas vus.", par_le_code=True),
+    # Le lieu et le décor du combat : le code en dessine la carte (REGLES.md 7.11)
+    Situation("lieu_bar", "Je recule de mon tabouret et je dégaine mon pistolet.",
+              [exige("debut_combat", egal("lieu", "bar"), "lieu : bar")],
+              scene="Kaito boit un verre au comptoir du Neon Lotus, un bar bondé. Un ganger ivre le bouscule, puis sort "
+                    "un couteau et s'avance vers lui en grognant.", par_le_code=True),
+    Situation("lieu_toit", "Je fais feu sur le tueur avant qu'il ne tire.",
+              [exige("debut_combat", lambda a: a.get("lieu") == "toit" and a.get("decor") == "dégagé",
+                     "lieu : toit, décor : dégagé")],
+              scene="Kaito est sur le toit-terrasse nu d'un immeuble, sous la pluie : pas une cheminée, pas un muret, "
+                    "rien pour s'abriter. Un tueur des Tyger Claws surgit de la cage d'escalier, pistolet au poing.",
+              par_le_code=True),
+    Situation("lieu_parking", "J'ouvre le feu sur les gardes depuis l'angle du pilier.",
+              [exige("debut_combat", lambda a: a.get("lieu") == "parking" and a.get("decor") == "fortifié",
+                     "lieu : parking, décor : fortifié")],
+              scene="Au sous-sol d'un parking, deux gardes d'Arasaka armés de fusils sont retranchés derrière des "
+                    "fourgons blindés garés en travers de l'allée. Ils ont repéré Kaito.", par_le_code=True),
     # Soins et santé mentale
     Situation("doc", "Doc, recouds-moi, s'il te plaît.",
               [exige("creer_pnj"), exige("soigner", lambda a: a.get("soigneur") != "joueur", "soigné par le doc")],
