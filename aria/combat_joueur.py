@@ -11,7 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from enum import Enum
 
-from aria import deplacements, magie
+from aria import deplacements, magie, vue_combat
 from aria.choix import Choisir, Option
 from aria.combat import (
     ActionImpossible,
@@ -58,6 +58,7 @@ class Ecran:
     pause: Callable[[float], None] = time.sleep
     delai: float = PAUSE_ENTRE_LES_ACTIONS
     faits: list[str] = field(default_factory=list)  # ce qui s'est passé depuis le dernier récit du MJ
+    publier: Callable[[dict | None], None] | None = None  # reçoit la carte du combat (aria.vue_combat), pour la page
 
     def fait(self, produire: Callable[["Ecran"], list[str]], titre: str = "") -> None:
         """Montre ce qui vient de se passer, et le garde pour le récit. Le MJ ne reçoit jamais les PV exacts des
@@ -154,6 +155,12 @@ def position(combat: Combat, qui: Combattant, joueur: Combattant, ou: tuple[int,
 
 def _le_joueur(combat: Combat) -> Combattant | None:
     return next((c for c in combat.ordre if isinstance(c.fiche, Personnage)), None)
+
+
+def montrer_la_carte(combat: Combat, ecran: Ecran, destinations: list[tuple[str, tuple[int, int]]] | None = None) -> None:
+    """Donne la carte du combat à jour à celui qui l'affiche (la page), s'il y en a un."""
+    if ecran.publier is not None:
+        ecran.publier(vue_combat.vue(combat, _le_joueur(combat), ecran.pv_exacts, destinations))
 
 
 # --- Le journal des jets ---------------------------------------------------------------------
@@ -334,6 +341,7 @@ class TourDuJoueur:
                 self.ecran.dire("  Plus rien à faire : ton tour se termine.")
                 return Sortie(Nature.FIN_DU_TOUR)
             self.ecran.dire(f"\nIl te reste : {budget_restant(self.joueur)}")
+            montrer_la_carte(self.combat, self.ecran)
             choix = self.ecran.choisir("C'est ton tour. Que fais-tu ?", [e.option for e in entrees])
             entree = entrees[choix]
             sortie = entree.faire()
@@ -548,7 +556,8 @@ class TourDuJoueur:
     def _choisir_ou_aller(self) -> Sortie | None:
         destinations = self._destinations()
         options = [Option(f"{libelle} ({self._apres(vers)})") for libelle, vers in destinations]
-        choix = self._sous_menu("Où vas-tu ?", options)
+        montrer_la_carte(self.combat, self.ecran, destinations)  # la page numérote les destinations comme le menu
+        choix = self._sous_menu(vue_combat.MENU_DES_DESTINATIONS, options)
         if choix is not None:
             _, vers = destinations[choix]
             self._action(lambda: self.combat.deplacer(self.joueur, vers), f"  Tu te déplaces : {self._apres(vers)}.")
@@ -678,9 +687,11 @@ def jouer_les_pnj(auto: CombatAuto, ecran: Ecran) -> list[RapportTour]:
     """Les tours des PNJ jusqu'à celui du joueur, montrés un à un, avec une courte pause entre eux."""
     def montrer(rapport: RapportTour):
         ecran.fait(lambda e: lignes_du_tour(rapport, auto.combat, e), titre=f"\n{rapport.qui.nom} :")
+        montrer_la_carte(auto.combat, ecran)
         if rapport.evenements or rapport.moral:
             ecran.pause(ecran.delai)
 
+    montrer_la_carte(auto.combat, ecran)
     return auto.avancer(montrer)
 
 

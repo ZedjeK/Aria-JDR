@@ -80,7 +80,7 @@ class Jeu:
                  des: Des | None = None, entree=input, sortie=print, campagne: Campagne | None = None,
                  choix: "generateur.Choix | None" = None, budget_generation: int | None = None,
                  creer: bool = False, predefini: "personnages.Predefini | None" = None, choisir=None,
-                 reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None):
+                 reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None, publier_le_combat=None):
         """`choix` : pour une nouvelle campagne, l'univers à générer. Sans choix, une campagne qui n'a pas
         encore d'univers prend Néo-Tokyo, l'univers étalon du banc. `creer` : le joueur crée son personnage
         (sinon, c'est Kaito, le Netrunner de la démo) ; avec `predefini`, il prend ce personnage préparé à
@@ -89,6 +89,7 @@ class Jeu:
         self.choisir = choisir  # poser un choix au joueur (aria.choix) ; None : le MJ mène le combat, comme avant
         self.reglages_combat = reglages_combat or ReglagesDeCombat()
         self.publier_la_carte = publier_la_carte  # reçoit la carte (aria.carte.vue) avant chaque saisie du joueur
+        self.publier_le_combat = publier_le_combat  # reçoit la carte du combat à pied (aria.vue_combat), puis None
         self.campagne = campagne or Campagne.nommee(CAMPAGNE)
         self.campagne.ouvrir()
         self.format = trame.lire_format(self.campagne)
@@ -290,7 +291,7 @@ class Jeu:
         s = self.session
         if s.a_pied:
             CombatDePartie(s, self.table, self.dire, self.choisir, self.entree, self.raconter,
-                           self.reglages_combat).jouer()
+                           self.reglages_combat, self.publier_le_combat).jouer()
 
     def raconter(self, jouer_tour, attente="… le MJ réfléchit", narrer=True):
         self.dire("\n" + attente)
@@ -505,7 +506,7 @@ def mj_charge(sortie=print):
 
 def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprends_moi: bool = False,
            predefini: "personnages.Predefini | None" = None, entree=input, sortie=print, choisir=None,
-           reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None):
+           reglages_combat: ReglagesDeCombat | None = None, publier_la_carte=None, publier_le_combat=None):
     """Charge le MJ et joue la campagne : nouvelle si `choix` est donné, reprise sinon. Le menu, la ligne
     de commande et l'interface web passent tous par ici ; `entree` et `sortie` sont la console par défaut, et
     `choisir` (aria.choix) en est la liste numérotée tant qu'on ne lui en donne pas une autre."""
@@ -525,7 +526,8 @@ def lancer(campagne: Campagne, choix: "generateur.Choix | None" = None, surprend
             Jeu(serveur, profil["budget_reflexion"], reglages.contexte, entree=entree, sortie=sortie, campagne=campagne,
                 choix=choix, budget_generation=banc_generateur.budget_generateur(profil),
                 creer=choix is not None or a_creer, predefini=predefini if choix is not None else None,
-                choisir=choisir, reglages_combat=reglages_combat, publier_la_carte=publier_la_carte).jouer()
+                choisir=choisir, reglages_combat=reglages_combat, publier_la_carte=publier_la_carte,
+                publier_le_combat=publier_le_combat).jouer()
         except SansPersonnage as erreur:
             sortie(str(erreur))
         except creation_texte.Abandon:

@@ -164,6 +164,7 @@ champ("quitter").addEventListener("click", async () => {
 
 // --- Menu : la section affichée suit l'ancre ---
 let surCarte = () => {};  // posé par la carte, plus bas : relit la carte quand on ouvre sa section
+let surCombat = () => {};  // posé par la carte du combat, plus bas : la relit à chaque nouvelle du jeu
 function section() {
   const cible = location.hash || "#accueil";
   for (const lien of document.querySelectorAll(".menu nav a")) lien.classList.toggle("actif", lien.hash === cible);
@@ -391,6 +392,7 @@ const Partie = (() => {
         attend = lot.attend;
         controles(lot.actif, lot.attend);
         if (!champ("carte").hidden) surCarte();  // la carte ouverte suit la partie
+        surCombat();  // la carte du combat aussi, tant qu'un combat se joue
         if (!lot.actif) break;
       }
     } catch (erreur) {
@@ -437,7 +439,15 @@ const Partie = (() => {
     try { await envoyer("/api/partie/saisie", { texte }); } catch (erreur) { champ("partie-etat").textContent = erreur.message; }
   }
 
-  return { demarrer, reprendreAffichage, peutEcrire, agirAuNomDuJoueur };
+  // Le choix qui attend le joueur, pour la carte du combat : son titre, et y répondre comme par son bouton
+  const menuOuvert = () => (etat.actif && attend !== null && attend !== undefined && menuEnAttente ? menuEnAttente : null);
+  function choisirAuMenu(titre, numero) {
+    const menu = menuOuvert();
+    const option = menu && menu.titre === titre ? menu.options[numero - 1] : null;
+    if (option && !option.raison) repondreAuMenu(numero);
+  }
+
+  return { demarrer, reprendreAffichage, peutEcrire, agirAuNomDuJoueur, menuOuvert, choisirAuMenu };
 })();
 const demarrer = Partie.demarrer;
 
@@ -592,6 +602,121 @@ const Carte = (() => {
   return { rafraichir };
 })();
 surCarte = Carte.rafraichir;
+
+// --- La carte du combat à pied : le moteur la calcule (aria/vue_combat.py), la page la dessine en hexagones ---
+// Cases « pointe en haut », une ligne sur deux décalée d'une demi-case vers la droite (REGLES.md 7.11).
+// Elle ne décide rien : cliquer sur une destination numérotée revient à choisir l'option du même numéro dans le menu.
+const CarteDuCombat = (() => {
+  const SVG = "http://www.w3.org/2000/svg";
+  const R = 1;  // le rayon d'une case
+  const L = Math.sqrt(3) * R;  // sa largeur
+  const COINS = [30, 90, 150, 210, 270, 330].map((a) => [R * Math.cos((a * Math.PI) / 180), R * Math.sin((a * Math.PI) / 180)]);
+  let vue = null;
+  let signature = "";
+
+  const noeud = (balise, attributs, texte) => {
+    const n = document.createElementNS(SVG, balise);
+    for (const [cle, valeur] of Object.entries(attributs || {})) n.setAttribute(cle, valeur);
+    if (texte !== undefined) n.textContent = texte;
+    return n;
+  };
+  const centre = (colonne, ligne) => [L * (colonne + 0.5 + (ligne & 1) / 2), R + 1.5 * R * ligne];
+  const hexagone = (colonne, ligne) => {
+    const [x, y] = centre(colonne, ligne);
+    return COINS.map(([dx, dy]) => `${(x + dx).toFixed(3)},${(y + dy).toFixed(3)}`).join(" ");
+  };
+  const initiales = (nom) => nom.split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0]).join("").toUpperCase() || "?";
+  const MOTS = { bas: "obstacle bas (couvert partiel)", blinde: "obstacle blindé (couvert lourd)",
+                 plein: "obstacle plein (bloque la ligne de tir)", difficile: "terrain difficile (2 cases par case)" };
+
+  function sol(dessin) {
+    const terrain = new Map(vue.terrain.map(([c, l, t]) => [`${c},${l}`, t]));
+    const atteignables = new Set(vue.atteignables.map(([c, l]) => `${c},${l}`));
+    for (let ligne = 0; ligne < vue.hauteur; ligne++) {
+      for (let colonne = 0; colonne < vue.largeur; colonne++) {
+        const t = terrain.get(`${colonne},${ligne}`);
+        const classe = "hex" + (t ? ` hex-${t}` : "") + (atteignables.has(`${colonne},${ligne}`) ? " hex-atteignable" : "");
+        const case_ = noeud("polygon", { points: hexagone(colonne, ligne), class: classe });
+        if (t) case_.append(noeud("title", {}, MOTS[t]));
+        dessin.append(case_);
+      }
+    }
+  }
+
+  function destinations(dessin) {
+    const menu = Partie.menuOuvert();
+    const cliquables = menu !== null && menu.titre === vue.menu;
+    for (const d of vue.destinations) {
+      const [x, y] = centre(d.colonne, d.ligne);
+      const groupe = noeud("g", { class: "combat-destination" + (cliquables ? " cliquable" : "") });
+      groupe.append(noeud("polygon", { points: hexagone(d.colonne, d.ligne), class: "hex-destination" }),
+                    noeud("text", { x, y: y + 0.32, "text-anchor": "middle", class: "combat-numero" }, String(d.numero)),
+                    noeud("title", {}, `${d.numero}. ${d.libelle}`));
+      if (cliquables) {
+        groupe.setAttribute("tabindex", 0);
+        groupe.setAttribute("role", "button");
+        groupe.setAttribute("aria-label", `${d.numero}. ${d.libelle}`);
+        const choisir = () => Partie.choisirAuMenu(vue.menu, d.numero);
+        groupe.addEventListener("click", choisir);
+        groupe.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choisir(); }
+        });
+      }
+      dessin.append(groupe);
+    }
+  }
+
+  function jetons(dessin) {
+    for (const c of vue.combattants) {
+      const [x, y] = centre(c.colonne, c.ligne);
+      const groupe = noeud("g", { class: `combat-jeton ${c.camp}` + (c.debout ? "" : " a-terre") + (c.actif ? " actif" : "") });
+      if (c.actif) groupe.append(noeud("circle", { cx: x, cy: y, r: 0.9, class: "combat-actif" }));
+      groupe.append(noeud("circle", { cx: x, cy: y, r: 0.74, class: "combat-pion" }),
+                    noeud("text", { x, y: y + 0.26, "text-anchor": "middle", class: "combat-initiales" }, initiales(c.nom)),
+                    noeud("title", {}, `${c.nom} : ${c.pv ? `${c.pv} PV, ` : ""}${c.etat}`));
+      dessin.append(groupe);
+    }
+  }
+
+  function legende() {
+    const QUI = { joueur: "toi", allie: "allié", ennemi: "ennemi" };
+    champ("combat-liste").replaceChildren(...vue.combattants.map((c) => {
+      const li = el("li", `combat-${c.camp}` + (c.actif ? " actif" : ""));
+      li.append(el("span", "pastille"), el("span", "", `${c.actif ? "→ " : ""}${initiales(c.nom)} : ${c.nom} (${QUI[c.camp]}), ${c.pv ? `${c.pv} PV, ` : ""}${c.etat}`));
+      return li;
+    }));
+  }
+
+  function dessiner() {
+    const bloc = champ("combat");
+    bloc.hidden = vue === null;
+    champ("partie").classList.toggle("en-combat", vue !== null);
+    if (vue === null) return;
+    champ("combat-titre").textContent = `Round ${vue.round} : ${vue.lieu || "combat"} (${vue.decor})`;
+    const dessin = champ("combat-svg");
+    dessin.setAttribute("viewBox", `-0.2 -0.2 ${(L * (vue.largeur + 0.5) + 0.4).toFixed(3)} ${(R * (1.5 * vue.hauteur + 0.5) + 0.4).toFixed(3)}`);
+    dessin.replaceChildren();
+    sol(dessin);
+    destinations(dessin);
+    jetons(dessin);
+    legende();
+  }
+
+  async function rafraichir() {
+    try {
+      const nouvelle = (await api("/api/combat")).combat;
+      const menu = Partie.menuOuvert();
+      const nouvelleSignature = JSON.stringify([nouvelle, menu && menu.titre]);  // le menu rend les destinations cliquables
+      if (nouvelleSignature === signature) return;
+      signature = nouvelleSignature;
+      vue = nouvelle;
+      dessiner();
+    } catch (_) { /* la carte attend la prochaine lecture */ }
+  }
+
+  return { rafraichir };
+})();
+surCombat = CarteDuCombat.rafraichir;
 
 document.addEventListener("keydown", (evenement) => {
   const menu = champ("choix");

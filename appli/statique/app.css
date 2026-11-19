@@ -129,8 +129,49 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 .carte-factions li { display: flex; align-items: baseline; gap: 8px; }
 .pastille { flex: none; width: 10px; height: 10px; border-radius: 50%; }
 
+/* La carte du combat à pied, au-dessus du journal pendant un combat. Ses couleurs sont des variables : un habillage
+   les remplace. */
+.combat {
+  --c-fond: var(--fond); --c-sol: #0a1830; --c-trait: var(--ligne); --c-texte: var(--texte); --c-police: "IBM Plex Mono", ui-monospace, monospace;
+  --c-bas: #3a5170; --c-blinde: #5c8bff; --c-plein: #c9d6ea; --c-difficile: rgba(255, 209, 102, 0.22);
+  --c-atteignable: rgba(125, 249, 255, 0.16); --c-destination: var(--ambre);
+  --c-joueur: var(--cyan); --c-allie: var(--bleu); --c-ennemi: var(--rouge); --c-actif: var(--ambre);
+  margin-bottom: 10px; font-family: var(--c-police);
+}
+.combat-titre { margin: 0 0 6px; color: var(--c-texte); font-weight: 600; }
+#combat-svg { display: block; width: 100%; height: auto; max-height: 46vh; background: var(--c-fond); border: 1px solid var(--ligne); }
+.hex { fill: var(--c-sol); stroke: var(--c-trait); stroke-width: 0.05; }
+.hex-bas { fill: var(--c-bas); }
+.hex-blinde { fill: var(--c-blinde); }
+.hex-plein { fill: var(--c-plein); }
+.hex-difficile { fill: var(--c-difficile); stroke-dasharray: 0.12 0.12; }
+.hex-atteignable { fill: var(--c-atteignable); }
+.hex-atteignable.hex-difficile { fill: var(--c-difficile); stroke: var(--c-joueur); }
+.hex-destination { fill: none; stroke: var(--c-destination); stroke-width: 0.12; }
+.combat-numero { fill: var(--c-destination); font: 700 0.9px var(--c-police); pointer-events: none; }
+.combat-destination.cliquable { cursor: pointer; }
+.combat-destination.cliquable .hex-destination { pointer-events: all; }  /* sans remplissage, l'intérieur doit aussi prendre le clic */
+.combat-destination.cliquable:hover .hex-destination, .combat-destination.cliquable:focus-visible .hex-destination { fill: var(--c-atteignable); stroke-width: 0.2; }
+.combat-destination:focus-visible { outline: none; }
+.combat-pion { stroke: var(--c-fond); stroke-width: 0.1; }
+.combat-jeton.joueur .combat-pion { fill: var(--c-joueur); }
+.combat-jeton.allie .combat-pion { fill: var(--c-allie); }
+.combat-jeton.ennemi .combat-pion { fill: var(--c-ennemi); }
+.combat-jeton.a-terre { opacity: 0.45; }
+.combat-actif { fill: none; stroke: var(--c-actif); stroke-width: 0.12; }
+.combat-initiales { fill: var(--c-fond); font: 700 0.72px var(--c-police); pointer-events: none; }
+.combat-liste { list-style: none; margin: 6px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--texte-2); }
+.combat-liste li { display: flex; align-items: center; gap: 6px; }
+.combat-liste li.actif { color: var(--texte); }
+.combat-joueur .pastille { background: var(--c-joueur); }
+.combat-allie .pastille { background: var(--c-allie); }
+.combat-ennemi .pastille { background: var(--c-ennemi); }
+#partie.en-combat .journal { height: 30vh; min-height: 180px; }
+
 @media (max-width: 720px) {
   .carte-corps { grid-template-columns: 1fr; }
+  .combat-defile { overflow-x: auto; }  /* sur un téléphone, la carte du combat défile dans son cadre */
+  #combat-svg { min-width: 620px; max-height: none; }
   body { grid-template-columns: 1fr; }
   #fond { inset: 0; width: 100%; }
 }

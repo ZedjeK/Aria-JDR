@@ -239,6 +239,17 @@ def test_une_victoire_se_raconte_puis_le_mj_appelle_fin_combat_seul_outil():
     assert "Le ganger s'effondre." in c.dits and "\nPlus aucun ennemi ne tient : le combat est fini." in c.dits
 
 
+def test_la_carte_du_combat_est_publiee_pendant_le_combat_puis_rangee_a_sa_fin():
+    s = combat_a_pied(1)
+    serveur = Serveur([appel("fin_combat", moments_forts="Kaito abat le ganger.")], "Le ganger s'effondre.")
+    c = partie(s, serveur, Script("Attaquer", "Ganger"))
+    vues = []
+    c.ecran.publier = vues.append
+    c.jouer()
+    assert vues[0]["lieu"] == "ruelle" and any(x["camp"] == "joueur" for x in vues[0]["combattants"])
+    assert vues[-1] is None and s.combat is None
+
+
 def test_une_defaite_dit_au_mj_de_ne_pas_tuer_le_joueur_et_de_ne_pas_frapper_de_nouveau():
     s = combat_a_pied(rapide=True)
     s.joueur.fiche.etat = type(s.joueur.fiche.etat).INCONSCIENT
@@ -313,7 +324,7 @@ def jeu_minimal(s, serveur, script, reglages=ReglagesDeCombat()):
     """Un Jeu sans campagne ni MJ réel : juste de quoi mener un combat à pied."""
     jeu = object.__new__(Jeu)
     jeu.session, jeu.table, jeu.choisir, jeu.entree = s, Table(serveur, s, budget=512), script.choisir, script.entree
-    jeu.dire, jeu.reglages_combat = script.lignes.append, reglages
+    jeu.dire, jeu.reglages_combat, jeu.publier_le_combat = script.lignes.append, reglages, None
     return jeu
 
 
