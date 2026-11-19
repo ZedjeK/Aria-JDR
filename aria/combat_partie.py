@@ -90,14 +90,22 @@ class CombatDePartie:
 
     def __init__(self, session: Session, table: Table, dire: Callable[[str], None], choisir: Choisir,
                  entree: Callable[[str], str], raconter: Callable[[Callable], None],
-                 reglages: ReglagesDeCombat = ReglagesDeCombat()):
-        """`raconter(jouer_tour)` : le jeu joue un tour du MJ (avec ses outils), en montre les lignes et la narration."""
+                 reglages: ReglagesDeCombat = ReglagesDeCombat(), publier_le_combat=None):
+        """`raconter(jouer_tour)` : le jeu joue un tour du MJ (avec ses outils), en montre les lignes et la narration.
+        `publier_le_combat(vue)` : reçoit la carte du combat (aria.vue_combat) à chaque changement, puis None à la fin."""
         self.session, self.table, self.dire, self.raconter, self.reglages = session, table, dire, raconter, reglages
         self.ecran = Ecran(dire, choisir, entree, pv_exacts=reglages.pv_exacts,
-                           choisir_sa_defense=reglages.choisir_sa_defense)
+                           choisir_sa_defense=reglages.choisir_sa_defense, publier=publier_le_combat)
 
     def jouer(self) -> None:
         """Mène le combat jusqu'à son terme : sa fin, ou une action que le MJ a close avec `fin_combat`."""
+        try:
+            self._jouer()
+        finally:
+            if self.ecran.publier is not None:
+                self.ecran.publier(None)  # le combat est fini : la page range sa carte
+
+    def _jouer(self) -> None:
         s = self.session
         planificateur = PlanificateurLLM(self.table.serveur, s) if self.reglages.pnj_par_le_llm else None
         auto = ouvrir_le_combat(s, self.ecran, planificateur)
