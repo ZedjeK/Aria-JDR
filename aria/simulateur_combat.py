@@ -8,9 +8,9 @@ Lancer un scénario, ou tous :
 import statistics
 import sys
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
-from aria import chemins, pnj
+from aria import carte_combat, chemins, pnj
 from aria.combat import Combat, Combattant, Decor, FichePnj, Moral
 from aria.combat_auto import CombatAuto, Fin
 from aria.demo import KAITO
@@ -37,6 +37,7 @@ class Scenario:
     nom: str
     ennemis: tuple[tuple[str, str], ...]  # (menace, profil)
     decor: Decor = Decor.ENCOMBRE
+    lieu: str | None = carte_combat.RUELLE  # la carte du combat (REGLES.md 7.11) ; None : sans carte, comme avant
 
 
 SCENARIOS = (
@@ -123,7 +124,8 @@ def simuler(scenario: Scenario, combats: int = 500, graine: int = GRAINE) -> Bil
         des = Des(graine + numero)
         joueur = _joueur(univers)
         ennemis = [_ennemi(univers, i + 1, menace, profil) for i, (menace, profil) in enumerate(scenario.ennemis)]
-        combat = Combat(des, [joueur, *ennemis], univers.curseur, tour_par_tour=True, decor=scenario.decor)
+        carte = carte_combat.ouvrir(scenario.lieu, scenario.decor, des, [joueur], ennemis) if scenario.lieu else None
+        combat = Combat(des, [joueur, *ennemis], univers.curseur, tour_par_tour=True, decor=scenario.decor, carte=carte)
         auto = CombatAuto(combat, mene=lambda combattant: True)
         pv_depart, dernier_round = joueur.fiche.pv, 1
         while auto.fin() is Fin.EN_COURS:
@@ -142,8 +144,12 @@ def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     combats = int(sys.argv[1]) if len(sys.argv) > 1 else 500
-    for scenario in SCENARIOS:
-        print(simuler(scenario, combats).ligne())
+    lieux = sys.argv[2:] or [carte_combat.RUELLE]  # « sans » : le combat sans carte, pour comparer
+    for lieu in lieux:
+        print(f"--- {lieu}")
+        for scenario in SCENARIOS:
+            scenario = replace(scenario, lieu=None if lieu == "sans" else lieu)
+            print(simuler(scenario, combats).ligne())
 
 
 if __name__ == "__main__":

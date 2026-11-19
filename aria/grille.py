@@ -117,6 +117,11 @@ class Carte:
     def cases(self) -> list[Case]:
         return [case(colonne, rang) for rang in range(self.hauteur) for colonne in range(self.largeur)]
 
+    def cases_du_bord(self) -> list[Case]:
+        """Les cases praticables au bord de la carte : par là, on la quitte (fuir)."""
+        return [c for c in self.cases() if self.praticable(c)
+                and (colonne_ligne(c)[0] in (0, self.largeur - 1) or colonne_ligne(c)[1] in (0, self.hauteur - 1))]
+
     def libres(self) -> list[Case]:
         """Les cases praticables où personne ne se tient."""
         prises = set(self.positions.values())
@@ -201,7 +206,10 @@ class Carte:
         """Ce que la ligne de tir rencontre entre le tireur et la cible (REGLES.md 7.11) : le plus protecteur des
         obstacles traversés ; entre deux cases, celle qui protège le plus. Un obstacle bas ou blindé collé au tireur
         ne compte pas (il tire par-dessus) ; un obstacle plein coupe toujours la ligne."""
-        a, b = self.position(tireur), self.position(cible)
+        return self.abri_entre(self.position(tireur), self.position(cible))
+
+    def abri_entre(self, a: Case, b: Case) -> Abri:
+        """Comme `abri`, entre deux cases : pour savoir ce que donnerait une position avant de s'y rendre."""
         pire = Abri.AUCUN
         for cases in ligne(a, b)[1:-1]:
             for c in cases:

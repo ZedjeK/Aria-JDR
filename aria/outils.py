@@ -39,6 +39,7 @@ from aria.combat import (
     laisser_pour_mort,
     tester_embuscade,
 )
+from aria import carte_combat
 from aria.combat_auto import ModeCombat, choisir_mode
 from aria.des import Des
 from aria import inventaire as inventaire_
@@ -166,6 +167,8 @@ class Session:
     mode_combat: ModeCombat | None = None  # qui mène le combat en cours, choisi à son ouverture (REGLES.md 7.8)
     combat_par_le_code: bool = False  # la partie sait mener un combat à pied (aria.combat_partie) : sinon, le MJ le mène
     main_du_mj: frozenset[str] | None = None  # pendant un combat à pied, ce que le MJ a sous la main (par défaut : OUTILS_A_PIED)
+    # Les dés qui dessinent les cartes de combat : à part de ceux du jeu, pour ne jamais décaler un jet
+    des_des_cartes: Des = field(default_factory=Des)
     dernier_test: dict | None = None
     journal: list[dict] = field(default_factory=list)
     campagne: Campagne | None = None  # None : rien n'est écrit sur le disque (le banc d'essai)
@@ -986,12 +989,22 @@ CONSIGNE_A_PIED = ("Le code mène ce combat : il joue les ennemis, lance tous le
        lambda s: _objet({
            "pnj": {"type": "array", "items": _enum(sorted(s.pnj)), "description": "Les PNJ qui combattent."},
            "surpris": _enum(["personne", "joueur", "ennemis"], "Le camp surpris perd son premier round."),
+           "lieu": _enum(list(carte_combat.LIEUX), "Le lieu du combat, le plus proche de la scène : le code en "
+                                                   "dessine la carte (ruelle par défaut)."),
+           "decor": _enum([d.value for d in combat_.Decor], "Ce qui encombre le lieu : dégagé, encombré (par défaut) "
+                                                             "ou fortifié."),
        } | _dehors(s, "le combat a lieu"), ["pnj"]))
-def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors: bool = False) -> dict:
+def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors: bool = False,
+                 lieu: str = carte_combat.LIEU_PAR_DEFAUT, decor: str = combat_.Decor.ENCOMBRE.value) -> dict:
     if session.combat:
         raise ErreurOutil("Un combat est déjà en cours.")
     if not pnj:
         raise ErreurOutil("Il faut au moins un PNJ pour un combat.")
+    if lieu not in carte_combat.LIEUX:
+        raise ErreurOutil(f"Lieu inconnu : {lieu}. Lieux possibles : {', '.join(carte_combat.LIEUX)}.")
+    decor_ = next((d for d in combat_.Decor if d.value == decor), None)
+    if decor_ is None:
+        raise ErreurOutil(f"Décor inconnu : {decor}. Décors possibles : {', '.join(d.value for d in combat_.Decor)}.")
     participants = [session.joueur] + [session.combattant(i) for i in pnj]
     if surpris == "joueur":
         surpris_liste = [session.joueur]
@@ -999,8 +1012,13 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors:
         surpris_liste = [c for c in participants if c.camp == "ennemis"]
     else:
         surpris_liste = []
-    session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste, tour_par_tour=True)
+    session.combat = Combat(session.des, participants, session.univers.curseur, surpris_liste, tour_par_tour=True,
+                            decor=decor_)
     session.mode_combat = choisir_mode(participants, any(i in session.engins for i in pnj))
+    if session.a_pied:  # le code mène ce combat : il se joue sur une carte (REGLES.md 7.11)
+        session.combat.carte = carte_combat.ouvrir(
+            lieu, decor_, session.des_des_cartes, [c for c in participants if c.camp != "ennemis"],
+            [c for c in participants if c.camp == "ennemis"], embuscade=surpris != "personne")
     session.rounds, session.debut_round = [], len(session.journal) + 1  # + 1 : cet appel-ci
     meteo = {}
     if dehors:
@@ -1008,7 +1026,8 @@ def debut_combat(session: Session, pnj: list, surpris: str = "personne", dehors:
         if session.combat.malus_tir or session.combat.malus_tir_long:
             meteo = {"meteo": f"{meteo_.temps(session.monde)} : le moteur l'applique aux tirs"}
     if session.a_pied:
-        return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre], "consigne": CONSIGNE_A_PIED} | meteo
+        return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre], "lieu": f"{lieu} ({decor})",
+                "consigne": CONSIGNE_A_PIED} | meteo
     return {"round": 1, "ordre_initiative": [c.nom for c in session.combat.ordre],
             "au_tour_de": _qui_joue(session), "consigne": _consigne(session), "fiche": _fiche(session)} | meteo
 
@@ -1022,7 +1041,11 @@ def rejoindre_combat(session: Session, pnj: list) -> dict:
     if not pnj:
         raise ErreurOutil("Indique au moins un PNJ.")
     for identifiant in pnj:
-        c.rejoindre(session.combattant(identifiant))
+        renfort = session.combattant(identifiant)
+        c.rejoindre(renfort)
+        if c.carte is not None:  # il entre par le bord de son côté (REGLES.md 7.11)
+            carte_combat.entrer(c.carte, renfort, "ennemis" if renfort.camp == "ennemis" else "joueurs",
+                                session.des_des_cartes)
     return {"ordre_initiative": [x.nom for x in c.ordre], "au_tour_de": _qui_joue(session),
             "consigne": _consigne(session)}
 

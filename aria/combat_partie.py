@@ -121,8 +121,10 @@ class CombatDePartie:
         return " ; ".join(f"{x.nom} : {etat_visible(x)}" for x in c.ordre if _cote(x) is not None)
 
     def _decor(self) -> str:
-        return {Decor.DEGAGE: "dégagé, rien pour s'abriter", Decor.ENCOMBRE: "encombré, on peut s'y mettre à couvert",
-                Decor.FORTIFIE: "fortifié, de bons abris"}[self.session.combat.decor]
+        c: Combat = self.session.combat
+        texte = {Decor.DEGAGE: "dégagé, rien pour s'abriter", Decor.ENCOMBRE: "encombré, on peut s'y mettre à couvert",
+                 Decor.FORTIFIE: "fortifié, de bons abris"}[c.decor]
+        return texte + (f" ; le lieu : {c.carte.lieu}" if c.carte is not None and c.carte.lieu else "")
 
     def _avant_le_menu(self, fin: Fin) -> None:
         """Juste avant le menu du joueur : le MJ raconte ce qui s'est passé depuis son dernier tour."""

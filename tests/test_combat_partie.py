@@ -48,7 +48,18 @@ def combat_a_pied(*des, rapide=False, **profil):
     s.combat_par_le_code = True
     creer_ganger(s, **({"dexterite": 70} if rapide else {}) | profil)
     s.appeler("debut_combat", {"pnj": ["ganger"]})
+    au_contact(s)
     return s
+
+
+def au_contact(s):
+    """Sur une carte nue, le ganger au contact de Kaito : ces tests regardent le récit et la main du MJ, pas les
+    positions (celles-ci sont dans tests/test_combat_sur_carte.py)."""
+    from aria.grille import voisins
+    carte = s.combat.carte
+    carte.terrain.clear()
+    ici = carte.position(s.joueur)
+    carte.positions[s.pnj["ganger"]] = next(v for v in voisins(ici) if carte.dans(v))
 
 
 def partie(s, serveur, script, reglages=ReglagesDeCombat()):

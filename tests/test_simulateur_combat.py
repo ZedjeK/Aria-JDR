@@ -52,3 +52,10 @@ def test_le_moral_fait_partir_ou_rendre_des_ennemis():
 def test_la_ligne_du_tableau_se_lit():
     ligne = simuler(DEUX_VOYOUS, 10).ligne()
     assert "victoire" in ligne and "rounds" in ligne
+
+
+def test_les_combats_se_jouent_sur_une_ruelle_par_defaut_et_sans_carte_sur_demande():
+    from dataclasses import replace
+    assert DEUX_VOYOUS.lieu == "ruelle"
+    sans = simuler(replace(DEUX_VOYOUS, lieu=None), 20)
+    assert sans.combats == 20 and Fin.EN_COURS not in sans.issues
