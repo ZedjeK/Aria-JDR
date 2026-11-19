@@ -209,3 +209,23 @@ def test_derriere_la_victime_a_l_oppose_de_celui_qui_frappe():
     assert c.derriere(k, g) == case(6, 4)
     c.placer(g, case(8, 4))
     assert c.derriere(k, g) is None
+
+
+# --- Les cases libres et ce qui est relié
+
+
+def test_les_cases_libres_n_ont_ni_obstacle_ni_combattant():
+    k = Pion("Kaito")
+    c = carte(4, 3, terrain={case(1, 1): Terrain.BAS, case(2, 1): Terrain.DIFFICILE})
+    c.placer(k, case(0, 0))
+    assert len(c.cases()) == 12
+    libres = c.libres()
+    assert case(1, 1) not in libres and case(0, 0) not in libres and case(2, 1) in libres and len(libres) == 10
+
+
+def test_un_mur_de_bord_a_bord_separe_la_carte():
+    mur = {case(5, rang): Terrain.PLEIN for rang in range(6)}
+    c = carte(10, 6, terrain=mur)
+    assert not c.relie(case(1, 2), case(8, 2))
+    del c.terrain[case(5, 5)]
+    assert c.relie(case(1, 2), case(8, 2))
