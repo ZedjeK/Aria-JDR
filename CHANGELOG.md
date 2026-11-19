@@ -13,6 +13,11 @@ sont dans `docs/releases/`.
 - Le combat à pied se joue sur la carte (REGLES.md 7.11) : `debut_combat` prend le lieu et le décor (ruelle encombrée par défaut) et dessine la carte avec des dés à part ; l'IA se déplace (le bretteur va au contact, le tireur se poste à couvert à portée, le fuyard gagne le bord) ; le menu du joueur propose « Se déplacer… », grise les cibles hors de portée avec leur raison, et la fuite mène vers le bord ; l'écran et le journal donnent les positions en mots ; un sort à une cible porte 20 cases avec la ligne de tir et le couvert de la carte ; le simulateur joue sur des cartes générées.
 - La carte du combat dans l'interface (onglet Partie, au-dessus du journal) : les cases hexagonales, les obstacles selon leur type, les pions de chaque camp, celui dont c'est le tour, les cases que le joueur peut atteindre ; dans « Se déplacer… », les destinations du menu numérotées sur la carte, qu'un clic choisit. Les PV des ennemis n'y figurent que si le réglage « PV exacts » est coché. Route `GET /api/combat`.
 - Cinq habillages des cartes, selon le genre de la campagne (`aria/habillages.py`) : Néon (Cyberpunk, Science-fiction), Parchemin (Fantasy), Gothique (Dark fantasy, Horreur), État-major (Militaire, Contemporain), Rouille (Post-apo). Chacun a ses couleurs, sa police et la forme de ses pions, sur la carte de la campagne comme sur celle du combat. Le réglage « Habillage » des cartes en impose un (`cartes.habillage` dans `reglages.json`). Parchemin et Gothique utilisent Georgia, Rouille Segoe Print : des polices livrées avec Windows, rien n'est embarqué.
+- Au banc, trois situations sur le lieu et le décor d'un combat à pied (un bar, un toit nu, un parking barricadé de fourgons blindés) : 86 situations dont 23 pièges.
+
+### Modifié
+
+- Le prompt du MJ lui demande de donner à `debut_combat` le lieu le plus proche de la scène et le décor (dégagé, encombré, fortifié) : le code en dessine la carte du combat.
 
 ## 0.2.0
 

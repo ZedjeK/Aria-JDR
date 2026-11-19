@@ -35,11 +35,11 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_quatre_vingt_trois_situations_dont_vingt_trois_pieges():
-    assert len(SITUATIONS) == 83
+def test_quatre_vingt_six_situations_dont_vingt_trois_pieges():
+    assert len(SITUATIONS) == 86
     assert sum(s.piege for s in SITUATIONS) == 23
-    assert len({s.nom for s in SITUATIONS}) == 83
-    assert len({s.joueur for s in SITUATIONS}) == 83  # le faux serveur les reconnaît à la phrase du joueur
+    assert len({s.nom for s in SITUATIONS}) == 86
+    assert len({s.joueur for s in SITUATIONS}) == 86  # le faux serveur les reconnaît à la phrase du joueur
     assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 6
 
 
@@ -280,6 +280,34 @@ def test_le_declenchement_d_un_combat_se_joue_avec_les_outils_d_un_combat_a_pied
     partie = jouer(serveur, situation("ganger"), budget=0, graine=1)
     assert partie.reussie, partie.raisons
     assert not any("erreur" in trace for trace in partie.appels)
+
+
+def _combat_au(nom, **arguments):
+    """Le MJ crée le ganger puis ouvre le combat avec ces arguments, dans la situation `nom`."""
+    pnj = ("creer_pnj", {"identifiant": "ganger", "nom": "Ganger", "camp": "ennemis", "combat": 45, "pv": 10,
+                         "arme": "Couteau", "dexterite": 50})
+    return jouer(FauxServeur({nom: [pnj, ("debut_combat", {"pnj": ["ganger"]} | arguments)]}), situation(nom),
+                 budget=0, graine=1)
+
+
+@pytest.mark.parametrize("nom, bons, mauvais", [
+    ("lieu_bar", {"lieu": "bar"}, {}),
+    ("lieu_toit", {"lieu": "toit", "decor": "dégagé"}, {"lieu": "toit"}),
+    ("lieu_parking", {"lieu": "parking", "decor": "fortifié"}, {"lieu": "parking", "decor": "encombré"}),
+])
+def test_le_mj_donne_le_lieu_et_le_decor_de_la_scene(nom, bons, mauvais):
+    reussie = _combat_au(nom, **bons)
+    assert reussie.reussie, reussie.raisons
+    assert not any("erreur" in trace for trace in reussie.appels)
+    ratee = _combat_au(nom, **mauvais)  # sans argument : une ruelle encombrée, le défaut
+    assert not ratee.reussie and any("lieu" in r for r in ratee.raisons)
+
+
+def test_le_prompt_dit_au_mj_de_donner_le_lieu_et_le_decor():
+    from tests.test_combat_partie import systeme
+    from tests.test_outils import session
+    texte = systeme(session())
+    assert "`lieu`" in texte and "`decor`" in texte and "« fortifié »" in texte and "« dégagé »" in texte
 
 
 def test_parler_et_autre_action_veulent_un_jet_de_base():
