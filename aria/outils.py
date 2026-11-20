@@ -599,11 +599,18 @@ def etat(session: Session) -> dict:
 
 
 @outil("Faire avancer le temps à la période suivante (matin → après-midi → nuit → matin du jour suivant).",
-       lambda s: _objet({}))
-def avancer_temps(session: Session) -> dict:
+       lambda s: _objet(_dehors(s, "le personnage a passé la période qui s'achève")))
+def avancer_temps(session: Session, dehors: bool = False) -> dict:
+    # Le temps de la période qui s'achève : un personnage sans armure resté dehors peut y prendre des dégâts (15.3)
+    degats = meteo_.degats_par_periode(session.monde) if dehors else 0
+    exposition = None
+    if degats and session.joueur.armure is None and session.joueur.fiche.etat is not Etat.MORT:
+        r = session.blesser(session.joueur, degats)
+        exposition = {"cause": f"{meteo_.temps(session.monde)}, dehors sans armure", "degats": r.degats,
+                      "pv": r.pv_apres, "etat": r.etat.value} | ({"blessure_grave": True} if r.blessure_grave else {})
     session.moment = session.moment.suivant()
     session.oublier_les_effets()
-    resultat = {"moment": str(session.moment)}
+    resultat = {"moment": str(session.moment)} | ({"meteo": exposition} if exposition else {})
     # Le coût de la vie tombe tout seul, tous les 7 jours (REGLES.md 13.2) : au MJ de le raconter
     echeances = _echeances_du_joueur(session)
     if session.inventaire and session.personnage.commandes:
@@ -647,17 +654,35 @@ def _dehors(s: Session, quoi: str) -> dict:
                                                          "fait. Faux à l'abri."}}
 
 
+def _piste(s: Session) -> dict:
+    """Le champ « piste » de test_competence, dans une campagne qui a sa météo (REGLES.md 15.3)."""
+    if not meteo_.actif(s.monde):
+        return {}
+    return {"piste": {"type": "boolean", "description": "Vrai si le test sert à suivre une piste (traces, empreintes), "
+                                                        "dehors : la pluie et la neige la changent."}}
+
+
+def _fouille(s: Session) -> dict:
+    """Le champ « fouille_quartier » de test_competence, dans une campagne qui a ses lieux (REGLES.md 15.4)."""
+    if not lieux_.actifs(s.monde):
+        return {}
+    return {"fouille_quartier": {"type": "boolean", "description": (
+        "Vrai si le personnage fouille le quartier pour y trouver un lieu, une personne ou une rumeur : une "
+        "Investigation réussie peut alors révéler un lieu caché. Faux pour toute autre recherche.")}}
+
+
 @outil("Faire un test de compétence du personnage joueur. À utiliser dès qu'une action a une issue incertaine "
        "et des conséquences. Le moteur lance le d100 ; raconte ensuite le résultat selon son degré.",
        lambda s: _objet({
            "competence": _enum(sorted(s.noms_competences), "La compétence, avec son nom dans cet univers."),
            "difficulte": _difficulte(),
            "pourquoi": {"type": "string", "description": "Ce que le personnage tente, en une phrase."},
-       } | _dehors(s, "l'action se passe"), ["competence", "difficulte"]))
+       } | _dehors(s, "l'action se passe") | _piste(s) | _fouille(s), ["competence", "difficulte"]))
 def test_competence(session: Session, competence: str, difficulte: str, pourquoi: str = "",
-                    dehors: bool = False) -> dict:
+                    dehors: bool = False, piste: bool = False, fouille_quartier: bool = False) -> dict:
     socle = session.noms_competences[competence]
-    meteo = meteo_.modificateur(session.monde, socle) if dehors else 0
+    meteo = (meteo_.modificateur(session.monde, socle)
+             + (meteo_.modificateur_de_piste(session.monde) if piste else 0)) if dehors else 0
     valeur = session.joueur.valeur(socle) + meteo
     resultat = tester(session.des, valeur, DIFFICULTES[difficulte])
     progression.cocher(session.personnage, socle, resultat)
@@ -665,7 +690,8 @@ def test_competence(session: Session, competence: str, difficulte: str, pourquoi
         session.joueur.consommer_effets_du_jet()
     session.dernier_test = {"valeur": valeur, "difficulte": difficulte, "resultat": resultat, "nom": competence}
     trouve = None
-    if socle == "Investigation" and resultat.reussi and not session.combat and lieux_.actifs(session.monde):
+    if (fouille_quartier and socle == "Investigation" and resultat.reussi and not session.combat
+            and lieux_.actifs(session.monde)):
         trouve = lieux_.reveler(session.monde)
     return {"competence": competence, **_test(resultat)} | (
         {"meteo": f"{meteo_.temps(session.monde)} : {meteo:+d}"} if meteo else {}) | (
@@ -737,11 +763,16 @@ def soigner(session: Session, soigneur: str) -> dict:
 
 @outil("Faire se reposer le personnage joueur : court (30 min) ou moyen (1 à 2 h) une fois par demi-journée, "
        "long la nuit.",
-       lambda s: _objet({"type": _enum(REPOS), "interrompu": {"type": "boolean"}}, ["type"]))
-def repos(session: Session, type: str, interrompu: bool = False) -> dict:
-    r = soins.reposer(session.personnage, REPOS[type], session.moment, session.univers.curseur, interrompu,
-                      sans_abri=economie.a_la_rue(session.personnage))
+       lambda s: _objet({"type": _enum(REPOS), "interrompu": {"type": "boolean"}}
+                        | _dehors(s, "le repos se prend"), ["type"]))
+def repos(session: Session, type: str, interrompu: bool = False, dehors: bool = False) -> dict:
+    # Un repos pris dehors par certains temps ne rend rien, mais le temps est passé (REGLES.md 15.3)
+    accable = dehors and meteo_.repos_nul(session.monde)
+    r = soins.reposer(session.personnage, REPOS[type], session.moment, session.univers.curseur,
+                      interrompu or accable, sans_abri=economie.a_la_rue(session.personnage))
     resultat = {"repos": type, "pv_gagnes": r.gain, "pv": r.pv_apres, "blessure_grave_guerie": r.blessure_grave_guerie}
+    if accable:
+        resultat["meteo"] = f"{meteo_.temps(session.monde)} : un repos pris dehors ne rend rien"
     if session.a_la_magie:
         resultat.update(pm_gagnes=r.pm_gagnes, pm=r.pm_apres)
     return resultat
@@ -1340,17 +1371,22 @@ def reparer(session: Session, reparateur: str, atelier: bool = False) -> dict:
            "poursuivants": {"type": "array", "items": _enum(s.ids()), "description": "Ceux qui le poursuivent."},
            "zone": _enum(poursuite_.ZONES, "Où commence la poursuite (le décor suit le genre)."),
            "distance": _enum(poursuite_.DISTANCES[:3], "La distance de départ."),
-       }, ["fuyard", "poursuivants", "zone"]),
+       } | _dehors(s, "la poursuite a lieu"), ["fuyard", "poursuivants", "zone"]),
        disponible=lambda s: s.poursuite is None)
-def debut_poursuite(session: Session, fuyard: str, poursuivants: list, zone: str, distance: str = "proche") -> dict:
+def debut_poursuite(session: Session, fuyard: str, poursuivants: list, zone: str, distance: str = "proche",
+                    dehors: bool = False) -> dict:
     if fuyard in poursuivants:
         raise ErreurOutil("Le fuyard ne se poursuit pas lui-même.")
     conducteur = lambda i: poursuite_.Conducteur(i, session.combattant(i), session.engin(i))  # noqa: E731
     p = poursuite_.Poursuite(conducteur(fuyard), [conducteur(i) for i in dict.fromkeys(poursuivants)], zone,
-                             {i: poursuite_.DISTANCES.index(distance) for i in poursuivants})
+                             {i: poursuite_.DISTANCES.index(distance) for i in poursuivants},
+                             malus_a_pied=meteo_.malus_poursuite_a_pied(session.monde) if dehors else 0)
     session.poursuite = p
-    return _etat_poursuite(session) | {
+    resultat = _etat_poursuite(session) | {
         "vehicules": {c.identifiant: c.engin.nom if c.engin else "à pied" for c in [p.fuyard, *p.poursuivants]}}
+    if p.malus_a_pied and not all(c.engin for c in [p.fuyard, *p.poursuivants]):
+        resultat["meteo"] = f"{meteo_.temps(session.monde)} : {p.malus_a_pied} à chaque jet de ceux qui courent"
+    return resultat
 
 
 def _en_combat_avec_vehicules(s: Session) -> bool:

@@ -27,6 +27,7 @@ BONUS_PAR_CRAN = 10
 BONUS_CHANCE = 10
 BONUS_NITRO = 10
 MALUS_SANS_TOUT_TERRAIN = -20
+MALUS_BARRAGE_FORCE = -20  # un tout-terrain ou un blindé qui rate le barrage force le passage, à ce prix (12.3)
 ROUNDS_PAR_ZONE = 4  # une poursuite qui dure change d'elle-même de zone
 
 
@@ -99,6 +100,11 @@ class Conducteur:
     def a(self, propriete: str) -> bool:
         return bool(self.engin) and propriete in self.engin.modele.proprietes_totales
 
+    @property
+    def force_les_barrages(self) -> bool:
+        """Un véhicule tout-terrain ou blindé ne reste pas bloqué devant un barrage (12.3)."""
+        return bool(self.engin) and (self.a(TOUT_TERRAIN) or self.engin.modele.blinde)
+
 
 @dataclass
 class Obstacle:
@@ -144,6 +150,7 @@ class Poursuite:
     rounds_dans_la_zone: int = 0
     abandons: set[str] = field(default_factory=set)
     issue: str | None = None  # « semé » ou « rattrapé » quand elle est finie
+    malus_a_pied: int = 0  # ce que perd chacun de ceux qui courent, à chaque jet (la neige, dehors : 15.3)
 
     def __post_init__(self):
         if self.zone not in ZONES:
@@ -188,7 +195,7 @@ class Poursuite:
         r = RapportRound(self.round, self.zone, de, evenement)
         actifs = self.actifs()
         decalage = {p.identifiant: 0 for p in actifs}  # + : la distance augmente
-        bloques, accidentes = set(), []
+        bloques, forcent, accidentes = set(), set(), []
 
         def perdre_un_cran(c: Conducteur):
             if c is self.fuyard:
@@ -210,7 +217,10 @@ class Poursuite:
                     accidente(c)
                     effet = "accident"
                 elif not test.reussi:
-                    if evenement is Evenement.BARRAGE:
+                    if evenement is Evenement.BARRAGE and c.force_les_barrages:
+                        forcent.add(c.identifiant)
+                        effet = f"force le passage : {MALUS_BARRAGE_FORCE} au jet opposé"
+                    elif evenement is Evenement.BARRAGE:
                         bloques.add(c.identifiant)
                         effet = "bloqué : il ne bouge pas ce round"
                     else:
@@ -245,7 +255,7 @@ class Poursuite:
                 break
             if any(a is p for a in accidentes):
                 continue
-            duel = self._duel(des, p, evenement, difficulte, nitro_fuyard, self._nitro(p, nitro), bloques)
+            duel = self._duel(des, p, evenement, difficulte, nitro_fuyard, self._nitro(p, nitro), bloques, forcent)
             nitro_fuyard = 0  # la nitro ne vaut que pour un seul jet
             for c, test in ((self.fuyard, duel.fuyard_test), (p, duel.poursuivant_test)):
                 if test and test.degre is Degre.MALADRESSE:
@@ -294,8 +304,12 @@ class Poursuite:
         r.issue = self.issue
         return r
 
+    def _a_pied(self, c: Conducteur) -> int:
+        """Le malus du temps pour qui court (0 en véhicule ou en selle)."""
+        return 0 if c.engin else self.malus_a_pied
+
     def _tester(self, des: Des, c: Conducteur, difficulte: Difficulte, modificateur: int = 0) -> Resultat:
-        test = tester(des, c.valeur(), difficulte, combat=True, modificateur=modificateur)
+        test = tester(des, c.valeur(), difficulte, combat=True, modificateur=modificateur + self._a_pied(c))
         cocher_pour(c.pilote, c.competence, test)
         return test
 
@@ -311,7 +325,7 @@ class Poursuite:
         return BONUS_NITRO
 
     def _duel(self, des: Des, p: Conducteur, evenement: Evenement, difficulte: Difficulte, nitro_fuyard: int,
-              nitro_poursuivant: int, bloques: set[str]) -> Duel:
+              nitro_poursuivant: int, bloques: set[str], forcent: set[str] = frozenset()) -> Duel:
         f = self.fuyard
         bloque_f, bloque_p = f.identifiant in bloques, p.identifiant in bloques
         if bloque_f and bloque_p:
@@ -320,7 +334,9 @@ class Poursuite:
             gagnant = p if bloque_f else f
             return Duel(p.nom, None, None, gagnant.nom, 1, effets=[f"{(f if bloque_f else p).nom} est bloqué"])
 
-        mod_f, mod_p = nitro_fuyard, nitro_poursuivant
+        mod_f, mod_p = nitro_fuyard + self._a_pied(f), nitro_poursuivant + self._a_pied(p)
+        mod_f += MALUS_BARRAGE_FORCE if f.identifiant in forcent else 0
+        mod_p += MALUS_BARRAGE_FORCE if p.identifiant in forcent else 0
         # La vitesse : +10 par cran d'écart au plus rapide (doublé en ligne droite, annulé dans la circulation)
         ecart = abs(f.cran - p.cran) * BONUS_PAR_CRAN
         ecart *= {Evenement.LIGNE_DROITE: 2, Evenement.CIRCULATION: 0}.get(evenement, 1)

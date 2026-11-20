@@ -974,7 +974,7 @@ Une **monture** (cheval, chameau, griffon…) suit la même fiche : un cheval es
 | Virage serré, chaussée glissante | Chacun fait un test de Pilotage difficile avant le jet opposé |
 | Terrain accidenté | Chacun fait un test de Pilotage difficile ; −20 en plus sans la propriété tout-terrain |
 | Raccourci | Le fuyard peut le tenter (Pilotage difficile) : réussi, un cran de plus ; raté, un cran de moins |
-| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué : il ne bouge pas ce round, et perd le jet opposé sans le lancer |
+| Barrage | Chacun fait un test de Pilotage difficile ; celui qui le rate est bloqué : il ne bouge pas ce round, et perd le jet opposé sans le lancer. Un véhicule tout-terrain ou blindé qui le rate force le passage : il n'est pas bloqué, mais prend −20 au jet opposé |
 | Coup de chance | +10 au jet opposé pour celui qui est en train de perdre : le fuyard jusqu'à « Proche », le poursuivant à « Loin » |
 
 Un test d'obstacle raté fait perdre un cran (le fuyard se rapproche, le poursuivant s'éloigne) ; une maladresse, c'est l'accident (voir 12.5).
@@ -1606,18 +1606,18 @@ Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menac
 - **Quatre saisons de 90 jours.** La saison de départ est tirée sur 1d4, puis elle tourne. Un climat tropical n'a que deux saisons de 180 jours, sèche et humide.
 - **Huit temps** : clair, couvert, pluie, orage, brouillard, vent fort, neige, canicule. Un genre peut avoir son temps propre, qui remplace l'orage : pluie acide en Cyberpunk, tempête de cendres en Post-apo.
 - **Chaque matin**, le code lance 1d6 : sur 1 à 3, le temps de la veille continue ; sur 4 à 6, il retire 1d10 dans la table du climat et de la saison.
-- **Les effets ne jouent que dehors.** Le MJ dit si l'action ou le combat se passe dehors ; le moteur applique alors :
+- **Les effets ne jouent que dehors.** Le MJ dit si l'action, le combat, la poursuite, le repos ou la période se passe dehors, et si un test sert à suivre une piste ; le moteur applique alors :
 
-| Temps | Appliqué par le moteur | Appliqué par le MJ |
-|---|---|---|
-| Clair, couvert | — | — |
-| Pluie | Perception −10 | les traces s'effacent en une demi-journée |
-| Orage, tempête de cendres | Perception −20, tir à distance −10 | — |
-| Pluie acide | Perception −20, tir à distance −10 | 1 point de dégâts par demi-journée passée dehors sans armure ni abri |
-| Brouillard | Discrétion +10, tir à longue portée −20 | — |
-| Vent fort | tir à distance −10 | — |
-| Neige | Pilotage −10 | poursuite à pied −10 ; suivre une piste +10 |
-| Canicule | Athlétisme −10 | le repos pris dehors ne rend rien |
+| Temps | Effets |
+|---|---|
+| Clair, couvert | — |
+| Pluie | Perception −10 ; suivre une piste −20 |
+| Orage, tempête de cendres | Perception −20, tir à distance −10 |
+| Pluie acide | Perception −20, tir à distance −10 ; 1 point de dégâts par période passée dehors sans armure |
+| Brouillard | Discrétion +10, tir à longue portée −20 |
+| Vent fort | tir à distance −10 |
+| Neige | Pilotage −10 ; −10 à chacun dans une poursuite à pied ; suivre une piste +10 |
+| Canicule | Athlétisme −10 ; un repos pris dehors ne rend rien |
 
 - Le MJ lit le temps du jour dans son prompt et avec l'outil `monde` ; le joueur, dans la commande `monde`. Il n'y a **pas de prévisions**.
 - La météo ne déclenche aucun événement : ceux du quartier et de la ville ont leurs tables (14.7).
@@ -1633,7 +1633,7 @@ Le MJ ne fixe plus les chiffres d'un PNJ. Il choisit un **rôle** et une **menac
 - **Le commerce passe par les lieux.** On achète une arme, une armure ou des munitions dans une armurerie, le reste du matériel au marché ou à l'atelier ; on se fait soigner dans une clinique ; on se fait poser un implant chez un charcudoc. Si le quartier n'a pas ce lieu, le code refuse et indique le plus proche. Le marché noir et la revente passent par un contact, pas par un lieu.
 - **Les missions** désignent un lieu précis du quartier.
 - **Ce que le joueur connaît** : les lieux de son quartier au départ, ceux des autres quand il y entre. La commande `carte` les montre.
-- **Un quartier sur trois cache un lieu de plus** (planque, tripot clandestin, clinique sans licence). Il se découvre par un test d'Investigation réussi dans le quartier, ou parce qu'une faction amie qui tient le quartier l'indique.
+- **Un quartier sur trois cache un lieu de plus** (planque, tripot clandestin, clinique sans licence). Il se découvre par un test d'Investigation réussi quand le personnage fouille le quartier (il y cherche un lieu, une personne ou une rumeur), ou parce qu'une faction amie qui tient le quartier l'indique.
 - **Le décor reste libre** : une ruelle, un toit, un appartement, le MJ les invente. Il n'invente plus un lieu qui vend ou qui soigne.
 
 ### 15.5 Les rencontres de rue

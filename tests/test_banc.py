@@ -35,11 +35,24 @@ def situation(nom):
     return next(s for s in SITUATIONS if s.nom == nom)
 
 
-def test_quatre_vingt_six_situations_dont_vingt_trois_pieges():
-    assert len(SITUATIONS) == 86
+def test_quatre_vingt_huit_situations_dont_vingt_trois_pieges():
+    assert len(SITUATIONS) == 88
     assert sum(s.piege for s in SITUATIONS) == 23
-    assert len({s.nom for s in SITUATIONS}) == 86
-    assert len({s.joueur for s in SITUATIONS}) == 86  # le faux serveur les reconnaît à la phrase du joueur
+    assert len({s.nom for s in SITUATIONS}) == 88
+    assert len({s.joueur for s in SITUATIONS}) == 88  # le faux serveur les reconnaît à la phrase du joueur
+
+
+@pytest.mark.parametrize("nom, bon, mauvais", [
+    ("pistage", {"competence": "Survie", "difficulte": "normale", "dehors": True, "piste": True},
+     {"competence": "Survie", "difficulte": "normale", "dehors": True}),
+    ("ratisser", {"competence": "Investigation", "difficulte": "normale", "fouille_quartier": True},
+     {"competence": "Investigation", "difficulte": "normale"}),
+])
+def test_les_cases_piste_et_fouille_au_banc(nom, bon, mauvais):
+    situation = next(s for s in SITUATIONS if s.nom == nom)
+    partie = jouer(FauxServeur({nom: [("test_competence", bon)]}), situation, budget=0, graine=1)
+    assert partie.reussie and not any("erreur" in a for a in partie.appels)
+    assert not jouer(FauxServeur({nom: [("test_competence", mauvais)]}), situation, budget=0, graine=1).reussie
     assert sum(s.univers == banc.FANTASY for s in SITUATIONS) == 6
 
 
