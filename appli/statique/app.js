@@ -127,6 +127,7 @@ function afficher(reglages) {
   champ("combat-pv").checked = reglages.combat.pvExacts;
   champ("combat-defense").checked = reglages.combat.choisirSaDefense;
   champ("combat-llm").checked = reglages.combat.pnjParLeLlm;
+  champ("chercher-maj").checked = reglages.chercherMisesAJour;
 }
 
 champ("formulaire").addEventListener("submit", async (evenement) => {
@@ -150,6 +151,7 @@ champ("formulaire").addEventListener("submit", async (evenement) => {
           pnjParLeLlm: champ("combat-llm").checked,
         },
         cartes: { habillage: champ("cartes-habillage").value },
+        chercherMisesAJour: champ("chercher-maj").checked,
       }),
     });
     afficher(enregistres);
@@ -170,6 +172,75 @@ champ("quitter").addEventListener("click", async () => {
     message.textContent = erreur.message;
   }
 });
+
+// --- Mises à jour : appli/mises_a_jour.py ; rien ne s'installe sans le clic sur « Installer la mise à jour » ---
+const MiseAJour = (() => {
+  const bandeau = champ("maj");
+  const etatTexte = champ("maj-etat");
+  let essais = 0;
+
+  function montrer(etat) {
+    const nouvelle = etat.disponible;
+    bandeau.hidden = !nouvelle;
+    if (nouvelle) {
+      champ("maj-titre").textContent = `Version ${nouvelle.version} disponible.`;
+      champ("maj-detail").textContent = etat.possible
+        ? `Tu as la ${etat.actuelle}. La mise à jour garde ta version actuelle de côté, puis relance le jeu ; tes campagnes ne bougent pas.`
+        : `Tu as la ${etat.actuelle}. Lancé depuis les sources, le jeu ne se met pas à jour : seul l'exe le fait.`;
+      champ("maj-installer").hidden = !etat.possible;
+      champ("maj-page").href = nouvelle.page;
+    }
+    etatTexte.className = "";
+    if (etat.enCours) etatTexte.textContent = "Recherche en cours…";
+    else if (!etat.cherchee) etatTexte.textContent = "";
+    else etatTexte.textContent = nouvelle ? `Version ${nouvelle.version} disponible.` : `Tu as la dernière version (${etat.actuelle}).`;
+  }
+
+  // La recherche du lancement tourne côté serveur : on relit son résultat quelques fois
+  async function suivre() {
+    try {
+      const etat = await api("/api/mise-a-jour");
+      montrer(etat);
+      if (etat.enCours && essais++ < 20) setTimeout(suivre, 2000);
+    } catch (_) { /* l'interface reste utilisable sans cette information */ }
+  }
+
+  champ("maj-chercher").addEventListener("click", async () => {
+    const bouton = champ("maj-chercher");
+    bouton.disabled = true;
+    etatTexte.className = "";
+    etatTexte.textContent = "Recherche en cours…";
+    try {
+      montrer(await api("/api/mise-a-jour/chercher", { method: "POST" }));
+    } catch (erreur) {
+      etatTexte.className = "erreur";
+      etatTexte.textContent = erreur.message;
+    } finally {
+      bouton.disabled = false;
+    }
+  });
+
+  champ("maj-installer").addEventListener("click", async () => {
+    const bouton = champ("maj-installer");
+    const texte = champ("maj-message");
+    bouton.disabled = true;
+    texte.className = "";
+    texte.textContent = "Téléchargement et vérification de la nouvelle version…";
+    try {
+      const fait = await api("/api/mise-a-jour/installer", { method: "POST" });
+      document.body.innerHTML = "<p class='arret'></p>";
+      document.querySelector(".arret").textContent =
+        `La version ${fait.installee} est installée et se relance : elle s'ouvrira dans un nouvel onglet. ` +
+        "Tu peux fermer celui-ci.";
+    } catch (erreur) {
+      texte.className = "erreur";
+      texte.textContent = erreur.message;
+      bouton.disabled = false;
+    }
+  });
+
+  return { suivre };
+})();
 
 // --- Menu : la section affichée suit l'ancre ---
 let surCarte = () => {};  // posé par la carte, plus bas : relit la carte quand on ouvre sa section
@@ -864,4 +935,5 @@ champ("form-personnage").addEventListener("submit", (evenement) => {
     message.className = "erreur";
     message.textContent = erreur.message;
   }
+  MiseAJour.suivre();
 })();

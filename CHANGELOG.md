@@ -14,9 +14,12 @@ sont dans `docs/releases/`.
 - La carte du combat dans l'interface (onglet Partie, au-dessus du journal) : les cases hexagonales, les obstacles selon leur type, les pions de chaque camp, celui dont c'est le tour, les cases que le joueur peut atteindre ; dans « Se déplacer… », les destinations du menu numérotées sur la carte, qu'un clic choisit. Les PV des ennemis n'y figurent que si le réglage « PV exacts » est coché. Route `GET /api/combat`.
 - Cinq habillages des cartes, selon le genre de la campagne (`aria/habillages.py`) : Néon (Cyberpunk, Science-fiction), Parchemin (Fantasy), Gothique (Dark fantasy, Horreur), État-major (Militaire, Contemporain), Rouille (Post-apo). Chacun a ses couleurs, sa police et la forme de ses pions, sur la carte de la campagne comme sur celle du combat. Le réglage « Habillage » des cartes en impose un (`cartes.habillage` dans `reglages.json`). Parchemin et Gothique utilisent Georgia, Rouille Segoe Print : des polices livrées avec Windows, rien n'est embarqué.
 - Au banc, trois situations sur le lieu et le décor d'un combat à pied (un bar, un toit nu, un parking barricadé de fourgons blindés) : 86 situations dont 23 pièges.
+- Les mises à jour intégrées (`appli/mises_a_jour.py`, reprises de la stack `python-fastapi` du modèle) : au lancement, l'exe cherche une nouvelle version sur la page des versions du dépôt (case « Chercher une nouvelle version au lancement », cochée par défaut, et bouton « Rechercher maintenant » dans les Réglages) ; un bandeau la propose ; sur le clic « Installer la mise à jour », jamais pendant une partie ou un banc, le jeu télécharge le zip, vérifie sa taille et son empreinte SHA-256, garde la version en cours dans `sauvegardes\versions\`, remplace ses fichiers là où il tourne et se relance. Routes `GET /api/mise-a-jour`, `POST /api/mise-a-jour/chercher` et `POST /api/mise-a-jour/installer`.
 
 ### Modifié
 
+- Le jeu se connecte à Internet pour ses mises à jour, et seulement pour elles : `api.github.com` au lancement (le réglage le coupe), `github.com` pour le zip sur le clic d'installation. La fiche et le README le disent ; ils ne promettent plus qu'aucune version ne sortira avant les mises à jour intégrées.
+- Le message de fin (Quitter, mise à jour installée) prend toute la largeur de la page.
 - Le prompt du MJ lui demande de donner à `debut_combat` le lieu le plus proche de la scène et le décor (dégagé, encombré, fortifié) : le code en dessine la carte du combat.
 
 ## 0.2.0

@@ -7,7 +7,7 @@ import webbrowser
 
 import uvicorn
 
-from appli import donnees, identite, instance, securite, serveur
+from appli import donnees, identite, instance, mises_a_jour, securite, serveur
 
 
 def _port_libre() -> int:
@@ -47,17 +47,28 @@ def main() -> int:
         return 1
     _sortie_vers_journal()
 
+    # Lancée par une mise à jour : l'ancienne version doit avoir rendu le port, l'instance et son exe
+    ancienne = mises_a_jour.pid_a_attendre(sys.argv[1:])
+    if ancienne is not None and not mises_a_jour.attendre_la_fin(ancienne):
+        donnees.noter("mise à jour", "L'ancienne version ne s'est pas arrêtée à temps : la nouvelle démarre quand même.")
+
     exemplaire = instance.Instance()
     if not exemplaire.prendre():
         # Une instance tourne déjà : on rouvre son interface au lieu d'en démarrer une seconde
         instance.ramener()
         return 0
 
+    exe = mises_a_jour.exe_en_cours()
+    mises_a_jour.nettoyer(exe.parent if exe else None)  # restes d'une mise à jour : « .ancien », zip, extraction
+    if ancienne is not None:
+        donnees.noter("mise à jour", f"{identite.NOM} {identite.version()} démarre après sa mise à jour.")
+
     port = choisir_port()
     jeton = securite.nouveau_jeton()
     config = uvicorn.Config(None, host="127.0.0.1", port=port, log_config=None)
     serveur_http = uvicorn.Server(config)
-    config.app = serveur.creer_app(jeton, port, arreter=lambda: setattr(serveur_http, "should_exit", True))
+    config.app = serveur.creer_app(jeton, port, arreter=lambda: setattr(serveur_http, "should_exit", True),
+                                   chercher_au_lancement=exe is not None and donnees.charger_reglages().chercher_mises_a_jour)
 
     def ouvrir_quand_pret():
         while not serveur_http.started and not serveur_http.should_exit:

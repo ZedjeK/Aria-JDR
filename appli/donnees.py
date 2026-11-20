@@ -100,7 +100,7 @@ class Reglages:
     combat: Combat = field(default_factory=Combat)
     cartes: Cartes = field(default_factory=Cartes)
     proposer_installation: bool = True  # sans effet tant que l'exe ne s'installe pas
-    chercher_mises_a_jour: bool = True  # sans effet tant que les mises à jour ne sont pas là
+    chercher_mises_a_jour: bool = True  # au lancement de l'exe : une requête vers releases/latest (appli.mises_a_jour)
 
     def assaini(self) -> "Reglages":
         return Reglages(fond=(self.fond if isinstance(self.fond, Fond) else Fond()).assaini(),

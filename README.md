@@ -16,7 +16,7 @@ Les règles du jeu sont dans [REGLES.md](REGLES.md).
 
 ## Avant de commencer
 
-Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDIA fait tourner le MJ : la seule essayée est une RTX 4080 SUPER (16 Gio), avec Qwen3.8 27B. Le serveur llama et les modèles ne sont pas dans l'exe (plusieurs Go) : voir « L'exe portable ». Le jeu n'ouvre aucune connexion vers Internet : son interface s'ouvre dans ton navigateur, mais elle est servie par ton PC, sur `127.0.0.1:8420`.
+Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDIA fait tourner le MJ : la seule essayée est une RTX 4080 SUPER (16 Gio), avec Qwen3.8 27B. Le serveur llama et les modèles ne sont pas dans l'exe (plusieurs Go) : voir « L'exe portable ». Hors des mises à jour (une requête vers GitHub au lancement, qu'une case des Réglages coupe), le jeu n'ouvre aucune connexion vers Internet : son interface s'ouvre dans ton navigateur, mais elle est servie par ton PC, sur `127.0.0.1:8420`.
 
 ## Installation
 
@@ -24,7 +24,7 @@ Windows 10 ou 11, 64 bits, sans droits administrateur. Une carte graphique NVIDI
 2. Décompresse d'abord le zip en entier : clic droit, « Extraire tout ». Choisis un dossier stable (pas Téléchargements). Ne lance pas l'exe depuis l'aperçu du zip dans l'Explorateur : Windows n'en extrait que l'exe, sans les fichiers livrés à côté de lui.
 3. Lance `Aria-JDR.exe` : l'interface s'ouvre dans ton navigateur par défaut. Relancer l'exe rouvre l'interface déjà ouverte au lieu d'en démarrer une seconde.
 
-L'exe n'est pas signé : Windows peut afficher « Windows a protégé votre ordinateur ». Clique sur « Informations complémentaires », puis sur « Exécuter quand même ». Il n'y a ni installation ni mise à jour automatique : pour changer de version, décompresse le nouveau zip et remplace l'exe ; tes parties restent dans `%USERPROFILE%\.Aria-JDR`.
+L'exe n'est pas signé : Windows peut afficher « Windows a protégé votre ordinateur ». Clique sur « Informations complémentaires », puis sur « Exécuter quand même ». Il n'y a pas d'installation : le jeu tourne là où tu as décompressé le zip, et c'est là que ses mises à jour le remplacent (voir « Mises à jour »). Depuis une version qui n'a pas encore les mises à jour (0.2.0 et avant), décompresse le nouveau zip et remplace l'exe à la main ; tes parties restent dans `%USERPROFILE%\.Aria-JDR`.
 
 Tout ce que le jeu écrit (campagnes, profil du MJ, journaux) va dans le dossier `%USERPROFILE%\.Aria-JDR\`, que tu lances l'exe ou les sources. Ce dossier ne se change pas ; le menu Réglages a un raccourci pour l'ouvrir.
 
@@ -143,15 +143,23 @@ Tout est dans `%USERPROFILE%\.Aria-JDR`, que tu lances l'exe ou les sources :
 - `demo_kaito.json` : la sauvegarde de la démo ;
 - `reglages.json` : les réglages de l'interface (le fond animé) ;
 - `journal.json` : les 500 dernières opérations de l'interface ;
-- `sauvegardes\` : une copie datée de `reglages.json` avant chaque modification ;
+- `sauvegardes\` : une copie datée de `reglages.json` avant chaque modification, et dans `sauvegardes\versions\` la version précédente du jeu, gardée par sa dernière mise à jour ;
 - `secrets\` : le port et le jeton de l'instance en cours, chiffrés pour ton compte Windows, effacés à l'arrêt.
 
 Aucun mot de passe ni clé n'y est gardé. Supprimer ce dossier remet le jeu à neuf (parties comprises : copie d'abord `campagnes\` et `personnages\` si tu y tiens).
 
+## Mises à jour
+
+Au lancement, l'exe regarde s'il existe une nouvelle version : une seule requête, vers la page des versions de ce dépôt sur GitHub, sans rien qui t'identifie. La case « Chercher une nouvelle version au lancement », dans les Réglages, la coupe ; le bouton « Rechercher maintenant » la lance à la demande.
+
+Rien ne se télécharge ni ne s'installe sans ton clic sur « Installer la mise à jour », et jamais pendant une partie ou un banc. Le jeu télécharge alors le zip de la version, vérifie sa taille et son empreinte, garde ta version actuelle dans `sauvegardes\versions\`, met la nouvelle à sa place et se relance dans un nouvel onglet. Tes campagnes, tes personnages et le profil du MJ ne bougent pas. Après une mise à jour, requalifie le MJ si les notes de la version le demandent (le prompt du MJ peut avoir changé).
+
+Pour revenir à la version précédente : quitte le jeu, puis copie les fichiers de `sauvegardes\versions\<version>\` à la place de ceux du jeu.
+
 ## Sécurité
 
 - **Droits** : le jeu se lance sans droits administrateur.
-- **Connexions sortantes** : aucune vers Internet. Le jeu écoute sur `127.0.0.1:8420` pour son interface, lance le serveur llama sur ton PC et lui parle sur `127.0.0.1:8080`, rien d'autre. Il lance ton navigateur par défaut pour ouvrir l'interface.
+- **Connexions sortantes** : vers Internet, seulement les mises à jour, en HTTPS. Au lancement, une requête vers `api.github.com` (page des versions de ce dépôt), que la case des Réglages coupe ; sur ton clic « Installer la mise à jour », le téléchargement du zip depuis `github.com`, qui redirige vers son hôte de téléchargement. Sinon, le jeu écoute sur `127.0.0.1:8420` pour son interface, lance le serveur llama sur ton PC et lui parle sur `127.0.0.1:8080`, rien d'autre. Il lance ton navigateur par défaut pour ouvrir l'interface.
 - **Interface locale** : elle ne s'ouvre que par l'appli. Un jeton tiré au hasard à chaque lancement est exigé à chaque requête, et les en-têtes `Host` et `Origin` sont vérifiés : une page web ouverte dans ton navigateur ne peut pas la piloter.
 - **Secrets** : le jeu ne garde que le port et le jeton de l'instance en cours, chiffrés par la protection des données de Windows (DPAPI) et effacés à l'arrêt. Cette protection ne joue pas contre un programme lancé sous le même compte Windows.
 
@@ -161,7 +169,7 @@ Pour signaler une faille : voir [SECURITY.md](SECURITY.md).
 
 - **Sans MJ qualifié, l'interface ne démarre aucune partie** : au premier lancement, qualifie-le dans les Réglages (plus d'une heure, avec le serveur du MJ qui occupe la carte graphique). Interrompre la qualification laisse le profil actuel tel quel.
 - **Une seule partie à la fois**, et la réponse du MJ arrive d'un bloc, après quelques dizaines de secondes, pas mot à mot. Créer un univers prend plusieurs minutes (environ six à l'essai, avec ton MJ) : la page affiche depuis combien de temps le jeu travaille. Fermer l'onglet n'arrête pas la partie : elle continue côté serveur, et la page la reprend quand on la rouvre. Pour l'arrêter, utilise « Interrompre la partie » ou « Quitter la session ».
-- **Pas d'installation par l'exe, pas encore de mise à jour automatique** : on remplace l'exe à la main. Les mises à jour intégrées sont obligatoires pour toute appli Aria ; elles arriveront avec la stack du modèle sur laquelle le jeu est construit, et aucune nouvelle version ne sera publiée avant.
+- **Pas d'installation par l'exe** : le jeu tourne là où tu as décompressé le zip, et ses mises à jour le remplacent à cet endroit. Les mises à jour ont été essayées de bout en bout avec un serveur local à la place de GitHub ; le premier passage réel, depuis github.com, se fera avec la version qui suivra la 0.3.0.
 - **L'exe se décompresse dans `cache\`** du dossier de données à chaque lancement (PyInstaller, mode un seul fichier) ; les fichiers sont effacés à la fermeture, mais un arrêt brutal peut y laisser un dossier `_MEI…` que tu peux supprimer.
 - **Un seul matériel essayé, un seul modèle qualifié** : une RTX 4080 SUPER, Qwen3.8 27B (Gemma 4 26B tourne mais n'a pas passé le banc). Le banc mesure, il ne garantit pas : une situation peut réussir une fois et échouer la suivante.
 - **Le MJ est un LLM** : le moteur tire les dés et tient les chiffres, mais la narration peut se tromper ou s'écarter de la scène.
@@ -197,7 +205,7 @@ L'exe est dans `.work\sortie\Aria-JDR.exe`. `.	ools\empaqueter.ps1` en fait le z
 
 ```
 aria/           le moteur, le MJ, la table, les bancs ; aria/prompts/ : les prompts du MJ
-appli/          l'interface web locale : serveur FastAPI, données, coffre, instance unique ; appli/statique/ : la page
+appli/          l'interface web locale : serveur FastAPI, données, coffre, instance unique, mises à jour ; appli/statique/ : la page
 univers/        les univers en JSON
 bibliotheque/   parcours, armes, armures, implants, véhicules, magie
 tests/          les tests (pytest)

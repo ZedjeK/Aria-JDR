@@ -69,7 +69,7 @@ button.secondaire { background: transparent; color: var(--texte-2); border: 1px 
 button:disabled { opacity: .45; cursor: default; }
 button.secondaire:hover { color: var(--rouge); border-color: var(--rouge); background: transparent; }
 :focus-visible { outline: 2px solid var(--ambre); outline-offset: 2px; }
-.arret { padding: 24px; }
+.arret { grid-column: 1 / -1; max-width: 720px; padding: 24px; }
 .mj { color: var(--texte-2); }
 .note { color: var(--texte-2); font-size: 14px; }
 .liste { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -105,7 +105,22 @@ input[type="text"] { background: var(--fond); color: var(--texte); border: 1px s
 .statut.erreur { color: var(--rouge); }
 .mj.ok { color: var(--cyan); }
 #message { min-height: 1.5em; color: var(--texte-2); }
-#message.erreur { color: var(--rouge); }
+#message.erreur, #maj-message.erreur, #maj-etat.erreur { color: var(--rouge); }
+#reglages button.secondaire:hover { color: var(--cyan); border-color: var(--cyan); }
+#reglages .ligne button { margin-top: 0; }
+
+/* Une nouvelle version : au-dessus de la page, quelle que soit la section */
+.bandeau {
+  position: relative; z-index: 1;
+  max-width: 720px; padding: 12px 24px;
+  background: var(--panneau);
+  border: 1px solid var(--orange);
+}
+.bandeau p { margin: 4px 0; }
+.bandeau button { margin: 4px 16px 4px 0; background: var(--orange); }
+.bandeau button:disabled { opacity: .6; cursor: wait; }
+.bandeau a { color: var(--cyan); }
+#maj-message { color: var(--texte-2); }
 
 /* La carte de la campagne */
 .carte-corps {
