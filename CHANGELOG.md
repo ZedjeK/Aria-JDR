@@ -8,6 +8,8 @@ sont dans `docs/releases/`.
 ### Ajouté
 
 - `tools\proteger-depot.ps1`, repris du dépôt modèle : il pose et relit les protections GitHub du dépôt (fusion en squash, rulesets de la branche par défaut et des tags `v*`, check `tests` exigé, règle CodeQL, signalement privé, alertes et correctifs Dependabot, secret scanning, releases immuables, actions épinglées par SHA), après avoir enregistré l'état d'avant dans `.work\`.
+- `.github/release.yml` : les notes générées par GitHub rangent les PR par label de type (Nouveautés, Corrections, Sécurité, Dépendances, Documentation, CI et outils du dépôt, Autres changements).
+- `.github/release-notes.md`, le modèle des notes de version auquel renvoyaient `docs/releases/LISEZ-MOI.md` et `tools/verifier-release.ps1` sans qu'il existe.
 
 ## 0.3.0
 
