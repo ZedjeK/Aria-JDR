@@ -338,3 +338,50 @@ def test_les_situations_de_combat_a_pied_sont_jouees_dans_le_mode_du_jeu_reel():
     assert {"ganger", "embuscade", "racket", "patronne", "croisee", "tirs", "parler", "benne", "fuite"} <= a_pied
     assert {s.nom for s in SITUATIONS if s.recit} == {n for n in BIEN}
     assert "grenade" not in a_pied and "drone" not in a_pied  # zones et drones : combat classique
+
+
+# --- Requalifier le MJ garde le budget du générateur -------------------------------------------------------------
+
+def requalifier(tmp_path, monkeypatch, ancien: dict | None, fichier="Qwen.gguf", empreinte="RTX 4080 SUPER"):
+    """Rejoue banc.qualifier sans GPU : le modèle passe au budget 256 ; renvoie le profil écrit et ce qui s'est affiché."""
+    from types import SimpleNamespace
+    profil = tmp_path / "profil_mj.json"
+    if ancien is not None:
+        profil.write_text(json.dumps(ancien), encoding="utf-8")
+    monkeypatch.setattr(banc, "PROFIL", profil)
+    monkeypatch.setattr(banc.materiel, "scanner", lambda: SimpleNamespace(empreinte=empreinte, vram_libre=0))
+    modele = SimpleNamespace(nom="Qwen", chemin=tmp_path / fichier)
+    monkeypatch.setattr(banc.optimiseur, "modeles_presents", lambda dossier: [modele])
+    monkeypatch.setattr(banc, "qualifier_modele", lambda *a, **k: {"reussi": True, "budget": 256, "reglages": {}})
+    sortie = []
+    banc.qualifier(afficher=sortie.append)
+    return json.loads(profil.read_text(encoding="utf-8")), "\n".join(sortie)
+
+
+ANCIEN = {"empreinte": "RTX 4080 SUPER", "fichier": "Qwen.gguf", "budget_reflexion": 128,
+          "budget_generateur": 512, "date_generateur": "2026-11-12T10:00:00"}
+
+
+def test_requalifier_garde_le_budget_du_generateur(tmp_path, monkeypatch):
+    lu, sortie = requalifier(tmp_path, monkeypatch, ANCIEN)
+    assert lu["budget_reflexion"] == 256
+    assert lu["budget_generateur"] == 512 and lu["date_generateur"] == "2026-11-12T10:00:00"
+    assert "gardés de son banc" in sortie
+
+
+@pytest.mark.parametrize("ancien, fichier, empreinte", [
+    (None, "Qwen.gguf", "RTX 4080 SUPER"),                                   # premier banc
+    (ANCIEN, "Gemma.gguf", "RTX 4080 SUPER"),                               # autre modèle
+    (ANCIEN, "Qwen.gguf", "RTX 5090"),                                      # autre PC
+    ({k: v for k, v in ANCIEN.items() if k != "budget_generateur"}, "Qwen.gguf", "RTX 4080 SUPER"),  # jamais mesuré
+])
+def test_requalifier_sans_budget_du_generateur_mesure(tmp_path, monkeypatch, ancien, fichier, empreinte):
+    lu, sortie = requalifier(tmp_path, monkeypatch, ancien, fichier, empreinte)
+    assert "budget_generateur" not in lu and "date_generateur" not in lu
+    assert "lance son banc" in sortie
+
+
+def test_requalifier_avec_un_profil_illisible(tmp_path, monkeypatch):
+    (tmp_path / "profil_mj.json").write_text("pas du json", encoding="utf-8")
+    lu, _ = requalifier(tmp_path, monkeypatch, None)
+    assert lu["budget_reflexion"] == 256 and "budget_generateur" not in lu

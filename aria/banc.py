@@ -1067,11 +1067,33 @@ def qualifier(dossier: Path = llm.DOSSIER_MODELES, seulement: str | None = None,
     detail.write_text(json.dumps(comptes_rendus, ensure_ascii=False, indent=2), encoding="utf-8")
     afficher(f"Détail : {detail}")
     if profil:
+        garde = garder_le_generateur(profil)
         PROFIL.write_text(json.dumps(profil, ensure_ascii=False, indent=2), encoding="utf-8")
         afficher(f"MJ retenu : {profil['modele']}, réflexion {profil['budget_reflexion']} jetons.")
+        if garde:
+            afficher(f"Générateur : {profil['budget_generateur']} jetons, gardés de son banc (même modèle, même PC).")
+        else:
+            afficher("Générateur : pas encore mesuré avec ce modèle ; lance son banc (python -m aria.banc_generateur).")
     else:
         afficher("Aucun modèle ne fait tourner les règles correctement sur ce PC : pas de MJ.")
     return profil
+
+
+def garder_le_generateur(profil: dict) -> bool:
+    """Reprend dans le nouveau profil le budget du générateur de l'ancien, s'il a été mesuré avec le même fichier de
+    modèle sur le même PC : son banc (aria.banc_generateur) est à part, et requalifier le MJ ne le rejoue pas.
+    Sinon le jeu prend le budget du MJ pour créer les univers, sans mesure, jusqu'au prochain banc du générateur."""
+    try:
+        ancien = json.loads(PROFIL.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if (not isinstance(ancien, dict) or not ancien.get("budget_generateur")
+            or ancien.get("fichier") != profil["fichier"] or ancien.get("empreinte") != profil["empreinte"]):
+        return False
+    for cle in ("budget_generateur", "date_generateur"):
+        if cle in ancien:
+            profil[cle] = ancien[cle]
+    return True
 
 
 def profil_valide(dossier: Path = llm.DOSSIER_MODELES) -> dict | None:
