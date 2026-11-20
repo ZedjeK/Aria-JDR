@@ -13,6 +13,10 @@ sont dans `docs/releases/`.
 - `tools\proteger-depot.ps1` crée aussi les labels de type qui manquent (repris du dépôt modèle).
 - `.github/release-notes.md`, le modèle des notes de version auquel renvoyaient `docs/releases/LISEZ-MOI.md` et `tools/verifier-release.ps1` sans qu'il existe.
 
+### Corrigé
+
+- Requalifier le MJ seul (`python -m aria.banc`) effaçait du profil le budget du générateur, mesuré par son propre banc : le jeu créait alors univers, personnages et amorces avec le budget du MJ, sans mesure. Le budget du générateur est désormais gardé quand le modèle et la carte graphique ne changent pas, et le banc dit sinon de relancer celui du générateur.
+
 ## 0.3.0
 
 ### Ajouté
