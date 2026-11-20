@@ -3,6 +3,12 @@
 Un bloc par version, le plus récent en haut. Les notes complètes d'une version
 sont dans `docs/releases/`.
 
+## Non publié
+
+### Ajouté
+
+- `tools\proteger-depot.ps1`, repris du dépôt modèle : il pose et relit les protections GitHub du dépôt (fusion en squash, rulesets de la branche par défaut et des tags `v*`, check `tests` exigé, règle CodeQL, signalement privé, alertes et correctifs Dependabot, secret scanning, releases immuables, actions épinglées par SHA), après avoir enregistré l'état d'avant dans `.work\`.
+
 ## 0.3.0
 
 ### Ajouté
