@@ -196,10 +196,10 @@ python -m venv .venv
 Puis :
 
 ```powershell
-.uild.ps1
+.\build.ps1
 ```
 
-L'exe est dans `.work\sortie\Aria-JDR.exe`. `.	ools\empaqueter.ps1` en fait le zip de la version et son empreinte dans `.workelease\`. La reproductibilité à l'octet n'a pas été vérifiée : pour une version publiée, compare avec l'attestation (`gh attestation verify <zip> --repo ZedjeK/Aria-JDR`).
+L'exe est dans `.work\sortie\Aria-JDR.exe`. `.\tools\empaqueter.ps1` en fait le zip de la version et son empreinte dans `.work\release\`. La reproductibilité à l'octet n'a pas été vérifiée : pour une version publiée, compare avec l'attestation (`gh attestation verify <zip> --repo ZedjeK/Aria-JDR`).
 
 ## Structure
 
@@ -209,15 +209,16 @@ appli/          l'interface web locale : serveur FastAPI, données, coffre, inst
 univers/        les univers en JSON
 bibliotheque/   parcours, armes, armures, implants, véhicules, magie
 tests/          les tests (pytest)
-tools/          version, tests, empaquetage, vérification de release
+tools/          version, tests, empaquetage, vérification de release, protections du dépôt
 docs/           la fiche projet (FICHE.md) et les notes de version
 REGLES.md       le livre de règles
-build.ps1       construit l'exe portable dans .work\sortie```
+build.ps1       construit l'exe portable dans .work\sortie
+```
 
 ## Lancer les tests
 
 ```powershell
-.	ools	ester.ps1
+.\tools\tester.ps1
 ```
 
 ## Licence
