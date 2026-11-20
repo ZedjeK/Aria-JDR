@@ -9,6 +9,8 @@ sont dans `docs/releases/`.
 
 - `tools\proteger-depot.ps1`, repris du dépôt modèle : il pose et relit les protections GitHub du dépôt (fusion en squash, rulesets de la branche par défaut et des tags `v*`, check `tests` exigé, règle CodeQL, signalement privé, alertes et correctifs Dependabot, secret scanning, releases immuables, actions épinglées par SHA), après avoir enregistré l'état d'avant dans `.work\`.
 - `.github/release.yml` : les notes générées par GitHub rangent les PR par label de type (Nouveautés, Corrections, Sécurité, Dépendances, Documentation, CI et outils du dépôt, Autres changements).
+- Le modèle de PR (`.github/pull_request_template.md`) et les formulaires d'issue (`.github/ISSUE_TEMPLATE/` : bug, idée ; les failles passent par le signalement privé), repris du dépôt modèle.
+- `tools\proteger-depot.ps1` crée aussi les labels de type qui manquent (repris du dépôt modèle).
 - `.github/release-notes.md`, le modèle des notes de version auquel renvoyaient `docs/releases/LISEZ-MOI.md` et `tools/verifier-release.ps1` sans qu'il existe.
 
 ## 0.3.0
