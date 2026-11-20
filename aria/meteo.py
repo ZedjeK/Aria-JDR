@@ -22,17 +22,17 @@ TEMPS = ("clair", "couvert", "pluie", ORAGE, "brouillard", "vent fort", "neige",
 CHANGE = 4  # sur 1d6 : à partir de 4, le temps change
 RATTRAPAGE = 30  # jours : au-delà, on ne retire pas chaque jour sauté
 
-# Ce que le moteur applique dehors : compétences, tir à distance, tir à longue portée ; et ce que le MJ applique
+# Ce que le moteur applique dehors (REGLES.md 15.3) : compétences, tir à distance, tir à longue portée, suivre une
+# piste, dégâts par période passée dehors sans armure, malus de chacun dans une poursuite à pied, repos qui ne rend rien
 EFFETS = {
-    "pluie": {"competences": {"Perception": -10}, "consigne": "Les traces s'effacent en une demi-journée."},
+    "pluie": {"competences": {"Perception": -10}, "piste": -20},
     ORAGE: {"competences": {"Perception": -20}, "tir": -10},
-    "pluie acide": {"competences": {"Perception": -20}, "tir": -10,
-                    "consigne": "1 point de dégâts par demi-journée passée dehors sans armure ni abri."},
+    "pluie acide": {"competences": {"Perception": -20}, "tir": -10, "degats_periode": 1},
     "tempête de cendres": {"competences": {"Perception": -20}, "tir": -10},
     "brouillard": {"competences": {"Discrétion": 10}, "tir_long": -20},
     "vent fort": {"tir": -10},
-    "neige": {"competences": {"Pilotage": -10}, "consigne": "Poursuite à pied −10. Suivre une piste +10."},
-    "canicule": {"competences": {"Athlétisme": -10}, "consigne": "Le repos pris dehors ne rend rien."},
+    "neige": {"competences": {"Pilotage": -10}, "piste": 10, "poursuite_a_pied": -10},
+    "canicule": {"competences": {"Athlétisme": -10}, "repos_nul": True},
 }
 
 
@@ -111,6 +111,33 @@ def malus_de_tir(etat: dict | None) -> tuple[int, int]:
     return e.get("tir", 0), e.get("tir_long", 0)
 
 
+def _effet(etat: dict | None, cle: str, defaut=0):
+    """Un effet du temps du jour, dehors ; la valeur par défaut sans météo ou sans cet effet."""
+    if not actif(etat):
+        return defaut
+    return EFFETS.get(temps(etat), {}).get(cle, defaut)
+
+
+def modificateur_de_piste(etat: dict | None) -> int:
+    """Ce que le temps du jour change à un test pour suivre une piste, dehors."""
+    return _effet(etat, "piste")
+
+
+def degats_par_periode(etat: dict | None) -> int:
+    """Les dégâts que prend, à chaque période passée dehors, un personnage sans armure."""
+    return _effet(etat, "degats_periode")
+
+
+def malus_poursuite_a_pied(etat: dict | None) -> int:
+    """Ce que perd chacun, à chaque jet, dans une poursuite à pied dehors."""
+    return _effet(etat, "poursuite_a_pied")
+
+
+def repos_nul(etat: dict | None) -> bool:
+    """Vrai si un repos pris dehors ne rend rien aujourd'hui."""
+    return bool(_effet(etat, "repos_nul", False))
+
+
 def _signe(n: int) -> str:
     return f"+{n}" if n > 0 else f"−{-n}"
 
@@ -123,8 +150,14 @@ def effets(etat: dict, nom_affiche=lambda c: c) -> list[str]:
         lignes.append(f"tir à distance {_signe(e['tir'])}")
     if e.get("tir_long"):
         lignes.append(f"tir à longue portée {_signe(e['tir_long'])}")
-    if e.get("consigne"):
-        lignes.append(e["consigne"])
+    if e.get("piste"):
+        lignes.append(f"suivre une piste {_signe(e['piste'])}")
+    if e.get("degats_periode"):
+        lignes.append(f"{e['degats_periode']} point de dégâts par période passée dehors sans armure")
+    if e.get("poursuite_a_pied"):
+        lignes.append(f"{_signe(e['poursuite_a_pied'])} à chacun dans une poursuite à pied")
+    if e.get("repos_nul"):
+        lignes.append("un repos pris dehors ne rend rien")
     return lignes
 
 

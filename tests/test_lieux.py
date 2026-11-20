@@ -205,12 +205,24 @@ def test_une_faction_amie_indique_le_lieu_cache(u):
 def test_une_enquete_reussie_revele_le_lieu_cache(u):
     s, _ = partie(u, carte(), des=DesTruques(1, 99, 1))
     nom = next(affiche for affiche, socle in s.noms_competences.items() if socle == "Investigation")
-    r = s.appeler("test_competence", {"competence": nom, "difficulte": "normale"})
+    fouille = {"competence": nom, "difficulte": "normale", "fouille_quartier": True}
+    r = s.appeler("test_competence", fouille)
     assert r["reussi"] and "planque Vapeur" in r["lieu_trouve"]
-    rate = s.appeler("test_competence", {"competence": nom, "difficulte": "normale"})
+    rate = s.appeler("test_competence", fouille)
     assert not rate["reussi"] and "lieu_trouve" not in rate
-    encore = s.appeler("test_competence", {"competence": nom, "difficulte": "normale"})
+    encore = s.appeler("test_competence", fouille)
     assert encore["reussi"] and "lieu_trouve" not in encore  # il n'y en a qu'un par quartier
+
+
+def test_une_enquete_qui_ne_fouille_pas_le_quartier_ne_revele_rien(u):
+    s, _ = partie(u, carte(), des=DesTruques(1, 1))
+    nom = next(affiche for affiche, socle in s.noms_competences.items() if socle == "Investigation")
+    schema = next(o for o in s.schemas() if o["function"]["name"] == "test_competence")["function"]["parameters"]
+    assert "fouille_quartier" in schema["properties"]
+    r = s.appeler("test_competence", {"competence": nom, "difficulte": "normale", "pourquoi": "examiner le corps"})
+    assert r["reussi"] and "lieu_trouve" not in r
+    r = s.appeler("test_competence", {"competence": nom, "difficulte": "normale", "fouille_quartier": True})
+    assert r["reussi"] and "planque Vapeur" in r["lieu_trouve"]  # le lieu était toujours là
 
 
 def test_creer_le_tenancier_d_un_lieu(u):

@@ -802,6 +802,16 @@ SITUATIONS = [
               scene="Le bar Néon bleu, au Canal noir, bien au sec pendant que la pluie acide tombe dehors. À la table "
                     "voisine, deux Rats du canal parlent bas.",
               preparer=_vivant(temps="pluie acide")),
+    Situation("pistage", "Je suis ses traces de pas dans la boue du quai, jusqu'à sa cachette.",
+              [exige("test_competence", lambda a: a.get("dehors") is True and a.get("piste") is True,
+                     "dehors, pour suivre une piste")],
+              scene="Le quai du Canal noir, sous une pluie fine. Le coursier qui a volé la puce de Kaito s'est enfui "
+                    "à pied il y a dix minutes ; ses empreintes s'éloignent dans la boue, entre les conteneurs.",
+              preparer=_vivant(temps="pluie")),
+    Situation("ratisser", "Je ratisse le Canal noir en posant des questions : je cherche l'endroit où les Chromés "
+              "cachent leur butin.",
+              [exige("test_competence", egal("fouille_quartier", True), "il fouille le quartier")],
+              scene=SCENE_CANAL, preparer=_vivant()),
     Situation("adresse", "Où est-ce que je peux me faire soigner dans le coin ? Je cherche une adresse.",
               [exige("monde")], scene=SCENE_CANAL, preparer=_vivant()),
     Situation("patronne", "Elle veut se battre ? Je lève les poings et je me défends.",

@@ -13,6 +13,13 @@ sont dans `docs/releases/`.
 - `tools\proteger-depot.ps1` crée aussi les labels de type qui manquent (repris du dépôt modèle).
 - `.github/release-notes.md`, le modèle des notes de version auquel renvoyaient `docs/releases/LISEZ-MOI.md` et `tools/verifier-release.ps1` sans qu'il existe.
 
+### Modifié
+
+- La météo chiffre ce qui restait une consigne au MJ (REGLES.md 15.3) : suivre une piste −20 sous la pluie et +10 dans la neige (case `piste` de `test_competence`) ; 1 point de dégâts par période passée dehors sans armure sous la pluie acide (case `dehors` d'`avancer_temps`) ; −10 à chacun de ceux qui courent dans une poursuite à pied sous la neige (case `dehors` de `debut_poursuite`) ; un repos pris dehors pendant la canicule ne rend rien (case `dehors` de `repos`).
+- Un lieu caché ne se révèle plus sur n'importe quelle Investigation réussie : il faut que le personnage fouille le quartier pour y trouver un lieu, une personne ou une rumeur (case `fouille_quartier` de `test_competence`, REGLES.md 15.4).
+- Un véhicule tout-terrain ou blindé qui rate son test devant un barrage force le passage : il n'est pas bloqué, mais prend −20 au jet opposé (REGLES.md 12.3).
+- Le prompt du MJ dit quand cocher ces cases. Au banc, deux situations de plus (suivre une piste sous la pluie, ratisser un quartier) : 88 situations dont 23 pièges.
+
 ### Corrigé
 
 - Requalifier le MJ seul (`python -m aria.banc`) effaçait du profil le budget du générateur, mesuré par son propre banc : le jeu créait alors univers, personnages et amorces avec le budget du MJ, sans mesure. Le budget du générateur est désormais gardé quand le modèle et la carte graphique ne changent pas, et le banc dit sinon de relancer celui du générateur.

@@ -212,6 +212,30 @@ def test_barrage_le_bloque_perd_sans_jet():
     assert p.distances["flic"] == AU_CONTACT
 
 
+@pytest.mark.parametrize("vehicule", [replace(VOITURE, modifications=(PNEUS,)), replace(VOITURE, blindage=4)],
+                         ids=["tout-terrain", "blindé"])
+def test_barrage_un_tout_terrain_ou_un_blinde_force_le_passage(vehicule):
+    p = poursuite(fuyard_engin=vehicule)
+    r = p.jouer_round(DesTruques(9, 90, 10, 90, 90))  # barrage : le fuyard rate son test, le flic passe
+    assert r.obstacles[0].effet == "force le passage : -20 au jet opposé"
+    duel = r.duels[0]
+    assert duel.fuyard_test.valeur == 50 - 20 and duel.poursuivant_test.valeur == 70  # pas bloqué, mais −20
+    assert duel.gagnant is None and p.distances["flic"] == PROCHE
+
+
+def test_barrage_a_pied_on_reste_bloque():
+    p = poursuite(fuyard_engin=None, poursuivant_engin=VOITURE)
+    r = p.jouer_round(DesTruques(9, 90, 10))
+    assert r.obstacles[0].effet == "bloqué : il ne bouge pas ce round" and r.duels[0].fuyard_test is None
+
+
+def test_la_neige_gene_ceux_qui_courent():
+    p = poursuite(fuyard_engin=None, poursuivant_engin=VOITURE, malus_a_pied=-10)
+    r = p.jouer_round(DesTruques(8, 90, 90, 90, 90))  # obstacle soudain, puis le jet opposé
+    assert r.obstacles[0].test.valeur == 25 - 10 and r.obstacles[1].test.valeur == 50
+    assert r.duels[0].fuyard_test.valeur == 25 - 10 and r.duels[0].poursuivant_test.valeur == 50 + 30
+
+
 def test_maladresse_l_accident_et_le_fuyard_est_rattrape():
     p = poursuite()
     r = p.jouer_round(DesTruques(1, 100, 50, 1, 1, 1, 1, 1))

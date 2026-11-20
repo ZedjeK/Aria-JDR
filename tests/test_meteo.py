@@ -152,3 +152,71 @@ def test_l_outil_monde_donne_le_temps_et_le_jour_qui_change_le_retire():
     s.des = Imposes(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
     r = s.appeler("monde", {})
     assert r["meteo"]["temps"] == "pluie" and s.monde["meteo"]["jour"] == 2  # 1 au d6 : la pluie continue
+
+
+# --- Les effets chiffrés de la météo (REGLES.md 15.3) ------------------------------------------------------------
+
+def _nom(s, socle: str) -> str:
+    return next(affiche for affiche, c in s.noms_competences.items() if c == socle)
+
+
+@pytest.mark.parametrize("temps, piste", [("pluie", -20), ("neige", 10), ("clair", 0)])
+def test_suivre_une_piste_dehors(temps, piste):
+    s = avec_meteo(temps, 50, 50, 50)
+    survie, base = _nom(s, "Survie"), s.joueur.valeur("Survie")
+    r = s.appeler("test_competence", {"competence": survie, "difficulte": "normale", "dehors": True, "piste": True})
+    assert r["valeur"] == base + piste
+    assert s.appeler("test_competence", {"competence": survie, "difficulte": "normale", "dehors": True})["valeur"] == base
+    assert s.appeler("test_competence", {"competence": survie, "difficulte": "normale", "piste": True})["valeur"] == base
+
+
+def test_la_pluie_acide_ronge_qui_passe_la_periode_dehors_sans_armure():
+    s = avec_meteo("pluie acide", 50, 50, 50, 50)
+    s.joueur.armure = None
+    pv = s.personnage.pv
+    r = s.appeler("avancer_temps", {"dehors": True})
+    assert r["meteo"]["degats"] == 1 and r["meteo"]["pv"] == pv - 1 == s.personnage.pv
+    assert "pluie acide" in r["meteo"]["cause"]
+    assert "meteo" not in s.appeler("avancer_temps", {}) and s.personnage.pv == pv - 1  # à l'abri
+    s.joueur.armure = object()  # n'importe quelle armure portée le protège
+    assert "meteo" not in s.appeler("avancer_temps", {"dehors": True}) and s.personnage.pv == pv - 1
+
+
+def test_seule_la_pluie_acide_ronge():
+    s = avec_meteo("pluie", 50)
+    s.joueur.armure = None
+    pv = s.personnage.pv
+    assert "meteo" not in s.appeler("avancer_temps", {"dehors": True}) and s.personnage.pv == pv
+
+
+def test_la_canicule_rend_le_repos_dehors_inutile():
+    s = avec_meteo("canicule", 50, 50)
+    s.personnage.pv = s.personnage.pv_max - 5
+    r = s.appeler("repos", {"type": "court", "dehors": True})
+    assert r["pv_gagnes"] == 0 and "ne rend rien" in r["meteo"]
+    assert "déjà reposé" in s.appeler("repos", {"type": "court"})["erreur"]  # le temps est passé quand même
+    s.appeler("avancer_temps", {})
+    abri = s.appeler("repos", {"type": "court"})
+    assert abri["pv_gagnes"] > 0 and "meteo" not in abri
+
+
+def test_la_neige_dans_une_poursuite_a_pied():
+    s = avec_meteo("neige", 50)
+    ganger(s)
+    r = s.appeler("debut_poursuite", {"fuyard": "joueur", "poursuivants": ["ganger"], "zone": "Centre-ville",
+                                      "dehors": True})
+    assert s.poursuite.malus_a_pied == -10 and "neige" in r["meteo"]
+    s.poursuite = None
+    r = s.appeler("debut_poursuite", {"fuyard": "joueur", "poursuivants": ["ganger"], "zone": "Centre-ville"})
+    assert s.poursuite.malus_a_pied == 0 and "meteo" not in r
+
+
+def test_les_nouveaux_champs_n_existent_qu_avec_la_meteo():
+    s = session()
+    noms = {o["function"]["name"]: o["function"]["parameters"]["properties"] for o in s.schemas()}
+    assert "piste" not in noms["test_competence"] and "dehors" not in noms["avancer_temps"]
+    assert "dehors" not in noms["repos"]
+    s = avec_meteo("clair")
+    noms = {o["function"]["name"]: o["function"]["parameters"]["properties"] for o in s.schemas()}
+    assert {"dehors", "piste"} <= set(noms["test_competence"]) and "dehors" in noms["avancer_temps"]
+    assert "dehors" in noms["repos"]
