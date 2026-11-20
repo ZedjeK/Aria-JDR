@@ -27,6 +27,16 @@
   <main class="zone">
     <canvas id="fond" aria-hidden="true"></canvas>
 
+    <!-- Une nouvelle version : rien ne se télécharge sans un clic sur « Installer la mise à jour » -->
+    <section class="bandeau" id="maj" hidden>
+      <p><strong id="maj-titre"></strong> <span id="maj-detail"></span></p>
+      <p>
+        <button type="button" id="maj-installer">Installer la mise à jour</button>
+        <a id="maj-page" href="#" target="_blank" rel="noopener noreferrer">Voir les nouveautés</a>
+      </p>
+      <p id="maj-message" role="status"></p>
+    </section>
+
     <section class="panneau" id="accueil">
       <h2>Un jeu de rôle solo : un LLM local raconte, le code arbitre les règles.</h2>
       <p id="mj" class="mj">…</p>
@@ -175,9 +185,17 @@
             <option value="rouille">Rouille (Post-apo)</option>
           </select>
         </label>
+        <h3>Mises à jour</h3>
+        <label class="ligne"><input type="checkbox" id="chercher-maj"> Chercher une nouvelle version au lancement</label>
+        <p class="note">Une seule requête, vers la page des versions du jeu sur GitHub, sans rien qui t'identifie. Rien ne
+          s'installe sans ton accord, ni pendant une partie ou un banc.</p>
         <button type="submit">Enregistrer</button>
         <p id="message" role="status"></p>
       </form>
+      <p class="ligne">
+        <button type="button" id="maj-chercher" class="secondaire">Rechercher maintenant</button>
+        <span id="maj-etat" role="status"></span>
+      </p>
     </section>
   </main>
   <script src="/app.js"></script>
