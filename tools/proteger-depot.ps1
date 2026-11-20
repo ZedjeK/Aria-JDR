@@ -1,7 +1,8 @@
 ﻿<#
 .SYNOPSIS
 Pose les protections GitHub d'une appli Aria : fusion en squash, rulesets (dont la règle de code scanning CodeQL),
-signalement privé, alertes et correctifs Dependabot, secret scanning, releases immuables, actions épinglées par SHA.
+signalement privé, alertes et correctifs Dependabot, secret scanning, releases immuables, actions épinglées par SHA,
+labels de type des PR (ceux que .github/release.yml range dans les notes générées).
 
 .DESCRIPTION
 À lancer après le premier passage vert de la CI sur main : on n'exige jamais un check qui n'a pas encore tourné.
@@ -87,12 +88,13 @@ $reglesBranche = @(Lire "repos/$Depot/rules/branches/$([uri]::EscapeDataString($
 $immuables = Lire "repos/$Depot/immutable-releases"
 $actions = Lire "repos/$Depot/actions/permissions"
 $correctifs = Lire "repos/$Depot/automated-security-fixes"
+$labels = @(Lire "repos/$Depot/labels?per_page=100" | Where-Object { $_ -and $_ -isnot [bool] })
 
 New-Item -ItemType Directory -Path (Join-Path $racine '.work') -Force | Out-Null
 $maintenant = Get-Date
 $avant = [ordered]@{
     date = $maintenant.ToString('s'); depot = $depotInfo; rulesets = $rulesets; regles = $reglesBranche
-    releasesImmuables = $immuables; actions = $actions; correctifsDependabot = $correctifs
+    releasesImmuables = $immuables; actions = $actions; correctifsDependabot = $correctifs; labels = $labels
 }
 # Un fichier par lancement : relancer le script pour vérifier ne doit pas écraser l'état d'avant un changement.
 $relatifAvant = ".work\protection-avant-$($maintenant.ToString('yyyy-MM-ddTHH-mm-ss')).json"
@@ -289,6 +291,26 @@ else {
         $corpsActions.allowed_actions = [string]$actions.allowed_actions
     }
     Prevoir "Actions épinglées par SHA : exigées" { Ecrire 'PUT' "repos/$Depot/actions/permissions" $corpsActions }
+}
+
+# 9. Labels de type : un par PR, ils rangent les PR dans les notes générées (.github/release.yml). Seuls les labels
+# absents sont créés : un label déjà là, même d'une autre couleur, n'est jamais modifié.
+$labelsDeType = @(
+    @{ name = 'feat'; color = '0e8a16'; description = 'Nouvelle fonction' },
+    @{ name = 'fix'; color = 'd73a4a'; description = 'Correction' },
+    @{ name = 'securite'; color = 'b60205'; description = 'Sécurité' },
+    @{ name = 'deps'; color = '0366d6'; description = 'Dépendances' },
+    @{ name = 'docs'; color = '0075ca'; description = 'Documentation' },
+    @{ name = 'ci'; color = '5319e7'; description = 'CI, workflows, outils du dépôt' }
+)
+$nomsLabels = @($labels | ForEach-Object { [string]$_.name })
+$labelsManquants = @($labelsDeType | Where-Object { $nomsLabels -notcontains $_.name })
+if ($labelsManquants.Count -eq 0) { Write-Host "  déjà en place : labels de type (feat, fix, securite, deps, docs, ci)" }
+else {
+    $liste = ($labelsManquants | ForEach-Object { $_.name }) -join ', '
+    Prevoir "Labels de type créés : $liste" {
+        foreach ($label in $labelsManquants) { Ecrire 'POST' "repos/$Depot/labels" $label }
+    }
 }
 
 # ----- Plan, accord, application -----
